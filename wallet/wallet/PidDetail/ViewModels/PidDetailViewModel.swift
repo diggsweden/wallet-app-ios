@@ -94,7 +94,7 @@ class PidDetailViewModel: ObservableObject {
             print("Failed fix issuer")
         }
     }
-
+    
     func fetchCredential() async {
             guard let url = URL(string: "https://wallet.sandbox.digg.se/credential") else {
                 return
@@ -131,27 +131,18 @@ class PidDetailViewModel: ObservableObject {
             let parts = credentialResponse.credential.components(separatedBy: "~")
 
             for (index, part) in parts.enumerated() {
-                guard index != 0 else { continue }
-
-                // Decode base64 string to Data
-                guard let decodedData = Data(base64Encoded: part) else {
-                    print("Failed to decode base64 at index \(index)")
+                guard index != 0 else {
                     continue
                 }
-
-                // Convert Data to String
-                guard let decodedString = String(data: decodedData, encoding: .utf8) else {
-                    print("Failed to convert decoded data to string at index \(index)")
+                
+                guard let decodedString = part.decodeFromBase64() else {
+                    print("Failed decoding base64 string")
                     continue
                 }
-
-                print("Decoded JSON string: \(decodedString)")
+                
                 grants.append(decodedString)
-
             }
 
             decodedGrants = grants
         }
 }
-
-
