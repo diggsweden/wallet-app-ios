@@ -1,0 +1,11 @@
+name: Setup Env
+
+inputs:
+  xcode-version:
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - run: sudo xcode-select -s /Applications/Xcode_${{ inputs.xcode-version }}.app
+      shell: bash

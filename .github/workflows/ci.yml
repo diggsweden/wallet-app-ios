@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ${{ vars.MACOS_VERSION }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-env
+        with:
+          xcode-version: ${{ vars.XCODE_VERSION }}
+
+      - name: Install swift-format
+        run: brew install swift-format
+
+      - name: 🧹 Run linter
+        run: |
+          printf "\n==> Linting...\n"
+          ./scripts/lint.sh
+
+  unit-tests:
+    runs-on: ${{ vars.MACOS_VERSION }}
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-env
+        with:
+          xcode-version: ${{ vars.XCODE_VERSION }}
+
+      - name: 🧪 Run unit tests
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -scheme WalletTests \
+            -destination 'platform=iOS Simulator,name=iPhone 16' \
+          | xcbeautify
+
+  ui-tests:
+    runs-on: ${{ vars.MACOS_VERSION }}
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-env
+        with:
+          xcode-version: ${{ vars.XCODE_VERSION }}
+
+      - name: 📱 Run UI tests
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -scheme WalletUITests \
+            -destination 'platform=iOS Simulator,name=iPhone 16' \
+          | xcbeautify
