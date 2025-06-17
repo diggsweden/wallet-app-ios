@@ -14,7 +14,7 @@ swift-format -i $files
 echo "==> Verifying changes..."
 if ! output=$(./scripts/lint.sh "$files" 2>&1); then
   echo "❌ Could not auto-format the following files:"
-  echo "$output"
+  echo -e "\033[31m$output\033[0m"
   exit 1
 fi
 
