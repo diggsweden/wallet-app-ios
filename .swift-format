@@ -5,7 +5,6 @@
   "prioritizeKeepingFunctionOutputTogether": true,
   "lineBreakBeforeEachArgument": true,
   "lineBreakBeforeEachGenericRequirement": true,
-  "lineBreakBetweenDeclarationAttributes": true,
   "lineBreakAroundMultilineExpressionChainComponents": true,
   "spacesAroundRangeFormationOperators": true,
   "indentSwitchCaseLabels": true,

@@ -35,19 +35,19 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		8DF0DE3B2DAFCA2600270636 /* wallet */ = {
+		8DF0DE3B2DAFCA2600270636 /* Wallet */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = wallet;
+			path = Wallet;
 			sourceTree = "<group>";
 		};
-		8DF0DE492DAFCA2800270636 /* walletTests */ = {
+		8DF0DE492DAFCA2800270636 /* WalletTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = walletTests;
+			path = WalletTests;
 			sourceTree = "<group>";
 		};
-		8DF0DE532DAFCA2800270636 /* walletUITests */ = {
+		8DF0DE532DAFCA2800270636 /* WalletUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = walletUITests;
+			path = WalletUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -82,9 +82,9 @@
 			isa = PBXGroup;
 			children = (
 				8DE83C082DEF73590085498D /* WalletDemo-Info.plist */,
-				8DF0DE3B2DAFCA2600270636 /* wallet */,
-				8DF0DE492DAFCA2800270636 /* walletTests */,
-				8DF0DE532DAFCA2800270636 /* walletUITests */,
+				8DF0DE3B2DAFCA2600270636 /* Wallet */,
+				8DF0DE492DAFCA2800270636 /* WalletTests */,
+				8DF0DE532DAFCA2800270636 /* WalletUITests */,
 				8DF0DE3A2DAFCA2600270636 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -115,7 +115,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				8DF0DE3B2DAFCA2600270636 /* wallet */,
+				8DF0DE3B2DAFCA2600270636 /* Wallet */,
 			);
 			name = WalletDemo;
 			packageProductDependencies = (
@@ -139,7 +139,7 @@
 				8DF0DE482DAFCA2800270636 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				8DF0DE492DAFCA2800270636 /* walletTests */,
+				8DF0DE492DAFCA2800270636 /* WalletTests */,
 			);
 			name = walletTests;
 			packageProductDependencies = (
@@ -162,7 +162,7 @@
 				8DF0DE522DAFCA2800270636 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				8DF0DE532DAFCA2800270636 /* walletUITests */,
+				8DF0DE532DAFCA2800270636 /* WalletUITests */,
 			);
 			name = walletUITests;
 			packageProductDependencies = (
