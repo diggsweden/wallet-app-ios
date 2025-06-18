@@ -1,7 +1,3 @@
-//
-//  PidView.swift
-//  wallet
-//
 import SwiftUI
 
 struct PidDetailView: View {

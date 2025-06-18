@@ -1,7 +1,3 @@
-//
-//  PidModels.swift
-//  wallet
-//
 import Foundation
 
 struct GrantModel: Identifiable {

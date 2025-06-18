@@ -1,7 +1,3 @@
-//
-//  ContentViewModel.swift
-//  wallet
-//
 import Foundation
 import SwiftUI
 

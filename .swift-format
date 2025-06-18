@@ -4,7 +4,6 @@
   "indentation": { "spaces": 2 },
   "prioritizeKeepingFunctionOutputTogether": true,
   "lineBreakBeforeEachArgument": true,
-  "lineBreakBeforeEachGenericRequirement": true,
   "lineBreakAroundMultilineExpressionChainComponents": true,
   "spacesAroundRangeFormationOperators": true,
   "indentSwitchCaseLabels": true,
@@ -17,7 +16,6 @@
     "NeverUseForceTry": true,
     "NeverUseImplicitlyUnwrappedOptionals": true,
     "UseExplicitNilCheckInConditions": true,
-    "UseLetInEveryBoundCaseVariable": true,
 
     "UseEarlyExits": true,
     "ReturnVoidInsteadOfEmptyTuple": true,

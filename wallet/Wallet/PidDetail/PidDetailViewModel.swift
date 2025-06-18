@@ -1,8 +1,4 @@
 import Foundation
-//
-//  PidDetailViewModel.swift
-//  wallet
-//
 import OpenID4VCI
 
 @MainActor
@@ -45,7 +41,7 @@ class PidDetailViewModel: ObservableObject {
         throw NSError(domain: "MissingOfferOrRedirectionUrl", code: 1, userInfo: nil)
       }
 
-      if let grants = credentialOffer.grants, case .preAuthorizedCode(let preAuthCode) = grants {
+      if let grants = credentialOffer.grants, case let .preAuthorizedCode(preAuthCode) = grants {
         preAuthCodeString = preAuthCode.preAuthorizedCode
         txCode = String(describing: dump(preAuthCode.txCode))
         print(preAuthCode)

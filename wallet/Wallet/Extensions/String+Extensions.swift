@@ -1,9 +1,3 @@
-//
-//  StringExtensions.swift
-//  wallet
-//
-//  Created by Asser Hakala on 2025-06-16.
-//
 import Foundation
 
 extension String {
