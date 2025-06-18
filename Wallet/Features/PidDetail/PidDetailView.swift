@@ -1,133 +1,96 @@
 import SwiftUI
 
-struct PidDetailView: View {
-  var credentialOfferUri: String
+let diggPrimaryColor = Color(red: 214 / 255, green: 132 / 255, blue: 42 / 255)
 
-  @StateObject private var viewModel = PidDetailViewModel()
+struct PidDetailView: View {
+  @StateObject private var viewModel: PidDetailViewModel
+
+  init(credentialOfferUri: String) {
+    _viewModel = StateObject(
+      wrappedValue: PidDetailViewModel(credentialOfferUri: credentialOfferUri)
+    )
+  }
 
   var body: some View {
-    NavigationView {
+    VStack {
       ScrollView {
         VStack(alignment: .leading, spacing: 10) {
-          CardView {
-            VStack(alignment: .leading, spacing: 10) {
-              Text("Credential offer uri").font(.headline)
-              Text(credentialOfferUri)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-          }
+          if let metadata = viewModel.issuerMetadata {
+            CardView {
+              VStack(alignment: .leading, spacing: 10) {
+                if let display = metadata.display.first {
+                  AsyncImage(url: display.logo?.uri)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.bottom, 10)
 
-          Button("Fetch metadata") {
-            Task {
-              await viewModel.fetch(url: credentialOfferUri)
-            }
-          }
-          .buttonStyle(.bordered).padding()
-          Button("Fetch Issuer") {
-            Task {
-              await viewModel.issuer()
-            }
-          }
-          .buttonStyle(.bordered).padding()
+                  Text("Issuer:").font(.headline)
+                  Text(display.name ?? "No name")
 
-          CardView {
-            VStack(alignment: .leading, spacing: 10) {
-              Text("Issuer").font(.headline)
-              Text("Credential Issuer Identifier").font(.headline)
-              Text(
-                viewModel.credentialOffer?
-                  .credentialIssuerMetadata
-                  .credentialIssuerIdentifier.url
-                  .absoluteString ?? "-"
-              )
-              Text("Batch credential issuance").font(.headline)
-              Text(
-                viewModel.credentialOffer?
-                  .credentialIssuerMetadata
-                  .batchCredentialIssuance?
-                  .batchSize
-                  .description ?? "-"
-              )
-              Text("Deferred credentil endpoint").font(.headline)
-              Text(
-                viewModel.credentialOffer?
-                  .credentialIssuerMetadata
-                  .deferredCredentialEndpoint?
-                  .url
-                  .absoluteString ?? "-"
-              )
-              Text("Deferred notification endpoint")
-                .font(
-                  .headline
+                  Text("Description:").font(.headline)
+                  Text(display.description ?? "No description")
+                }
+
+                Text("Credential endpoint").font(.headline)
+                Text(
+                  metadata.credentialEndpoint.url.absoluteString
                 )
-              Text(
-                viewModel.credentialOffer?
-                  .credentialIssuerMetadata
-                  .notificationEndpoint?
-                  .url.absoluteString
-                  ?? "-"
-              )
-              Text("Credential endpoint").font(.headline)
-              Text(
-                viewModel.credentialOffer?
-                  .credentialIssuerMetadata.credentialEndpoint
-                  .url.absoluteString ?? "-"
-              )
-              Text("Pre Authorized Code").font(.headline)
-              Text(viewModel.preAuthCodeString ?? "-")
-              Text("txcode").font(.headline)
-              Text(viewModel.txCode ?? "-")
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-          }
-
-          CardView {
-            VStack(alignment: .leading, spacing: 10) {
-              Text("Accesstoken").font(.headline)
-              Text(viewModel.accessToken ?? "-")
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-          }
-
-          Button("Fetch Credential") {
-            Task {
-              await viewModel.fetchCredential()
-            }
-          }
-          .buttonStyle(.bordered).padding()
-
-          CardView {
-            VStack(alignment: .leading, spacing: 10) {
-              Text("Credential response").font(.headline)
-              Text("c_nonce").font(.headline)
-              Text("-")
-              Text("c_nonce_expires_in").font(.headline)
-              Text("-")
-              Text("credential").font(.headline)
-              Text(viewModel.credential?.credential ?? "-")
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-          }
-
-          CardView {
-            VStack(alignment: .leading, spacing: 10) {
-              Text("Decoded").font(.headline)
-              //loop over entries
-              ForEach(viewModel.decodedGrants, id: \.self) {
-                item in
-                Text(item)
-                  .font(.body)
               }
+              .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
+          }
+
+          if let claims = viewModel.pidClaims {
+            CardView {
+              VStack(alignment: .leading, spacing: 10) {
+                Text("PID info:").font(.headline)
+                ForEach(claims) { claim in
+                  if let display = claim.claim.display?.first {
+                    Text(display.name ?? "No name").bold()
+                  }
+                  if let mandatory = claim.claim.mandatory {
+                    Text("Mandatory: \(mandatory)")
+                  }
+                  Text("Value: ") + Text(claim.value).bold()
+                  Divider()
+                }
+                .font(.body)
+              }
+              .frame(maxWidth: .infinity, alignment: .leading)
+            }
           }
         }
         .padding(.horizontal, 5)
         .frame(maxWidth: .infinity)
         .cornerRadius(8)
       }
-      .frame(maxWidth: .infinity, maxHeight: .infinity)
-      .navigationTitle(Text("Pid Detail"))
+
+      if let accessToken = viewModel.accessToken {
+        Button {
+          Task {
+            await viewModel.fetchCredential(accessToken)
+          }
+        } label: {
+          Text("Fetch credential")
+            .padding(6)
+        }
+        .buttonStyle(.borderedProminent)
+        .tint(diggPrimaryColor)
+      } else {
+        Button {
+          Task {
+            await viewModel.fetchMetadata()
+          }
+        } label: {
+          Text("Fetch issuer metadata")
+            .padding(6)
+        }
+        .buttonStyle(.borderedProminent)
+        .tint(diggPrimaryColor)
+      }
+    }
+    .navigationTitle(Text("Pid Detail"))
+    .task {
+      await viewModel.fetchMetadata()
     }
   }
 }
@@ -148,7 +111,7 @@ struct CardView<Content: View>: View {
       .padding()
       .background(
         RoundedRectangle(cornerRadius: 12, style: .continuous)
-          .fill(Color.secondary)
+          .fill(diggPrimaryColor.opacity(0.2))
       )
       .padding(.horizontal)
   }

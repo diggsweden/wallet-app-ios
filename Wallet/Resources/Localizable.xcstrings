@@ -1,34 +1,7 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "-" : {
-
-    },
-    "Accesstoken" : {
-
-    },
-    "Batch credential issuance" : {
-
-    },
-    "c_nonce" : {
-
-    },
-    "c_nonce_expires_in" : {
-
-    },
-    "credential" : {
-
-    },
     "Credential endpoint" : {
-
-    },
-    "Credential Issuer Identifier" : {
-
-    },
-    "Credential offer uri" : {
-
-    },
-    "Credential response" : {
 
     },
     "dashboard_content_1" : {
@@ -128,34 +101,25 @@
         }
       }
     },
-    "Decoded" : {
+    "Description:" : {
 
     },
-    "Deferred credentil endpoint" : {
+    "Fetch credential" : {
 
     },
-    "Deferred notification endpoint" : {
+    "Fetch issuer metadata" : {
 
     },
-    "Fetch Credential" : {
-
-    },
-    "Fetch Issuer" : {
-
-    },
-    "Fetch metadata" : {
-
-    },
-    "Issuer" : {
+    "Issuer:" : {
 
     },
     "Pid Detail" : {
 
     },
-    "Pre Authorized Code" : {
+    "PID info:" : {
 
     },
-    "txcode" : {
+    "Value: " : {
 
     }
   },
