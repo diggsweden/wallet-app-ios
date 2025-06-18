@@ -30,8 +30,8 @@
 /* Begin PBXFileReference section */
 		8DE83C082DEF73590085498D /* WalletDemo-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "WalletDemo-Info.plist"; sourceTree = "<group>"; };
 		8DF0DE392DAFCA2600270636 /* WalletDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WalletDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		8DF0DE462DAFCA2800270636 /* walletTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = walletTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		8DF0DE502DAFCA2800270636 /* walletUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = walletUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		8DF0DE462DAFCA2800270636 /* WalletTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WalletTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		8DF0DE502DAFCA2800270636 /* WalletUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WalletUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -93,8 +93,8 @@
 			isa = PBXGroup;
 			children = (
 				8DF0DE392DAFCA2600270636 /* WalletDemo.app */,
-				8DF0DE462DAFCA2800270636 /* walletTests.xctest */,
-				8DF0DE502DAFCA2800270636 /* walletUITests.xctest */,
+				8DF0DE462DAFCA2800270636 /* WalletTests.xctest */,
+				8DF0DE502DAFCA2800270636 /* WalletUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -125,9 +125,9 @@
 			productReference = 8DF0DE392DAFCA2600270636 /* WalletDemo.app */;
 			productType = "com.apple.product-type.application";
 		};
-		8DF0DE452DAFCA2800270636 /* walletTests */ = {
+		8DF0DE452DAFCA2800270636 /* WalletTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 8DF0DE5D2DAFCA2800270636 /* Build configuration list for PBXNativeTarget "walletTests" */;
+			buildConfigurationList = 8DF0DE5D2DAFCA2800270636 /* Build configuration list for PBXNativeTarget "WalletTests" */;
 			buildPhases = (
 				8DF0DE422DAFCA2800270636 /* Sources */,
 				8DF0DE432DAFCA2800270636 /* Frameworks */,
@@ -141,16 +141,16 @@
 			fileSystemSynchronizedGroups = (
 				8DF0DE492DAFCA2800270636 /* WalletTests */,
 			);
-			name = walletTests;
+			name = WalletTests;
 			packageProductDependencies = (
 			);
 			productName = walletTests;
-			productReference = 8DF0DE462DAFCA2800270636 /* walletTests.xctest */;
+			productReference = 8DF0DE462DAFCA2800270636 /* WalletTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		8DF0DE4F2DAFCA2800270636 /* walletUITests */ = {
+		8DF0DE4F2DAFCA2800270636 /* WalletUITests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 8DF0DE602DAFCA2800270636 /* Build configuration list for PBXNativeTarget "walletUITests" */;
+			buildConfigurationList = 8DF0DE602DAFCA2800270636 /* Build configuration list for PBXNativeTarget "WalletUITests" */;
 			buildPhases = (
 				8DF0DE4C2DAFCA2800270636 /* Sources */,
 				8DF0DE4D2DAFCA2800270636 /* Frameworks */,
@@ -164,11 +164,11 @@
 			fileSystemSynchronizedGroups = (
 				8DF0DE532DAFCA2800270636 /* WalletUITests */,
 			);
-			name = walletUITests;
+			name = WalletUITests;
 			packageProductDependencies = (
 			);
 			productName = walletUITests;
-			productReference = 8DF0DE502DAFCA2800270636 /* walletUITests.xctest */;
+			productReference = 8DF0DE502DAFCA2800270636 /* WalletUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
@@ -213,8 +213,8 @@
 			projectRoot = "";
 			targets = (
 				8DF0DE382DAFCA2600270636 /* WalletDemo */,
-				8DF0DE452DAFCA2800270636 /* walletTests */,
-				8DF0DE4F2DAFCA2800270636 /* walletUITests */,
+				8DF0DE452DAFCA2800270636 /* WalletTests */,
+				8DF0DE4F2DAFCA2800270636 /* WalletUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -559,7 +559,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		8DF0DE5D2DAFCA2800270636 /* Build configuration list for PBXNativeTarget "walletTests" */ = {
+		8DF0DE5D2DAFCA2800270636 /* Build configuration list for PBXNativeTarget "WalletTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				8DF0DE5E2DAFCA2800270636 /* Debug */,
@@ -568,7 +568,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		8DF0DE602DAFCA2800270636 /* Build configuration list for PBXNativeTarget "walletUITests" */ = {
+		8DF0DE602DAFCA2800270636 /* Build configuration list for PBXNativeTarget "WalletUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				8DF0DE612DAFCA2800270636 /* Debug */,

@@ -36,8 +36,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "8DF0DE452DAFCA2800270636"
-               BuildableName = "walletTests.xctest"
-               BlueprintName = "walletTests"
+               BuildableName = "WalletTests.xctest"
+               BlueprintName = "WalletTests"
                ReferencedContainer = "container:wallet.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -47,8 +47,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "8DF0DE4F2DAFCA2800270636"
-               BuildableName = "walletUITests.xctest"
-               BlueprintName = "walletUITests"
+               BuildableName = "WalletUITests.xctest"
+               BlueprintName = "WalletUITests"
                ReferencedContainer = "container:wallet.xcodeproj">
             </BuildableReference>
          </TestableReference>

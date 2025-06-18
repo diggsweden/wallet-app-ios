@@ -1,6 +1,6 @@
 import Testing
 
-@testable import wallet
+@testable import WalletDemo
 
 struct WalletTests {
   @Test
