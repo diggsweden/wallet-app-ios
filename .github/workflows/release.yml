@@ -50,6 +50,8 @@ jobs:
             CODE_SIGN_IDENTITY="Apple Distribution: Myndigheten for digital forvaltning (R5MUUW7M24)" \
             CODE_SIGN_STYLE=Manual \
             PROVISIONING_PROFILE_SPECIFIER="Wallet-Demo" \
+            CODE_SIGNING_REQUIRED=YES \
+            CODE_SIGNING_ALLOWED=YES \
           | xcbeautify
 
       - name: 📤 Export .ipa
