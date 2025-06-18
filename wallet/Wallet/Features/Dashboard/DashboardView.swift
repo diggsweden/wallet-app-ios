@@ -1,8 +1,8 @@
 import SwiftUI
 
-struct ContentView: View {
+struct DashboardView: View {
   @Environment(\.openURL) var openURL
-  @StateObject private var viewModel = ContentViewModel()
+  @StateObject private var viewModel = DashboardViewModel()
 
   var body: some View {
     NavigationStack(path: $viewModel.navigationPath) {
@@ -57,5 +57,5 @@ struct ContentView: View {
 }
 
 #Preview {
-  ContentView().environment(\.locale, .init(identifier: "swe"))
+  DashboardView().environment(\.locale, .init(identifier: "swe"))
 }

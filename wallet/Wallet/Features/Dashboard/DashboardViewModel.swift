@@ -2,7 +2,7 @@ import Foundation
 import SwiftUI
 
 @MainActor
-class ContentViewModel: ObservableObject {
+class DashboardViewModel: ObservableObject {
   @Published var navigationPath = NavigationPath()
   @Published var showDashboard = true
 
