@@ -1,0 +1,163 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "-" : {
+
+    },
+    "Accesstoken" : {
+
+    },
+    "Batch credential issuance" : {
+
+    },
+    "c_nonce" : {
+
+    },
+    "c_nonce_expires_in" : {
+
+    },
+    "credential" : {
+
+    },
+    "Credential endpoint" : {
+
+    },
+    "Credential Issuer Identifier" : {
+
+    },
+    "Credential offer uri" : {
+
+    },
+    "Credential response" : {
+
+    },
+    "dashboard_content_1" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This is the starting point for the Swedish government identity wallet."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Detta är startskottet för den svenska statliga identitetsplånboken."
+          }
+        }
+      }
+    },
+    "dashboard_content_2" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This app will continuously be updated so make sure to keep it updated to take advantage of the latest features that will be added."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Denna app kommer kontinuerligt att uppdateras så se till att hålla den uppdaterad för att ta del av de senaste funktioner som kommer läggas till."
+          }
+        }
+      }
+    },
+    "dashboard_more_info_1" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To get more information about the project"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "För att läsa mer info om projektet"
+          }
+        }
+      }
+    },
+    "dashboard_more_info_2" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Click here"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klicka här"
+          }
+        }
+      }
+    },
+    "dashboard_pid_1" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fetch a PID"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hämta en PID"
+          }
+        }
+      }
+    },
+    "dashboard_welcome" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Welcome!"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Välkommen!"
+          }
+        }
+      }
+    },
+    "Decoded" : {
+
+    },
+    "Deferred credentil endpoint" : {
+
+    },
+    "Deferred notification endpoint" : {
+
+    },
+    "Fetch Credential" : {
+
+    },
+    "Fetch Issuer" : {
+
+    },
+    "Fetch metadata" : {
+
+    },
+    "Issuer" : {
+
+    },
+    "Pid Detail" : {
+
+    },
+    "Pre Authorized Code" : {
+
+    },
+    "txcode" : {
+
+    }
+  },
+  "version" : "1.0"
+}

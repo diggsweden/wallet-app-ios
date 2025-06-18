@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "lineLength": 100,
+  "indentation": { "spaces": 2 },
+  "prioritizeKeepingFunctionOutputTogether": true,
+  "lineBreakBeforeEachArgument": true,
+  "lineBreakAroundMultilineExpressionChainComponents": true,
+  "spacesAroundRangeFormationOperators": true,
+  "indentSwitchCaseLabels": true,
+  "multiElementCollectionTrailingCommas": true,
+  "rules": {
+    "AlwaysUseLowerCamelCase": true,
+    "TypeNamesShouldBeCapitalized": true,
+
+    "NeverForceUnwrap": true,
+    "NeverUseForceTry": true,
+    "NeverUseImplicitlyUnwrappedOptionals": true,
+    "UseExplicitNilCheckInConditions": true,
+
+    "UseEarlyExits": true,
+    "ReturnVoidInsteadOfEmptyTuple": true,
+    "NoVoidReturnOnFunctionSignature": true,
+    "NoParensAroundConditions": true,
+    "NoEmptyTrailingClosureParentheses": true,
+    "NoEmptyLinesOpeningClosingBraces": true,
+    "UseWhereClausesInForLoops": true,
+    "UseShorthandTypeNames": true,
+    "UseSynthesizedInitializer": true,
+
+    "DoNotUseSemicolons": true,
+    "GroupNumericLiterals": true,
+    "OrderedImports": true,
+    "OneVariableDeclarationPerLine": true,
+    "OneCasePerLine": true,
+    "NoLabelsInCasePatterns": true,
+    "AlwaysUseLiteralForEmptyCollectionInit": true
+  }
+}
