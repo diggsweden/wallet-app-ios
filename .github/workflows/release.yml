@@ -43,7 +43,7 @@ jobs:
           mkdir -p build
           set -o pipefail
           xcodebuild archive \
-            -scheme WalletDemo \
+            -scheme "Wallet Demo" \
             -configuration Release \
             -archivePath build/walletdemo.xcarchive \
             -destination 'generic/platform=iOS' \
