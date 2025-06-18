@@ -18,7 +18,7 @@
                BlueprintIdentifier = "8DF0DE382DAFCA2600270636"
                BuildableName = "WalletDemo.app"
                BlueprintName = "WalletDemo"
-               ReferencedContainer = "container:wallet.xcodeproj">
+               ReferencedContainer = "container:Wallet.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -38,7 +38,7 @@
                BlueprintIdentifier = "8DF0DE452DAFCA2800270636"
                BuildableName = "WalletTests.xctest"
                BlueprintName = "WalletTests"
-               ReferencedContainer = "container:wallet.xcodeproj">
+               ReferencedContainer = "container:Wallet.xcodeproj">
             </BuildableReference>
          </TestableReference>
          <TestableReference
@@ -49,7 +49,7 @@
                BlueprintIdentifier = "8DF0DE4F2DAFCA2800270636"
                BuildableName = "WalletUITests.xctest"
                BlueprintName = "WalletUITests"
-               ReferencedContainer = "container:wallet.xcodeproj">
+               ReferencedContainer = "container:Wallet.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -71,7 +71,7 @@
             BlueprintIdentifier = "8DF0DE382DAFCA2600270636"
             BuildableName = "WalletDemo.app"
             BlueprintName = "WalletDemo"
-            ReferencedContainer = "container:wallet.xcodeproj">
+            ReferencedContainer = "container:Wallet.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -88,7 +88,7 @@
             BlueprintIdentifier = "8DF0DE382DAFCA2600270636"
             BuildableName = "WalletDemo.app"
             BlueprintName = "WalletDemo"
-            ReferencedContainer = "container:wallet.xcodeproj">
+            ReferencedContainer = "container:Wallet.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
