@@ -1,89 +1,46 @@
 import Foundation
 import OpenID4VCI
 
+// TODO: Proper error handling
+struct GenericError: Error {
+  let message: String
+}
+
+struct PidClaim: Identifiable {
+  let id = UUID()
+  let claim: Claim
+  // TODO: Parse value into correct format based on claim.value_type
+  let value: String
+}
+
 @MainActor
 class PidDetailViewModel: ObservableObject {
-  @Published var credentialOffer: CredentialOffer?
-  @Published var accessToken: String? = "-"
-  @Published var credential: CredentialResponseModel?
-  @Published var preAuthCodeString: String?
-  @Published var txCode: String?
-  @Published var decodedGrants: [String] = []
-
+  let credentialOfferUri: String
   let openId4VCIClientId = "wallet-dev"
   let authFlowRedirectionUrlString = "eudi-wallet://auth"
+  private(set) var claimsMetadata: [String: Claim] = [:]
+  @Published var issuerMetadata: CredentialIssuerMetadata?
+  @Published var accessToken: String?
+  @Published var pidClaims: [PidClaim]?
 
-  func fetch(url: String) async {
+  init(credentialOfferUri: String) {
+    self.credentialOfferUri = credentialOfferUri
+  }
+
+  func fetchMetadata() async {
     do {
-      let resolver = CredentialOfferRequestResolver()
-      let result = await resolver.resolve(source: try .init(urlString: url))
+      let credentialOffer = try await fetchCredentialOffer(with: credentialOfferUri)
+      let newAccessToken = try await fetchAccessToken(with: credentialOffer)
 
-      switch result {
-        case .success(let data):
-          print("worked")
-          print(data)
-          credentialOffer = data
-          print("credential Offer updated")
-        case .failure(let error):
-          print("error: \(error)")
-      }
+      claimsMetadata = getClaimsMetadata(from: credentialOffer)
+      issuerMetadata = credentialOffer.credentialIssuerMetadata
+      accessToken = newAccessToken
     } catch {
-      print("Failed to create source: \(error)")
+      print("Error: \(error)")
     }
   }
 
-  func issuer() async {
-    do {
-      guard
-        let credentialOffer,
-        let redirectionUrl = URL(string: authFlowRedirectionUrlString)
-      else {
-        throw NSError(domain: "MissingOfferOrRedirectionUrl", code: 1, userInfo: nil)
-      }
-
-      if let grants = credentialOffer.grants, case let .preAuthorizedCode(preAuthCode) = grants {
-        preAuthCodeString = preAuthCode.preAuthorizedCode
-        txCode = String(describing: dump(preAuthCode.txCode))
-        print(preAuthCode)
-      }
-
-      let configOpenId4 = OpenId4VCIConfig(
-        clientId: openId4VCIClientId,
-        authFlowRedirectionURI: redirectionUrl
-      )
-
-      let issuer = try await Issuer(
-        authorizationServerMetadata: credentialOffer
-          .authorizationServerMetadata,
-        issuerMetadata: credentialOffer.credentialIssuerMetadata,
-        config: configOpenId4
-      )
-      .authorizeWithPreAuthorizationCode(
-        credentialOffer: credentialOffer,
-        authorizationCode: IssuanceAuthorization(
-          preAuthorizationCode: preAuthCodeString,
-          txCode: TxCode(
-            inputMode: .numeric,
-            length: 6,
-            description: "PIN"
-          )
-        ),
-        clientId: "wallet-dev",
-        transactionCode: "012345"
-      )
-
-      switch issuer {
-        case .success:
-          try accessToken = issuer.get().accessToken?.accessToken
-        case .failure(let error):
-          throw error
-      }
-    } catch {
-      print("Failed to create Issuer: \(error)")
-    }
-  }
-
-  func fetchCredential() async {
+  func fetchCredential(_ accessToken: String) async {
     guard let url = URL(string: "https://wallet.sandbox.digg.se/credential") else {
       return
     }
@@ -99,10 +56,6 @@ class PidDetailViewModel: ObservableObject {
     )
 
     do {
-      guard let accessToken else {
-        throw NSError(domain: "MissingAccessToken", code: 1, userInfo: nil)
-      }
-
       var request = URLRequest(url: url)
       request.httpMethod = "POST"
       request.setValue(
@@ -117,29 +70,107 @@ class PidDetailViewModel: ObservableObject {
         print("Raw JSON response:\n\(jsonString)")
       }
 
-      let credentialResponse = try JSONDecoder()
-        .decode(CredentialResponseModel.self, from: data)
-      credential = credentialResponse
-      parseCredential(credentialResponse)
+      let credentialResponse = try JSONDecoder().decode(CredentialResponseModel.self, from: data)
+      // TODO: Store credential in e.g. UserDefaults
+      pidClaims = parseClaims(from: credentialResponse.credential)
     } catch {
       print("Error fetching data: \(error)")
     }
   }
 
-  func parseCredential(_ credentialResponse: CredentialResponseModel) {
-    var grants: [String] = []
+  private func parseClaims(from credential: String) -> [PidClaim] {
+    let parts = credential.components(separatedBy: "~")
+    return parts.dropFirst()
+      .compactMap { part in
+        guard
+          let decodedData = Data(base64Encoded: part.addBase64Padding()),
+          let parsedClaim = try? JSONDecoder().decode([String].self, from: decodedData),
+          parsedClaim.count == 3
+        else {
+          return nil
+        }
 
-    let parts = credentialResponse.credential.components(separatedBy: "~")
+        let claimId = parsedClaim[1]
+        let claimValue = parsedClaim[2]
+        guard let claim = claimsMetadata[claimId] else {
+          return nil
+        }
 
-    for (index, part) in parts.enumerated() where index != 0 {
-      guard let decodedString = part.decodeFromBase64() else {
-        print("Failed decoding base64 string")
-        continue
+        return PidClaim(claim: claim, value: claimValue)
       }
+  }
 
-      grants.append(decodedString)
+  private func fetchCredentialOffer(with url: String) async throws -> CredentialOffer {
+    let resolver = CredentialOfferRequestResolver()
+    let result = await resolver.resolve(source: try .init(urlString: url))
+    return try result.get()
+  }
+
+  private func fetchAccessToken(with credentialOffer: CredentialOffer) async throws -> String {
+    guard let redirectionUrl = URL(string: authFlowRedirectionUrlString) else {
+      throw GenericError(message: "Invalid redirection URL")
     }
 
-    decodedGrants = grants
+    guard
+      case let .preAuthorizedCode(preAuthCode)? = credentialOffer.grants,
+      let preAuthCodeString = preAuthCode.preAuthorizedCode
+    else {
+      throw GenericError(message: "Missing pre-auth code")
+    }
+
+    let configOpenId4 = OpenId4VCIConfig(
+      clientId: openId4VCIClientId,
+      authFlowRedirectionURI: redirectionUrl
+    )
+
+    let issuer = try await Issuer(
+      authorizationServerMetadata: credentialOffer.authorizationServerMetadata,
+      issuerMetadata: credentialOffer.credentialIssuerMetadata,
+      config: configOpenId4
+    )
+    .authorizeWithPreAuthorizationCode(
+      credentialOffer: credentialOffer,
+      authorizationCode: IssuanceAuthorization(
+        preAuthorizationCode: preAuthCodeString,
+        txCode: TxCode(
+          inputMode: .numeric,
+          length: 6,
+          description: "PIN"
+        )
+      ),
+      clientId: "wallet-dev",
+      transactionCode: "012345"
+    )
+
+    guard let accessToken = try issuer.get().accessToken?.accessToken else {
+      throw GenericError(message: "Missing access token")
+    }
+
+    return accessToken
+  }
+
+  private func getClaimsMetadata(from credentialOffer: CredentialOffer) -> [String: Claim] {
+    return credentialOffer.credentialConfigurationIdentifiers.reduce(
+      into: [String: Claim]()
+    ) { result, id in
+      guard
+        let supportedCredentials = credentialOffer.credentialIssuerMetadata.credentialsSupported[id]
+      else {
+        return
+      }
+
+      switch supportedCredentials {
+        case .sdJwtVc(let config):
+          result.merge(config.claims) { _, new in new }
+
+        case .msoMdoc(let config):
+          let claims = config.claims
+            .flatMap { $0.value }
+          result.merge(claims) { _, new in new }
+
+        default:
+          break
+      }
+    }
   }
 }
