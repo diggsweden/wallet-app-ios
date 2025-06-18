@@ -4,6 +4,12 @@ on:
   pull_request:
 
 jobs:
+  commit-lint:
+    uses: diggsweden/.github/.github/workflows/commit-lint.yml@main
+
+  dependency-review-lint:
+    uses: diggsweden/.github/.github/workflows/dependency-review.yml@main
+
   lint:
     runs-on: ${{ vars.MACOS_VERSION }}
     steps:
