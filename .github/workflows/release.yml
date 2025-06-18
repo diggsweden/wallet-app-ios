@@ -47,9 +47,9 @@ jobs:
             -configuration Release \
             -archivePath build/walletdemo.xcarchive \
             -destination 'generic/platform=iOS' \
-            CODE_SIGN_IDENTITY="Apple Distribution" \
+            CODE_SIGN_IDENTITY="Apple Distribution: Myndigheten for digital forvaltning (R5MUUW7M24)" \
             CODE_SIGN_STYLE=Manual \
-            PROVISIONING_PROFILE_SPECIFIER="Wallet Demo Provisioning Profile" \
+            PROVISIONING_PROFILE_SPECIFIER="Wallet-Demo" \
           | xcbeautify
 
       - name: 📤 Export .ipa
@@ -68,10 +68,10 @@ jobs:
             <key>provisioningProfiles</key>
             <dict>
               <key>se.digg.wallet.demo</key>
-              <string>Wallet Demo Provisioning Profile</string>
+              <string>Wallet-Demo</string>
             </dict>
             <key>teamID</key>
-            <string>TODO: Add Team ID!!</string>
+            <string>R5MUUW7M24/string>
           </dict>
           </plist>
           EOF
