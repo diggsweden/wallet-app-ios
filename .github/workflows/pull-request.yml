@@ -1,4 +1,4 @@
-name: CI
+name: Pull request
 
 on:
   pull_request:
@@ -12,6 +12,9 @@ jobs:
 
   dependency-review-lint:
     uses: diggsweden/.github/.github/workflows/dependency-review.yml@main
+
+  licenselint:
+    uses: diggsweden/.github/.github/workflows/license-lint.yml@main
 
   lint:
     runs-on: ${{ vars.MACOS_VERSION }}
