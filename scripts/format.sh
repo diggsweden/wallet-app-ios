@@ -9,7 +9,7 @@ fi
 files=${1:-$(git ls-files '*.swift')}
 
 echo "==> Formatting..."
-swift-format -i $files
+swift-format -i "$files"
 
 echo "==> Verifying changes..."
 if ! output=$(./scripts/lint.sh "$files" 2>&1); then

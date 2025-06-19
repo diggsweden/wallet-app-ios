@@ -12,4 +12,4 @@ if [[ -z "$files" ]]; then
   exit 0
 fi
 
-swift-format lint -s $files
+swift-format lint -s "$files"
