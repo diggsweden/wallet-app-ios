@@ -40,54 +40,46 @@ jobs:
 
       - name: 📦 Archive app
         run: |
-          mkdir -p build
           set -o pipefail
+
+          mkdir -p build
+
           xcodebuild archive \
             -scheme "Wallet Demo" \
             -configuration Release \
             -archivePath build/walletdemo.xcarchive \
             -destination 'generic/platform=iOS' \
-            CODE_SIGN_IDENTITY="Apple Distribution: Myndigheten for digital forvaltning (R5MUUW7M24)" \
-            CODE_SIGN_STYLE=Manual \
-            PROVISIONING_PROFILE_SPECIFIER="Wallet-Demo" \
-            OTHER_CODE_SIGN_FLAGS="--preserve-metadata=entitlements,flags" \
           | xcbeautify
 
       - name: 📤 Export .ipa
+        env:
+          EXPORT_OPTIONS_BASE64: ${{ vars.EXPORT_OPTIONS_BASE64 }}
         run: |
-          # TODO: add this as a var/secret
-          cat > ExportOptions.plist <<EOF
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
-          "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-            <key>method</key>
-            <string>app-store-connect</string>
-            <key>signingStyle</key>
-            <string>manual</string>
-            <key>provisioningProfiles</key>
-            <dict>
-              <key>se.digg.wallet.demo</key>
-              <string>Wallet-Demo</string>
-            </dict>
-            <key>teamID</key>
-            <string>R5MUUW7M24/string>
-          </dict>
-          </plist>
-          EOF
-
           set -o pipefail
+
+          echo "$EXPORT_OPTIONS_BASE64" | base64 --decode > export-options.plist
+
           xcodebuild -exportArchive \
             -archivePath build/walletdemo.xcarchive \
             -exportPath build/export \
-            -exportOptionsPlist ExportOptions.plist \
+            -exportOptionsPlist export-options.plist \
           | xcbeautify
 
       - name: 🚀 Deploy to App Store (Testflight)
-        uses: apple-actions/upload-testflight-build@v3
-        with:
-          app-path: ${{ github.workspace }}/build/export/walletdemo.ipa
-          issuer-id: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
-          api-key-id: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
-          api-private-key: ${{ secrets.APP_STORE_CONNECT_API_PRIVATE_KEY }}
+        env:
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_API_PRIVATE_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_API_PRIVATE_KEY_BASE64 }}
+        run: |
+          set -o pipefail
+
+          mkdir -p private_keys
+          echo -n "$APP_STORE_CONNECT_API_PRIVATE_KEY_BASE64" | base64 --decode -o "private_keys/AuthKey_${APP_STORE_CONNECT_API_KEY_ID}.p8"
+
+          xcrun altool \
+          --output-format xml \
+          --upload-app  \
+          --file build/export/walletdemo.ipa  \
+          --type ios  \
+          --apiKey "$APP_STORE_CONNECT_API_KEY_ID" \
+          --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID"
