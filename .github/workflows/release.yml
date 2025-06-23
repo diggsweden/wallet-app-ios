@@ -20,23 +20,23 @@ jobs:
           PROVISIONING_PROFILE_BASE64: ${{ secrets.PROVISIONING_PROFILE_BASE64 }}
           KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
         run: |
-          CERTIFICATE_PATH=$RUNNER_TEMP/certificate.p12
-          PP_PATH=$RUNNER_TEMP/pp.mobileprovision
-          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          CERTIFICATE_PATH="$RUNNER_TEMP/certificate.p12"
+          PP_PATH="$RUNNER_TEMP/pp.mobileprovision"
+          KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
 
-          echo -n "$CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
-          echo -n "$PROVISIONING_PROFILE_BASE64" | base64 --decode -o $PP_PATH
+          echo -n "$CERTIFICATE_BASE64" | base64 --decode -o "$CERTIFICATE_PATH"
+          echo -n "$PROVISIONING_PROFILE_BASE64" | base64 --decode -o "$PP_PATH"
 
-          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
-          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
-          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
 
-          security import $CERTIFICATE_PATH -P "$CERTIFICATE_PASSPHRASE" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
-          security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
-          security list-keychain -d user -s $KEYCHAIN_PATH
+          security import "$CERTIFICATE_PATH" -P "$CERTIFICATE_PASSPHRASE" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security list-keychain -d user -s "$KEYCHAIN_PATH"
 
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
+          cp "$PP_PATH" ~/Library/MobileDevice/Provisioning\ Profiles
 
       - name: 📦 Archive app
         run: |
@@ -50,8 +50,7 @@ jobs:
             CODE_SIGN_IDENTITY="Apple Distribution: Myndigheten for digital forvaltning (R5MUUW7M24)" \
             CODE_SIGN_STYLE=Manual \
             PROVISIONING_PROFILE_SPECIFIER="Wallet-Demo" \
-            CODE_SIGNING_REQUIRED=YES \
-            CODE_SIGNING_ALLOWED=YES \
+            OTHER_CODE_SIGN_FLAGS="--preserve-metadata=entitlements,flags" \
           | xcbeautify
 
       - name: 📤 Export .ipa
