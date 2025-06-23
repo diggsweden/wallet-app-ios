@@ -13,9 +13,15 @@ path = [
     "**/*.yml",
     "**/*.pro",
     "**/*.properties",
-    "*.json",
+    "**/*.json",
     ".gitignore",
     "**/*.webp",
+    "**/*.swift-format",
+    "**/*.xcconfig",
+    "*.xcodeproj/**",
+    "**/*.xcassets/**",
+    "**/*.xcstrings",
+    "**/*.plist",
 ]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2025 diggsweden/wallet-app-ios"
