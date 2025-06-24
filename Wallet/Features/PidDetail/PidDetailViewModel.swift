@@ -40,11 +40,7 @@ class PidDetailViewModel: ObservableObject {
     }
   }
 
-  func fetchCredential(_ accessToken: String) async {
-    guard let url = URL(string: "https://wallet.sandbox.digg.se/credential") else {
-      return
-    }
-
+  func fetchCredential(_ accessToken: String, url: URL) async {
     let requestModel = CredentialRequestModel(
       format: "vc+sd-jwt",
       vct: "urn:eu.europa.ec.eudi:pid:1",
