@@ -1,4 +1,5 @@
 import Foundation
+import OpenID4VCI
 
 struct GrantModel: Identifiable {
   let id = UUID()
@@ -29,4 +30,11 @@ struct CredentialRequestModel: Codable {
   let format: String
   let vct: String
   let proof: Proof
+}
+
+struct PidClaim: Identifiable {
+  let id = UUID()
+  let claim: Claim
+  // TODO: Parse value into correct format based on claim.value_type
+  let value: String
 }

@@ -6,15 +6,8 @@ struct GenericError: Error {
   let message: String
 }
 
-struct PidClaim: Identifiable {
-  let id = UUID()
-  let claim: Claim
-  // TODO: Parse value into correct format based on claim.value_type
-  let value: String
-}
-
 @MainActor
-class PidDetailViewModel: ObservableObject {
+class IssuanceViewModel: ObservableObject {
   let credentialOfferUri: String
   let openId4VCIClientId = "wallet-dev"
   let authFlowRedirectionUrlString = "eudi-wallet://auth"
@@ -52,23 +45,14 @@ class PidDetailViewModel: ObservableObject {
     )
 
     do {
-      var request = URLRequest(url: url)
-      request.httpMethod = "POST"
-      request.setValue(
-        "Bearer \(accessToken)",
-        forHTTPHeaderField: "Authorization"
+      let response: CredentialResponseModel = try await NetworkClient.shared.fetch(
+        url,
+        method: .post,
+        token: accessToken,
+        body: requestModel
       )
-      request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-      request.httpBody = try JSONEncoder().encode(requestModel)
-
-      let (data, _) = try await URLSession.shared.data(for: request)
-      if let jsonString = String(data: data, encoding: .utf8) {
-        print("Raw JSON response:\n\(jsonString)")
-      }
-
-      let credentialResponse = try JSONDecoder().decode(CredentialResponseModel.self, from: data)
       // TODO: Store credential in e.g. UserDefaults
-      pidClaims = parseClaims(from: credentialResponse.credential)
+      pidClaims = parseClaims(from: response.credential)
     } catch {
       print("Error fetching data: \(error)")
     }
