@@ -2,12 +2,12 @@ import SwiftUI
 
 let diggPrimaryColor = Color(red: 214 / 255, green: 132 / 255, blue: 42 / 255)
 
-struct PidDetailView: View {
-  @StateObject private var viewModel: PidDetailViewModel
+struct IssuanceView: View {
+  @StateObject private var viewModel: IssuanceViewModel
 
   init(credentialOfferUri: String) {
     _viewModel = StateObject(
-      wrappedValue: PidDetailViewModel(credentialOfferUri: credentialOfferUri)
+      wrappedValue: IssuanceViewModel(credentialOfferUri: credentialOfferUri)
     )
   }
 
@@ -96,7 +96,7 @@ struct PidDetailView: View {
 }
 
 #Preview {
-  PidDetailView(credentialOfferUri: "-")
+  IssuanceView(credentialOfferUri: "-")
     .environment(
       \.locale,
       .init(identifier: "swe")
