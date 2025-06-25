@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		26C8C7972E0A9DED00F976B2 /* WalletRelease.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 26C8C7962E0A9DED00F976B2 /* WalletRelease.xcconfig */; };
+		26A1FAAA2E0ABBF00007F0CA /* SiopOpenID4VP in Frameworks */ = {isa = PBXBuildFile; productRef = 26A1FAA92E0ABBF00007F0CA /* SiopOpenID4VP */; };
+		26F235BE2E0C2F0600A26B73 /* JWTKit in Frameworks */ = {isa = PBXBuildFile; productRef = 26F235BD2E0C2F0600A26B73 /* JWTKit */; };
 		8DE83B852DEF22800085498D /* OpenID4VCI in Frameworks */ = {isa = PBXBuildFile; productRef = 8DE83B842DEF22800085498D /* OpenID4VCI */; };
 /* End PBXBuildFile section */
 
@@ -59,7 +61,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				26F235BE2E0C2F0600A26B73 /* JWTKit in Frameworks */,
 				8DE83B852DEF22800085498D /* OpenID4VCI in Frameworks */,
+				26A1FAAA2E0ABBF00007F0CA /* SiopOpenID4VP in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -123,6 +127,8 @@
 			name = WalletDemo;
 			packageProductDependencies = (
 				8DE83B842DEF22800085498D /* OpenID4VCI */,
+				26A1FAA92E0ABBF00007F0CA /* SiopOpenID4VP */,
+				26F235BD2E0C2F0600A26B73 /* JWTKit */,
 			);
 			productName = wallet;
 			productReference = 8DF0DE392DAFCA2600270636 /* WalletDemo.app */;
@@ -209,6 +215,8 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				8DE83B832DEF22800085498D /* XCRemoteSwiftPackageReference "eudi-lib-ios-openid4vci-swift" */,
+				26A1FAA82E0ABBF00007F0CA /* XCRemoteSwiftPackageReference "eudi-lib-ios-siop-openid4vp-swift" */,
+				26F235BC2E0C2F0600A26B73 /* XCRemoteSwiftPackageReference "jwt-kit" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 8DF0DE3A2DAFCA2600270636 /* Products */;
@@ -426,7 +434,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -457,7 +465,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -586,6 +594,22 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		26A1FAA82E0ABBF00007F0CA /* XCRemoteSwiftPackageReference "eudi-lib-ios-siop-openid4vp-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "git@github.com:eu-digital-identity-wallet/eudi-lib-ios-siop-openid4vp-swift.git";
+			requirement = {
+				kind = exactVersion;
+				version = 0.13.0;
+			};
+		};
+		26F235BC2E0C2F0600A26B73 /* XCRemoteSwiftPackageReference "jwt-kit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "git@github.com:vapor/jwt-kit.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.1.2;
+			};
+		};
 		8DE83B832DEF22800085498D /* XCRemoteSwiftPackageReference "eudi-lib-ios-openid4vci-swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-openid4vci-swift";
@@ -597,6 +621,16 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		26A1FAA92E0ABBF00007F0CA /* SiopOpenID4VP */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 26A1FAA82E0ABBF00007F0CA /* XCRemoteSwiftPackageReference "eudi-lib-ios-siop-openid4vp-swift" */;
+			productName = SiopOpenID4VP;
+		};
+		26F235BD2E0C2F0600A26B73 /* JWTKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 26F235BC2E0C2F0600A26B73 /* XCRemoteSwiftPackageReference "jwt-kit" */;
+			productName = JWTKit;
+		};
 		8DE83B842DEF22800085498D /* OpenID4VCI */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 8DE83B832DEF22800085498D /* XCRemoteSwiftPackageReference "eudi-lib-ios-openid4vci-swift" */;

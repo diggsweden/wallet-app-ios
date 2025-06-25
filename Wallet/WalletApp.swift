@@ -17,6 +17,8 @@ struct RootView: View {
       DashboardView()
         .navigationDestination(for: Route.self) { route in
           switch route {
+            case .presentation(let definition):
+              PresentationView(presentationDefinition: definition)
             case .issuance(let url):
               IssuanceView(credentialOfferUri: url)
           }
