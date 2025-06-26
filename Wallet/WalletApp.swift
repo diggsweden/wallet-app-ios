@@ -33,7 +33,7 @@ struct RootView: View {
               print("Unsupported URL: \(url)")
               return
             }
-            
+
             navigationModel.go(to: route)
           }
         }

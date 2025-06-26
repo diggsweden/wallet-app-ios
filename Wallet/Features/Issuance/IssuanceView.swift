@@ -64,7 +64,9 @@ struct IssuanceView: View {
         .cornerRadius(8)
       }
 
-      if let accessToken = viewModel.accessToken, let url = viewModel.issuerMetadata?.credentialEndpoint.url {
+      if let accessToken = viewModel.accessToken,
+        let url = viewModel.issuerMetadata?.credentialEndpoint.url
+      {
         Button {
           Task {
             await viewModel.fetchCredential(accessToken, url: url)

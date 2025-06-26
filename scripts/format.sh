@@ -6,13 +6,17 @@ if ! command -v swift-format &>/dev/null; then
   exit 2
 fi
 
-files=${1:-$(git ls-files '*.swift')}
+if [[ -n "$1" ]]; then
+  files=("$1")
+else
+  readarray -t files < <(git ls-files '*.swift')
+fi
 
 echo "==> Formatting..."
-swift-format -i "$files"
+swift-format -i "${files[@]}"
 
 echo "==> Verifying changes..."
-if ! output=$(./scripts/lint.sh "$files" 2>&1); then
+if ! output=$(./scripts/lint.sh 2>&1); then
   echo "❌ Could not auto-format the following files:"
   echo -e "\033[31m$output\033[0m"
   exit 1
