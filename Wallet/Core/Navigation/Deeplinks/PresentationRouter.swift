@@ -13,7 +13,7 @@ struct PresentationRouter: DeeplinkRouter {
     }
 
     let method = HTTPMethod(from: url.queryItemValue(for: "request_uri_method")) ?? .get
-    
+
     let jwtData = try await NetworkClient.shared.fetchData(requestUrl, method: method)
     let jwtKeyCollection = JWTKeyCollection()
     let requestObject = try await jwtKeyCollection.unverified(
@@ -27,7 +27,7 @@ struct PresentationRouter: DeeplinkRouter {
     else {
       return nil
     }
-    
+
     let definition: PresentationDefinition = try await NetworkClient.shared.fetch(definitionUrl)
     return .presentation(definition: definition)
   }

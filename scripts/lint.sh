@@ -6,10 +6,14 @@ if ! command -v swift-format &>/dev/null; then
   exit 2
 fi
 
-files=${1:-$(git ls-files '*.swift')}
+if [[ -n "$1" ]]; then
+  files=("$1")
+else
+  readarray -t files < <(git ls-files '*.swift')
+fi
 
-if [[ -z "$files" ]]; then
+if [[ ${#files[@]} -eq 0 ]]; then
   exit 0
 fi
 
-swift-format lint -s "$files"
+swift-format lint -s "${files[@]}"

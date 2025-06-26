@@ -5,7 +5,7 @@ struct IssuanceRouter: DeeplinkRouter {
     guard let uri = url.queryItemValue(for: "credential_offer_uri") else {
       return nil
     }
-    
+
     return .issuance(credentialOfferUri: uri)
   }
 }
