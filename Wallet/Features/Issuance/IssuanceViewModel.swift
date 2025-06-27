@@ -9,7 +9,7 @@ struct GenericError: Error {
 @MainActor
 class IssuanceViewModel: ObservableObject {
   let credentialOfferUri: String
-  let openId4VCIClientId = "wallet-dev"
+  let openId4VCIClient = Client(public: "wallet-dev")
   let authFlowRedirectionUrlString = "eudi-wallet://auth"
   private(set) var claimsMetadata: [String: Claim] = [:]
   @Published var issuerMetadata: CredentialIssuerMetadata?
@@ -72,6 +72,7 @@ class IssuanceViewModel: ObservableObject {
 
         let claimId = parsedClaim[1]
         let claimValue = parsedClaim[2]
+  
         guard let claim = claimsMetadata[claimId] else {
           return nil
         }
@@ -82,7 +83,7 @@ class IssuanceViewModel: ObservableObject {
 
   private func fetchCredentialOffer(with url: String) async throws -> CredentialOffer {
     let resolver = CredentialOfferRequestResolver()
-    let result = await resolver.resolve(source: try .init(urlString: url))
+    let result = await resolver.resolve(source: try .init(urlString: url), policy: .ignoreSigned)
     return try result.get()
   }
 
@@ -93,13 +94,14 @@ class IssuanceViewModel: ObservableObject {
 
     guard
       case let .preAuthorizedCode(preAuthCode)? = credentialOffer.grants,
-      let preAuthCodeString = preAuthCode.preAuthorizedCode
+      let preAuthCodeString = preAuthCode.preAuthorizedCode,
+      let txCode = preAuthCode.txCode
     else {
       throw GenericError(message: "Missing pre-auth code")
     }
 
     let configOpenId4 = OpenId4VCIConfig(
-      clientId: openId4VCIClientId,
+      client: openId4VCIClient,
       authFlowRedirectionURI: redirectionUrl
     )
 
@@ -112,45 +114,32 @@ class IssuanceViewModel: ObservableObject {
       credentialOffer: credentialOffer,
       authorizationCode: IssuanceAuthorization(
         preAuthorizationCode: preAuthCodeString,
-        txCode: TxCode(
-          inputMode: .numeric,
-          length: 6,
-          description: "PIN"
-        )
+        txCode: txCode
       ),
-      clientId: "wallet-dev",
+      client: openId4VCIClient,
       transactionCode: "012345"
     )
 
-    guard let accessToken = try issuer.get().accessToken?.accessToken else {
-      throw GenericError(message: "Missing access token")
-    }
-
-    return accessToken
+    return try issuer.get().accessToken.accessToken
   }
 
   private func getClaimsMetadata(from credentialOffer: CredentialOffer) -> [String: Claim] {
-    return credentialOffer.credentialConfigurationIdentifiers.reduce(
-      into: [String: Claim]()
-    ) { result, id in
-      guard
-        let supportedCredentials = credentialOffer.credentialIssuerMetadata.credentialsSupported[id]
-      else {
-        return
+    return credentialOffer.credentialConfigurationIdentifiers
+      .compactMap { id in
+        credentialOffer.credentialIssuerMetadata.credentialsSupported[id]
       }
-
-      switch supportedCredentials {
-        case .sdJwtVc(let config):
-          result.merge(config.claims) { _, new in new }
-
-        case .msoMdoc(let config):
-          let claims = config.claims
-            .flatMap { $0.value }
-          result.merge(claims) { _, new in new }
-
-        default:
-          break
+      .flatMap { supportedCredential in
+        switch supportedCredential {
+          case .sdJwtVc(let config):
+            return config.claims
+          case .msoMdoc(let config):
+            return config.claims
+          default:
+            return []
+        }
       }
-    }
+      .reduce(into: [String: Claim]()) { result, claim in
+        result[claim.path.description] = claim
+      }
   }
 }
