@@ -20,12 +20,6 @@ struct CredentialResponseModel: Codable {
   }
 }
 
-struct Proof: Codable {
-  // swift-format-ignore
-  let proof_type: String
-  let jwt: String
-}
-
 struct CredentialRequestModel: Codable {
   let format: String
   let vct: String

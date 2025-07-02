@@ -1,61 +1,131 @@
+import Crypto
 import Foundation
+import JOSESwift
 import OpenID4VCI
 
-// TODO: Proper error handling
-struct GenericError: Error {
-  let message: String
+enum CredentialFlowState {
+  case initial
+  case issuerFetched(offer: CredentialOffer)
+  case authorized(request: AuthorizedRequest)
+  case credentialFetched(claims: [PidClaim])
+  //  case error(Error)
 }
 
 @MainActor
-class IssuanceViewModel: ObservableObject {
+@Observable
+class IssuanceViewModel {
   let credentialOfferUri: String
+  private let privateKey: P256.Signing.PrivateKey
   let openId4VCIClient = Client(public: "wallet-dev")
-  let authFlowRedirectionUrlString = "eudi-wallet://auth"
   private(set) var claimsMetadata: [String: Claim] = [:]
-  @Published var issuerMetadata: CredentialIssuerMetadata?
-  @Published var accessToken: String?
-  @Published var pidClaims: [PidClaim]?
+  private var issuer: Issuer?
+  var issuerMetadata: CredentialIssuerMetadata?
+  var state: CredentialFlowState = .initial
+  var authorizationCode: String = ""
 
   init(credentialOfferUri: String) {
     self.credentialOfferUri = credentialOfferUri
+    // TODO: Store private key instead of recreating it every time
+    privateKey = P256.Signing.PrivateKey()
   }
 
-  func fetchMetadata() async {
+  func fetchIssuer() async {
     do {
       let credentialOffer = try await fetchCredentialOffer(with: credentialOfferUri)
-      let newAccessToken = try await fetchAccessToken(with: credentialOffer)
-
       claimsMetadata = getClaimsMetadata(from: credentialOffer)
       issuerMetadata = credentialOffer.credentialIssuerMetadata
-      accessToken = newAccessToken
+      issuer = try await createIssuer(from: credentialOffer)
+      state = .issuerFetched(offer: credentialOffer)
     } catch {
       print("Error: \(error)")
     }
   }
 
-  func fetchCredential(_ accessToken: String, url: URL) async {
-    let requestModel = CredentialRequestModel(
-      format: "vc+sd-jwt",
-      vct: "urn:eu.europa.ec.eudi:pid:1",
-      proof: Proof(
-        proof_type: "jwt",
-        jwt:
-          "eyJ0eXAiOiJvcGVuaWQ0dmNpLXByb29mK2p3dCIsImFsZyI6IkVTMjU2IiwiandrIjp7Imt0eSI6IkVDIiwiY3J2IjoiUC0yNTYiLCJ4IjoiRHN4S1BwaUVseG9UYUJZcFN5QVdrdWFxUmxfbnpGNUFkZTBwM0FlOHg3VSIsInkiOiIxMUdtQVpOY0dtUGlXQWg5M20zNUkweUptX2V1VE5mcFVUbGxHN2F5SHlvIn19.eyJhdWQiOiJodHRwczovL3dhbGxldC5zYW5kYm94LmRpZ2cuc2UiLCJub25jZSI6IjZRX0x1bnRXZkdkZ1BoNjBMWkY2S2kxWHhXUkhMSTdJOXdpeXBVNkpRcGciLCJpYXQiOjE3NDY1MTQ0NzV9.TAwlcDkYFJgkCiP8_mbJ6yBrwdgXEiYe23RBdM5TSQUTa04eqY4nMQ5Igd9wLchToovLgZGpYO62d2y7wlcf4g"
+  func authorize(with input: String, credentialOffer: CredentialOffer) async {
+    do {
+      guard
+        let issuer,
+        case let .preAuthorizedCode(preAuthCode)? = credentialOffer.grants,
+        let preAuthCodeString = preAuthCode.preAuthorizedCode,
+        let txCode = preAuthCode.txCode
+      else {
+        throw GenericError(message: "Missing pre-auth code")
+      }
+
+      let result = try await issuer.authorizeWithPreAuthorizationCode(
+        credentialOffer: credentialOffer,
+        authorizationCode: IssuanceAuthorization(
+          preAuthorizationCode: preAuthCodeString,
+          txCode: txCode
+        ),
+        client: openId4VCIClient,
+        transactionCode: input
       )
-    )
+
+      let authorizedRequest = try result.get()
+      state = .authorized(request: authorizedRequest)
+    } catch {
+      print(error)
+    }
+  }
+
+  func fetchCredential(_ request: AuthorizedRequest) async {
+    guard
+      let issuer,
+      let configId = try? CredentialConfigurationIdentifier(
+        value: "eu.europa.ec.eudi.pid_vc_sd_jwt"
+      )
+    else {
+      return
+    }
 
     do {
-      let response: CredentialResponseModel = try await NetworkClient.shared.fetch(
-        url,
-        method: .post,
-        token: accessToken,
-        body: requestModel
-      )
-      // TODO: Store credential in e.g. UserDefaults
-      pidClaims = parseClaims(from: response.credential)
+      let result =
+        try await issuer.requestCredential(
+          request: request,
+          bindingKeys: [createBindingKey()],
+          requestPayload: .configurationBased(
+            credentialConfigurationIdentifier: configId
+          )
+        ) {
+          Issuer.createResponseEncryptionSpec($0)
+        }
+        .get()
+
+      guard
+        case let .success(response) = result,
+        let issuedCredential = response.credentialResponses.first,
+        case let .issued(_, credential, _, _) = issuedCredential,
+        case let .json(json) = credential,
+        json.type == .array,
+        let credentialString = json.first?.1["credential"].stringValue
+      else {
+        print("Could not get credential")
+        return
+      }
+
+      let pidClaims = parseClaims(from: credentialString)
+      state = .credentialFetched(claims: pidClaims)
     } catch {
       print("Error fetching data: \(error)")
     }
+  }
+
+  private func createBindingKey() throws -> BindingKey {
+    let (x, y) = try privateKey.publicKey.getXYCoordinates()
+
+    let jwk = ECPublicKey(
+      crv: .P256,
+      x: x.base64URLEncodedString(),
+      y: y.base64URLEncodedString()
+    )
+
+    return .jwk(
+      algorithm: JWSAlgorithm(.ES256),
+      jwk: jwk,
+      privateKey: .custom(DiggSigner(privateKey)),
+      issuer: openId4VCIClient.id
+    )
   }
 
   private func parseClaims(from credential: String) -> [PidClaim] {
@@ -72,7 +142,7 @@ class IssuanceViewModel: ObservableObject {
 
         let claimId = parsedClaim[1]
         let claimValue = parsedClaim[2]
-  
+
         guard let claim = claimsMetadata[claimId] else {
           return nil
         }
@@ -81,46 +151,25 @@ class IssuanceViewModel: ObservableObject {
       }
   }
 
+  private func createIssuer(from credentialOffer: CredentialOffer) async throws -> Issuer {
+    guard let redirectionUrl = URL(string: "eudi-wallet://auth") else {
+      throw GenericError(message: "Invalid redirection URL")
+    }
+
+    return try Issuer(
+      authorizationServerMetadata: credentialOffer.authorizationServerMetadata,
+      issuerMetadata: credentialOffer.credentialIssuerMetadata,
+      config: OpenId4VCIConfig(
+        client: openId4VCIClient,
+        authFlowRedirectionURI: redirectionUrl
+      )
+    )
+  }
+
   private func fetchCredentialOffer(with url: String) async throws -> CredentialOffer {
     let resolver = CredentialOfferRequestResolver()
     let result = await resolver.resolve(source: try .init(urlString: url), policy: .ignoreSigned)
     return try result.get()
-  }
-
-  private func fetchAccessToken(with credentialOffer: CredentialOffer) async throws -> String {
-    guard let redirectionUrl = URL(string: authFlowRedirectionUrlString) else {
-      throw GenericError(message: "Invalid redirection URL")
-    }
-
-    guard
-      case let .preAuthorizedCode(preAuthCode)? = credentialOffer.grants,
-      let preAuthCodeString = preAuthCode.preAuthorizedCode,
-      let txCode = preAuthCode.txCode
-    else {
-      throw GenericError(message: "Missing pre-auth code")
-    }
-
-    let configOpenId4 = OpenId4VCIConfig(
-      client: openId4VCIClient,
-      authFlowRedirectionURI: redirectionUrl
-    )
-
-    let issuer = try await Issuer(
-      authorizationServerMetadata: credentialOffer.authorizationServerMetadata,
-      issuerMetadata: credentialOffer.credentialIssuerMetadata,
-      config: configOpenId4
-    )
-    .authorizeWithPreAuthorizationCode(
-      credentialOffer: credentialOffer,
-      authorizationCode: IssuanceAuthorization(
-        preAuthorizationCode: preAuthCodeString,
-        txCode: txCode
-      ),
-      client: openId4VCIClient,
-      transactionCode: "012345"
-    )
-
-    return try issuer.get().accessToken.accessToken
   }
 
   private func getClaimsMetadata(from credentialOffer: CredentialOffer) -> [String: Claim] {
@@ -139,7 +188,10 @@ class IssuanceViewModel: ObservableObject {
         }
       }
       .reduce(into: [String: Claim]()) { result, claim in
-        result[claim.path.description] = claim
+        let claimPath = claim.path.value
+          .map { $0.description }
+          .joined(separator: ".")
+        result[claimPath] = claim
       }
   }
 }

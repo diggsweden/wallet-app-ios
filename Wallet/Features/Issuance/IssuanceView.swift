@@ -3,10 +3,10 @@ import SwiftUI
 let diggPrimaryColor = Color(red: 214 / 255, green: 132 / 255, blue: 42 / 255)
 
 struct IssuanceView: View {
-  @StateObject private var viewModel: IssuanceViewModel
+  @State private var viewModel: IssuanceViewModel
 
   init(credentialOfferUri: String) {
-    _viewModel = StateObject(
+    _viewModel = State(
       wrappedValue: IssuanceViewModel(credentialOfferUri: credentialOfferUri)
     )
   }
@@ -39,7 +39,7 @@ struct IssuanceView: View {
             }
           }
 
-          if let claims = viewModel.pidClaims {
+          if case let .credentialFetched(claims) = viewModel.state {
             CardView {
               VStack(alignment: .leading, spacing: 10) {
                 Text("PID info:").font(.headline)
@@ -64,35 +64,71 @@ struct IssuanceView: View {
         .cornerRadius(8)
       }
 
-      if let accessToken = viewModel.accessToken,
-        let url = viewModel.issuerMetadata?.credentialEndpoint.url
-      {
-        Button {
-          Task {
-            await viewModel.fetchCredential(accessToken, url: url)
+      switch viewModel.state {
+        case .initial:
+          Button {
+            Task {
+              await viewModel.fetchIssuer()
+            }
+          } label: {
+            Text("Fetch issuer metadata")
+              .padding(6)
           }
-        } label: {
-          Text("Fetch credential")
-            .padding(6)
-        }
-        .buttonStyle(.borderedProminent)
-        .tint(diggPrimaryColor)
-      } else {
-        Button {
-          Task {
-            await viewModel.fetchMetadata()
+          .buttonStyle(.borderedProminent)
+          .tint(diggPrimaryColor)
+
+        case .issuerFetched(let offer):
+          HStack {
+            TextField("Enter authorization code", text: $viewModel.authorizationCode)
+              .textFieldStyle(.roundedBorder)
+              .onSubmit {
+                Task {
+                  await viewModel.authorize(
+                    with: viewModel.authorizationCode,
+                    credentialOffer: offer
+                  )
+                }
+              }
+            Button {
+              Task {
+                await viewModel.authorize(with: viewModel.authorizationCode, credentialOffer: offer)
+              }
+            } label: {
+              Image(systemName: "arrow.right.circle.fill")
+                .font(.title2)
+                .foregroundColor(viewModel.authorizationCode.isEmpty ? .gray : diggPrimaryColor)
+            }
+            .disabled(viewModel.authorizationCode.isEmpty)
+            .padding(.leading, 4)
           }
-        } label: {
-          Text("Fetch issuer metadata")
-            .padding(6)
-        }
-        .buttonStyle(.borderedProminent)
-        .tint(diggPrimaryColor)
+          .padding(24)
+
+        case .authorized(let request):
+          Button {
+            Task {
+              await viewModel.fetchCredential(request)
+            }
+          } label: {
+            Text("Fetch credential")
+              .padding(6)
+          }
+          .buttonStyle(.borderedProminent)
+          .tint(diggPrimaryColor)
+
+        case .credentialFetched(let claims):
+          Button {
+            print("TODO: Save credential")
+          } label: {
+            Text("Save \(claims.count) claims")
+              .padding(6)
+          }
+          .buttonStyle(.borderedProminent)
+          .tint(diggPrimaryColor)
       }
     }
-    .navigationTitle(Text("Pid Detail"))
+    .navigationTitle(Text("Issue PID"))
     .task {
-      await viewModel.fetchMetadata()
+      await viewModel.fetchIssuer()
     }
   }
 }
