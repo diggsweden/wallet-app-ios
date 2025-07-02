@@ -104,19 +104,25 @@
     "Description:" : {
 
     },
+    "Enter authorization code" : {
+
+    },
     "Fetch credential" : {
 
     },
     "Fetch issuer metadata" : {
 
     },
+    "Issue PID" : {
+
+    },
     "Issuer:" : {
 
     },
-    "Pid Detail" : {
+    "PID info:" : {
 
     },
-    "PID info:" : {
+    "Save %lld claims" : {
 
     },
     "Value: " : {
