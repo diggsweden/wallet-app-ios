@@ -3,11 +3,11 @@ import Foundation
 import JOSESwift
 import OpenID4VCI
 
-enum CredentialFlowState {
+enum IssuanceState {
   case initial
   case issuerFetched(offer: CredentialOffer)
   case authorized(request: AuthorizedRequest)
-  case credentialFetched(claims: [PidClaim])
+  case credentialFetched(credential: Credential)
   //  case error(Error)
 }
 
@@ -20,7 +20,7 @@ class IssuanceViewModel {
   private(set) var claimsMetadata: [String: Claim] = [:]
   private var issuer: Issuer?
   var issuerMetadata: CredentialIssuerMetadata?
-  var state: CredentialFlowState = .initial
+  var state: IssuanceState = .initial
   var authorizationCode: String = ""
 
   init(credentialOfferUri: String) {
@@ -100,15 +100,26 @@ class IssuanceViewModel {
         json.type == .array,
         let credentialString = json.first?.1["credential"].stringValue
       else {
-        print("Could not get credential")
-        return
+        throw GenericError(message: "Failed issuing credential")
       }
 
-      let pidClaims = parseClaims(from: credentialString)
-      state = .credentialFetched(claims: pidClaims)
+      let display = await issuer.issuerMetadata.display.first
+      let parsedCredential = try parseCredential(credentialString, issuer: display)
+
+      state = .credentialFetched(credential: parsedCredential)
     } catch {
-      print("Error fetching data: \(error)")
+      print("Error fetching credential: \(error)")
     }
+  }
+
+  func saveCredential(_ credential: Credential) {
+    guard let json = try? JSONEncoder().encode(credential) else {
+      return
+    }
+
+    let jsonString = String(data: json, encoding: .utf8)
+
+    UserDefaults.standard.set(jsonString, forKey: "credential")
   }
 
   private func createBindingKey() throws -> BindingKey {
@@ -128,27 +139,33 @@ class IssuanceViewModel {
     )
   }
 
-  private func parseClaims(from credential: String) -> [PidClaim] {
+  private func parseCredential(_ credential: String, issuer: Display?) throws -> Credential {
     let parts = credential.components(separatedBy: "~")
-    return parts.dropFirst()
-      .compactMap { part in
+
+    guard let sdJwt = parts.first else {
+      throw GenericError(message: "Failed to parse credential")
+    }
+
+    let disclosures: [String: Disclosure] = parts.dropFirst()
+      .reduce(into: [:]) { result, part in
         guard
           let decodedData = Data(base64Encoded: part.addBase64Padding()),
           let parsedClaim = try? JSONDecoder().decode([String].self, from: decodedData),
           parsedClaim.count == 3
         else {
-          return nil
+          return
         }
-
         let claimId = parsedClaim[1]
         let claimValue = parsedClaim[2]
 
         guard let claim = claimsMetadata[claimId] else {
-          return nil
+          return
         }
 
-        return PidClaim(claim: claim, value: claimValue)
+        return result[claimId] = Disclosure(base64: part, claim: claim, value: claimValue)
       }
+
+    return Credential(issuer: issuer, sdJwt: sdJwt, disclosures: disclosures)
   }
 
   private func createIssuer(from credentialOffer: CredentialOffer) async throws -> Issuer {
