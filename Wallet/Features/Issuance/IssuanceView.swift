@@ -4,6 +4,7 @@ let diggPrimaryColor = Color(red: 214 / 255, green: 132 / 255, blue: 42 / 255)
 
 struct IssuanceView: View {
   @State private var viewModel: IssuanceViewModel
+  @Environment(NavigationModel.self) var navigationModel
 
   init(credentialOfferUri: String) {
     _viewModel = State(
@@ -39,18 +40,18 @@ struct IssuanceView: View {
             }
           }
 
-          if case let .credentialFetched(claims) = viewModel.state {
+          if case let .credentialFetched(credential) = viewModel.state {
             CardView {
               VStack(alignment: .leading, spacing: 10) {
                 Text("PID info:").font(.headline)
-                ForEach(claims) { claim in
-                  if let display = claim.claim.display?.first {
+                ForEach(Array(credential.disclosures.values)) { disclosure in
+                  if let display = disclosure.claim.display?.first {
                     Text(display.name ?? "No name").bold()
                   }
-                  if let mandatory = claim.claim.mandatory {
+                  if let mandatory = disclosure.claim.mandatory {
                     Text("Mandatory: \(mandatory)")
                   }
-                  Text("Value: ") + Text(claim.value).bold()
+                  Text("Value: ") + Text(disclosure.value).bold()
                   Divider()
                 }
                 .font(.body)
@@ -115,11 +116,12 @@ struct IssuanceView: View {
           .buttonStyle(.borderedProminent)
           .tint(diggPrimaryColor)
 
-        case .credentialFetched(let claims):
+        case .credentialFetched(let credential):
           Button {
-            print("TODO: Save credential")
+            viewModel.saveCredential(credential)
+            navigationModel.pop()
           } label: {
-            Text("Save \(claims.count) claims")
+            Text("Save \(credential.disclosures.count) claims")
               .padding(6)
           }
           .buttonStyle(.borderedProminent)
@@ -131,14 +133,6 @@ struct IssuanceView: View {
       await viewModel.fetchIssuer()
     }
   }
-}
-
-#Preview {
-  IssuanceView(credentialOfferUri: "-")
-    .environment(
-      \.locale,
-      .init(identifier: "swe")
-    )
 }
 
 struct CardView<Content: View>: View {

@@ -38,5 +38,6 @@ struct RootView: View {
           }
         }
     }
+    .environment(navigationModel)
   }
 }
