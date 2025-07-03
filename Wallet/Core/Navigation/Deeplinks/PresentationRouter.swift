@@ -3,18 +3,25 @@ import JWTKit
 import SiopOpenID4VP
 
 struct PresentationRouter: DeeplinkRouter {
-  func route(from url: Foundation.URL) async throws -> Route? {
+  func route(from url: Foundation.URL) async throws -> Route {
     guard
       let requestUri = url.queryItemValue(for: "request_uri"),
       let encodedClientId = url.queryItemValue(for: "client_id"),
       let requestUrl = URL(string: requestUri)
     else {
-      return nil
+      throw routingFailure("request_uri was missing or is invalid")
     }
 
     let method = HTTPMethod(from: url.queryItemValue(for: "request_uri_method")) ?? .get
 
-    let jwtData = try await NetworkClient.shared.fetchData(requestUrl, method: method)
+    let (jwtData, response) = try await NetworkClient.shared.fetchData(requestUrl, method: method)
+
+    guard response.value(forHTTPHeaderField: "Content-Type") == "application/oauth-authz-req+jwt"
+    else {
+      throw routingFailure("Invalid content-type header (expected oauth-authz-req+jwt)")
+    }
+    
+    let json = try await NetworkClient.shared.fetchJSON(requestUrl, method: method)
     let jwtKeyCollection = JWTKeyCollection()
     let requestObject = try await jwtKeyCollection.unverified(
       jwtData,
@@ -25,7 +32,7 @@ struct PresentationRouter: DeeplinkRouter {
       let uri = requestObject.presentationDefinitionUri,
       let definitionUrl = URL(string: uri)
     else {
-      return nil
+      throw routingFailure("Failed parsing presentation definition URI")
     }
 
     let definition: PresentationDefinition = try await NetworkClient.shared.fetch(definitionUrl)

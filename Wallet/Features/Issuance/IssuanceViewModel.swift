@@ -149,8 +149,8 @@ class IssuanceViewModel {
     let disclosures: [String: Disclosure] = parts.dropFirst()
       .reduce(into: [:]) { result, part in
         guard
-          let decodedData = Data(base64Encoded: part.addBase64Padding()),
-          let parsedClaim = try? JSONDecoder().decode([String].self, from: decodedData),
+          let data = JWTUtil.base64UrlDecode(part),
+          let parsedClaim = try? JSONDecoder().decode([String].self, from: data),
           parsedClaim.count == 3
         else {
           return

@@ -26,15 +26,16 @@ struct RootView: View {
         .onOpenURL { url in
           print("URL: absolute " + url.absoluteString)
           Task {
-            guard
-              let deeplink = Deeplink(from: url),
-              let route = try? await deeplink.router.route(from: url)
-            else {
-              print("Unsupported URL: \(url)")
+            do {
+              let deeplink = try Deeplink(from: url)
+              let route = try await deeplink.router.route(from: url)
+              navigationModel.go(to: route)
+            }
+            catch {
+              print("Failed to deeplink: \(error)")
               return
             }
 
-            navigationModel.go(to: route)
           }
         }
     }

@@ -16,7 +16,7 @@ final class DiggSigner: AsyncSignerProtocol {
         .joined(separator: ".")
         .data(using: .ascii)
     else {
-      throw GenericError(message: "Failed to create JWT header/payload")
+      throw JWTError.invalidSigner
     }
 
     return try privateKey.signature(for: jwtData).rawRepresentation
