@@ -1,4 +1,5 @@
 import Foundation
+import SwiftyJSON
 
 enum HTTPMethod: String {
   case get = "GET"
@@ -15,39 +16,43 @@ enum HTTPMethod: String {
 final class NetworkClient {
   static let shared = NetworkClient()
 
-  private let encoder = JSONEncoder()
-  private let decoder = JSONDecoder()
+  private let decoder: JSONDecoder = {
+    let decoder = JSONDecoder()
+    decoder.keyDecodingStrategy = .convertFromSnakeCase
+    return decoder
+  }()
 
   private init() {}
 
-  private func performRequest(
+  private func makeHeaders(
+    contentType: String?,
+    accept: String?,
+    token: String?
+  ) -> [String: String] {
+    return [
+      "Content-Type": contentType,
+      "Accept": accept,
+      "Authorization": token.map { "Bearer \($0)" },
+    ]
+    .compactMapValues { $0 }
+  }
+
+  private func sendRequest(
     _ url: URL,
     method: HTTPMethod = .get,
     contentType: String? = nil,
     accept: String? = nil,
     token: String? = nil,
-    body: (any Encodable)? = nil
+    body: Data? = nil
   ) async throws -> Data {
     var request = URLRequest(url: url)
     request.httpMethod = method.rawValue
-
-    if let contentType {
-      request.setValue(contentType, forHTTPHeaderField: "Content-Type")
-    }
-    if let accept {
-      request.setValue(accept, forHTTPHeaderField: "Accept")
-    }
-    if let token {
-      request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-    }
-
-    if let body {
-      do {
-        request.httpBody = try encoder.encode(body)
-      } catch {
-        throw HTTPError.encodingError(error)
-      }
-    }
+    request.allHTTPHeaderFields = makeHeaders(
+      contentType: contentType,
+      accept: accept,
+      token: token
+    )
+    request.httpBody = body
 
     let (data, response): (Data, URLResponse)
     do {
@@ -78,34 +83,17 @@ final class NetworkClient {
     return data
   }
 
-  func fetchData(
-    _ url: URL,
-    method: HTTPMethod = .get,
-    contentType: String? = nil,
-    accept: String? = nil,
-    token: String? = nil,
-    body: (any Encodable)? = nil
-  ) async throws -> Data {
-    return try await performRequest(
-      url,
-      method: method,
-      contentType: contentType,
-      accept: accept,
-      token: token,
-      body: body
-    )
-  }
-
   func fetch<T: Decodable>(
     _ url: URL,
     method: HTTPMethod = .get,
+    contentType: String? = "application/json",
     token: String? = nil,
-    body: (any Encodable)? = nil
+    body: Data? = nil
   ) async throws -> T {
-    let data = try await performRequest(
+    let data = try await sendRequest(
       url,
       method: method,
-      contentType: "application/json",
+      contentType: contentType,
       accept: "application/json",
       token: token,
       body: body

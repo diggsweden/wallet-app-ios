@@ -1,8 +1,8 @@
 import SwiftUI
 
 struct DashboardView: View {
+  let credential: Credential?
   @Environment(\.openURL) var openURL
-  @AppStorage("credential") var credential: String = ""
 
   var body: some View {
     VStack(alignment: .center) {
@@ -41,13 +41,11 @@ struct DashboardView: View {
             openURL(url)
           }
         }
-      Text(credential)
+      if let credential {
+        Text("One credential saved!")
+      }
     }
     .frame(alignment: .center)
     .padding()
   }
-}
-
-#Preview {
-  DashboardView().environment(\.locale, .init(identifier: "swe"))
 }

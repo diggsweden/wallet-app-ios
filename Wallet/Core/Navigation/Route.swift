@@ -1,7 +1,7 @@
 import Foundation
 import SiopOpenID4VP
 
-enum Route: Hashable, Codable {
-  case presentation(definition: PresentationDefinition)
+enum Route: Hashable {
+  case presentation(vpTokenData: ResolvedRequestData.VpTokenData)
   case issuance(credentialOfferUri: String)
 }

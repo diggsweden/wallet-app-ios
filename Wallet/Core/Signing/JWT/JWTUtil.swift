@@ -1,0 +1,100 @@
+import CryptoKit
+import Foundation
+import JOSESwift
+import SiopOpenID4VP
+
+struct JWTUtil {
+  static private func createPayload(initial payload: [String: Any]) throws -> Payload {
+    var payload = payload
+    for (key, value) in payload {
+      if let dataValue = value as? Data,
+        let jsonObject = try? JSONSerialization.jsonObject(with: dataValue, options: [])
+      {
+        payload[key] = jsonObject
+      }
+    }
+
+    let payloadData = try JSONSerialization.data(withJSONObject: payload)
+    return Payload(payloadData)
+  }
+
+  static func createJWT(
+    with privateKey: SecKey,
+    payload: [String: Any],
+    headerType: String? = nil
+  ) throws -> String {
+    let jwk = try privateKey.toJWK()
+
+    var header = JWSHeader(algorithm: .ES256)
+    header.jwkTyped = jwk
+
+    if let headerType {
+      header.typ = headerType
+    }
+
+    guard let signer = Signer(signatureAlgorithm: .ES256, key: privateKey) else {
+      throw JWTError.invalidSigner
+    }
+
+    let now = Int(Date().timeIntervalSince1970)
+
+    let payload: [String: Any] = [
+      "iat": now,
+      "nbf": now,
+      "exp": now + 600,
+    ]
+    .merging(payload) { (_, new) in new }
+
+    let jws = try JWS(
+      header: header,
+      payload: try createPayload(initial: payload),
+      signer: signer
+    )
+
+    return jws.compactSerializedString
+  }
+
+  static func createJWE(
+    payload: [String: Any],
+    recipientKey: ECPublicKey,
+    keyManagementAlgorithm: KeyManagementAlgorithm,
+    contentEncryptionAlgorithm: ContentEncryptionAlgorithm
+  ) throws -> String {
+    let header = JWEHeader(
+      keyManagementAlgorithm: keyManagementAlgorithm,
+      contentEncryptionAlgorithm: contentEncryptionAlgorithm
+    )
+
+    let encrypter = Encrypter(
+      keyManagementAlgorithm: keyManagementAlgorithm,
+      contentEncryptionAlgorithm: contentEncryptionAlgorithm,
+      encryptionKey: recipientKey
+    )
+
+    guard let encrypter = encrypter else {
+      throw JWTError.invalidJWE
+    }
+
+    let jwe = try JWE(
+      header: header,
+      payload: try createPayload(initial: payload),
+      encrypter: encrypter
+    )
+
+    return jwe.compactSerializedString
+  }
+
+  static func base64UrlDecode(_ base64url: String) -> Data? {
+    var base64 =
+      base64url
+      .replacingOccurrences(of: "-", with: "+")
+      .replacingOccurrences(of: "_", with: "/")
+
+    let paddingLength = 4 - (base64.count % 4)
+    if paddingLength < 4 {
+      base64.append(String(repeating: "=", count: paddingLength))
+    }
+
+    return Data(base64Encoded: base64)
+  }
+}

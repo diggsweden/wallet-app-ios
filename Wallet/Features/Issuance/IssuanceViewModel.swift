@@ -15,7 +15,6 @@ enum IssuanceState {
 @Observable
 class IssuanceViewModel {
   let credentialOfferUri: String
-  private let privateKey: P256.Signing.PrivateKey
   let openId4VCIClient = Client(public: "wallet-dev")
   private(set) var claimsMetadata: [String: Claim] = [:]
   private var issuer: Issuer?
@@ -25,8 +24,6 @@ class IssuanceViewModel {
 
   init(credentialOfferUri: String) {
     self.credentialOfferUri = credentialOfferUri
-    // TODO: Store private key instead of recreating it every time
-    privateKey = P256.Signing.PrivateKey()
   }
 
   func fetchIssuer() async {
@@ -49,7 +46,7 @@ class IssuanceViewModel {
         let preAuthCodeString = preAuthCode.preAuthorizedCode,
         let txCode = preAuthCode.txCode
       else {
-        throw GenericError(message: "Missing pre-auth code")
+        throw AppError(message: "Missing pre-auth code")
       }
 
       let result = try await issuer.authorizeWithPreAuthorizationCode(
@@ -74,7 +71,8 @@ class IssuanceViewModel {
       let issuer,
       let configId = try? CredentialConfigurationIdentifier(
         value: "eu.europa.ec.eudi.pid_vc_sd_jwt"
-      )
+      ),
+      let key = try? KeychainManager.shared.getOrCreateKey(withTag: Constants.bindingKeyTag)
     else {
       return
     }
@@ -83,7 +81,7 @@ class IssuanceViewModel {
       let result =
         try await issuer.requestCredential(
           request: request,
-          bindingKeys: [createBindingKey()],
+          bindingKeys: [createBindingKey(from: key)],
           requestPayload: .configurationBased(
             credentialConfigurationIdentifier: configId
           )
@@ -100,7 +98,7 @@ class IssuanceViewModel {
         json.type == .array,
         let credentialString = json.first?.1["credential"].stringValue
       else {
-        throw GenericError(message: "Failed issuing credential")
+        throw AppError(message: "Failed issuing credential")
       }
 
       let display = await issuer.issuerMetadata.display.first
@@ -122,19 +120,11 @@ class IssuanceViewModel {
     UserDefaults.standard.set(jsonString, forKey: "credential")
   }
 
-  private func createBindingKey() throws -> BindingKey {
-    let (x, y) = try privateKey.publicKey.getXYCoordinates()
-
-    let jwk = ECPublicKey(
-      crv: .P256,
-      x: x.base64URLEncodedString(),
-      y: y.base64URLEncodedString()
-    )
-
+  private func createBindingKey(from secKey: SecKey) throws -> BindingKey {
     return .jwk(
       algorithm: JWSAlgorithm(.ES256),
-      jwk: jwk,
-      privateKey: .custom(DiggSigner(privateKey)),
+      jwk: try secKey.toJWK(),
+      privateKey: .secKey(secKey),
       issuer: openId4VCIClient.id
     )
   }
@@ -143,14 +133,14 @@ class IssuanceViewModel {
     let parts = credential.components(separatedBy: "~")
 
     guard let sdJwt = parts.first else {
-      throw GenericError(message: "Failed to parse credential")
+      throw AppError(message: "Failed to parse credential")
     }
 
     let disclosures: [String: Disclosure] = parts.dropFirst()
       .reduce(into: [:]) { result, part in
         guard
-          let decodedData = Data(base64Encoded: part.addBase64Padding()),
-          let parsedClaim = try? JSONDecoder().decode([String].self, from: decodedData),
+          let data = JWTUtil.base64UrlDecode(part),
+          let parsedClaim = try? JSONDecoder().decode([String].self, from: data),
           parsedClaim.count == 3
         else {
           return
@@ -170,7 +160,7 @@ class IssuanceViewModel {
 
   private func createIssuer(from credentialOffer: CredentialOffer) async throws -> Issuer {
     guard let redirectionUrl = URL(string: "eudi-wallet://auth") else {
-      throw GenericError(message: "Invalid redirection URL")
+      throw AppError(message: "Invalid redirection URL")
     }
 
     return try Issuer(

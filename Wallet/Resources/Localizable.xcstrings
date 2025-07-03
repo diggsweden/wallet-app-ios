@@ -104,6 +104,15 @@
     "Description:" : {
 
     },
+    "Disclosures to share:" : {
+
+    },
+    "Disclosures:" : {
+
+    },
+    "Do you want to share data with %@?" : {
+
+    },
     "Enter authorization code" : {
 
     },
@@ -119,13 +128,19 @@
     "Issuer:" : {
 
     },
-    "PID info:" : {
+    "No credential found!" : {
 
     },
-    "Save %lld claims" : {
+    "One credential saved!" : {
 
     },
-    "Value: " : {
+    "Presenting" : {
+
+    },
+    "Save %lld disclosures" : {
+
+    },
+    "Send" : {
 
     }
   },
