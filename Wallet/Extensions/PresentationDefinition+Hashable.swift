@@ -2,16 +2,15 @@ import Foundation
 import JWTKit
 import SiopOpenID4VP
 
-extension PresentationDefinition: @retroactive Hashable {
+extension ResolvedRequestData.VpTokenData: @retroactive Hashable {
   public func hash(into hasher: inout Hasher) {
-    hasher.combine(id)
+    hasher.combine(nonce)
   }
 
-  public static func == (lhs: PresentationDefinition, rhs: PresentationDefinition) -> Bool {
-    return lhs.id == rhs.id
+  public static func == (
+    lhs: ResolvedRequestData.VpTokenData,
+    rhs: ResolvedRequestData.VpTokenData
+  ) -> Bool {
+    return lhs.nonce == rhs.nonce
   }
-}
-
-extension UnvalidatedRequestObject: @retroactive JWTPayload {
-  public func verify(using algorithm: some JWTAlgorithm) async throws {}
 }

@@ -17,25 +17,22 @@ struct RootView: View {
       DashboardView()
         .navigationDestination(for: Route.self) { route in
           switch route {
-            case .presentation(let definition):
-              PresentationView(presentationDefinition: definition)
+            case .presentation(let data):
+              PresentationView(vpTokenData: data)
             case .issuance(let url):
               IssuanceView(credentialOfferUri: url)
           }
         }
         .onOpenURL { url in
-          print("URL: absolute " + url.absoluteString)
           Task {
             do {
               let deeplink = try Deeplink(from: url)
               let route = try await deeplink.router.route(from: url)
               navigationModel.go(to: route)
-            }
-            catch {
+            } catch {
               print("Failed to deeplink: \(error)")
               return
             }
-
           }
         }
     }

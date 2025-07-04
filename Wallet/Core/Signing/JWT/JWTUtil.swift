@@ -38,33 +38,25 @@ struct JWTUtil {
     )
   }
 
-  static func createProofJWT(
-    from privateKey: P256.Signing.PrivateKey,
-    audience: String
+  static func createJWT(
+    from privateKey: SecKey,
+    payload: [String: Any]
   ) throws -> String {
-    let (x, y) = try privateKey.publicKey.getXYCoordinates()
-
-    let jwk = ECPublicKey(
-      crv: .P256,
-      x: x.base64URLEncodedString(),
-      y: y.base64URLEncodedString()
-    )
+    let jwk = try privateKey.toJWK()
 
     var header = JWSHeader(algorithm: .ES256)
     header.jwkTyped = jwk
 
-    guard let signer = Signer(signatureAlgorithm: .ES256, key: privateKey.rawRepresentation) else {
+    guard let signer = Signer(signatureAlgorithm: .ES256, key: privateKey) else {
       throw JWTError.invalidSigner
     }
 
-    let payload = ProofJWTPayload(
-      audience: audience,
-      issuedAt: Date()
-    )
+    let payload: [String: Any] = [
+      "iat": Date().timeIntervalSince1970
+    ]
+    .merging(payload) { (_, new) in new }
 
-    let encoder = JSONEncoder()
-    encoder.dateEncodingStrategy = .secondsSince1970
-    let payloadData = try encoder.encode(payload)
+    let payloadData = try JSONSerialization.data(withJSONObject: payload)
 
     let jws = try JWS(
       header: header,

@@ -49,7 +49,7 @@ class IssuanceViewModel {
         let preAuthCodeString = preAuthCode.preAuthorizedCode,
         let txCode = preAuthCode.txCode
       else {
-        throw GenericError(message: "Missing pre-auth code")
+        throw AppError(message: "Missing pre-auth code")
       }
 
       let result = try await issuer.authorizeWithPreAuthorizationCode(
@@ -100,7 +100,7 @@ class IssuanceViewModel {
         json.type == .array,
         let credentialString = json.first?.1["credential"].stringValue
       else {
-        throw GenericError(message: "Failed issuing credential")
+        throw AppError(message: "Failed issuing credential")
       }
 
       let display = await issuer.issuerMetadata.display.first
@@ -143,7 +143,7 @@ class IssuanceViewModel {
     let parts = credential.components(separatedBy: "~")
 
     guard let sdJwt = parts.first else {
-      throw GenericError(message: "Failed to parse credential")
+      throw AppError(message: "Failed to parse credential")
     }
 
     let disclosures: [String: Disclosure] = parts.dropFirst()
@@ -170,7 +170,7 @@ class IssuanceViewModel {
 
   private func createIssuer(from credentialOffer: CredentialOffer) async throws -> Issuer {
     guard let redirectionUrl = URL(string: "eudi-wallet://auth") else {
-      throw GenericError(message: "Invalid redirection URL")
+      throw AppError(message: "Invalid redirection URL")
     }
 
     return try Issuer(

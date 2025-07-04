@@ -4,38 +4,26 @@ import SiopOpenID4VP
 
 struct PresentationRouter: DeeplinkRouter {
   func route(from url: Foundation.URL) async throws -> Route {
-    guard
-      let requestUri = url.queryItemValue(for: "request_uri"),
-      let encodedClientId = url.queryItemValue(for: "client_id"),
-      let requestUrl = URL(string: requestUri)
-    else {
+    guard let requestUri = url.queryItemValue(for: "request_uri") else {
       throw routingFailure("request_uri was missing or is invalid")
     }
 
-    let method = HTTPMethod(from: url.queryItemValue(for: "request_uri_method")) ?? .get
+    let openID4VPService = try OpenID4VPService()
 
-    let (jwtData, response) = try await NetworkClient.shared.fetchData(requestUrl, method: method)
+    let result = await openID4VPService.sdk.authorize(url: url)
 
-    guard response.value(forHTTPHeaderField: "Content-Type") == "application/oauth-authz-req+jwt"
-    else {
-      throw routingFailure("Invalid content-type header (expected oauth-authz-req+jwt)")
-    }
-    
-    let json = try await NetworkClient.shared.fetchJSON(requestUrl, method: method)
-    let jwtKeyCollection = JWTKeyCollection()
-    let requestObject = try await jwtKeyCollection.unverified(
-      jwtData,
-      as: UnvalidatedRequestObject.self
-    )
+    let request =
+      switch result {
+        case .notSecured(let request), .jwt(let request):
+          request
+        case .invalidResolution(let error, _):
+          throw routingFailure("Failed to resolve presentation request: \(error)")
+      }
 
-    guard
-      let uri = requestObject.presentationDefinitionUri,
-      let definitionUrl = URL(string: uri)
-    else {
-      throw routingFailure("Failed parsing presentation definition URI")
+    guard case let .vpToken(data) = request else {
+      throw routingFailure("Unsupported presentation type, expected vp_token")
     }
 
-    let definition: PresentationDefinition = try await NetworkClient.shared.fetch(definitionUrl)
-    return .presentation(definition: definition)
+    return .presentation(vpTokenData: data)
   }
 }

@@ -1,6 +1,9 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Client:" : {
+
+    },
     "Credential endpoint" : {
 
     },
@@ -119,10 +122,22 @@
     "Issuer:" : {
 
     },
+    "Matches found:" : {
+
+    },
     "PID info:" : {
 
     },
+    "Presenting" : {
+
+    },
     "Save %lld claims" : {
+
+    },
+    "Send" : {
+
+    },
+    "Sent vp token! ✅" : {
 
     },
     "Value: " : {
