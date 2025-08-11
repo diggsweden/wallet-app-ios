@@ -1,6 +1,22 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%@ with %lld disclosures" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ with %2$lld disclosures"
+          }
+        }
+      }
+    },
+    "Add new credential" : {
+
+    },
+    "Available disclosures:" : {
+
+    },
     "Credential endpoint" : {
 
     },
@@ -21,6 +37,7 @@
       }
     },
     "dashboard_content_2" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -32,38 +49,6 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Denna app kommer kontinuerligt att uppdateras så se till att hålla den uppdaterad för att ta del av de senaste funktioner som kommer läggas till."
-          }
-        }
-      }
-    },
-    "dashboard_more_info_1" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "To get more information about the project"
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "För att läsa mer info om projektet"
-          }
-        }
-      }
-    },
-    "dashboard_more_info_2" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Click here"
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Klicka här"
           }
         }
       }
@@ -122,6 +107,9 @@
     "Fetch issuer metadata" : {
 
     },
+    "ID-plånboken" : {
+
+    },
     "Issue PID" : {
 
     },
@@ -129,9 +117,6 @@
 
     },
     "No credential found!" : {
-
-    },
-    "One credential saved!" : {
 
     },
     "Presenting" : {

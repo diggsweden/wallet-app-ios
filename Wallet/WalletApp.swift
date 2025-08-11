@@ -10,17 +10,9 @@ struct WalletApp: App {
 }
 
 struct RootView: View {
+  @AppStorage("credential") private var credentialString: String?
+  @State var credential: Credential?
   @State var navigationModel = NavigationModel()
-  let credential: Credential?
-
-  init() {
-    credential =
-      if let credentialString = UserDefaults.standard.string(forKey: "credential") {
-        try? JSONDecoder().decode(Credential.self, from: Data(credentialString.utf8))
-      } else {
-        nil
-      }
-  }
 
   var body: some View {
     NavigationStack(path: $navigationModel.navigationPath) {
@@ -31,10 +23,12 @@ struct RootView: View {
               if let credential {
                 PresentationView(vpTokenData: data, credential: credential)
               } else {
-                Text("No credential found!")
+                Text("No credential found on device!")
               }
             case .issuance(let url):
               IssuanceView(credentialOfferUri: url)
+            case .credentialDetails(let credential):
+              CredentialDetailsView(credential: credential)
           }
         }
         .onOpenURL { url in
@@ -48,6 +42,12 @@ struct RootView: View {
               return
             }
           }
+        }
+        .task(id: credentialString) {
+          guard let credentialString else {
+            return
+          }
+          credential = try? JSONDecoder().decode(Credential.self, from: credentialString.utf8Data)
         }
     }
     .environment(navigationModel)
