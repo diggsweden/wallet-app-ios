@@ -1,5 +1,5 @@
 import Foundation
 
 struct Constants {
-  static let bindingKeyTag = "com.digg.wallet.binding_key"
+  static let bindingKeyTag = "se.digg.wallet.binding_key"
 }

@@ -56,18 +56,16 @@ struct JWTUtil {
 
   static func createJWE(
     payload: [String: Any],
-    recipientKey: ECPublicKey,
-    keyManagementAlgorithm: KeyManagementAlgorithm,
-    contentEncryptionAlgorithm: ContentEncryptionAlgorithm
+    recipientKey: ECPublicKey
   ) throws -> String {
     let header = JWEHeader(
-      keyManagementAlgorithm: keyManagementAlgorithm,
-      contentEncryptionAlgorithm: contentEncryptionAlgorithm
+      keyManagementAlgorithm: .ECDH_ES,
+      contentEncryptionAlgorithm: .A128GCM
     )
 
     let encrypter = Encrypter(
-      keyManagementAlgorithm: keyManagementAlgorithm,
-      contentEncryptionAlgorithm: contentEncryptionAlgorithm,
+      keyManagementAlgorithm: .ECDH_ES,
+      contentEncryptionAlgorithm: .A128GCM,
       encryptionKey: recipientKey
     )
 
