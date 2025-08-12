@@ -16,9 +16,20 @@ final class OpenID4VPService {
       preferredSubjectSyntaxType: .jwkThumbprint,
       decentralizedIdentifier: .did("not_supported"),
       signingKey: walletKey,
-      signingKeySet: try WebKeySet(jwk: walletKey.toJWK()),
+      publicWebKeySet: try WebKeySet(jwk: walletKey.toJWK()),
       supportedClientIdSchemes: [.x509SanDns(trust: certificateTrustMock)],
-      vpFormatsSupported: [.jwtType(.jwt_vc)]
+      vpFormatsSupported: [.jwtType(.jwt_vc)],
+      jarmConfiguration:
+        .encryption(
+          try JARMConfiguration
+            .Encryption(
+              supportedAlgorithms: [
+                .init(.RSA1_5),
+                .init(.ECDH_ES),
+              ],
+              supportedMethods: [.init(.A128GCM)]
+            )
+        )
     )
 
     sdk = SiopOpenID4VP(walletConfiguration: walletConfig)

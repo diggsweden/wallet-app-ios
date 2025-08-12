@@ -20,7 +20,9 @@ extension WebKeySet.Key {
       kty == "EC",
       crv == "P-256",
       let x,
-      let y
+      let y,
+      let use,
+      let kid
     else {
       throw AppError(message: "Unsupported key type")
     }

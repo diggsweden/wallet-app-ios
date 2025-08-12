@@ -9,8 +9,8 @@
 /* Begin PBXBuildFile section */
 		26C8C7972E0A9DED00F976B2 /* WalletRelease.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 26C8C7962E0A9DED00F976B2 /* WalletRelease.xcconfig */; };
 		26A1FAAA2E0ABBF00007F0CA /* SiopOpenID4VP in Frameworks */ = {isa = PBXBuildFile; productRef = 26A1FAA92E0ABBF00007F0CA /* SiopOpenID4VP */; };
-		26F235BE2E0C2F0600A26B73 /* JWTKit in Frameworks */ = {isa = PBXBuildFile; productRef = 26F235BD2E0C2F0600A26B73 /* JWTKit */; };
-		8DE83B852DEF22800085498D /* OpenID4VCI in Frameworks */ = {isa = PBXBuildFile; productRef = 8DE83B842DEF22800085498D /* OpenID4VCI */; };
+		26FA8D112E4B793500619952 /* OpenID4VCI in Frameworks */ = {isa = PBXBuildFile; productRef = 26FA8D102E4B793500619952 /* OpenID4VCI */; };
+		26FA8D142E4B795B00619952 /* JOSESwift in Frameworks */ = {isa = PBXBuildFile; productRef = 26FA8D132E4B795B00619952 /* JOSESwift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -61,9 +61,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				26F235BE2E0C2F0600A26B73 /* JWTKit in Frameworks */,
-				8DE83B852DEF22800085498D /* OpenID4VCI in Frameworks */,
 				26A1FAAA2E0ABBF00007F0CA /* SiopOpenID4VP in Frameworks */,
+				26FA8D112E4B793500619952 /* OpenID4VCI in Frameworks */,
+				26FA8D142E4B795B00619952 /* JOSESwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -126,9 +126,9 @@
 			);
 			name = WalletDemo;
 			packageProductDependencies = (
-				8DE83B842DEF22800085498D /* OpenID4VCI */,
 				26A1FAA92E0ABBF00007F0CA /* SiopOpenID4VP */,
-				26F235BD2E0C2F0600A26B73 /* JWTKit */,
+				26FA8D102E4B793500619952 /* OpenID4VCI */,
+				26FA8D132E4B795B00619952 /* JOSESwift */,
 			);
 			productName = wallet;
 			productReference = 8DF0DE392DAFCA2600270636 /* WalletDemo.app */;
@@ -214,9 +214,9 @@
 			mainGroup = 8DF0DE302DAFCA2600270636;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				8DE83B832DEF22800085498D /* XCRemoteSwiftPackageReference "eudi-lib-ios-openid4vci-swift" */,
 				26A1FAA82E0ABBF00007F0CA /* XCRemoteSwiftPackageReference "eudi-lib-ios-siop-openid4vp-swift" */,
-				26F235BC2E0C2F0600A26B73 /* XCRemoteSwiftPackageReference "jwt-kit" */,
+				26FA8D0F2E4B793500619952 /* XCRemoteSwiftPackageReference "eudi-lib-ios-openid4vci-swift" */,
+				26FA8D122E4B795B00619952 /* XCRemoteSwiftPackageReference "JOSESwift" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 8DF0DE3A2DAFCA2600270636 /* Products */;
@@ -599,23 +599,23 @@
 			repositoryURL = "git@github.com:eu-digital-identity-wallet/eudi-lib-ios-siop-openid4vp-swift.git";
 			requirement = {
 				kind = exactVersion;
-				version = 0.13.0;
+				version = 0.15.0;
 			};
 		};
-		26F235BC2E0C2F0600A26B73 /* XCRemoteSwiftPackageReference "jwt-kit" */ = {
+		26FA8D0F2E4B793500619952 /* XCRemoteSwiftPackageReference "eudi-lib-ios-openid4vci-swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "git@github.com:vapor/jwt-kit.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 5.1.2;
-			};
-		};
-		8DE83B832DEF22800085498D /* XCRemoteSwiftPackageReference "eudi-lib-ios-openid4vci-swift" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-openid4vci-swift";
+			repositoryURL = "git@github.com:eu-digital-identity-wallet/eudi-lib-ios-openid4vci-swift.git";
 			requirement = {
 				kind = exactVersion;
-				version = 0.14.0;
+				version = 0.15.4;
+			};
+		};
+		26FA8D122E4B795B00619952 /* XCRemoteSwiftPackageReference "JOSESwift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "git@github.com:airsidemobile/JOSESwift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.0.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -626,15 +626,15 @@
 			package = 26A1FAA82E0ABBF00007F0CA /* XCRemoteSwiftPackageReference "eudi-lib-ios-siop-openid4vp-swift" */;
 			productName = SiopOpenID4VP;
 		};
-		26F235BD2E0C2F0600A26B73 /* JWTKit */ = {
+		26FA8D102E4B793500619952 /* OpenID4VCI */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 26F235BC2E0C2F0600A26B73 /* XCRemoteSwiftPackageReference "jwt-kit" */;
-			productName = JWTKit;
-		};
-		8DE83B842DEF22800085498D /* OpenID4VCI */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 8DE83B832DEF22800085498D /* XCRemoteSwiftPackageReference "eudi-lib-ios-openid4vci-swift" */;
+			package = 26FA8D0F2E4B793500619952 /* XCRemoteSwiftPackageReference "eudi-lib-ios-openid4vci-swift" */;
 			productName = OpenID4VCI;
+		};
+		26FA8D132E4B795B00619952 /* JOSESwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 26FA8D122E4B795B00619952 /* XCRemoteSwiftPackageReference "JOSESwift" */;
+			productName = JOSESwift;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

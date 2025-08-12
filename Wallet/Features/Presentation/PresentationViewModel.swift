@@ -91,16 +91,16 @@ class PresentationViewModel {
 
   private func createSubmissionPayload(for vpToken: String) throws -> [String: Any] {
     let id: String = {
-        if case let .byDigitalCredentialsQuery(dcql) = data.presentationQuery {
-            return dcql.credentials.first?.id.value ?? ""
-        }
-        return ""
+      if case let .byDigitalCredentialsQuery(dcql) = data.presentationQuery {
+        return dcql.credentials.first?.id.value ?? ""
+      }
+      return ""
     }()
 
     return [
       "state": data.state ?? "",
       "nonce": data.nonce,
-      "vp_token": [id: [vpToken]]
+      "vp_token": [id: [vpToken]],
     ]
   }
 

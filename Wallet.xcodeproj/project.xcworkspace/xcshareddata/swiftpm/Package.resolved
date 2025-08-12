@@ -1,5 +1,5 @@
 {
-  "originHash" : "2d20f48a2e5b6334acc556360ac5d6f10e5806cf3fedd5802e900b921309de08",
+  "originHash" : "032c5d08b66a6785486ba43fa9162e48458efe018920b012990a50ac1f598c9f",
   "pins" : [
     {
       "identity" : "blueecc",
@@ -22,10 +22,10 @@
     {
       "identity" : "eudi-lib-ios-openid4vci-swift",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-openid4vci-swift",
+      "location" : "git@github.com:eu-digital-identity-wallet/eudi-lib-ios-openid4vci-swift.git",
       "state" : {
-        "revision" : "d77ac58e22075d9c279233eaa099fa6a24149bc7",
-        "version" : "0.14.0"
+        "revision" : "508556bdd1cf517735a0e6405c9dbd2704e6a892",
+        "version" : "0.15.4"
       }
     },
     {
@@ -42,8 +42,8 @@
       "kind" : "remoteSourceControl",
       "location" : "git@github.com:eu-digital-identity-wallet/eudi-lib-ios-siop-openid4vp-swift.git",
       "state" : {
-        "revision" : "15b2f4e61bfd56b2edf01a1e95de54f0df0ffbc2",
-        "version" : "0.13.0"
+        "revision" : "631346f6d0731c21cdd8542dcdbc30b9fec465ee",
+        "version" : "0.15.0"
       }
     },
     {
@@ -58,7 +58,7 @@
     {
       "identity" : "joseswift",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/airsidemobile/JOSESwift.git",
+      "location" : "git@github.com:airsidemobile/JOSESwift.git",
       "state" : {
         "revision" : "c2664a902e75c0426a1d43132bd4babc6fd173d3",
         "version" : "3.0.0"
@@ -71,15 +71,6 @@
       "state" : {
         "revision" : "d14de4b2d9205068c9db89c00d097ca43c897000",
         "version" : "0.6.0"
-      }
-    },
-    {
-      "identity" : "jwt-kit",
-      "kind" : "remoteSourceControl",
-      "location" : "git@github.com:vapor/jwt-kit.git",
-      "state" : {
-        "revision" : "03f5013f0b547ce43abe45e7e90711303a3e5495",
-        "version" : "5.1.2"
       }
     },
     {
@@ -143,15 +134,6 @@
       "state" : {
         "revision" : "e8d6eba1fef23ae5b359c46b03f7d94be2f41fed",
         "version" : "3.12.3"
-      }
-    },
-    {
-      "identity" : "swift-log",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/apple/swift-log.git",
-      "state" : {
-        "revision" : "3d8596ed08bd13520157f0355e35caed215ffbfa",
-        "version" : "1.6.3"
       }
     },
     {
