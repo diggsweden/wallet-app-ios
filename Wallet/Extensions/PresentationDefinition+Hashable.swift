@@ -1,5 +1,4 @@
 import Foundation
-import JWTKit
 import SiopOpenID4VP
 
 extension ResolvedRequestData.VpTokenData: @retroactive Hashable {

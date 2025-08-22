@@ -93,12 +93,26 @@ class IssuanceViewModel {
       guard
         case let .success(response) = result,
         let issuedCredential = response.credentialResponses.first,
-        case let .issued(_, credential, _, _) = issuedCredential,
-        case let .json(json) = credential,
-        json.type == .array,
-        let credentialString = json.first?.1["credential"].stringValue
+        case let .issued(_, credential, _, _) = issuedCredential
       else {
         throw AppError(message: "Failed issuing credential")
+      }
+
+      let credentialString: String? = {
+        if case let .string(s) = credential {
+          return s
+        }
+        if case let .json(j) = credential,
+          j.type == .array,
+          let s = j.first?.1["credential"].stringValue
+        {
+          return s
+        }
+        return nil
+      }()
+
+      guard let credentialString else {
+        throw AppError(message: "Failed parsing credential string value")
       }
 
       let display = await issuer.issuerMetadata.display.first

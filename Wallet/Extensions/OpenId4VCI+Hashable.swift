@@ -1,5 +1,4 @@
 import Foundation
-import JWTKit
 import OpenID4VCI
 
 extension Claim: @retroactive Hashable {

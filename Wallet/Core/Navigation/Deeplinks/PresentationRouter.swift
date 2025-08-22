@@ -1,5 +1,4 @@
 import Foundation
-import JWTKit
 import SiopOpenID4VP
 
 struct PresentationRouter: DeeplinkRouter {
