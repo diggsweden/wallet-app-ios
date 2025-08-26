@@ -17,7 +17,9 @@ final class OpenID4VPService {
       decentralizedIdentifier: .did("not_supported"),
       signingKey: walletKey,
       publicWebKeySet: try WebKeySet(jwk: walletKey.toJWK()),
-      supportedClientIdSchemes: [.x509SanDns(trust: certificateTrustMock)],
+      supportedClientIdSchemes: [
+        .x509SanDns(trust: certificateTrustMock)
+      ],
       vpFormatsSupported: [.jwtType(.jwt_vc)],
       jarmConfiguration:
         .encryption(

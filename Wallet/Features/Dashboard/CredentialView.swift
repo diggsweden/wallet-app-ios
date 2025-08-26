@@ -37,7 +37,8 @@ struct CredentialView: View {
         .containerShape(Rectangle())
       } else {
         Button {
-          guard let url = URL(string: "https://issuer.eudiw.dev/credential_offer") else {
+          guard let url = URL(string: "https://wallet.sandbox.digg.se/prepare-credential-offer")
+          else {
             return
           }
           openURL(url)

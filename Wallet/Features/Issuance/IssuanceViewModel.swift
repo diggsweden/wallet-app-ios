@@ -69,9 +69,9 @@ class IssuanceViewModel {
   func fetchCredential(_ request: AuthorizedRequest) async {
     guard
       let issuer,
-      let configId = try? CredentialConfigurationIdentifier(
-        value: "eu.europa.ec.eudi.pid_vc_sd_jwt"
-      ),
+      let configId = await issuer.issuerMetadata.credentialsSupported.keys.first(where: {
+        $0.value.contains("jwt") && $0.value.contains("pid")
+      }),
       let key = try? KeychainManager.shared.getOrCreateKey(withTag: Constants.bindingKeyTag)
     else {
       return

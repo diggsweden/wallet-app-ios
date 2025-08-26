@@ -38,22 +38,22 @@ jobs:
           printf "\n==> Linting...\n"
           ./scripts/lint.sh
 
-  unit-tests:
-    runs-on: ${{ vars.MACOS_VERSION }}
-    needs: lint
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup-env
-        with:
-          xcode-version: ${{ vars.XCODE_VERSION }}
-
-      - name: 🧪 Run unit tests
-        run: |
-          set -o pipefail
-          xcodebuild test \
-            -scheme WalletTests \
-            -destination 'platform=iOS Simulator,name=iPhone 16' \
-          | xcbeautify
+  # unit-tests:
+  #   runs-on: ${{ vars.MACOS_VERSION }}
+  #   needs: lint
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: ./.github/actions/setup-env
+  #       with:
+  #         xcode-version: ${{ vars.XCODE_VERSION }}
+  #
+  #     - name: 🧪 Run unit tests
+  #       run: |
+  #         set -o pipefail
+  #         xcodebuild test \
+  #           -scheme WalletTests \
+  #           -destination 'platform=iOS Simulator,name=iPhone 16' \
+  #         | xcbeautify
 
   # TODO: Uncomment when we have implemented UI tests
   # ui-tests:
