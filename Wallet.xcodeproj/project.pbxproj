@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		26C8C7972E0A9DED00F976B2 /* WalletRelease.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 26C8C7962E0A9DED00F976B2 /* WalletRelease.xcconfig */; };
 		26A1FAAA2E0ABBF00007F0CA /* SiopOpenID4VP in Frameworks */ = {isa = PBXBuildFile; productRef = 26A1FAA92E0ABBF00007F0CA /* SiopOpenID4VP */; };
+		26C8C7972E0A9DED00F976B2 /* WalletRelease.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 26C8C7962E0A9DED00F976B2 /* WalletRelease.xcconfig */; };
 		26FA8D112E4B793500619952 /* OpenID4VCI in Frameworks */ = {isa = PBXBuildFile; productRef = 26FA8D102E4B793500619952 /* OpenID4VCI */; };
 		26FA8D142E4B795B00619952 /* JOSESwift in Frameworks */ = {isa = PBXBuildFile; productRef = 26FA8D132E4B795B00619952 /* JOSESwift */; };
 /* End PBXBuildFile section */
@@ -596,7 +596,7 @@
 /* Begin XCRemoteSwiftPackageReference section */
 		26A1FAA82E0ABBF00007F0CA /* XCRemoteSwiftPackageReference "eudi-lib-ios-siop-openid4vp-swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "git@github.com:eu-digital-identity-wallet/eudi-lib-ios-siop-openid4vp-swift.git";
+			repositoryURL = "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-siop-openid4vp-swift.git";
 			requirement = {
 				kind = exactVersion;
 				version = 0.15.0;
@@ -604,7 +604,7 @@
 		};
 		26FA8D0F2E4B793500619952 /* XCRemoteSwiftPackageReference "eudi-lib-ios-openid4vci-swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "git@github.com:eu-digital-identity-wallet/eudi-lib-ios-openid4vci-swift.git";
+			repositoryURL = "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-openid4vci-swift.git";
 			requirement = {
 				kind = exactVersion;
 				version = 0.15.4;
@@ -612,7 +612,7 @@
 		};
 		26FA8D122E4B795B00619952 /* XCRemoteSwiftPackageReference "JOSESwift" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "git@github.com:airsidemobile/JOSESwift.git";
+			repositoryURL = "https://github.com/airsidemobile/JOSESwift.git";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 3.0.0;
