@@ -1,5 +1,5 @@
 {
-  "originHash" : "032c5d08b66a6785486ba43fa9162e48458efe018920b012990a50ac1f598c9f",
+  "originHash" : "ca4ac1c2972132ce5040d41437e780d655156019279a1ddca4c47fbbf6aacc51",
   "pins" : [
     {
       "identity" : "blueecc",
@@ -22,7 +22,7 @@
     {
       "identity" : "eudi-lib-ios-openid4vci-swift",
       "kind" : "remoteSourceControl",
-      "location" : "git@github.com:eu-digital-identity-wallet/eudi-lib-ios-openid4vci-swift.git",
+      "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-openid4vci-swift.git",
       "state" : {
         "revision" : "508556bdd1cf517735a0e6405c9dbd2704e6a892",
         "version" : "0.15.4"
@@ -33,14 +33,14 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-presentation-exchange-swift.git",
       "state" : {
-        "revision" : "68a3746efefbff06e20365dce1c8dabcbc3670f8",
-        "version" : "0.4.1"
+        "revision" : "0c28d64c636e65c6734d2f89c7a4fb4be76fe05e",
+        "version" : "0.4.2"
       }
     },
     {
       "identity" : "eudi-lib-ios-siop-openid4vp-swift",
       "kind" : "remoteSourceControl",
-      "location" : "git@github.com:eu-digital-identity-wallet/eudi-lib-ios-siop-openid4vp-swift.git",
+      "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-siop-openid4vp-swift.git",
       "state" : {
         "revision" : "631346f6d0731c21cdd8542dcdbc30b9fec465ee",
         "version" : "0.15.0"
@@ -58,7 +58,7 @@
     {
       "identity" : "joseswift",
       "kind" : "remoteSourceControl",
-      "location" : "git@github.com:airsidemobile/JOSESwift.git",
+      "location" : "https://github.com/airsidemobile/JOSESwift.git",
       "state" : {
         "revision" : "c2664a902e75c0426a1d43132bd4babc6fd173d3",
         "version" : "3.0.0"
