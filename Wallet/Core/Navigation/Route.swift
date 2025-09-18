@@ -5,4 +5,5 @@ enum Route: Hashable {
   case presentation(vpTokenData: ResolvedRequestData.VpTokenData)
   case issuance(credentialOfferUri: String)
   case credentialDetails(_ credential: Credential)
+  case provisioning
 }

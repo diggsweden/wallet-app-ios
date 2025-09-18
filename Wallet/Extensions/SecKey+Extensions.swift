@@ -37,8 +37,7 @@ extension SecKey {
       x: x,
       y: y,
       additionalParameters: [
-        "use": "sig",
-        "kid": Constants.bindingKeyTag,
+        "kid": Constants.bindingKeyTag
       ]
     )
   }

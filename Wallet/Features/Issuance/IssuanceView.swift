@@ -1,10 +1,13 @@
 import SwiftUI
 
 struct IssuanceView: View {
+  private let wallet: Wallet?
   @State private var viewModel: IssuanceViewModel
-  @Environment(NavigationModel.self) var navigationModel
+  @Environment(NavigationModel.self) private var navigationModel
+  @Environment(\.modelContext) private var modelContext
 
-  init(credentialOfferUri: String) {
+  init(credentialOfferUri: String, wallet: Wallet?) {
+    self.wallet = wallet
     _viewModel = State(
       wrappedValue: IssuanceViewModel(credentialOfferUri: credentialOfferUri)
     )
@@ -44,7 +47,7 @@ struct IssuanceView: View {
                 Text("Disclosures:").font(.headline)
                 ForEach(Array(credential.disclosures.values)) { disclosure in
                   DisclosureView(
-                    title: disclosure.claim.display?.first?.name ?? "No name",
+                    title: disclosure.displayName,
                     value: disclosure.value
                   )
                 }
@@ -111,7 +114,8 @@ struct IssuanceView: View {
 
         case .credentialFetched(let credential):
           Button {
-            viewModel.saveCredential(credential)
+            wallet?.credential = credential
+            try? modelContext.save()
             navigationModel.pop()
           } label: {
             Text("Save \(credential.disclosures.count) disclosures")

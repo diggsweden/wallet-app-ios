@@ -46,13 +46,11 @@ struct DisclosureView: View {
   }
 }
 
-#if DEBUG
-  #Preview {
-    CardView {
-      DisclosureView(
-        title: "Title",
-        value: "Value",
-      )
-    }
+#Preview {
+  CardView {
+    DisclosureView(
+      title: "Title",
+      value: "Value",
+    )
   }
-#endif
+}

@@ -146,30 +146,37 @@ class IssuanceViewModel {
   private func parseCredential(_ credential: String, issuer: Display?) throws -> Credential {
     let parts = credential.components(separatedBy: "~")
 
-    guard let sdJwt = parts.first else {
+    guard let jwt = parts.first else {
       throw AppError(message: "Failed to parse credential")
     }
+
+    let issuerDisplay = IssuerDisplay(
+      name: issuer?.name ?? "",
+      info: issuer?.description,
+      imageUrl: issuer?.logo?.uri
+    )
 
     let disclosures: [String: Disclosure] = parts.dropFirst()
       .reduce(into: [:]) { result, part in
         guard
           let data = JWTUtil.base64UrlDecode(part),
-          let parsedClaim = try? JSONDecoder().decode([String].self, from: data),
-          parsedClaim.count == 3
+          let disclosure = try? JSONDecoder().decode([String].self, from: data),
+          disclosure.count == 3
         else {
           return
         }
-        let claimId = parsedClaim[1]
-        let claimValue = parsedClaim[2]
+        let claimId = disclosure[1]
+        let claimValue = disclosure[2]
+        let displayName = claimsMetadata[claimId]?.display?.first?.name
 
-        guard let claim = claimsMetadata[claimId] else {
-          return
-        }
-
-        return result[claimId] = Disclosure(base64: part, claim: claim, value: claimValue)
+        return result[claimId] = Disclosure(
+          base64: part,
+          displayName: displayName ?? "",
+          value: claimValue
+        )
       }
 
-    return Credential(issuer: issuer, sdJwt: sdJwt, disclosures: disclosures)
+    return Credential(issuer: issuerDisplay, sdJwt: jwt, disclosures: disclosures)
   }
 
   private func createIssuer(from credentialOffer: CredentialOffer) async throws -> Issuer {
