@@ -1,20 +1,19 @@
 import SwiftData
 import SwiftUI
 
-struct EnrollmentRootView: View {
+struct EnrollmentView: View {
+  let appSession: AppSession?
+  @Environment(\.modelContext) private var modelContext
   @State private var flow = EnrollmentFlow()
   @State private var context = EnrollmentContext()
-  @Environment(\.modelContext) private var modelContext
 
   var body: some View {
-    NavigationStack {
-      VStack(spacing: 24) {
-        headerView
-        currentStepView
-      }
-      .animation(.easeInOut, value: flow.step)
-      .padding()
+    VStack(spacing: 24) {
+      headerView
+      currentStepView
     }
+    .animation(.easeInOut, value: flow.step)
+    .padding()
   }
 
   private func advanceIfValid() throws {
@@ -78,22 +77,18 @@ struct EnrollmentRootView: View {
 
       case .done:
         EnrollmentInfoView(bodyText: "Nu är din plånbok redo för att användas!") {
-          modelContext.insert(
-            User(
-              email: context.email,
-              pin: context.pin,
-              phoneNumber: context.phoneNumber
-            )
+          appSession?.user = User(
+            email: context.email,
+            pin: context.pin,
+            phoneNumber: context.phoneNumber
           )
-          modelContext.insert(
-            Wallet()
-          )
-          try modelContext.save()
+          appSession?.wallet = Wallet()
+          try? modelContext.save()
         }
     }
   }
 }
 
 #Preview {
-  EnrollmentRootView()
+  EnrollmentView(appSession: AppSession())
 }

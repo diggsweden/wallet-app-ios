@@ -2,13 +2,24 @@ import Foundation
 import SwiftData
 
 @Model
-class User {
+final class AppSession {
   @Attribute(.unique) var id = 0
+  var keyTag: UUID = UUID()
+  var user: User?
+  var wallet: Wallet?
+
+  init(user: User? = nil, wallet: Wallet? = nil) {
+    self.user = user
+    self.wallet = wallet
+  }
+}
+
+struct User: Codable {
   var email: String
   var pin: String
   var phoneNumber: String?
 
-  init(email: String, pin: String, phoneNumber: String?) {
+  init(email: String, pin: String, phoneNumber: String? = nil) {
     self.email = email
     self.pin = pin
     self.phoneNumber = phoneNumber
@@ -17,7 +28,6 @@ class User {
 
 @Model
 class Wallet {
-  @Attribute(.unique) var id = 0
   var unitId: UUID = UUID()
   var unitAttestation: String?
   var credential: Credential?
