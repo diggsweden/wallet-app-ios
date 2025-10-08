@@ -2,7 +2,7 @@ import SwiftUI
 
 struct DashboardView: View {
   let credential: Credential?
-  let onLogout: () -> Void
+  @Environment(Router.self) private var router
 
   var body: some View {
     ScrollView {
@@ -30,9 +30,9 @@ struct DashboardView: View {
       }
       ToolbarItem(placement: .topBarTrailing) {
         Button {
-          onLogout()
+          router.go(to: .settings)
         } label: {
-          Image(systemName: "rectangle.portrait.and.arrow.right")
+          Image(systemName: "gearshape")
         }
       }
     }
@@ -41,6 +41,6 @@ struct DashboardView: View {
 }
 
 #Preview {
-  DashboardView(credential: nil) {}
-    .environment(NavigationModel())
+  DashboardView(credential: nil)
+    .environment(Router())
 }

@@ -3,7 +3,7 @@ import SwiftUI
 struct IssuanceView: View {
   private let wallet: Wallet?
   @State private var viewModel: IssuanceViewModel
-  @Environment(NavigationModel.self) private var navigationModel
+  @Environment(Router.self) private var router
   @Environment(\.modelContext) private var modelContext
 
   init(credentialOfferUri: String, wallet: Wallet?) {
@@ -116,7 +116,7 @@ struct IssuanceView: View {
           Button {
             wallet?.credential = credential
             try? modelContext.save()
-            navigationModel.pop()
+            router.pop()
           } label: {
             Text("Save \(credential.disclosures.count) disclosures")
               .padding(6)

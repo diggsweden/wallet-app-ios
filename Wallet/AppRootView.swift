@@ -7,7 +7,7 @@ struct AppRootView: View {
   }
 
   @Environment(\.modelContext) private var modelContext
-  @State private var navigationModel = NavigationModel()
+  @State private var router = Router()
   @Query private var sessions: [AppSession]
   private var session: AppSession? { sessions.first }
 
@@ -17,12 +17,12 @@ struct AppRootView: View {
   }
 
   var body: some View {
-    NavigationStack(path: $navigationModel.navigationPath) {
+    NavigationStack(path: $router.navigationPath) {
       rootView
         .navigationDestination(for: Route.self, destination: destination)
         .onOpenURL(perform: handleOpenURL)
     }
-    .environment(navigationModel)
+    .environment(router)
     .task(id: session) {
       initSession()
     }
@@ -37,10 +37,11 @@ struct AppRootView: View {
     try? modelContext.save()
   }
 
-  @ViewBuilder private var rootView: some View {
+  @ViewBuilder
+  private var rootView: some View {
     switch rootDestination {
       case .dashboard:
-        DashboardView(credential: session?.wallet?.credential, onLogout: logout)
+        DashboardView(credential: session?.wallet?.credential)
       case .enrollment:
         EnrollmentView(appSession: session)
     }
@@ -59,6 +60,8 @@ struct AppRootView: View {
         IssuanceView(credentialOfferUri: url, wallet: session?.wallet)
       case .credentialDetails(let credential):
         CredentialDetailsView(credential: credential)
+      case .settings:
+        SettingsView(onLogout: logout)
     }
   }
 
@@ -71,7 +74,7 @@ struct AppRootView: View {
       do {
         let deeplink = try Deeplink(from: url)
         let route = try await deeplink.router.route(from: url)
-        navigationModel.go(to: route)
+        router.go(to: route)
       } catch {
         print("Failed to deeplink: \(error)")
       }

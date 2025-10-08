@@ -3,7 +3,7 @@ import SwiftUI
 struct CredentialCard: View {
   let credential: Credential?
   @Environment(\.openURL) var openURL
-  @Environment(NavigationModel.self) var navigationModel
+  @Environment(Router.self) var router
 
   var body: some View {
     credentialContainer
@@ -25,7 +25,7 @@ struct CredentialCard: View {
 
   private func credentialButton(credential: Credential) -> some View {
     Button {
-      navigationModel.go(to: .credentialDetails(credential))
+      router.go(to: .credentialDetails(credential))
     } label: {
       VStack(alignment: .leading, spacing: 14) {
         HStack(spacing: 10) {
@@ -86,5 +86,5 @@ struct CredentialCard: View {
     CredentialCard(credential: credential)
     CredentialCard(credential: nil)
   }
-  .environment(NavigationModel())
+  .environment(Router())
 }

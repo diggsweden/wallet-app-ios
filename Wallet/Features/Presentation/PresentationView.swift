@@ -3,7 +3,7 @@ import SwiftUI
 
 struct PresentationView: View {
   @State private var viewModel: PresentationViewModel
-  @Environment(NavigationModel.self) var navigationModel
+  @Environment(Router.self) var router
 
   init(vpTokenData: ResolvedRequestData.VpTokenData, credential: Credential) {
     _viewModel = State(
@@ -42,7 +42,7 @@ struct PresentationView: View {
       Button {
         Task {
           try? await viewModel.sendDisclosures()
-          navigationModel.pop()
+          router.pop()
         }
       } label: {
         Text("Send")
