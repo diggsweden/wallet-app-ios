@@ -38,14 +38,15 @@ struct EnrollmentFlow {
 }
 
 enum EnrollmentStep {
-  case intro, contactInfo, pin, verifyPin, done
+  case intro, contactInfo, pin, verifyPin, wua, done
 
   func next() -> EnrollmentStep {
     switch self {
       case .intro: return .contactInfo
       case .contactInfo: return .pin
       case .pin: return .verifyPin
-      case .verifyPin: return .done
+      case .verifyPin: return .wua
+      case .wua: return .done
       case .done: return .done
     }
   }
