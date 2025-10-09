@@ -30,15 +30,12 @@ extension SecKey {
     )
   }
 
-  func toJWK() throws -> JWK {
+  func toJWK() throws -> ECPublicKey {
     let (x, y) = try getJWKCoordinates()
     return ECPublicKey(
       crv: .P256,
       x: x,
       y: y,
-      additionalParameters: [
-        "kid": Constants.bindingKeyTag
-      ]
     )
   }
 }
