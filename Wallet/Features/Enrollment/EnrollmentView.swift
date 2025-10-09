@@ -2,15 +2,19 @@ import SwiftData
 import SwiftUI
 
 struct EnrollmentView: View {
-  let appSession: AppSession?
+  let appSession: AppSession
   @Environment(\.modelContext) private var modelContext
+  @Environment(\.gatewayClient) private var gatewayClient
   @State private var flow = EnrollmentFlow()
   @State private var context = EnrollmentContext()
 
   var body: some View {
     VStack(spacing: 24) {
       headerView
+        .id(flow.step)
+        .transition(.blurReplace)
       currentStepView
+        .transition(.slide)
     }
     .animation(.easeInOut, value: flow.step)
     .padding()
@@ -35,6 +39,9 @@ struct EnrollmentView: View {
         case .verifyPin:
           Image(systemName: "lock.fill")
           Text("Bekräfta PIN-kod")
+        case .wua:
+          Image(systemName: "gearshape.arrow.trianglehead.2.clockwise.rotate.90")
+          Text("Sätter upp plånbok...")
         case .done:
           Image(systemName: "checkmark.circle.fill")
             .foregroundStyle(Color.green)
@@ -75,15 +82,25 @@ struct EnrollmentView: View {
           try advanceIfValid()
         }
 
+      case .wua:
+        WuaView(
+          walletId: appSession.wallet.unitId,
+          keyTag: appSession.keyTag,
+          gatewayClient: gatewayClient
+        ) { jwt in
+          appSession.wallet.unitAttestation = jwt
+          try modelContext.save()
+          try advanceIfValid()
+        }
+
       case .done:
         EnrollmentInfoView(bodyText: "Nu är din plånbok redo för att användas!") {
-          appSession?.user = User(
+          appSession.user = User(
             email: context.email,
             pin: context.pin,
             phoneNumber: context.phoneNumber
           )
-          appSession?.wallet = Wallet()
-          try? modelContext.save()
+          try modelContext.save()
         }
     }
   }

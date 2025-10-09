@@ -6,11 +6,10 @@ final class AppSession {
   @Attribute(.unique) var id = 0
   var keyTag: UUID = UUID()
   var user: User?
-  var wallet: Wallet?
+  var wallet: Wallet = Wallet()
 
-  init(user: User? = nil, wallet: Wallet? = nil) {
+  init(user: User? = nil) {
     self.user = user
-    self.wallet = wallet
   }
 }
 

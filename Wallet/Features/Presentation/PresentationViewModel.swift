@@ -135,6 +135,6 @@ class PresentationViewModel {
       "sd_hash": sdHash,
     ]
 
-    return try JWTUtil.createJWT(with: secKey, payload: payload, headerType: "kb+jwt")
+    return try JWTUtil.createJWT(with: secKey, headers: ["typ": "kb+jwt"], payload: payload)
   }
 }
