@@ -35,15 +35,27 @@
 /* Begin PBXFileReference section */
 		2688D9F62E97E3BA00A6B6A7 /* WalletMacros */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = WalletMacros; sourceTree = "<group>"; };
 		26C8C7962E0A9DED00F976B2 /* WalletRelease.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = WalletRelease.xcconfig; sourceTree = "<group>"; };
-		8DE83C082DEF73590085498D /* WalletDemo-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "WalletDemo-Info.plist"; sourceTree = "<group>"; };
 		8DF0DE392DAFCA2600270636 /* WalletDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WalletDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8DF0DE462DAFCA2800270636 /* WalletTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WalletTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		8DF0DE502DAFCA2800270636 /* WalletUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WalletUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		260F5F7E2EA1121D00D1C18E /* Exceptions for "Wallet" folder in "WalletDemo" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"WalletDemo-Info.plist",
+			);
+			target = 8DF0DE382DAFCA2600270636 /* WalletDemo */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		8DF0DE3B2DAFCA2600270636 /* Wallet */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				260F5F7E2EA1121D00D1C18E /* Exceptions for "Wallet" folder in "WalletDemo" target */,
+			);
 			path = Wallet;
 			sourceTree = "<group>";
 		};
@@ -99,7 +111,6 @@
 		8DF0DE302DAFCA2600270636 = {
 			isa = PBXGroup;
 			children = (
-				8DE83C082DEF73590085498D /* WalletDemo-Info.plist */,
 				8DF0DE3B2DAFCA2600270636 /* Wallet */,
 				8DF0DE492DAFCA2800270636 /* WalletTests */,
 				8DF0DE532DAFCA2800270636 /* WalletUITests */,
@@ -457,7 +468,7 @@
 				DEVELOPMENT_TEAM = R5MUUW7M24;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "WalletDemo-Info.plist";
+				INFOPLIST_FILE = "Wallet/$(TARGET_NAME)-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "ID-plånboken";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -489,7 +500,7 @@
 				DEVELOPMENT_TEAM = R5MUUW7M24;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "WalletDemo-Info.plist";
+				INFOPLIST_FILE = "Wallet/$(TARGET_NAME)-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "ID-plånboken";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

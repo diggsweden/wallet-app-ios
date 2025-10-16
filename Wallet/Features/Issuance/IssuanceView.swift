@@ -1,18 +1,24 @@
 import SwiftUI
 
 struct IssuanceView: View {
-  private let wallet: Wallet
+  private let onSave: (Credential) async -> Void
   @State private var viewModel: IssuanceViewModel
   @Environment(Router.self) private var router
   @Environment(\.modelContext) private var modelContext
+  @Environment(\.theme) private var theme
 
-  init(credentialOfferUri: String, keyTag: UUID, wallet: Wallet) {
-    self.wallet = wallet
-    _viewModel = State(
-      wrappedValue: IssuanceViewModel(
+  init(
+    credentialOfferUri: String,
+    keyTag: UUID,
+    walletUnitAttestation: String?,
+    onSave: @escaping (Credential) async -> Void
+  ) {
+    self.onSave = onSave
+    _viewModel = .init(
+      wrappedValue: .init(
         credentialOfferUri: credentialOfferUri,
         keyTag: keyTag,
-        wua: wallet.unitAttestation ?? ""
+        wua: walletUnitAttestation ?? ""
       )
     )
   }
@@ -67,16 +73,11 @@ struct IssuanceView: View {
 
       switch viewModel.state {
         case .initial:
-          Button {
+          PrimaryButton("Hämta metadata") {
             Task {
               await viewModel.fetchIssuer()
             }
-          } label: {
-            Text("Fetch issuer metadata")
-              .padding(6)
           }
-          .buttonStyle(.borderedProminent)
-          .tint(Theme.primaryColor)
 
         case .issuerFetched(let offer):
           HStack {
@@ -97,7 +98,7 @@ struct IssuanceView: View {
             } label: {
               Image(systemName: "arrow.right.circle.fill")
                 .font(.title2)
-                .foregroundColor(viewModel.authorizationCode.isEmpty ? .gray : Theme.primaryColor)
+                .foregroundColor(viewModel.authorizationCode.isEmpty ? .gray : theme.colors.primary)
             }
             .disabled(viewModel.authorizationCode.isEmpty)
             .padding(.leading, 4)
@@ -105,28 +106,19 @@ struct IssuanceView: View {
           .padding(24)
 
         case .authorized(let request):
-          Button {
+          PrimaryButton("Hämta ID-handling") {
             Task {
               await viewModel.fetchCredential(request)
             }
-          } label: {
-            Text("Fetch credential")
-              .padding(6)
           }
-          .buttonStyle(.borderedProminent)
-          .tint(Theme.primaryColor)
 
         case .credentialFetched(let credential):
-          Button {
-            wallet.credential = credential
-            try? modelContext.save()
+          PrimaryButton("Spara \(credential.disclosures.count) attribut") {
+            Task {
+              await onSave(credential)
+            }
             router.pop()
-          } label: {
-            Text("Save \(credential.disclosures.count) disclosures")
-              .padding(6)
           }
-          .buttonStyle(.borderedProminent)
-          .tint(Theme.primaryColor)
       }
     }
     .navigationTitle(Text("Issue PID"))

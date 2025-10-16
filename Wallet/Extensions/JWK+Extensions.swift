@@ -24,7 +24,7 @@ extension WebKeySet.Key {
       let use,
       let kid
     else {
-      throw AppError(message: "Unsupported key type")
+      throw AppError(reason: "Unsupported key type")
     }
 
     return ECPublicKey(

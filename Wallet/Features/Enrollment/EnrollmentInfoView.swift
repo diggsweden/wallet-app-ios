@@ -7,8 +7,8 @@ struct EnrollmentInfoView: View {
   var body: some View {
     Text(bodyText)
       .toolbar {
-        ToolbarItem(placement: .bottomBar) {
-          PrimaryButton(label: "Fortsätt") {
+        EnrollmentBottomToolbarButton {
+          PrimaryButton("enrollmentNext") {
             try? onComplete()
           }
         }

@@ -5,6 +5,7 @@ struct DisclosureView: View {
   let value: String
   let onToggle: ((Bool) -> Void)?
   @State var isOn: Bool = true
+  @Environment(\.theme) private var theme
 
   init(
     title: String,
@@ -38,7 +39,7 @@ struct DisclosureView: View {
           .fill(Color(.systemBackground))
           .overlay(
             Capsule()
-              .stroke(Theme.primaryColor.opacity(0.4), lineWidth: 1)
+              .stroke(theme.colors.primary.opacity(0.4), lineWidth: 1)
           )
       )
       .containerShape(Capsule())

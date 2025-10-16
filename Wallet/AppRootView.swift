@@ -2,51 +2,59 @@ import SwiftData
 import SwiftUI
 
 struct AppRootView: View {
-  private enum RootDestination: Equatable {
-    case dashboard, enrollment
-  }
-
-  @Environment(\.modelContext) private var modelContext
+  @State private var sessionViewModel: SessionViewModel
   @State private var router = Router()
-  @Query private var sessions: [AppSession]
-  private var session: AppSession? { sessions.first }
+  @Environment(\.theme) private var theme
 
-  private var isEnrolled: Bool { session?.user != nil && session?.wallet.unitAttestation != nil }
-  private var rootDestination: RootDestination { isEnrolled ? .dashboard : .enrollment }
+  init(sessionStore: SessionStore) {
+    _sessionViewModel = State(wrappedValue: .init(sessionStore: sessionStore))
+  }
 
   var body: some View {
-    baseContainer
-      .animation(.easeInOut, value: rootDestination)
-      .animation(.easeInOut, value: session)
-      .task(id: session) {
-        initSession()
-      }
-  }
-
-  @ViewBuilder
-  private var baseContainer: some View {
-    if let session {
-      NavigationStack(path: $router.navigationPath) {
-        rootView(session: session)
-          .transition(.blurReplace)
-          .navigationDestination(for: Route.self) { route in
-            return destination(for: route, session: session)
-          }
-          .onOpenURL(perform: handleOpenURL)
-      }
-      .environment(router)
-    } else {
-      ProgressView()
+    NavigationStack(path: $router.navigationPath) {
+      rootView
+        .containerRelativeFrame([.horizontal, .vertical])
+        .background(theme.colors.background)
+        .navigationDestination(for: Route.self) { route in
+          destination(for: route)
+            .containerRelativeFrame([.horizontal, .vertical])
+            .background(theme.colors.background)
+        }
+    }
+    .environment(router)
+    .onOpenURL(perform: handleOpenURL)
+    .task {
+      await sessionViewModel.initSession()
     }
   }
 
   @ViewBuilder
-  private func rootView(session: AppSession) -> some View {
-    switch rootDestination {
-      case .dashboard:
-        DashboardView(credential: session.wallet.credential)
-      case .enrollment:
-        EnrollmentView(appSession: session)
+  private var rootView: some View {
+    switch sessionViewModel.session {
+      case .ready(let session):
+        if !sessionViewModel.isEnrolled {
+          EnrollmentView(
+            appSession: session,
+            setKeyAttestation: sessionViewModel.setKeyAttestation,
+            signIn: sessionViewModel.signIn
+          )
+        } else {
+          DashboardView(credential: session.credential)
+        }
+
+      case .loading, .error:
+        ProgressView()
+    }
+  }
+
+  @ViewBuilder
+  private func destination(for route: Route) -> some View {
+    switch sessionViewModel.session {
+      case .ready(let session):
+        destination(for: route, session: session)
+
+      default:
+        ProgressView()
     }
   }
 
@@ -54,34 +62,27 @@ struct AppRootView: View {
   private func destination(for route: Route, session: AppSession) -> some View {
     switch route {
       case .presentation(let data):
-        if let credential = session.wallet.credential {
+        if let credential = session.credential {
           PresentationView(vpTokenData: data, credential: credential)
         } else {
           Text("No credential found on device!")
         }
       case .issuance(let url):
-        IssuanceView(credentialOfferUri: url, keyTag: session.keyTag, wallet: session.wallet)
+        IssuanceView(
+          credentialOfferUri: url,
+          keyTag: session.keyTag,
+          walletUnitAttestation: session.walletUnitAttestation
+        ) { credential in
+          await sessionViewModel.setCredential(credential)
+        }
       case .credentialDetails(let credential):
         CredentialDetailsView(credential: credential)
       case .settings:
-        SettingsView(onLogout: logout)
+        SettingsView(onLogout: sessionViewModel.signOut)
     }
-  }
-
-  private func initSession() {
-    guard session == nil else {
-      return
-    }
-
-    modelContext.insert(AppSession())
-    try? modelContext.save()
   }
 
   private func handleOpenURL(_ url: URL) {
-    guard isEnrolled else {
-      return
-    }
-
     Task {
       do {
         let deeplink = try Deeplink(from: url)
@@ -91,10 +92,5 @@ struct AppRootView: View {
         print("Failed to deeplink: \(error)")
       }
     }
-  }
-
-  private func logout() {
-    try? modelContext.delete(model: AppSession.self)
-    try? modelContext.save()
   }
 }

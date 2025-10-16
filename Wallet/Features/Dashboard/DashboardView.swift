@@ -3,12 +3,13 @@ import SwiftUI
 struct DashboardView: View {
   let credential: Credential?
   @Environment(Router.self) private var router
+  @Environment(\.theme) private var theme
 
   var body: some View {
     ScrollView {
       VStack(alignment: .center, spacing: 20) {
         Text("dashboard_welcome")
-          .font(.title)
+          .font(theme.fonts.title)
           .padding(.top, 10)
         Text("dashboard_content_1")
 
@@ -25,7 +26,7 @@ struct DashboardView: View {
       ToolbarItem(placement: .title) {
         HStack {
           Image(.diggLogo).resizable().frame(width: 24, height: 24)
-          Text("ID-plånboken").font(.caption)
+          Text("ID-plånboken").font(theme.fonts.caption)
         }
       }
       ToolbarItem(placement: .topBarTrailing) {
@@ -36,6 +37,7 @@ struct DashboardView: View {
         }
       }
     }
+    .background(.clear)
     .toolbarRole(.editor)
   }
 }
