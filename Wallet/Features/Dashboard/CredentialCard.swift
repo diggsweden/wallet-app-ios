@@ -2,15 +2,16 @@ import SwiftUI
 
 struct CredentialCard: View {
   let credential: Credential?
-  @Environment(\.openURL) var openURL
-  @Environment(Router.self) var router
+  @Environment(\.openURL) private var openURL
+  @Environment(Router.self) private var router
+  @Environment(\.theme) private var theme
 
   var body: some View {
     credentialContainer
       .frame(width: 320, height: 200)
       .background(
         RoundedRectangle(cornerRadius: 12, style: .continuous)
-          .fill(Theme.primaryColor.opacity(credential == nil ? 0.3 : 1))
+          .fill(credential == nil ? theme.colors.primaryAccent : theme.colors.secondary)
       )
   }
 
@@ -41,7 +42,7 @@ struct CredentialCard: View {
         Text("Identity document with \(credential.disclosures.count) disclosures")
         Spacer()
         Text(credential.issuedAt, format: .dateTime.day().month().year())
-          .font(.caption)
+          .font(theme.fonts.caption)
           .frame(maxWidth: .infinity, alignment: .trailing)
       }
       .padding()
@@ -60,11 +61,11 @@ struct CredentialCard: View {
       }
       openURL(url)
     } label: {
-      VStack(spacing: 8) {
+      VStack(spacing: 12) {
         Image(systemName: "plus.circle.fill")
           .resizable()
           .frame(width: 44, height: 44)
-          .foregroundStyle(Theme.primaryColor)
+          .foregroundStyle(theme.colors.onSurface)
         Text("Add new credential")
       }
       .frame(maxWidth: .infinity, maxHeight: .infinity)

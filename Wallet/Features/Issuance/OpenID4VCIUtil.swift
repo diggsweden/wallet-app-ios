@@ -50,7 +50,7 @@ struct OpenID4VCIUtil {
       body: try encoder.encode(credentialRequest)
     )
     guard let credential = response.credentials.first else {
-      throw AppError(message: "Could not fetch credential")
+      throw AppError(reason: "Could not fetch credential")
     }
 
     return credential.credential

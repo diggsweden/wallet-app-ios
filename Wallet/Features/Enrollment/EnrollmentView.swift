@@ -1,20 +1,35 @@
 import SwiftData
 import SwiftUI
+import WalletMacrosClient
 
 struct EnrollmentView: View {
   let appSession: AppSession
-  @Environment(\.modelContext) private var modelContext
+  let setKeyAttestation: (String) async -> Void
+  let signIn: (User) async -> Void
+
   @Environment(\.gatewayClient) private var gatewayClient
+  @Environment(\.theme) private var theme
+  @Environment(\.orientation) private var orientation
+  @Environment(\.openURL) private var openURL
   @State private var flow = EnrollmentFlow()
   @State private var context = EnrollmentContext()
 
   var body: some View {
-    VStack(spacing: 24) {
+    let slideTransition: AnyTransition = orientation.isLandscape ? .move(edge: .bottom) : .slide
+
+    adaptiveStack {
+      landscapeSpacer
+
       headerView
         .id(flow.step)
         .transition(.blurReplace)
+
+      landscapeSpacer
+
       currentStepView
-        .transition(.slide)
+        .transition(
+          slideTransition.combined(with: .opacity)
+        )
     }
     .animation(.easeInOut, value: flow.step)
     .padding()
@@ -24,31 +39,63 @@ struct EnrollmentView: View {
     try flow.advance(with: context)
   }
 
+  @ViewBuilder
+  private func adaptiveStack<Content: View>(
+    @ViewBuilder content: () -> Content
+  ) -> some View {
+    switch orientation {
+      case .landscape:
+        HStack(spacing: 24) { content() }
+      case .portrait:
+        VStack(spacing: 24) { content() }
+    }
+  }
+
+  @ViewBuilder
+  private var landscapeSpacer: some View {
+    if orientation.isLandscape {
+      Spacer()
+    }
+  }
+
   private var headerView: some View {
     VStack(spacing: 12) {
       switch flow.step {
         case .intro:
           Image(.diggLogo)
           Text("Välkommen!")
+
         case .contactInfo:
           Image(systemName: "person.badge.plus")
           Text("Kontaktuppgifter")
+
         case .pin:
           Image(systemName: "lock.open.fill")
           Text("Ange ny PIN-kod")
+          Text("6 siffror")
+            .font(theme.fonts.body)
+
         case .verifyPin:
           Image(systemName: "lock.fill")
           Text("Bekräfta PIN-kod")
+          Text("6 siffror")
+            .font(theme.fonts.body)
+
         case .wua:
           Image(systemName: "gearshape.arrow.trianglehead.2.clockwise.rotate.90")
-          Text("Sätter upp plånbok...")
+          Text("Sätter upp plånbok")
+
+        case .pid:
+          Image(systemName: "person.text.rectangle")
+          Text("Lägg till ID-handling")
+
         case .done:
           Image(systemName: "checkmark.circle.fill")
             .foregroundStyle(Color.green)
           Text("Klart!")
       }
     }
-    .font(.title)
+    .font(theme.fonts.titleLarge)
   }
 
   @ViewBuilder
@@ -57,7 +104,7 @@ struct EnrollmentView: View {
       case .intro:
         EnrollmentInfoView(
           bodyText:
-            "Detta är ett demo för svenska identitetsplånboken. Gå vidare för att skapa ett konto och ladda ner ditt ID-bevis."
+            "Detta är en demo av den svenska identitetsplånboken. Fortsätt för att skapa ett konto och ladda ner ditt ID-bevis."
         ) {
           try advanceIfValid()
         }
@@ -71,41 +118,57 @@ struct EnrollmentView: View {
         }
 
       case .pin:
-        PinView { pin in
+        PinView(buttonText: "enrollmentNext") { pin in
           context.pin = pin
           try advanceIfValid()
         }
 
       case .verifyPin:
-        PinView { pin in
+        PinView(buttonText: "Bekräfta") { pin in
           context.verifyPin = pin
           try advanceIfValid()
         }
 
       case .wua:
         WuaView(
-          walletId: appSession.wallet.unitId,
+          walletId: appSession.deviceId,
           keyTag: appSession.keyTag,
           gatewayClient: gatewayClient
         ) { jwt in
-          appSession.wallet.unitAttestation = jwt
-          try modelContext.save()
+          Task {
+            await setKeyAttestation(jwt)
+          }
           try advanceIfValid()
+        }
+
+      case .pid:
+        EnrollmentInfoView(bodyText: "För att använda appen behöver du lägga till en ID-handling") {
+          let url = #URL("https://wallet.sandbox.digg.se/prepare-credential-offer")
+          openURL(url)
+        }
+        .onChange(of: appSession.credential) {
+          try? advanceIfValid()
         }
 
       case .done:
         EnrollmentInfoView(bodyText: "Nu är din plånbok redo för att användas!") {
-          appSession.user = User(
+          let user = User(
             email: context.email,
             pin: context.pin,
             phoneNumber: context.phoneNumber
           )
-          try modelContext.save()
+          Task {
+            await signIn(user)
+          }
         }
     }
   }
 }
 
 #Preview {
-  EnrollmentView(appSession: AppSession())
+  EnrollmentView(
+    appSession: AppSession(),
+    setKeyAttestation: { _ in },
+    signIn: { _ in }
+  )
 }

@@ -19,7 +19,7 @@ class PresentationViewModel {
 
   func matchDisclosures() throws {
     guard case let .byDigitalCredentialsQuery(dcql) = data.presentationQuery else {
-      throw AppError(message: "We support only DCQL")
+      throw AppError(reason: "We support only DCQL")
     }
 
     let claimPaths: [String] = dcql.credentials.reduce(into: []) { result, query in
@@ -56,7 +56,7 @@ class PresentationViewModel {
       let payload = try? createSubmissionPayload(for: vpToken),
       let body = try? createRequestBody(with: payload)
     else {
-      throw AppError(message: "Failed creating request body")
+      throw AppError(reason: "Failed creating request body")
     }
 
     let response: RedirectUrl = try await NetworkClient.shared.fetch(
@@ -78,7 +78,7 @@ class PresentationViewModel {
       let recipientKey = data.clientMetaData?.jwkSet?.keys.first,
       let publicKey = try? recipientKey.toEcPublicKey()
     else {
-      throw AppError(message: "Could not create JWE")
+      throw AppError(reason: "Could not create JWE")
     }
 
     let jwe = try JWTUtil.createJWE(
@@ -125,7 +125,7 @@ class PresentationViewModel {
     nonce: String
   ) throws -> String {
     guard let sdJwtData = sdJwt.data(using: .ascii) else {
-      throw AppError(message: "Failed converting sdJwt to Data")
+      throw AppError(reason: "Failed converting sdJwt to Data")
     }
     let hash = SHA256.hash(data: sdJwtData)
     let sdHash = Data(hash).base64URLEncodedString()

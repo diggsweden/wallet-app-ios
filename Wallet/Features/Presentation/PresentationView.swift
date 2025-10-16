@@ -3,7 +3,8 @@ import SwiftUI
 
 struct PresentationView: View {
   @State private var viewModel: PresentationViewModel
-  @Environment(Router.self) var router
+  @Environment(Router.self) private var router
+  @Environment(\.theme) private var theme
 
   init(vpTokenData: ResolvedRequestData.VpTokenData, credential: Credential) {
     _viewModel = State(
@@ -39,17 +40,12 @@ struct PresentationView: View {
           }
         }
       }
-      Button {
+      PrimaryButton("Skicka") {
         Task {
           try? await viewModel.sendDisclosures()
           router.pop()
         }
-      } label: {
-        Text("Send")
-          .padding(6)
       }
-      .buttonStyle(.borderedProminent)
-      .tint(Theme.primaryColor)
       .disabled(viewModel.selectedDisclosures.filter(\.self.isSelected).isEmpty)
     }
     .navigationTitle("Presenting")
