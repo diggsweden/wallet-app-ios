@@ -6,13 +6,21 @@ struct PresentationView: View {
   @Environment(Router.self) private var router
   @Environment(\.theme) private var theme
 
-  init(vpTokenData: ResolvedRequestData.VpTokenData, credential: Credential) {
+  init(vpTokenData: ResolvedRequestData.VpTokenData, keyTag: UUID, credential: Credential?) {
     _viewModel = State(
-      wrappedValue: PresentationViewModel(data: vpTokenData, credential: credential)
+      wrappedValue: .init(data: vpTokenData, keyTag: keyTag, credential: credential)
     )
   }
 
   var body: some View {
+    if viewModel.credential != nil {
+      presentView
+    } else {
+      errorView
+    }
+  }
+
+  private var presentView: some View {
     VStack {
       ScrollView {
         CardView {
@@ -51,6 +59,16 @@ struct PresentationView: View {
     .navigationTitle("Presenting")
     .task {
       try? viewModel.matchDisclosures()
+    }
+  }
+
+  private var errorView: some View {
+    VStack(spacing: 24) {
+      Text("Hittade ingen ID-handling!")
+        .foregroundStyle(Color.red)
+      PrimaryButton("Gå tillbaka") {
+        router.pop()
+      }
     }
   }
 }
