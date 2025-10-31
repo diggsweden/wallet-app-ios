@@ -13,30 +13,29 @@ struct EnrollmentValidator {
   ) throws {
     switch step {
       case .contactInfo:
-        try validateEmailPair(email: context.email, verify: context.verifyEmail)
+        try validateEmailPair(email: context.email, verifyEmail: context.verifyEmail)
       case .pin:
         try validatePin(context.pin)
       case .verifyPin:
-        try validatePinMatch(pin: context.pin, verify: context.verifyPin)
+        try validatePinMatch(originalPin: context.pin, verifyPin: context.verifyPin)
       default:
         break
     }
   }
 
   private static func validateEmailPair(
-    email rawEmail: String,
-    verify rawVerify: String
+    email: String,
+    verifyEmail: String
   ) throws {
-    let email = rawEmail.trimmingCharacters(in: .whitespacesAndNewlines)
-    let verify = rawVerify.trimmingCharacters(in: .whitespacesAndNewlines)
-
     guard !email.isEmpty else {
       throw EnrollmentError.emptyEmail
     }
+
     guard isValidEmail(email) else {
       throw EnrollmentError.invalidEmail
     }
-    guard email == verify else {
+
+    guard email == verifyEmail else {
       throw EnrollmentError.emailMismatch
     }
   }
@@ -45,22 +44,19 @@ struct EnrollmentValidator {
     guard !pin.isEmpty else {
       throw EnrollmentError.emptyPin
     }
+
     guard isSixDigitNumeric(pin) else {
       throw EnrollmentError.invalidPinDigits
     }
   }
 
   private static func validatePinMatch(
-    pin: String,
-    verify: String
+    originalPin: String,
+    verifyPin: String
   ) throws {
-    guard !verify.isEmpty else {
-      throw EnrollmentError.emptyPin
-    }
-    guard isSixDigitNumeric(pin) else {
-      throw EnrollmentError.invalidPinDigits
-    }
-    guard pin == verify else {
+    try validatePin(verifyPin)
+
+    guard originalPin == verifyPin else {
       throw EnrollmentError.pinMismatch
     }
   }
@@ -71,7 +67,10 @@ struct EnrollmentValidator {
   }
 
   private static func isSixDigitNumeric(_ string: String) -> Bool {
-    guard string.count == 6 else { return false }
-    return string.allSatisfy({ $0.isNumber })
+    guard string.count == 6 else {
+      return false
+    }
+
+    return string.allSatisfy(\.isNumber)
   }
 }

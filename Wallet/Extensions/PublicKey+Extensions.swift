@@ -6,7 +6,7 @@ extension P256.Signing.PublicKey {
     let bytes = self.x963Representation
 
     guard bytes.first == 0x04, bytes.count == 65 else {
-      throw AppError(message: "Unexpected key format")
+      throw AppError(reason: "Unexpected key format")
     }
 
     // x: first 32 bytes

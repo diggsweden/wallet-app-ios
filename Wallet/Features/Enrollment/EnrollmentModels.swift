@@ -28,7 +28,14 @@ struct EnrollmentFlow {
   var step: EnrollmentStep = .intro
 
   mutating func advance(with context: EnrollmentContext) throws {
-    try EnrollmentValidator.validate(step: step, context: context)
+    do {
+      try EnrollmentValidator.validate(step: step, context: context)
+    } catch let error as EnrollmentError {
+      if case .pinMismatch = error {
+        step = .pin
+      }
+      throw error
+    }
     step = step.next()
   }
 
@@ -38,7 +45,7 @@ struct EnrollmentFlow {
 }
 
 enum EnrollmentStep {
-  case intro, contactInfo, pin, verifyPin, wua, done
+  case intro, contactInfo, pin, verifyPin, wua, pid, done
 
   func next() -> EnrollmentStep {
     switch self {
@@ -46,7 +53,8 @@ enum EnrollmentStep {
       case .contactInfo: return .pin
       case .pin: return .verifyPin
       case .verifyPin: return .wua
-      case .wua: return .done
+      case .wua: return .pid
+      case .pid: return .done
       case .done: return .done
     }
   }

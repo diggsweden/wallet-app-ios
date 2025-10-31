@@ -11,7 +11,7 @@ extension SecKey {
       bytes.first == 0x04,
       bytes.count == 65
     else {
-      throw AppError(message: "Failed getting P256 coordinates for public key")
+      throw AppError(reason: "Failed getting P256 coordinates for public key")
     }
 
     // x: first 32 bytes

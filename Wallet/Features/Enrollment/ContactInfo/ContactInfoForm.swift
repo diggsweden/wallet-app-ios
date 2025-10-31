@@ -28,8 +28,8 @@ struct ContactInfoForm: View {
       .textContentType(.telephoneNumber)
     }
     .toolbar {
-      ToolbarItem(placement: .bottomBar) {
-        PrimaryButton(label: "Fortsätt") {
+      EnrollmentBottomToolbarButton {
+        PrimaryButton("enrollmentNext") {
           handleSubmit()
         }
       }

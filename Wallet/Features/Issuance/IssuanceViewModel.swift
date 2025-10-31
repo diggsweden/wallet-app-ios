@@ -53,7 +53,7 @@ class IssuanceViewModel {
         let preAuthCodeString = preAuthCode.preAuthorizedCode,
         let txCode = preAuthCode.txCode
       else {
-        throw AppError(message: "Missing pre-auth code")
+        throw AppError(reason: "Missing pre-auth code")
       }
 
       let result = try await issuer.authorizeWithPreAuthorizationCode(
@@ -141,7 +141,7 @@ class IssuanceViewModel {
     let parts = credential.components(separatedBy: "~")
 
     guard let jwt = parts.first else {
-      throw AppError(message: "Failed to parse credential")
+      throw AppError(reason: "Failed to parse credential")
     }
 
     let issuerDisplay = IssuerDisplay(

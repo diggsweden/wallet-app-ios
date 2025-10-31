@@ -1,8 +1,8 @@
 import Foundation
 
 struct AppError: LocalizedError {
-  let message: String
+  let reason: String
   var errorDescription: String? {
-    return message
+    return reason
   }
 }

@@ -20,7 +20,7 @@ struct WuaView: View {
   var body: some View {
     content
       .toolbar {
-        ToolbarItem(placement: .bottomBar) {
+        EnrollmentBottomToolbarButton {
           toolbarButton
         }
       }
@@ -32,18 +32,19 @@ struct WuaView: View {
   @ViewBuilder private var content: some View {
     switch result {
       case .success:
-        Text("Klart!")
+        Text("Redo!")
       case .failure(let error):
         ErrorView(text: error.message, show: true)
       case nil:
-        ProgressView("Hämtar WUA")
+        ProgressView("Hämtar intyg")
     }
   }
 
-  @ViewBuilder private var toolbarButton: some View {
+  @ViewBuilder
+  private var toolbarButton: some View {
     switch result {
       case .success(let jwt):
-        PrimaryButton(label: "Fortsätt") {
+        PrimaryButton("enrollmentNext") {
           do {
             try onSubmit(jwt)
           } catch {
@@ -51,7 +52,7 @@ struct WuaView: View {
           }
         }
       case .failure:
-        PrimaryButton(label: "Försök igen") {
+        PrimaryButton("Försök igen") {
           self.reload += 1
         }
       case nil:

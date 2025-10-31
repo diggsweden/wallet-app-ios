@@ -1,37 +1,73 @@
 import SwiftUI
 
-struct T9Key: Identifiable, Hashable {
-  let digit: Character
-  let letters: String
-  var id: Character { digit }
-}
-
 struct PinView: View {
   let maxDigits: Int = 6
+  let buttonText: String
   let onComplete: (String) throws -> Void
+  @Environment(\.theme) private var theme
+  @Environment(\.dynamicTypeSize) private var dynamicType
+  @Environment(\.orientation) private var orientation
+  @Environment(ToastViewModel.self) private var toastViewModel
   @State private var pin: String = ""
   @State private var error: String?
   @State private var onErrorFeedback: Bool = false
-  @State private var onTapFeedback: Bool = false
+  @State private var gridWidth: CGFloat = 0
 
-  private let digitRows: [[T9Key]] = [
-    [
-      .init(digit: "1", letters: ""),
-      .init(digit: "2", letters: "ABC"),
-      .init(digit: "3", letters: "DEF"),
-    ],
-    [
-      .init(digit: "4", letters: "GHI"),
-      .init(digit: "5", letters: "JKL"),
-      .init(digit: "6", letters: "MNO"),
-    ],
-    [
-      .init(digit: "7", letters: "PQRS"),
-      .init(digit: "8", letters: "TUV"),
-      .init(digit: "9", letters: "WXYZ"),
-    ],
-    [.init(digit: "0", letters: "+")],
-  ]
+  init(
+    buttonText: String = "Identifiera",
+    onComplete: @escaping (String) throws -> Void,
+  ) {
+    self.buttonText = buttonText
+    self.onComplete = onComplete
+  }
+
+  var body: some View {
+    let verticalSpacing = orientation.isLandscape ? 20.0 : 38.0
+
+    VStack(spacing: verticalSpacing) {
+      pinDots
+
+      T9KeypadView(
+        onTapDigit: { updatePin(with: $0) },
+        clearButtonDisabled: pin.count < 1,
+        onClear: { pin.removeLast() }
+      )
+      .background(
+        GeometryReader { proxy in
+          Color.clear.preference(
+            key: GridWidthKey.self,
+            value: proxy.size.width
+          )
+        }
+      )
+
+      PrimaryButton(buttonText, maxWidth: gridWidth) {
+        handlePinComplete()
+      }
+    }
+    .onPreferenceChange(GridWidthKey.self) { gridWidth = $0 }
+    .scrollInLandscape
+    .sensoryFeedback(.error, trigger: onErrorFeedback)
+  }
+
+  private var pinDots: some View {
+    HStack(spacing: 20) {
+      ForEach(0 ..< maxDigits, id: \.self) { index in
+        PinDot(
+          filled: index < pin.count,
+          color: theme.colors.buttonSecondaryHover,
+          size: 20
+        )
+      }
+    }
+  }
+
+  private struct GridWidthKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+      value = max(value, nextValue())
+    }
+  }
 
   private func updatePin(with digit: Character) {
     guard pin.count < maxDigits else {
@@ -39,16 +75,6 @@ struct PinView: View {
     }
 
     pin.append(digit)
-    onTapFeedback.toggle()
-
-    if pin.count == maxDigits {
-      handlePinComplete()
-    }
-  }
-
-  private func clearPin() {
-    pin = ""
-    onTapFeedback.toggle()
   }
 
   private func handlePinComplete() {
@@ -56,83 +82,16 @@ struct PinView: View {
       try onComplete(pin)
       error = nil
     } catch {
-      self.error = error.message
+      toastViewModel.showError(error.message ?? "Något gick fel!")
       onErrorFeedback.toggle()
       pin = ""
-    }
-  }
-
-  var body: some View {
-    VStack(spacing: 12) {
-      ErrorView(text: error, show: error != nil)
-      VStack {
-        pinField
-        t9Grid
-      }
-      .phaseAnimator([0, 10], trigger: onErrorFeedback) { view, phase in
-        view.offset(x: phase)
-      } animation: { _ in
-        .spring(response: 0.15, dampingFraction: 0.3)
-      }
-    }
-    .sensoryFeedback(.error, trigger: onErrorFeedback)
-    .sensoryFeedback(.impact, trigger: onTapFeedback)
-    .frame(maxWidth: 400, maxHeight: 400)
-    .padding()
-  }
-
-  var pinField: some View {
-    SecureField("6-siffrig PIN", text: $pin)
-      .multilineTextAlignment(.center)
-      .keyboardType(.numberPad)
-      .textFieldStyle(.primary)
-      .allowsHitTesting(false)
-  }
-
-  var clearButton: some View {
-    Button(action: clearPin) {
-      Image(systemName: "chevron.left")
-    }
-    .buttonStyle(.plain)
-  }
-
-  var t9Grid: some View {
-    Grid {
-      ForEach(digitRows, id: \.self) { row in
-        GridRow {
-          ForEach(row) { key in
-            if row.count == 1 {
-              clearButton
-              keyCell(for: key)
-            } else {
-              keyCell(for: key)
-            }
-          }
-        }
-      }
-    }
-  }
-
-  @ViewBuilder
-  private func keyCell(for key: T9Key) -> some View {
-    VStack(spacing: 2) {
-      Text(String(key.digit))
-        .font(.title2)
-        .fontWeight(.semibold)
-      Text(key.letters)
-        .font(.footnote)
-        .foregroundStyle(.secondary)
-    }
-    .frame(maxWidth: .infinity, maxHeight: .infinity)
-    .contentShape(Rectangle())
-    .onTapGesture {
-      updatePin(with: key.digit)
     }
   }
 }
 
 #Preview {
-  PinView {
-    _ in
-  }
+  PinView { _ in }
+    .themed
+    .withOrientation
+    .withToast
 }
