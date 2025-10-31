@@ -1,0 +1,356 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Wallet Client Gateway",
+    "version": "v1"
+  },
+  "servers": [
+    {
+      "url": "/api"
+    }
+  ],
+  "security": [
+    {
+      "ApiKeyScheme": []
+    }
+  ],
+  "paths": {
+    "/wua": {
+      "post": {
+        "tags": [
+          "wua-controller"
+        ],
+        "operationId": "createWua",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWuaDto"
+              },
+              "example": {
+                "walletId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                "jwk": {
+                  "kty": "EC",
+                  "crv": "P-256",
+                  "x": "1fH0eqXgMMwCIafNaDc1axdCjLlw7zpTLvLWjpPvhEc",
+                  "y": "5qOejJs7BK-jLingaUTEhBrzP_YPyHfptS5yWE98I40"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "500": {
+            "description": "Could not create Wua",
+            "content": {}
+          },
+          "201": {
+            "description": "Wua created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WuaDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authorized"
+          },
+          "400": {
+            "description": "Bad input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/attribute-attestations": {
+      "get": {
+        "tags": [
+          "attestation-controller"
+        ],
+        "operationId": "getAttestationsById",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "Unknown error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestDto"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Attestation found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientAttestationListDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "attestation-controller"
+        ],
+        "operationId": "createAttribute",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAttestationDto"
+              },
+              "example": {
+                "hsmId": "cbe80ad0-6a7d-4a5a-9891-8b4e95fa4d49",
+                "wuaId": "790acda4-3dec-4d93-8efe-71375109d30e",
+                "attestationData": "string"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "500": {
+            "description": "Could not create attestation, server error",
+            "content": {}
+          },
+          "201": {
+            "description": "Attestation created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientAttestationDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad input, unable to create attestation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/attribute-attestations/{id}": {
+      "get": {
+        "tags": [
+          "attestation-controller"
+        ],
+        "operationId": "getAttestationById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "Unknown error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestDto"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Attestation found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientAttestationDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Attestion not found"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BadRequestDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "instance": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateWuaDto": {
+        "type": "object",
+        "properties": {
+          "walletId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "jwk": {
+            "$ref": "#/components/schemas/JwkDto"
+          }
+        },
+        "required": [
+          "jwk",
+          "walletId"
+        ]
+      },
+      "JwkDto": {
+        "type": "object",
+        "properties": {
+          "kty": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kid": {
+            "type": "string"
+          },
+          "alg": {
+            "type": "string"
+          },
+          "use": {
+            "type": "string"
+          },
+          "crv": {
+            "type": "string",
+            "minLength": 1
+          },
+          "x": {
+            "type": "string",
+            "minLength": 1
+          },
+          "y": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "crv",
+          "kty",
+          "x",
+          "y"
+        ]
+      },
+      "WuaDto": {
+        "type": "object",
+        "properties": {
+          "jwt": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateAttestationDto": {
+        "type": "object",
+        "properties": {
+          "hsmId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "wuaId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "attestationData": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "attestationData",
+          "hsmId",
+          "wuaId"
+        ]
+      },
+      "ClientAttestationDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "hsmId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "wuaId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "attestationData": {
+            "type": "string"
+          }
+        }
+      },
+      "ClientAttestationListDto": {
+        "type": "object",
+        "properties": {
+          "attestations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClientAttestationDto"
+            }
+          },
+          "hsmId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyScheme": {
+        "type": "apiKey",
+        "name": "X-API-KEY",
+        "in": "header"
+      }
+    }
+  }
+}

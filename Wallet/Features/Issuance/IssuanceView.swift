@@ -1,15 +1,19 @@
 import SwiftUI
 
 struct IssuanceView: View {
-  private let wallet: Wallet?
+  private let wallet: Wallet
   @State private var viewModel: IssuanceViewModel
   @Environment(Router.self) private var router
   @Environment(\.modelContext) private var modelContext
 
-  init(credentialOfferUri: String, wallet: Wallet?) {
+  init(credentialOfferUri: String, keyTag: UUID, wallet: Wallet) {
     self.wallet = wallet
     _viewModel = State(
-      wrappedValue: IssuanceViewModel(credentialOfferUri: credentialOfferUri)
+      wrappedValue: IssuanceViewModel(
+        credentialOfferUri: credentialOfferUri,
+        keyTag: keyTag,
+        wua: wallet.unitAttestation ?? ""
+      )
     )
   }
 
@@ -114,7 +118,7 @@ struct IssuanceView: View {
 
         case .credentialFetched(let credential):
           Button {
-            wallet?.credential = credential
+            wallet.credential = credential
             try? modelContext.save()
             router.pop()
           } label: {

@@ -2,6 +2,7 @@ import Crypto
 import Foundation
 import JOSESwift
 import OpenID4VCI
+import WalletMacrosClient
 
 enum IssuanceState {
   case initial
@@ -15,19 +16,25 @@ enum IssuanceState {
 @Observable
 class IssuanceViewModel {
   let credentialOfferUri: String
-  let openId4VCIClient = Client(public: "wallet-dev")
+  let keyTag: UUID
+  let wua: String
   private(set) var claimsMetadata: [String: Claim] = [:]
   private var issuer: Issuer?
   var issuerMetadata: CredentialIssuerMetadata?
   var state: IssuanceState = .initial
   var authorizationCode: String = ""
+  private var key: SecKey?
+  private let openId4VciUtil = OpenID4VCIUtil()
 
-  init(credentialOfferUri: String) {
+  init(credentialOfferUri: String, keyTag: UUID, wua: String) {
     self.credentialOfferUri = credentialOfferUri
+    self.keyTag = keyTag
+    self.wua = wua
   }
 
   func fetchIssuer() async {
     do {
+      key = try KeychainManager.shared.getOrCreateKey(withTag: keyTag.uuidString)
       let credentialOffer = try await fetchCredentialOffer(with: credentialOfferUri)
       claimsMetadata = getClaimsMetadata(from: credentialOffer)
       issuerMetadata = credentialOffer.credentialIssuerMetadata
@@ -55,7 +62,7 @@ class IssuanceViewModel {
           preAuthorizationCode: preAuthCodeString,
           txCode: txCode
         ),
-        client: openId4VCIClient,
+        client: .init(public: "wallet-dev"),
         transactionCode: input
       )
 
@@ -72,51 +79,48 @@ class IssuanceViewModel {
       let configId = await issuer.issuerMetadata.credentialsSupported.keys.first(where: {
         $0.value.contains("jwt") && $0.value.contains("pid")
       }),
-      let key = try? KeychainManager.shared.getOrCreateKey(withTag: Constants.bindingKeyTag)
+      let key
     else {
       return
     }
 
     do {
-      let result =
-        try await issuer.requestCredential(
-          request: request,
-          bindingKeys: [createBindingKey(from: key)],
-          requestPayload: .configurationBased(
-            credentialConfigurationIdentifier: configId
-          )
-        ) {
-          Issuer.createResponseEncryptionSpec($0)
+      let nonce =
+        if let nonceEndpoint = await issuer.issuerMetadata.nonceEndpoint?.url {
+          try await openId4VciUtil.fetchNonce(url: nonceEndpoint)
+        } else {
+          ""
         }
-        .get()
 
-      guard
-        case let .success(response) = result,
-        let issuedCredential = response.credentialResponses.first,
-        case let .issued(_, credential, _, _) = issuedCredential
-      else {
-        throw AppError(message: "Failed issuing credential")
-      }
+      let jwtProof = try JWTUtil.createJWT(
+        with: key,
+        headers: [
+          "typ": "openid4vci-proof+jwt",
+          "key_attestation": wua,
+        ],
+        payload: [
+          "nonce": nonce,
+          "aud": await issuer.issuerMetadata.credentialIssuerIdentifier.url.absoluteString,
+        ],
+      )
 
-      let credentialString: String? = {
-        if case let .string(s) = credential {
-          return s
-        }
-        if case let .json(j) = credential,
-          j.type == .array,
-          let s = j.first?.1["credential"].stringValue
-        {
-          return s
-        }
-        return nil
-      }()
+      //      let credentialRequest = CredentialRequest(
+      //        credentialConfigurationId: configId.value,
+      //        proofs: JWTProofType(jwt: [jwtProof])
+      //      )
 
-      guard let credentialString else {
-        throw AppError(message: "Failed parsing credential string value")
-      }
+      let oldCredentialRequest = CredentialRequestOld(
+        credentialConfigurationId: configId.value,
+        proof: ProofOld(jwt: jwtProof, proofType: "jwt")
+      )
+      let credential = try await openId4VciUtil.fetchCredential(
+        url: issuer.issuerMetadata.credentialEndpoint.url,
+        token: request.accessToken.accessToken,
+        credentialRequest: oldCredentialRequest
+      )
 
       let display = await issuer.issuerMetadata.display.first
-      let parsedCredential = try parseCredential(credentialString, issuer: display)
+      let parsedCredential = try parseCredential(credential, issuer: display)
 
       state = .credentialFetched(credential: parsedCredential)
     } catch {
@@ -124,22 +128,12 @@ class IssuanceViewModel {
     }
   }
 
-  func saveCredential(_ credential: Credential) {
-    guard let json = try? JSONEncoder().encode(credential) else {
-      return
-    }
-
-    let jsonString = String(data: json, encoding: .utf8)
-
-    UserDefaults.standard.set(jsonString, forKey: "credential")
-  }
-
   private func createBindingKey(from secKey: SecKey) throws -> BindingKey {
     return .jwk(
       algorithm: JWSAlgorithm(.ES256),
       jwk: try secKey.toJWK(),
       privateKey: .secKey(secKey),
-      issuer: openId4VCIClient.id
+      issuer: "wallet-dev"
     )
   }
 
@@ -180,16 +174,12 @@ class IssuanceViewModel {
   }
 
   private func createIssuer(from credentialOffer: CredentialOffer) async throws -> Issuer {
-    guard let redirectionUrl = URL(string: "eudi-wallet://auth") else {
-      throw AppError(message: "Invalid redirection URL")
-    }
-
     return try Issuer(
       authorizationServerMetadata: credentialOffer.authorizationServerMetadata,
       issuerMetadata: credentialOffer.credentialIssuerMetadata,
       config: OpenId4VCIConfig(
-        client: openId4VCIClient,
-        authFlowRedirectionURI: redirectionUrl
+        client: .init(public: "wallet-dev"),
+        authFlowRedirectionURI: #URL("eudi-wallet://auth")
       )
     )
   }
@@ -208,9 +198,9 @@ class IssuanceViewModel {
       .flatMap { supportedCredential in
         switch supportedCredential {
           case .sdJwtVc(let config):
-            return config.claims
+            return config.credentialMetadata?.claims ?? []
           case .msoMdoc(let config):
-            return config.claims
+            return config.credentialMetadata?.claims ?? []
           default:
             return []
         }

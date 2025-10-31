@@ -18,7 +18,7 @@ struct EnrollmentValidator {
         try validatePin(context.pin)
       case .verifyPin:
         try validatePinMatch(pin: context.pin, verify: context.verifyPin)
-      case .intro, .done:
+      default:
         break
     }
   }

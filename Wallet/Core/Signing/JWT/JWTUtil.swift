@@ -20,17 +20,18 @@ struct JWTUtil {
 
   static func createJWT(
     with privateKey: SecKey,
+    headers: [String: Any],
     payload: [String: Any],
-    headerType: String? = nil
   ) throws -> String {
     let jwk = try privateKey.toJWK()
 
-    var header = JWSHeader(algorithm: .ES256)
-    header.jwkTyped = jwk
+    let headerParams = [
+      "alg": SignatureAlgorithm.ES256.rawValue
+    ]
+    .merging(headers) { (_, new) in new }
 
-    if let headerType {
-      header.typ = headerType
-    }
+    var header = try JWSHeader(parameters: headerParams)
+    header.jwkTyped = jwk
 
     guard let signer = Signer(signatureAlgorithm: .ES256, key: privateKey) else {
       throw JWTError.invalidSigner
@@ -38,7 +39,7 @@ struct JWTUtil {
 
     let now = Int(Date().timeIntervalSince1970)
 
-    let payload: [String: Any] = [
+    let payload = [
       "iat": now,
       "nbf": now,
       "exp": now + 600,
