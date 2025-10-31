@@ -2,7 +2,7 @@ import Foundation
 import SwiftUI
 
 @Observable
-class NavigationModel {
+class Router {
   var navigationPath = NavigationPath()
 
   func go(to route: Route) {

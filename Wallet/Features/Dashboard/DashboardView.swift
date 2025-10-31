@@ -2,17 +2,11 @@ import SwiftUI
 
 struct DashboardView: View {
   let credential: Credential?
-  @Environment(\.openURL) var openURL
+  @Environment(Router.self) private var router
 
   var body: some View {
     ScrollView {
       VStack(alignment: .center, spacing: 20) {
-        VStack(alignment: .center) {
-          Image(.diggLogo).resizable().frame(width: 80, height: 80)
-          Text("ID-plånboken").font(.caption)
-        }
-        .frame(maxWidth: .infinity, alignment: .topLeading)
-
         Text("dashboard_welcome")
           .font(.title)
           .padding(.top, 10)
@@ -20,17 +14,33 @@ struct DashboardView: View {
 
         VStack {
           if let credential {
-            CredentialView(credential: credential)
+            CredentialCard(credential: credential)
           }
-          CredentialView(credential: nil)
+          CredentialCard(credential: nil)
         }
       }
       .padding(.horizontal, 30)
     }
+    .toolbar {
+      ToolbarItem(placement: .title) {
+        HStack {
+          Image(.diggLogo).resizable().frame(width: 24, height: 24)
+          Text("ID-plånboken").font(.caption)
+        }
+      }
+      ToolbarItem(placement: .topBarTrailing) {
+        Button {
+          router.go(to: .settings)
+        } label: {
+          Image(systemName: "gearshape")
+        }
+      }
+    }
+    .toolbarRole(.editor)
   }
 }
 
 #Preview {
   DashboardView(credential: nil)
-    .environment(NavigationModel())
+    .environment(Router())
 }

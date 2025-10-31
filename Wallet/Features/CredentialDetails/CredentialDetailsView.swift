@@ -7,11 +7,11 @@ struct CredentialDetailsView: View {
     ScrollView {
       CardView {
         VStack(spacing: 12) {
-          Text(credential.issuer?.name ?? "").bold()
+          Text(credential.issuer.name).bold()
           Text("Available disclosures:")
           ForEach(Array(credential.disclosures.values)) { disclosure in
             DisclosureView(
-              title: disclosure.claim.display?.first?.name ?? "",
+              title: disclosure.displayName,
               value: disclosure.value
             )
           }

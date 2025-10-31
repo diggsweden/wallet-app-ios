@@ -3,7 +3,7 @@ import SwiftUI
 
 struct PresentationView: View {
   @State private var viewModel: PresentationViewModel
-  @Environment(NavigationModel.self) var navigationModel
+  @Environment(Router.self) var router
 
   init(vpTokenData: ResolvedRequestData.VpTokenData, credential: Credential) {
     _viewModel = State(
@@ -25,7 +25,7 @@ struct PresentationView: View {
             Text("Disclosures to share:").bold()
             ForEach(viewModel.selectedDisclosures) { match in
               DisclosureView(
-                title: match.disclosure.claim.display?.first?.name ?? "",
+                title: match.disclosure.displayName,
                 value: match.disclosure.value,
                 onToggle: { newValue in
                   if let index = viewModel.selectedDisclosures
@@ -42,7 +42,7 @@ struct PresentationView: View {
       Button {
         Task {
           try? await viewModel.sendDisclosures()
-          navigationModel.pop()
+          router.pop()
         }
       } label: {
         Text("Send")

@@ -6,7 +6,7 @@ protocol DeeplinkRouter {
 
 extension DeeplinkRouter {
   func routingFailure(_ reason: String) -> DeeplinkError {
-    return .routingFailure(router: Self.self, reason: reason)
+    return .routingFailure(routerName: String(describing: Self.self), reason: reason)
   }
 }
 
