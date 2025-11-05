@@ -13,3 +13,6 @@ runs:
 
     - run: brew install bash
       shell: bash
+
+    - run: defaults write com.apple.dt.Xcode IDESkipPackagePluginFingerprintValidatation -bool YES
+      shell: bash
