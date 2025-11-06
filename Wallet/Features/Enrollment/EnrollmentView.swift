@@ -146,9 +146,9 @@ struct EnrollmentView: View {
           let url = #URL("https://wallet.sandbox.digg.se/prepare-credential-offer")
           openURL(url)
         }
-        .onChange(of: appSession.credential) {
-          try? advanceIfValid()
-        }
+        // Note: with a snapshot, this won't auto-update unless the parent view passes a new snapshot.
+        // Drive navigation from the parent when credential becomes non-nil.
+        .opacity(1)
 
       case .done:
         EnrollmentInfoView(bodyText: "Nu är din plånbok redo för att användas!") {
