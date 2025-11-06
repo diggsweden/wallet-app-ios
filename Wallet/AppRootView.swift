@@ -62,11 +62,8 @@ struct AppRootView: View {
   private func destination(for route: Route, session: AppSession) -> some View {
     switch route {
       case .presentation(let data):
-        if let credential = session.credential {
-          PresentationView(vpTokenData: data, credential: credential)
-        } else {
-          Text("No credential found on device!")
-        }
+        PresentationView(vpTokenData: data, keyTag: session.keyTag, credential: session.credential)
+
       case .issuance(let url):
         IssuanceView(
           credentialOfferUri: url,
@@ -75,8 +72,10 @@ struct AppRootView: View {
         ) { credential in
           await sessionViewModel.setCredential(credential)
         }
+
       case .credentialDetails(let credential):
         CredentialDetailsView(credential: credential)
+
       case .settings:
         SettingsView(onLogout: sessionViewModel.signOut)
     }

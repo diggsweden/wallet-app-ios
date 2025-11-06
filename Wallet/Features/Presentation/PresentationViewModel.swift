@@ -9,17 +9,23 @@ import UIKit
 @Observable
 class PresentationViewModel {
   let data: ResolvedRequestData.VpTokenData
-  let credential: Credential
+  let keyTag: UUID
+  let credential: Credential?
   var selectedDisclosures: [DisclosureSelection] = []
 
-  init(data: ResolvedRequestData.VpTokenData, credential: Credential) {
+  init(data: ResolvedRequestData.VpTokenData, keyTag: UUID, credential: Credential?) {
     self.data = data
+    self.keyTag = keyTag
     self.credential = credential
   }
 
   func matchDisclosures() throws {
     guard case let .byDigitalCredentialsQuery(dcql) = data.presentationQuery else {
       throw AppError(reason: "We support only DCQL")
+    }
+
+    guard let credential else {
+      throw AppError(reason: "No credential on device")
     }
 
     let claimPaths: [String] = dcql.credentials.reduce(into: []) { result, query in
@@ -43,8 +49,9 @@ class PresentationViewModel {
 
   func sendDisclosures() async throws {
     guard
-      let key = try? KeychainManager.shared.getOrCreateKey(withTag: Constants.bindingKeyTag),
-      case let .directPostJWT(responseURI: responseUrl) = data.responseMode
+      let key = try? KeychainManager.shared.getOrCreateKey(withTag: keyTag.uuidString),
+      case let .directPostJWT(responseURI: responseUrl) = data.responseMode,
+      let credential
     else {
       return
     }
@@ -52,7 +59,12 @@ class PresentationViewModel {
     let clientId = data.client.id.originalClientId
 
     guard
-      let vpToken = try? createVpToken(with: key, clientId: clientId, nonce: data.nonce),
+      let vpToken = try? createVpToken(
+        with: key,
+        credentialJwt: credential.sdJwt,
+        clientId: clientId,
+        nonce: data.nonce
+      ),
       let payload = try? createSubmissionPayload(for: vpToken),
       let body = try? createRequestBody(with: payload)
     else {
@@ -104,9 +116,13 @@ class PresentationViewModel {
     ]
   }
 
-  private func createVpToken(with secKey: SecKey, clientId: String, nonce: String) throws -> String
-  {
-    let header = credential.sdJwt
+  private func createVpToken(
+    with secKey: SecKey,
+    credentialJwt: String,
+    clientId: String,
+    nonce: String
+  ) throws -> String {
+    let header = credentialJwt
     let body: [String] = selectedDisclosures.compactMap {
       $0.isSelected ? $0.disclosure.base64 : nil
     }

@@ -9,7 +9,7 @@ final class OpenID4VPService {
   }
 
   init() throws {
-    let walletKey = try KeychainManager.shared.getOrCreateKey(withTag: Constants.bindingKeyTag)
+    let walletKey = try KeychainManager.shared.getOrCreateKey(withTag: "todo_key_not_used")
 
     walletConfig = SiopOpenId4VPConfiguration(
       subjectSyntaxTypesSupported: [.jwkThumbprint],
