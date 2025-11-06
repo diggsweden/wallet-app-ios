@@ -3,9 +3,9 @@ import SwiftUI
 import WalletMacrosClient
 
 struct EnrollmentView: View {
-  let appSession: AppSession
+  let userSnapshot: UserSnapshot
   let setKeyAttestation: (String) async -> Void
-  let signIn: (User) async -> Void
+  let signIn: (UserProfile) async -> Void
 
   @Environment(\.gatewayClient) private var gatewayClient
   @Environment(\.theme) private var theme
@@ -131,8 +131,8 @@ struct EnrollmentView: View {
 
       case .wua:
         WuaView(
-          walletId: appSession.deviceId,
-          keyTag: appSession.keyTag,
+          walletId: userSnapshot.deviceId,
+          keyTag: userSnapshot.keyTag,
           gatewayClient: gatewayClient
         ) { jwt in
           Task {
@@ -152,7 +152,7 @@ struct EnrollmentView: View {
 
       case .done:
         EnrollmentInfoView(bodyText: "Nu är din plånbok redo för att användas!") {
-          let user = User(
+          let user = UserProfile(
             email: context.email,
             pin: context.pin,
             phoneNumber: context.phoneNumber
@@ -167,7 +167,13 @@ struct EnrollmentView: View {
 
 #Preview {
   EnrollmentView(
-    appSession: AppSession(),
+    userSnapshot: UserSnapshot(
+      keyTag: UUID(),
+      deviceId: UUID(),
+      userProfile: nil,
+      walletUnitAttestation: nil,
+      credential: nil
+    ),
     setKeyAttestation: { _ in },
     signIn: { _ in }
   )

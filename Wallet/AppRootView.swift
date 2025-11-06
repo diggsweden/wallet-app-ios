@@ -2,12 +2,12 @@ import SwiftData
 import SwiftUI
 
 struct AppRootView: View {
-  @State private var sessionViewModel: SessionViewModel
+  @State private var userViewModel: UserViewModel
   @State private var router = Router()
   @Environment(\.theme) private var theme
 
-  init(sessionStore: SessionStore) {
-    _sessionViewModel = State(wrappedValue: .init(sessionStore: sessionStore))
+  init(userStore: UserStore) {
+    _userViewModel = State(wrappedValue: .init(userStore: userStore))
   }
 
   var body: some View {
@@ -24,22 +24,22 @@ struct AppRootView: View {
     .environment(router)
     .onOpenURL(perform: handleOpenURL)
     .task {
-      await sessionViewModel.initSession()
+      await userViewModel.initUser()
     }
   }
 
   @ViewBuilder
   private var rootView: some View {
-    switch sessionViewModel.session {
-      case .ready(let session):
-        if !sessionViewModel.isEnrolled {
+    switch userViewModel.user {
+      case .ready(let user):
+        if !userViewModel.isEnrolled {
           EnrollmentView(
-            appSession: session,
-            setKeyAttestation: sessionViewModel.setKeyAttestation,
-            signIn: sessionViewModel.signIn
+            userSnapshot: user,
+            setKeyAttestation: userViewModel.setKeyAttestation,
+            signIn: userViewModel.signIn
           )
         } else {
-          DashboardView(credential: session.credential)
+          DashboardView(credential: user.credential)
         }
 
       case .loading, .error:
@@ -49,9 +49,9 @@ struct AppRootView: View {
 
   @ViewBuilder
   private func destination(for route: Route) -> some View {
-    switch sessionViewModel.session {
-      case .ready(let session):
-        destination(for: route, session: session)
+    switch userViewModel.user {
+      case .ready(let user):
+        destination(for: route, userSnapshot: user)
 
       default:
         ProgressView()
@@ -59,25 +59,29 @@ struct AppRootView: View {
   }
 
   @ViewBuilder
-  private func destination(for route: Route, session: AppSession) -> some View {
+  private func destination(for route: Route, userSnapshot: UserSnapshot) -> some View {
     switch route {
       case .presentation(let data):
-        PresentationView(vpTokenData: data, keyTag: session.keyTag, credential: session.credential)
+        PresentationView(
+          vpTokenData: data,
+          keyTag: userSnapshot.keyTag,
+          credential: userSnapshot.credential
+        )
 
       case .issuance(let url):
         IssuanceView(
           credentialOfferUri: url,
-          keyTag: session.keyTag,
-          walletUnitAttestation: session.walletUnitAttestation
+          keyTag: userSnapshot.keyTag,
+          walletUnitAttestation: userSnapshot.walletUnitAttestation
         ) { credential in
-          await sessionViewModel.setCredential(credential)
+          await userViewModel.setCredential(credential)
         }
 
       case .credentialDetails(let credential):
         CredentialDetailsView(credential: credential)
 
       case .settings:
-        SettingsView(onLogout: sessionViewModel.signOut)
+        SettingsView(onLogout: userViewModel.signOut)
     }
   }
 

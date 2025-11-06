@@ -5,9 +5,9 @@ import WalletMacrosClient
 @main
 struct WalletApp: App {
   let clientGateway = GatewayClient()
-  let sessionStore: SessionStore = {
+  let userStore: UserStore = {
     do {
-      return try SessionStore()
+      return try UserStore()
     } catch {
       fatalError("Failed setting up storage")
     }
@@ -15,7 +15,7 @@ struct WalletApp: App {
 
   var body: some Scene {
     WindowGroup {
-      AppRootView(sessionStore: sessionStore)
+      AppRootView(userStore: userStore)
         .themed
         .withOrientation
         .withToast
