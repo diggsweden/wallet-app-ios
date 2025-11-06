@@ -9,14 +9,14 @@ final class OpenID4VPService {
   }
 
   init() throws {
-    let walletKey = try KeychainManager.shared.getOrCreateKey(withTag: "todo_key_not_used")
+    let walletKey = try CryptoKeyStore.shared.getOrCreateKey(withTag: .deviceKey)
 
     walletConfig = SiopOpenId4VPConfiguration(
       subjectSyntaxTypesSupported: [.jwkThumbprint],
       preferredSubjectSyntaxType: .jwkThumbprint,
       decentralizedIdentifier: .did("not_supported"),
       signingKey: walletKey,
-      publicWebKeySet: try WebKeySet(jwk: walletKey.toJWK()),
+      publicWebKeySet: try WebKeySet(jwk: walletKey.toECPublicKey()),
       supportedClientIdSchemes: [
         .x509SanDns(trust: certificateTrustMock)
       ],

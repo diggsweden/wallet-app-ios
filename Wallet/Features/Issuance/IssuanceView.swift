@@ -9,7 +9,6 @@ struct IssuanceView: View {
 
   init(
     credentialOfferUri: String,
-    keyTag: UUID,
     walletUnitAttestation: String?,
     onSave: @escaping (Credential) async -> Void
   ) {
@@ -17,7 +16,6 @@ struct IssuanceView: View {
     _viewModel = .init(
       wrappedValue: .init(
         credentialOfferUri: credentialOfferUri,
-        keyTag: keyTag,
         wua: walletUnitAttestation ?? ""
       )
     )
