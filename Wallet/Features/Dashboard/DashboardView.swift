@@ -9,7 +9,7 @@ struct DashboardView: View {
     ScrollView {
       VStack(alignment: .center, spacing: 20) {
         Text("dashboard_welcome")
-          .font(theme.fonts.title)
+          .textStyle(.h5)
           .padding(.top, 10)
         Text("dashboard_content_1")
 
@@ -24,10 +24,8 @@ struct DashboardView: View {
     }
     .toolbar {
       ToolbarItem(placement: .title) {
-        HStack {
-          Image(.diggLogo).resizable().frame(width: 24, height: 24)
-          Text("ID-plånboken").font(theme.fonts.caption)
-        }
+        Text("ID-plånboken")
+          .textStyle(.caption)
       }
       ToolbarItem(placement: .topBarTrailing) {
         Button {

@@ -1,5 +1,5 @@
 import Foundation
-import SiopOpenID4VP
+import OpenID4VP
 
 struct PresentationRouter: DeeplinkRouter {
   func route(from url: Foundation.URL) async throws -> Route {
@@ -7,7 +7,7 @@ struct PresentationRouter: DeeplinkRouter {
 
     let result = await openID4VPService.sdk.authorize(url: url)
 
-    let request =
+    let resolvedRequest =
       switch result {
         case .notSecured(let request), .jwt(let request):
           request
@@ -15,10 +15,6 @@ struct PresentationRouter: DeeplinkRouter {
           throw routingFailure("Failed to resolve presentation request: \(error)")
       }
 
-    guard case let .vpToken(data) = request else {
-      throw routingFailure("Unsupported presentation type, expected vp_token")
-    }
-
-    return .presentation(vpTokenData: data)
+    return .presentation(vpTokenData: resolvedRequest.request)
   }
 }

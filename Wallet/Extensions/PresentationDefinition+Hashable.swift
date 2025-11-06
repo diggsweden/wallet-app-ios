@@ -1,5 +1,5 @@
 import Foundation
-import SiopOpenID4VP
+import OpenID4VP
 
 extension ResolvedRequestData.VpTokenData: @retroactive Hashable {
   public func hash(into hasher: inout Hasher) {

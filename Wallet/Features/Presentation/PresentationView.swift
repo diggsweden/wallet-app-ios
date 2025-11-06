@@ -1,4 +1,4 @@
-import SiopOpenID4VP
+import OpenID4VP
 import SwiftUI
 
 struct PresentationView: View {
@@ -6,9 +6,9 @@ struct PresentationView: View {
   @Environment(Router.self) private var router
   @Environment(\.theme) private var theme
 
-  init(vpTokenData: ResolvedRequestData.VpTokenData, keyTag: UUID, credential: Credential?) {
+  init(vpTokenData: ResolvedRequestData.VpTokenData, credential: Credential?) {
     _viewModel = State(
-      wrappedValue: .init(data: vpTokenData, keyTag: keyTag, credential: credential)
+      wrappedValue: .init(data: vpTokenData, credential: credential)
     )
   }
 
@@ -24,14 +24,8 @@ struct PresentationView: View {
     VStack {
       ScrollView {
         CardView {
-          Text(
-            "Do you want to share data with \(viewModel.data.client.legalName ?? "Unknown")?"
-          )
-          .frame(maxWidth: .infinity)
-        }
-        CardView {
           VStack(spacing: 12) {
-            Text("Disclosures to share:").bold()
+            Text("Vill du dela följande data?").bold()
             ForEach(viewModel.selectedDisclosures) { match in
               DisclosureView(
                 title: match.disclosure.displayName,
@@ -56,7 +50,7 @@ struct PresentationView: View {
       }
       .disabled(viewModel.selectedDisclosures.filter(\.self.isSelected).isEmpty)
     }
-    .navigationTitle("Presenting")
+    .navigationTitle("Dela attribut")
     .task {
       try? viewModel.matchDisclosures()
     }

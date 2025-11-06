@@ -11,14 +11,15 @@ struct ToastView: View {
   }
 
   var body: some View {
-    let shape = RoundedRectangle(cornerRadius: theme.radius)
+    let shape = RoundedRectangle(cornerRadius: theme.cornerRadius)
 
     VStack(alignment: .trailing, spacing: 12) {
       HStack(alignment: .top, spacing: 20) {
         Image(systemName: icon)
           .font(.system(size: 30))
           .foregroundStyle(accentColor)
-        Text(toast.title).font(theme.fonts.title)
+        Text(toast.title)
+          .textStyle(.h5)
         Button {
           onTap()
         } label: {
@@ -33,8 +34,13 @@ struct ToastView: View {
     .background(background, in: shape)
     .overlay(shape.stroke(accentColor, lineWidth: 1))
     .overlay(alignment: .leading) {
-      accentColor.frame(width: 3)
-        .mask(shape)
+      shape
+        .fill(accentColor)
+        .mask(
+          shape
+            .frame(width: 3)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        )
     }
     .accessibilityElement(children: .combine)
     .padding(.horizontal, 32)
@@ -78,4 +84,5 @@ struct ToastView: View {
   VStack {
     ForEach(toasts) { ToastView($0) {} }
   }
+  .themed
 }

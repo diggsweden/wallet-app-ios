@@ -16,7 +16,6 @@ enum IssuanceState {
 @Observable
 class IssuanceViewModel {
   let credentialOfferUri: String
-  let keyTag: UUID
   let wua: String
   private(set) var claimsMetadata: [String: Claim] = [:]
   private var issuer: Issuer?
@@ -26,20 +25,20 @@ class IssuanceViewModel {
   private var key: SecKey?
   private let openId4VciUtil = OpenID4VCIUtil()
 
-  init(credentialOfferUri: String, keyTag: UUID, wua: String) {
+  init(credentialOfferUri: String, wua: String) {
     self.credentialOfferUri = credentialOfferUri
-    self.keyTag = keyTag
     self.wua = wua
   }
 
   func fetchIssuer() async {
     do {
-      key = try KeychainManager.shared.getOrCreateKey(withTag: keyTag.uuidString)
+      key = try KeychainService.shared.getOrCreateKey(withTag: .walletKey)
       let credentialOffer = try await fetchCredentialOffer(with: credentialOfferUri)
       claimsMetadata = getClaimsMetadata(from: credentialOffer)
       issuerMetadata = credentialOffer.credentialIssuerMetadata
       issuer = try await createIssuer(from: credentialOffer)
       state = .issuerFetched(offer: credentialOffer)
+      await authorize(with: "123123", credentialOffer: credentialOffer)
     } catch {
       print("Error: \(error)")
     }
@@ -68,6 +67,7 @@ class IssuanceViewModel {
 
       let authorizedRequest = try result.get()
       state = .authorized(request: authorizedRequest)
+      await fetchCredential(authorizedRequest)
     } catch {
       print(error)
     }
@@ -131,7 +131,7 @@ class IssuanceViewModel {
   private func createBindingKey(from secKey: SecKey) throws -> BindingKey {
     return .jwk(
       algorithm: JWSAlgorithm(.ES256),
-      jwk: try secKey.toJWK(),
+      jwk: try secKey.toECPublicKey(),
       privateKey: .secKey(secKey),
       issuer: "wallet-dev"
     )
@@ -161,11 +161,13 @@ class IssuanceViewModel {
         }
         let claimId = disclosure[1]
         let claimValue = disclosure[2]
-        let displayName = claimsMetadata[claimId]?.display?.first?.name
+        let displayName: String =
+          claimsMetadata[claimId]?.display?.first?.name
+          ?? claimId.replacingOccurrences(of: "_", with: " ").capitalized
 
         return result[claimId] = Disclosure(
           base64: part,
-          displayName: displayName ?? "",
+          displayName: displayName,
           value: claimValue
         )
       }

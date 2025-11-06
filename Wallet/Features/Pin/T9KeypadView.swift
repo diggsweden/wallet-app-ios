@@ -38,7 +38,7 @@ struct T9KeypadView: View {
 
   var body: some View {
     let verticalSpacing = orientation.isLandscape ? 12.0 : 20.0
-    Grid(horizontalSpacing: 40, verticalSpacing: verticalSpacing) {
+    Grid(horizontalSpacing: 30, verticalSpacing: verticalSpacing) {
       ForEach(digitRows, id: \.self) { row in
         GridRow {
           ForEach(row) { key in
@@ -78,14 +78,7 @@ struct T9KeypadView: View {
   }
 
   private func keyButton(for key: T9Key) -> some View {
-    let shape =
-      orientation.isLandscape
-      ? AnyShape(Capsule())
-      : AnyShape(
-        Circle()
-      )
-    let height = orientation.isLandscape ? 50.0 : 60.0
-    let width = orientation.isLandscape ? 80.0 : 60.0
+    let shape = Capsule()
 
     return Button {
       onTapDigit(key.digit)
@@ -93,14 +86,14 @@ struct T9KeypadView: View {
     } label: {
       VStack(spacing: 2) {
         Text(String(key.digit))
-          .font(theme.fonts.titleLarge)
+          .textStyle(.h2)
           .foregroundStyle(theme.colors.linkPrimary)
         if dynamicType <= .xLarge {
           Text(key.letters)
-            .font(theme.fonts.caption)
+            .textStyle(.caption)
         }
       }
-      .frame(width: width, height: height)
+      .frame(width: 80, height: 50)
       .background(theme.colors.surface, in: shape)
       .contentShape(shape)
     }

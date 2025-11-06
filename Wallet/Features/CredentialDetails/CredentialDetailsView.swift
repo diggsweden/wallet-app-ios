@@ -6,9 +6,11 @@ struct CredentialDetailsView: View {
   var body: some View {
     ScrollView {
       CardView {
-        VStack(spacing: 12) {
-          Text(credential.issuer.name).bold()
-          Text("Available disclosures:")
+        VStack(alignment: .leading, spacing: 12) {
+          Text("**Utfärdare:**\n\(credential.issuer.name)")
+            .textStyle(.bodyLarge)
+          Text("**Attribut:**")
+            .textStyle(.bodyLarge)
           ForEach(Array(credential.disclosures.values)) { disclosure in
             DisclosureView(
               title: disclosure.displayName,
