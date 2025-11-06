@@ -1,5 +1,6 @@
 import Foundation
 
+@MainActor
 final class WuaViewModel {
   let walletId: UUID
   let keyTag: UUID

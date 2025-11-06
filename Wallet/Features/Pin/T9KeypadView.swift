@@ -84,8 +84,8 @@ struct T9KeypadView: View {
       : AnyShape(
         Circle()
       )
-    let height = orientation.isLandscape ? 50.0 : 60.0
-    let width = orientation.isLandscape ? 80.0 : 60.0
+    let height = orientation.isLandscape ? 50.0 : 70.0
+    let width = orientation.isLandscape ? 80.0 : 70.0
 
     return Button {
       onTapDigit(key.digit)
