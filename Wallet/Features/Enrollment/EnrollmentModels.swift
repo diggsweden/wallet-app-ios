@@ -8,22 +8,6 @@ struct EnrollmentContext {
   var verifyPin: String = ""
 }
 
-extension EnrollmentContext {
-  mutating func apply(_ data: ContactInfoData) {
-    email = data.email
-    verifyEmail = data.verifyEmail
-    phoneNumber = data.phoneNumber
-  }
-
-  var userData: ContactInfoData {
-    ContactInfoData(
-      email: email,
-      verifyEmail: verifyEmail,
-      phoneNumber: phoneNumber
-    )
-  }
-}
-
 struct EnrollmentFlow {
   var step: EnrollmentStep = .intro
 

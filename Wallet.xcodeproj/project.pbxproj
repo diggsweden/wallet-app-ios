@@ -148,7 +148,7 @@
 			buildRules = (
 			);
 			dependencies = (
-				2657E51B2E97F4400083FA76 /* PBXTargetDependency */,
+				26877AC02EBE1F580051CFF9 /* PBXTargetDependency */,
 				262A557C2E9790C400A837BB /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
@@ -320,9 +320,9 @@
 			isa = PBXTargetDependency;
 			productRef = 262A557B2E9790C400A837BB /* OpenAPIGenerator */;
 		};
-		2657E51B2E97F4400083FA76 /* PBXTargetDependency */ = {
+		26877AC02EBE1F580051CFF9 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			productRef = 2657E51A2E97F4400083FA76 /* WalletMacrosClient */;
+			productRef = 26877ABF2EBE1F580051CFF9 /* WalletMacrosClient */;
 		};
 		8DF0DE482DAFCA2800270636 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -534,7 +534,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = se.digg.walletTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/WalletDemo.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/WalletDemo";
 			};
@@ -551,7 +551,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = se.digg.walletTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/WalletDemo.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/WalletDemo";
 			};
@@ -566,7 +566,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = se.digg.walletUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = wallet;
 			};
@@ -581,7 +581,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = se.digg.walletUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = wallet;
 			};
@@ -695,7 +695,7 @@
 			package = 262A55742E97906900A837BB /* XCRemoteSwiftPackageReference "swift-openapi-generator" */;
 			productName = "plugin:OpenAPIGenerator";
 		};
-		2657E51A2E97F4400083FA76 /* WalletMacrosClient */ = {
+		26877ABF2EBE1F580051CFF9 /* WalletMacrosClient */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = WalletMacrosClient;
 		};

@@ -16,7 +16,7 @@ final class UserViewModel {
     guard case let .ready(user) = user else {
       return false
     }
-    return user.userProfile != nil
+    return user.accountId != nil
       && user.walletUnitAttestation != nil
       && user.credential != nil
   }
@@ -38,9 +38,9 @@ final class UserViewModel {
     }
   }
 
-  func signIn(_ userProfile: UserProfile) async {
+  func signIn(_ accountId: String) async {
     do {
-      let updated = try await userStore.addUserProfile(userProfile)
+      let updated = try await userStore.addAccountId(accountId)
       user = .ready(updated)
     } catch {
       user = .error(String(describing: error))

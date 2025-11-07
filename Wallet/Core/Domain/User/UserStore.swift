@@ -18,9 +18,9 @@ actor UserStore {
     return snapshot(from: session)
   }
 
-  func addUserProfile(_ user: UserProfile) async throws -> UserSnapshot {
+  func addAccountId(_ accountId: String) async throws -> UserSnapshot {
     let session = try await getOrCreateModel()
-    session.userProfile = user
+    session.accountId = accountId
     try await save()
     return snapshot(from: session)
   }
@@ -74,7 +74,7 @@ actor UserStore {
     UserSnapshot(
       keyTag: model.keyTag,
       deviceId: model.deviceId,
-      userProfile: model.userProfile,
+      accountId: model.accountId,
       walletUnitAttestation: model.walletUnitAttestation,
       credential: model.credential
     )

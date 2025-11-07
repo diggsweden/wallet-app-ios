@@ -5,7 +5,7 @@ import WalletMacrosClient
 struct EnrollmentView: View {
   let userSnapshot: UserSnapshot
   let setKeyAttestation: (String) async -> Void
-  let signIn: (UserProfile) async -> Void
+  let signIn: (String) async -> Void
 
   @Environment(\.gatewayClient) private var gatewayClient
   @Environment(\.theme) private var theme
@@ -111,9 +111,10 @@ struct EnrollmentView: View {
 
       case .contactInfo:
         ContactInfoForm(
-          with: context.userData
-        ) { userData in
-          context.apply(userData)
+          gatewayClient: gatewayClient,
+          keyTag: userSnapshot.keyTag
+        ) { accountId in
+          await signIn(accountId)
           try advanceIfValid()
         }
 
@@ -146,9 +147,9 @@ struct EnrollmentView: View {
           let url = #URL("https://wallet.sandbox.digg.se/prepare-credential-offer")
           openURL(url)
         }
-        // Note: with a snapshot, this won't auto-update unless the parent view passes a new snapshot.
-        // Drive navigation from the parent when credential becomes non-nil.
-        .opacity(1)
+        .onChange(of: userSnapshot.credential) {
+          try? advanceIfValid()
+        }
 
       case .done:
         EnrollmentInfoView(bodyText: "Nu är din plånbok redo för att användas!") {
@@ -157,9 +158,6 @@ struct EnrollmentView: View {
             pin: context.pin,
             phoneNumber: context.phoneNumber
           )
-          Task {
-            await signIn(user)
-          }
         }
     }
   }
@@ -170,7 +168,7 @@ struct EnrollmentView: View {
     userSnapshot: UserSnapshot(
       keyTag: UUID(),
       deviceId: UUID(),
-      userProfile: nil,
+      accountId: nil,
       walletUnitAttestation: nil,
       credential: nil
     ),
