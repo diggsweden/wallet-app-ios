@@ -63,6 +63,7 @@ jobs:
             -archivePath build/walletdemo.xcarchive \
             -exportPath build/export \
             -exportOptionsPlist export-options.plist \
+            CURRENT_PROJECT_VERSION="$(date +%y%m%d%H%M)" \
           | xcbeautify
 
       - name: 🚀 Deploy to App Store (Testflight)

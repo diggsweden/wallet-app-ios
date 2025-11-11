@@ -2,15 +2,14 @@ import CryptoKit
 import Foundation
 import Security
 
-final class KeychainManager {
-  private let keyType = kSecAttrKeyTypeECSECPrimeRandom
+final class KeychainManager: Sendable {
   private let keySize = 256
 
   static let shared = KeychainManager()
 
   func generateKey(withTag tag: String) throws -> SecKey {
     var attributes: [String: Any] = [
-      kSecAttrKeyType as String: keyType,
+      kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
       kSecAttrKeySizeInBits as String: keySize,
       kSecPrivateKeyAttrs as String: [
         kSecAttrIsPermanent as String: true,
@@ -35,7 +34,7 @@ final class KeychainManager {
     let query: [String: Any] = [
       kSecClass as String: kSecClassKey,
       kSecAttrApplicationTag as String: tag.utf8Data,
-      kSecAttrKeyType as String: keyType,
+      kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
       kSecReturnRef as String: true,
     ]
 
@@ -54,7 +53,7 @@ final class KeychainManager {
     let query: [String: Any] = [
       kSecClass as String: kSecClassKey,
       kSecAttrApplicationTag as String: tag.utf8Data,
-      kSecAttrKeyType as String: keyType,
+      kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
     ]
 
     let status = SecItemDelete(query as CFDictionary)

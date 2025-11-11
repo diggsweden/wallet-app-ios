@@ -2,9 +2,18 @@ import Foundation
 
 extension Bundle {
   var appVersion: String {
-    infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
+    guard let version = infoDictionary?["CFBundleShortVersionString"] as? String else {
+      return ""
+    }
+
+    return version
   }
+
   var buildNumber: String {
-    infoDictionary?["CFBundleVersion"] as? String ?? ""
+    guard let buildNumber = infoDictionary?["CFBundleVersion"] as? String else {
+      return ""
+    }
+
+    return buildNumber
   }
 }

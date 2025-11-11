@@ -13,7 +13,7 @@ enum HTTPMethod: String {
   }
 }
 
-final class NetworkClient {
+final class NetworkClient: Sendable {
   static let shared = NetworkClient()
 
   private let decoder: JSONDecoder = {

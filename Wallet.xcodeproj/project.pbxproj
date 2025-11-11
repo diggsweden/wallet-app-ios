@@ -10,7 +10,8 @@
 		262A55772E97908C00A837BB /* OpenAPIRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = 262A55762E97908C00A837BB /* OpenAPIRuntime */; };
 		262A557A2E9790A200A837BB /* OpenAPIURLSession in Frameworks */ = {isa = PBXBuildFile; productRef = 262A55792E9790A200A837BB /* OpenAPIURLSession */; };
 		26A1FAAA2E0ABBF00007F0CA /* SiopOpenID4VP in Frameworks */ = {isa = PBXBuildFile; productRef = 26A1FAA92E0ABBF00007F0CA /* SiopOpenID4VP */; };
-		26C8C7972E0A9DED00F976B2 /* WalletRelease.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 26C8C7962E0A9DED00F976B2 /* WalletRelease.xcconfig */; };
+		26B65B172EBCCB28003CE151 /* Versions.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 26B65B152EBCCB20003CE151 /* Versions.xcconfig */; };
+		26C8C7972E0A9DED00F976B2 /* Config-Release.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 26C8C7962E0A9DED00F976B2 /* Config-Release.xcconfig */; };
 		26FA8D112E4B793500619952 /* OpenID4VCI in Frameworks */ = {isa = PBXBuildFile; productRef = 26FA8D102E4B793500619952 /* OpenID4VCI */; };
 		26FA8D142E4B795B00619952 /* JOSESwift in Frameworks */ = {isa = PBXBuildFile; productRef = 26FA8D132E4B795B00619952 /* JOSESwift */; };
 /* End PBXBuildFile section */
@@ -34,7 +35,8 @@
 
 /* Begin PBXFileReference section */
 		2688D9F62E97E3BA00A6B6A7 /* WalletMacros */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = WalletMacros; sourceTree = "<group>"; };
-		26C8C7962E0A9DED00F976B2 /* WalletRelease.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = WalletRelease.xcconfig; sourceTree = "<group>"; };
+		26B65B152EBCCB20003CE151 /* Versions.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Versions.xcconfig; sourceTree = "<group>"; };
+		26C8C7962E0A9DED00F976B2 /* Config-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Config-Release.xcconfig"; sourceTree = "<group>"; };
 		8DF0DE392DAFCA2600270636 /* WalletDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WalletDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8DF0DE462DAFCA2800270636 /* WalletTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WalletTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		8DF0DE502DAFCA2800270636 /* WalletUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WalletUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -115,7 +117,8 @@
 				8DF0DE492DAFCA2800270636 /* WalletTests */,
 				8DF0DE532DAFCA2800270636 /* WalletUITests */,
 				8DF0DE3A2DAFCA2600270636 /* Products */,
-				26C8C7962E0A9DED00F976B2 /* WalletRelease.xcconfig */,
+				26C8C7962E0A9DED00F976B2 /* Config-Release.xcconfig */,
+				26B65B152EBCCB20003CE151 /* Versions.xcconfig */,
 				269A592F2E97D9DD00100A16 /* Frameworks */,
 				2688D9F62E97E3BA00A6B6A7 /* WalletMacros */,
 			);
@@ -267,7 +270,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				26C8C7972E0A9DED00F976B2 /* WalletRelease.xcconfig in Resources */,
+				26C8C7972E0A9DED00F976B2 /* Config-Release.xcconfig in Resources */,
+				26B65B172EBCCB28003CE151 /* Versions.xcconfig in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -335,6 +339,7 @@
 /* Begin XCBuildConfiguration section */
 		8DF0DE582DAFCA2800270636 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 26B65B152EBCCB20003CE151 /* Versions.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -400,7 +405,7 @@
 		};
 		8DF0DE592DAFCA2800270636 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 26C8C7962E0A9DED00F976B2 /* WalletRelease.xcconfig */;
+			baseConfigurationReference = 26C8C7962E0A9DED00F976B2 /* Config-Release.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -464,7 +469,6 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = R5MUUW7M24;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -480,12 +484,11 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = se.digg.wallet.demo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -496,7 +499,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = R5MUUW7M24;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -512,12 +514,11 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = se.digg.wallet.demo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "Wallet-Demo";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -527,11 +528,9 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = R5MUUW7M24;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
-				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = se.digg.walletTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -546,11 +545,9 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = R5MUUW7M24;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
-				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = se.digg.walletTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -564,10 +561,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = R5MUUW7M24;
 				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = se.digg.walletUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -581,10 +576,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = R5MUUW7M24;
 				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = se.digg.walletUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
