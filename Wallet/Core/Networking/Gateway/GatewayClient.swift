@@ -24,9 +24,10 @@ struct GatewayClient {
   ) async throws -> String {
     let jwkDto = Components.Schemas.JwkDto(
       kty: jwk.keyType.rawValue,
+      kid: jwk.parameters["kid"],
       crv: jwk.crv.rawValue,
       x: jwk.x,
-      y: jwk.y
+      y: jwk.y,
     )
     let bodyDto = Components.Schemas.CreateAccountRequestDto(
       personalIdentityNumber: personalIdentityNumber,

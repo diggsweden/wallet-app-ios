@@ -14,7 +14,7 @@ final class WuaViewModel {
 
   func fetchWua() async throws -> String {
     let key = try KeychainManager.shared.getOrCreateKey(withTag: keyTag.uuidString)
-    let jwk = try key.toJWK()
+    let jwk = try key.toJWK(kid: keyTag.uuidString)
 
     let jwt = try await gatewayClient.getWalletUnitAttestation(
       walletId: walletId.uuidString,

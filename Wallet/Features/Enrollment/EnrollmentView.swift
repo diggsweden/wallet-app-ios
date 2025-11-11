@@ -112,7 +112,7 @@ struct EnrollmentView: View {
       case .contactInfo:
         ContactInfoForm(
           gatewayClient: gatewayClient,
-          keyTag: userSnapshot.keyTag
+          keyTag: userSnapshot.keyTag,
         ) { accountId in
           await signIn(accountId)
           try advanceIfValid()

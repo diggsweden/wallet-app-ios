@@ -5,70 +5,75 @@ struct ContactInfoForm: View {
     case email, verifyEmail, phoneNumber, pin
   }
 
-  @State var data: ContactInfoData = ContactInfoData()
   @FocusState private var focusedField: Field?
   @State private var touchedFields = Set<Field>()
-
-  let viewModel: CreateAccountViewModel
-  let onSubmit: (String) async throws -> Void
+  @State var viewModel: CreateAccountViewModel
 
   init(
     gatewayClient: GatewayClient,
-    keyTag: UUID = UUID(),
+    keyTag: UUID,
     onSubmit: @escaping (String) async throws -> Void,
   ) {
-    self.viewModel = CreateAccountViewModel(gatewayClient: gatewayClient, keyTag: keyTag)
-    self.onSubmit = onSubmit
+    _viewModel = State(
+      wrappedValue: CreateAccountViewModel(
+        gatewayClient: gatewayClient,
+        keyTag: keyTag,
+        onSubmit: onSubmit
+      )
+    )
   }
 
   var body: some View {
     VStack(spacing: 12) {
       VStack(alignment: .leading, spacing: 4) {
-        TextField("Personnummer (ÅÅÅÅMMDDXXXX eller ÅÅMMDD-XXXX)", text: $data.pin)
+        TextField("Personnummer (ÅÅÅÅMMDDXXXX eller ÅÅMMDD-XXXX)", text: $viewModel.data.pin)
           .textFieldStyle(.primary)
           .keyboardType(.numbersAndPunctuation)
           .textContentType(.oneTimeCode)
           .textInputAutocapitalization(.never)
           .autocorrectionDisabled(true)
           .focused($focusedField, equals: .pin)
+
         ErrorView(
-          text: data.pinError,
-          show: data.pinError != nil && touchedFields.contains(.pin)
+          text: viewModel.data.pinError,
+          show: viewModel.data.pinError != nil && touchedFields.contains(.pin)
         )
       }
 
       VStack(alignment: .leading, spacing: 4) {
-        emailField(label: "E-post", text: $data.email)
+        emailField(label: "E-post", text: $viewModel.data.email)
           .focused($focusedField, equals: .email)
+
         ErrorView(
-          text: data.emailError,
-          show: data.emailError != nil && touchedFields.contains(.email)
+          text: viewModel.data.emailError,
+          show: viewModel.data.emailError != nil && touchedFields.contains(.email)
         )
       }
 
       VStack(alignment: .leading, spacing: 4) {
-        emailField(label: "Verifiera e-post", text: $data.verifyEmail)
+        emailField(label: "Verifiera e-post", text: $viewModel.data.verifyEmail)
           .focused($focusedField, equals: .verifyEmail)
 
         ErrorView(
-          text: data.verifyEmailError,
-          show: data.verifyEmailError != nil && touchedFields.contains(.verifyEmail)
+          text: viewModel.data.verifyEmailError,
+          show: viewModel.data.verifyEmailError != nil && touchedFields.contains(.verifyEmail)
         )
       }
 
       VStack(alignment: .leading, spacing: 4) {
         TextField(
           "Telefonnummer",
-          value: $data.phoneNumber,
+          value: $viewModel.data.phoneNumber,
           format: .optional
         )
         .textFieldStyle(.primary)
         .keyboardType(.phonePad)
         .textContentType(.telephoneNumber)
         .focused($focusedField, equals: .phoneNumber)
+
         ErrorView(
-          text: data.phoneError,
-          show: data.phoneError != nil && touchedFields.contains(.phoneNumber)
+          text: viewModel.data.phoneError,
+          show: viewModel.data.phoneError != nil && touchedFields.contains(.phoneNumber)
         )
       }
     }
@@ -83,10 +88,10 @@ struct ContactInfoForm: View {
       EnrollmentBottomToolbarButton {
         PrimaryButton("enrollmentNext") {
           Task {
-            await handleSubmit()
+            await viewModel.createAccount()
           }
         }
-        .disabled(!data.isValid)
+        .disabled(viewModel.accountIdResult == .loading)
       }
     }
   }
@@ -97,13 +102,6 @@ struct ContactInfoForm: View {
       .textInputAutocapitalization(.never)
       .keyboardType(.emailAddress)
       .textContentType(.emailAddress)
-  }
-
-  private func handleSubmit() async {
-    do {
-      try await onSubmit("")
-    } catch {
-    }
   }
 }
 

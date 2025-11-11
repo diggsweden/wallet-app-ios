@@ -1,6 +1,6 @@
 import Foundation
 
-struct ContactInfoData {
+struct CreateAccountFormData {
   var email: String = ""
   var verifyEmail: String = ""
   var phoneNumber: String? = nil
@@ -16,27 +16,53 @@ enum ContactError: String {
   case pinInvalid = "Ogiltigt personnummer"
 }
 
-extension ContactInfoData {
+extension CreateAccountFormData {
   var emailError: String? {
-    if email.isEmpty { return ContactError.emailEmpty.rawValue }
-    if !Validators.isValidEmail(email) { return ContactError.emailInvalid.rawValue }
+    if email.isEmpty {
+      return ContactError.emailEmpty.rawValue
+    }
+
+    guard Validators.isValidEmail(email) else {
+      return ContactError.emailInvalid.rawValue
+    }
+
     return nil
   }
 
   var verifyEmailError: String? {
-    if verifyEmail.isEmpty { return ContactError.emailEmpty.rawValue }
-    if verifyEmail != email { return ContactError.emailsDoNotMatch.rawValue }
+    if verifyEmail.isEmpty {
+      return ContactError.emailEmpty.rawValue
+    }
+
+    guard verifyEmail == email else {
+      return ContactError.emailsDoNotMatch.rawValue
+    }
+
     return nil
   }
 
   var phoneError: String? {
-    guard let phoneNumber, !phoneNumber.isEmpty else { return nil }
-    return Validators.isValidPhone(phoneNumber) ? nil : ContactError.phoneInvalid.rawValue
+    guard let phoneNumber, !phoneNumber.isEmpty else {
+      return nil
+    }
+
+    guard Validators.isValidPhone(phoneNumber) else {
+      return ContactError.phoneInvalid.rawValue
+    }
+
+    return nil
   }
 
   var pinError: String? {
-    if pin.isEmpty { return ContactError.pinEmpty.rawValue }
-    return Validators.isValidPIN(pin) ? nil : ContactError.pinInvalid.rawValue
+    if pin.isEmpty {
+      return ContactError.pinEmpty.rawValue
+    }
+    
+    guard Validators.isValidPIN(pin) else {
+      return ContactError.pinInvalid.rawValue
+    }
+    
+    return nil
   }
 
   var isValid: Bool {
@@ -46,8 +72,8 @@ extension ContactInfoData {
 
 fileprivate enum Validators {
   static func isValidEmail(_ s: String) -> Bool {
-    let re = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/
-    return s.wholeMatch(of: re) != nil
+    let emailRegex = /(?i)^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/
+    return s.wholeMatch(of: emailRegex) != nil
   }
 
   static func isValidPhone(_ s: String) -> Bool {
