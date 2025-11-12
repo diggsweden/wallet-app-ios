@@ -169,7 +169,7 @@
         }
       }
     },
-    "/accounts": {
+    "/accounts/v1": {
       "post": {
         "tags": [
           "account-controller"

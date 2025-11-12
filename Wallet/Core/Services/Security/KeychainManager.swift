@@ -6,7 +6,7 @@ final class KeychainManager: Sendable {
   private let keySize = 256
 
   static let shared = KeychainManager()
-  
+
   func getOrCreateKey(withTag tag: String) throws -> SecKey {
     return if let existingKey = try? fetchKey(withTag: tag) {
       existingKey

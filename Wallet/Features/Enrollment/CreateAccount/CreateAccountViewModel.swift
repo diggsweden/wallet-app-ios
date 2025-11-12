@@ -8,6 +8,7 @@ final class CreateAccountViewModel {
   let onSubmit: (String) async throws -> Void
   var data = CreateAccountFormData()
   var accountIdResult: AsyncResult<String> = .idle
+  var showAllValidationErrors: Bool = false
 
   init(
     gatewayClient: GatewayClient,
@@ -21,23 +22,28 @@ final class CreateAccountViewModel {
 
   func createAccount() async {
     guard data.isValid else {
+      showAllValidationErrors = true
       return
     }
 
     accountIdResult = .loading
     do {
       let key = try KeychainManager.shared.getOrCreateKey(withTag: keyTag)
-      let jwk = try key.toJWK()
       let accountId = try await gatewayClient.createAccount(
-        personalIdentityNumber: data.pin,
+        personalIdentityNumber: random12DigitString(),
         emailAddress: data.email,
         telephoneNumber: data.phoneNumber,
         jwk: key.toJWK()
       )
+
       accountIdResult = .success(accountId)
       try await onSubmit(accountId)
     } catch {
       accountIdResult = .failure(error)
     }
+  }
+
+  private func random12DigitString() -> String {
+    (0 ..< 12).map { _ in String(Int.random(in: 0 ... 9)) }.joined()
   }
 }
