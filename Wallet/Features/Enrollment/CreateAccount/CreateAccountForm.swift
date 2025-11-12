@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct ContactInfoForm: View {
+struct CreateAccountForm: View {
   private enum Field: Hashable {
     case email, verifyEmail, phoneNumber, pin
   }
@@ -28,7 +28,7 @@ struct ContactInfoForm: View {
       TextField("Personnummer", text: $viewModel.data.pin)
         .textFieldStyle(
           .primary(
-            error: touchedFields.contains(.pin) ? viewModel.data.pinError : nil
+            error: errorMessage(for: .pin)
           )
         )
         .keyboardType(.numbersAndPunctuation)
@@ -40,7 +40,7 @@ struct ContactInfoForm: View {
       emailField(label: "E-post", text: $viewModel.data.email)
         .textFieldStyle(
           .primary(
-            error: touchedFields.contains(.email) ? viewModel.data.emailError : nil
+            error: errorMessage(for: .email)
           )
         )
         .focused($focusedField, equals: .email)
@@ -48,7 +48,7 @@ struct ContactInfoForm: View {
       emailField(label: "Verifiera e-post", text: $viewModel.data.verifyEmail)
         .textFieldStyle(
           .primary(
-            error: touchedFields.contains(.verifyEmail) ? viewModel.data.verifyEmailError : nil
+            error: errorMessage(for: .verifyEmail)
           )
         )
         .focused($focusedField, equals: .verifyEmail)
@@ -60,7 +60,7 @@ struct ContactInfoForm: View {
       )
       .textFieldStyle(
         .primary(
-          error: touchedFields.contains(.phoneNumber) ? viewModel.data.phoneError : nil
+          error: errorMessage(for: .phoneNumber)
         )
       )
       .keyboardType(.phonePad)
@@ -92,10 +92,32 @@ struct ContactInfoForm: View {
       .keyboardType(.emailAddress)
       .textContentType(.emailAddress)
   }
+
+  private func errorMessage(for field: Field) -> String? {
+    guard shouldShowErrorMessage(for: field) else {
+      return nil
+    }
+
+    let data = viewModel.data
+    return switch field {
+      case .email:
+        data.emailError
+      case .verifyEmail:
+        data.verifyEmailError
+      case .phoneNumber:
+        data.phoneError
+      case .pin:
+        data.pinError
+    }
+  }
+
+  private func shouldShowErrorMessage(for field: Field) -> Bool {
+    touchedFields.contains(field) || viewModel.showAllValidationErrors
+  }
 }
 
 #Preview {
-  ContactInfoForm(
+  CreateAccountForm(
     gatewayClient: GatewayClient(),
     keyTag: "",
     onSubmit: { _ in },

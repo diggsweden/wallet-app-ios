@@ -110,7 +110,7 @@ struct EnrollmentView: View {
         }
 
       case .contactInfo:
-        ContactInfoForm(
+        CreateAccountForm(
           gatewayClient: gatewayClient,
           keyTag: userSnapshot.deviceKeyTag,
         ) { accountId in
