@@ -11,7 +11,7 @@ struct ContactInfoForm: View {
 
   init(
     gatewayClient: GatewayClient,
-    keyTag: UUID,
+    keyTag: String,
     onSubmit: @escaping (String) async throws -> Void,
   ) {
     _viewModel = State(
@@ -97,7 +97,7 @@ struct ContactInfoForm: View {
 #Preview {
   ContactInfoForm(
     gatewayClient: GatewayClient(),
-    keyTag: UUID(),
+    keyTag: "",
     onSubmit: { _ in },
   )
 }

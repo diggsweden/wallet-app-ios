@@ -9,7 +9,7 @@ struct IssuanceView: View {
 
   init(
     credentialOfferUri: String,
-    keyTag: UUID,
+    keyTag: String,
     walletUnitAttestation: String?,
     onSave: @escaping (Credential) async -> Void
   ) {

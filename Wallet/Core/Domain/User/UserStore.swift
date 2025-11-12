@@ -72,7 +72,8 @@ actor UserStore {
 
   private func snapshot(from model: User) -> UserSnapshot {
     UserSnapshot(
-      keyTag: model.keyTag,
+      walletKeyTag: model.walletKeyTag,
+      deviceKeyTag: model.deviceKeyTag,
       deviceId: model.deviceId,
       accountId: model.accountId,
       walletUnitAttestation: model.walletUnitAttestation,

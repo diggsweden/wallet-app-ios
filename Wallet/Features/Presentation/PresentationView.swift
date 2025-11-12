@@ -6,7 +6,7 @@ struct PresentationView: View {
   @Environment(Router.self) private var router
   @Environment(\.theme) private var theme
 
-  init(vpTokenData: ResolvedRequestData.VpTokenData, keyTag: UUID, credential: Credential?) {
+  init(vpTokenData: ResolvedRequestData.VpTokenData, keyTag: String, credential: Credential?) {
     _viewModel = State(
       wrappedValue: .init(data: vpTokenData, keyTag: keyTag, credential: credential)
     )

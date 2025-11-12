@@ -16,7 +16,7 @@ enum IssuanceState {
 @Observable
 class IssuanceViewModel {
   let credentialOfferUri: String
-  let keyTag: UUID
+  let keyTag: String
   let wua: String
   private(set) var claimsMetadata: [String: Claim] = [:]
   private var issuer: Issuer?
@@ -26,7 +26,7 @@ class IssuanceViewModel {
   private var key: SecKey?
   private let openId4VciUtil = OpenID4VCIUtil()
 
-  init(credentialOfferUri: String, keyTag: UUID, wua: String) {
+  init(credentialOfferUri: String, keyTag: String, wua: String) {
     self.credentialOfferUri = credentialOfferUri
     self.keyTag = keyTag
     self.wua = wua
@@ -34,7 +34,7 @@ class IssuanceViewModel {
 
   func fetchIssuer() async {
     do {
-      key = try KeychainManager.shared.getOrCreateKey(withTag: keyTag.uuidString)
+      key = try KeychainManager.shared.getOrCreateKey(withTag: keyTag)
       let credentialOffer = try await fetchCredentialOffer(with: credentialOfferUri)
       claimsMetadata = getClaimsMetadata(from: credentialOffer)
       issuerMetadata = credentialOffer.credentialIssuerMetadata

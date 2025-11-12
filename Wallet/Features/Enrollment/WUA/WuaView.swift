@@ -8,8 +8,8 @@ struct WuaView: View {
   @State private var reload = 0
 
   init(
-    walletId: UUID,
-    keyTag: UUID,
+    walletId: String,
+    keyTag: String,
     gatewayClient: GatewayClient,
     onSubmit: @escaping (String) throws -> Void
   ) {

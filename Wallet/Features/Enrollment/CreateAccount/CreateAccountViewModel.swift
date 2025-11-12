@@ -4,14 +4,14 @@ import Foundation
 @Observable
 final class CreateAccountViewModel {
   let gatewayClient: GatewayClient
-  let keyTag: UUID
+  let keyTag: String
   let onSubmit: (String) async throws -> Void
   var data = CreateAccountFormData()
   var accountIdResult: AsyncResult<String> = .idle
 
   init(
     gatewayClient: GatewayClient,
-    keyTag: UUID,
+    keyTag: String,
     onSubmit: @escaping (String) async throws -> Void
   ) {
     self.gatewayClient = gatewayClient
@@ -26,12 +26,13 @@ final class CreateAccountViewModel {
 
     accountIdResult = .loading
     do {
-      let key = try KeychainManager.shared.fetchKey(withTag: keyTag.uuidString)
+      let key = try KeychainManager.shared.getOrCreateKey(withTag: keyTag)
+      let jwk = try key.toJWK()
       let accountId = try await gatewayClient.createAccount(
         personalIdentityNumber: data.pin,
         emailAddress: data.email,
         telephoneNumber: data.phoneNumber,
-        jwk: key.toJWK(kid: keyTag.uuidString)
+        jwk: key.toJWK()
       )
       accountIdResult = .success(accountId)
       try await onSubmit(accountId)

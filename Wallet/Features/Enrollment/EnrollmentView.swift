@@ -112,7 +112,7 @@ struct EnrollmentView: View {
       case .contactInfo:
         ContactInfoForm(
           gatewayClient: gatewayClient,
-          keyTag: userSnapshot.keyTag,
+          keyTag: userSnapshot.deviceKeyTag,
         ) { accountId in
           await signIn(accountId)
           try advanceIfValid()
@@ -133,7 +133,7 @@ struct EnrollmentView: View {
       case .wua:
         WuaView(
           walletId: userSnapshot.deviceId,
-          keyTag: userSnapshot.keyTag,
+          keyTag: userSnapshot.walletKeyTag,
           gatewayClient: gatewayClient
         ) { jwt in
           Task {
@@ -166,8 +166,9 @@ struct EnrollmentView: View {
 #Preview {
   EnrollmentView(
     userSnapshot: UserSnapshot(
-      keyTag: UUID(),
-      deviceId: UUID(),
+      walletKeyTag: "",
+      deviceKeyTag: "",
+      deviceId: "",
       accountId: nil,
       walletUnitAttestation: nil,
       credential: nil

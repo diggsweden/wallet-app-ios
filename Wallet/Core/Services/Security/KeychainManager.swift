@@ -6,8 +6,33 @@ final class KeychainManager: Sendable {
   private let keySize = 256
 
   static let shared = KeychainManager()
+  
+  func getOrCreateKey(withTag tag: String) throws -> SecKey {
+    return if let existingKey = try? fetchKey(withTag: tag) {
+      existingKey
+    } else {
+      try generateKey(withTag: tag)
+    }
+  }
 
-  func generateKey(withTag tag: String) throws -> SecKey {
+  func deleteKey(withTag tag: String) throws {
+    let query: [String: Any] = [
+      kSecClass as String: kSecClassKey,
+      kSecAttrApplicationTag as String: tag.utf8Data,
+      kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
+    ]
+
+    let status = SecItemDelete(query as CFDictionary)
+
+    switch status {
+      case errSecSuccess, errSecItemNotFound:
+        return
+      default:
+        throw KeychainManagerError.keychainError(status)
+    }
+  }
+
+  private func generateKey(withTag tag: String) throws -> SecKey {
     var attributes: [String: Any] = [
       kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
       kSecAttrKeySizeInBits as String: keySize,
@@ -30,7 +55,7 @@ final class KeychainManager: Sendable {
     return privateKey
   }
 
-  func fetchKey(withTag tag: String) throws -> SecKey {
+  private func fetchKey(withTag tag: String) throws -> SecKey {
     let query: [String: Any] = [
       kSecClass as String: kSecClassKey,
       kSecAttrApplicationTag as String: tag.utf8Data,
@@ -47,31 +72,6 @@ final class KeychainManager: Sendable {
 
     // swift-format-ignore
     return key as! SecKey
-  }
-
-  func deleteKey(withTag tag: String) throws {
-    let query: [String: Any] = [
-      kSecClass as String: kSecClassKey,
-      kSecAttrApplicationTag as String: tag.utf8Data,
-      kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
-    ]
-
-    let status = SecItemDelete(query as CFDictionary)
-
-    switch status {
-      case errSecSuccess, errSecItemNotFound:
-        return
-      default:
-        throw KeychainManagerError.keychainError(status)
-    }
-  }
-
-  func getOrCreateKey(withTag tag: String) throws -> SecKey {
-    return if let existingKey = try? fetchKey(withTag: tag) {
-      existingKey
-    } else {
-      try generateKey(withTag: tag)
-    }
   }
 
   private var isSimulator: Bool {

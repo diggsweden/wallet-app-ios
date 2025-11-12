@@ -1,8 +1,9 @@
 import Foundation
 
 struct UserSnapshot: Sendable {
-  let keyTag: UUID
-  let deviceId: UUID
+  let walletKeyTag: String
+  let deviceKeyTag: String
+  let deviceId: String
   let accountId: String?
   let walletUnitAttestation: String?
   let credential: Credential?

@@ -2,22 +2,22 @@ import Foundation
 
 @MainActor
 final class WuaViewModel {
-  let walletId: UUID
-  let keyTag: UUID
+  let walletId: String
+  let keyTag: String
   let gatewayClient: GatewayClient
 
-  init(walletId: UUID, keyTag: UUID, gatewayClient: GatewayClient) {
+  init(walletId: String, keyTag: String, gatewayClient: GatewayClient) {
     self.walletId = walletId
     self.keyTag = keyTag
     self.gatewayClient = gatewayClient
   }
 
   func fetchWua() async throws -> String {
-    let key = try KeychainManager.shared.getOrCreateKey(withTag: keyTag.uuidString)
-    let jwk = try key.toJWK(kid: keyTag.uuidString)
+    let key = try KeychainManager.shared.getOrCreateKey(withTag: keyTag)
+    let jwk = try key.toJWK()
 
     let jwt = try await gatewayClient.getWalletUnitAttestation(
-      walletId: walletId.uuidString,
+      walletId: walletId,
       jwk: jwk
     )
 
