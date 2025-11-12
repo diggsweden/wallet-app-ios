@@ -24,58 +24,48 @@ struct ContactInfoForm: View {
   }
 
   var body: some View {
-    VStack(spacing: 12) {
-      VStack(alignment: .leading, spacing: 4) {
-        TextField("Personnummer (ÅÅÅÅMMDDXXXX eller ÅÅMMDD-XXXX)", text: $viewModel.data.pin)
-          .textFieldStyle(.primary)
-          .keyboardType(.numbersAndPunctuation)
-          .textContentType(.oneTimeCode)
-          .textInputAutocapitalization(.never)
-          .autocorrectionDisabled(true)
-          .focused($focusedField, equals: .pin)
-
-        ErrorView(
-          text: viewModel.data.pinError,
-          show: viewModel.data.pinError != nil && touchedFields.contains(.pin)
+    VStack(spacing: 18) {
+      TextField("Personnummer", text: $viewModel.data.pin)
+        .textFieldStyle(
+          .primary(
+            error: touchedFields.contains(.pin) ? viewModel.data.pinError : nil
+          )
         )
-      }
+        .keyboardType(.numbersAndPunctuation)
+        .textContentType(.oneTimeCode)
+        .textInputAutocapitalization(.never)
+        .autocorrectionDisabled(true)
+        .focused($focusedField, equals: .pin)
 
-      VStack(alignment: .leading, spacing: 4) {
-        emailField(label: "E-post", text: $viewModel.data.email)
-          .focused($focusedField, equals: .email)
-
-        ErrorView(
-          text: viewModel.data.emailError,
-          show: viewModel.data.emailError != nil && touchedFields.contains(.email)
+      emailField(label: "E-post", text: $viewModel.data.email)
+        .textFieldStyle(
+          .primary(
+            error: touchedFields.contains(.email) ? viewModel.data.emailError : nil
+          )
         )
-      }
+        .focused($focusedField, equals: .email)
 
-      VStack(alignment: .leading, spacing: 4) {
-        emailField(label: "Verifiera e-post", text: $viewModel.data.verifyEmail)
-          .focused($focusedField, equals: .verifyEmail)
-
-        ErrorView(
-          text: viewModel.data.verifyEmailError,
-          show: viewModel.data.verifyEmailError != nil && touchedFields.contains(.verifyEmail)
+      emailField(label: "Verifiera e-post", text: $viewModel.data.verifyEmail)
+        .textFieldStyle(
+          .primary(
+            error: touchedFields.contains(.verifyEmail) ? viewModel.data.verifyEmailError : nil
+          )
         )
-      }
+        .focused($focusedField, equals: .verifyEmail)
 
-      VStack(alignment: .leading, spacing: 4) {
-        TextField(
-          "Telefonnummer",
-          value: $viewModel.data.phoneNumber,
-          format: .optional
+      TextField(
+        "Telefonnummer",
+        value: $viewModel.data.phoneNumber,
+        format: .optional
+      )
+      .textFieldStyle(
+        .primary(
+          error: touchedFields.contains(.phoneNumber) ? viewModel.data.phoneError : nil
         )
-        .textFieldStyle(.primary)
-        .keyboardType(.phonePad)
-        .textContentType(.telephoneNumber)
-        .focused($focusedField, equals: .phoneNumber)
-
-        ErrorView(
-          text: viewModel.data.phoneError,
-          show: viewModel.data.phoneError != nil && touchedFields.contains(.phoneNumber)
-        )
-      }
+      )
+      .keyboardType(.phonePad)
+      .textContentType(.telephoneNumber)
+      .focused($focusedField, equals: .phoneNumber)
     }
     .onChange(of: focusedField) { old, new in
       guard let old, new != old else {
@@ -98,7 +88,6 @@ struct ContactInfoForm: View {
 
   private func emailField(label: String, text: Binding<String>) -> some View {
     TextField(label, text: text)
-      .textFieldStyle(.primary)
       .textInputAutocapitalization(.never)
       .keyboardType(.emailAddress)
       .textContentType(.emailAddress)

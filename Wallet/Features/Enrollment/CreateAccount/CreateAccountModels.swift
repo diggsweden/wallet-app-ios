@@ -57,11 +57,11 @@ extension CreateAccountFormData {
     if pin.isEmpty {
       return ContactError.pinEmpty.rawValue
     }
-    
+
     guard Validators.isValidPIN(pin) else {
       return ContactError.pinInvalid.rawValue
     }
-    
+
     return nil
   }
 
