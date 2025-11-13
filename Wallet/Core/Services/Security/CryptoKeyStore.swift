@@ -2,20 +2,29 @@ import CryptoKit
 import Foundation
 import Security
 
-final class KeychainManager: Sendable {
-  private let keySize = 256
+final class CryptoKeyStore: Sendable {
+  enum KeyTag: String, CaseIterable {
+    case deviceKey = "device_key_tag"
+    case walletKey = "wallet_key_tag"
+  }
 
-  static let shared = KeychainManager()
+  static let shared = CryptoKeyStore()
 
-  func getOrCreateKey(withTag tag: String) throws -> SecKey {
-    return if let existingKey = try? fetchKey(withTag: tag) {
+  func getOrCreateKey(withTag tag: KeyTag) throws -> SecKey {
+    return if let existingKey = try? fetchKey(withTag: tag.rawValue) {
       existingKey
     } else {
-      try generateKey(withTag: tag)
+      try generateKey(withTag: tag.rawValue)
     }
   }
 
-  func deleteKey(withTag tag: String) throws {
+  func deleteAll() throws {
+    for tag in KeyTag.allCases {
+      try deleteKey(withTag: tag.rawValue)
+    }
+  }
+
+  private func deleteKey(withTag tag: String) throws {
     let query: [String: Any] = [
       kSecClass as String: kSecClassKey,
       kSecAttrApplicationTag as String: tag.utf8Data,
@@ -24,18 +33,15 @@ final class KeychainManager: Sendable {
 
     let status = SecItemDelete(query as CFDictionary)
 
-    switch status {
-      case errSecSuccess, errSecItemNotFound:
-        return
-      default:
-        throw KeychainManagerError.keychainError(status)
+    guard status == errSecSuccess || status == errSecItemNotFound else {
+      throw KeychainError.keychainError(status)
     }
   }
 
   private func generateKey(withTag tag: String) throws -> SecKey {
     var attributes: [String: Any] = [
       kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
-      kSecAttrKeySizeInBits as String: keySize,
+      kSecAttrKeySizeInBits as String: 256,
       kSecPrivateKeyAttrs as String: [
         kSecAttrIsPermanent as String: true,
         kSecAttrApplicationTag as String: tag.utf8Data,
@@ -49,7 +55,7 @@ final class KeychainManager: Sendable {
 
     var error: Unmanaged<CFError>?
     guard let privateKey = SecKeyCreateRandomKey(attributes as CFDictionary, &error) else {
-      throw error?.takeRetainedValue() ?? KeychainManagerError.keyGenerationFailed
+      throw error?.takeRetainedValue() ?? KeychainError.keyGenerationFailed
     }
 
     return privateKey
@@ -67,7 +73,7 @@ final class KeychainManager: Sendable {
     let status = SecItemCopyMatching(query as CFDictionary, &item)
 
     guard status == errSecSuccess, let key = item else {
-      throw KeychainManagerError.keyNotFound
+      throw KeychainError.keyNotFound
     }
 
     // swift-format-ignore

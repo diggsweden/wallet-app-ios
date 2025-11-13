@@ -7,17 +7,16 @@ struct CreateAccountForm: View {
 
   @FocusState private var focusedField: Field?
   @State private var touchedFields = Set<Field>()
-  @State var viewModel: CreateAccountViewModel
+  @State private var viewModel: CreateAccountViewModel
+  @Environment(ToastViewModel.self) private var toastViewModel
 
   init(
-    gatewayClient: GatewayClient,
-    keyTag: String,
+    gatewayAPIClient: GatewayAPIClient,
     onSubmit: @escaping (String) async throws -> Void,
   ) {
     _viewModel = State(
       wrappedValue: CreateAccountViewModel(
-        gatewayClient: gatewayClient,
-        keyTag: keyTag,
+        gatewayAPIClient: gatewayAPIClient,
         onSubmit: onSubmit
       )
     )
@@ -55,6 +54,12 @@ struct CreateAccountForm: View {
       .textContentType(.telephoneNumber)
       .focused($focusedField, equals: .phoneNumber)
     }
+    .disabled(viewModel.accountIdResult.isLoading)
+    .onChange(of: viewModel.accountIdResult) { _, new in
+      if let error = new.error {
+        toastViewModel.showError(error.message)
+      }
+    }
     .onChange(of: focusedField) { old, new in
       guard let old, new != old else {
         return
@@ -64,12 +69,20 @@ struct CreateAccountForm: View {
     }
     .toolbar {
       EnrollmentBottomToolbarButton {
-        PrimaryButton("enrollmentNext") {
-          Task {
-            await viewModel.createAccount()
-          }
+        loadingToolBar
+      }
+    }
+  }
+
+  @ViewBuilder
+  private var loadingToolBar: some View {
+    if viewModel.accountIdResult.isLoading {
+      ProgressView()
+    } else {
+      PrimaryButton("enrollmentNext") {
+        Task {
+          await viewModel.createAccount()
         }
-        .disabled(viewModel.accountIdResult == .loading)
       }
     }
   }
@@ -102,10 +115,10 @@ struct CreateAccountForm: View {
   }
 }
 
-#Preview {
-  CreateAccountForm(
-    gatewayClient: GatewayClient(),
-    keyTag: "",
-    onSubmit: { _ in },
-  )
-}
+//#Preview {
+//  CreateAccountForm(
+//    gatewayClient: GatewayApiService(),
+//    keyTag: "",
+//    onSubmit: { _ in },
+//  )
+//}

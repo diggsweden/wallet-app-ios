@@ -64,14 +64,12 @@ struct AppRootView: View {
       case .presentation(let data):
         PresentationView(
           vpTokenData: data,
-          keyTag: userSnapshot.walletKeyTag,
           credential: userSnapshot.credential
         )
 
       case .issuance(let url):
         IssuanceView(
           credentialOfferUri: url,
-          keyTag: userSnapshot.walletKeyTag,
           walletUnitAttestation: userSnapshot.walletUnitAttestation
         ) { credential in
           await userViewModel.setCredential(credential)

@@ -7,7 +7,7 @@ struct EnrollmentView: View {
   let setKeyAttestation: (String) async -> Void
   let signIn: (String) async -> Void
 
-  @Environment(\.gatewayClient) private var gatewayClient
+  @Environment(\.gatewayAPIClient) private var gatewayAPIClient
   @Environment(\.theme) private var theme
   @Environment(\.orientation) private var orientation
   @Environment(\.openURL) private var openURL
@@ -111,8 +111,7 @@ struct EnrollmentView: View {
 
       case .contactInfo:
         CreateAccountForm(
-          gatewayClient: gatewayClient,
-          keyTag: userSnapshot.deviceKeyTag,
+          gatewayAPIClient: gatewayAPIClient
         ) { accountId in
           await signIn(accountId)
           try advanceIfValid()
@@ -133,8 +132,7 @@ struct EnrollmentView: View {
       case .wua:
         WuaView(
           walletId: userSnapshot.deviceId,
-          keyTag: userSnapshot.walletKeyTag,
-          gatewayClient: gatewayClient
+          gatewayAPIClient: gatewayAPIClient
         ) { jwt in
           Task {
             await setKeyAttestation(jwt)
@@ -166,8 +164,6 @@ struct EnrollmentView: View {
 #Preview {
   EnrollmentView(
     userSnapshot: UserSnapshot(
-      walletKeyTag: "",
-      deviceKeyTag: "",
       deviceId: "",
       accountId: nil,
       walletUnitAttestation: nil,

@@ -9,13 +9,11 @@ import UIKit
 @Observable
 class PresentationViewModel {
   let data: ResolvedRequestData.VpTokenData
-  let keyTag: String
   let credential: Credential?
   var selectedDisclosures: [DisclosureSelection] = []
 
-  init(data: ResolvedRequestData.VpTokenData, keyTag: String, credential: Credential?) {
+  init(data: ResolvedRequestData.VpTokenData, credential: Credential?) {
     self.data = data
-    self.keyTag = keyTag
     self.credential = credential
   }
 
@@ -49,7 +47,7 @@ class PresentationViewModel {
 
   func sendDisclosures() async throws {
     guard
-      let key = try? KeychainManager.shared.getOrCreateKey(withTag: keyTag),
+      let key = try? CryptoKeyStore.shared.getOrCreateKey(withTag: .walletKey),
       case let .directPostJWT(responseURI: responseUrl) = data.responseMode,
       let credential
     else {

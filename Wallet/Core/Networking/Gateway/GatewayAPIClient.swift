@@ -4,15 +4,15 @@ import OpenAPIRuntime
 import OpenAPIURLSession
 import WalletMacrosClient
 
-struct GatewayClient {
+struct GatewayAPIClient {
   let client: Client
 
-  init(baseUrl: URL? = nil) {
+  init(baseUrl: URL? = nil, sessionManager: SessionManager) {
     let url = baseUrl ?? #URL("https://wallet.sandbox.digg.se/api")
     client = Client(
       serverURL: url,
       transport: URLSessionTransport(),
-      middlewares: [AuthenticationMiddleware()]
+      middlewares: [AuthenticationMiddleware(sessionManager: sessionManager)]
     )
   }
 

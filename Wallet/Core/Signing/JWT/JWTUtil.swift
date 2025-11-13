@@ -19,11 +19,11 @@ struct JWTUtil {
   }
 
   static func createJWT(
-    with privateKey: SecKey,
-    headers: [String: Any],
+    with key: SecKey,
+    headers: [String: Any] = [:],
     payload: [String: Any],
   ) throws -> String {
-    let jwk = try privateKey.toJWK()
+    let jwk = try key.toJWK()
 
     let headerParams = [
       "alg": SignatureAlgorithm.ES256.rawValue
@@ -33,7 +33,7 @@ struct JWTUtil {
     var header = try JWSHeader(parameters: headerParams)
     header.jwkTyped = jwk
 
-    guard let signer = Signer(signatureAlgorithm: .ES256, key: privateKey) else {
+    guard let signer = Signer(signatureAlgorithm: .ES256, key: key) else {
       throw JWTError.invalidSigner
     }
 

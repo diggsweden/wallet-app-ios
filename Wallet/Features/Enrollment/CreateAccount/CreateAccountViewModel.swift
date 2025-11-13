@@ -3,20 +3,17 @@ import Foundation
 @MainActor
 @Observable
 final class CreateAccountViewModel {
-  let gatewayClient: GatewayClient
-  let keyTag: String
+  let gatewayAPIClient: GatewayAPIClient
   let onSubmit: (String) async throws -> Void
   var data = CreateAccountFormData()
   var accountIdResult: AsyncResult<String> = .idle
   var showAllValidationErrors: Bool = false
 
   init(
-    gatewayClient: GatewayClient,
-    keyTag: String,
+    gatewayAPIClient: GatewayAPIClient,
     onSubmit: @escaping (String) async throws -> Void
   ) {
-    self.gatewayClient = gatewayClient
-    self.keyTag = keyTag
+    self.gatewayAPIClient = gatewayAPIClient
     self.onSubmit = onSubmit
   }
 
@@ -28,8 +25,8 @@ final class CreateAccountViewModel {
 
     accountIdResult = .loading
     do {
-      let key = try KeychainManager.shared.getOrCreateKey(withTag: keyTag)
-      let accountId = try await gatewayClient.createAccount(
+      let key = try CryptoKeyStore.shared.getOrCreateKey(withTag: .deviceKey)
+      let accountId = try await gatewayAPIClient.createAccount(
         personalIdentityNumber: random12DigitString(),
         emailAddress: data.email,
         telephoneNumber: data.phoneNumber,

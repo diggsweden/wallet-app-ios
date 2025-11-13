@@ -50,6 +50,7 @@ final class UserViewModel {
   func signOut() async {
     do {
       try await userStore.deleteAll()
+      try CryptoKeyStore.shared.deleteAll()
       let newuser = try await userStore.getOrCreate()
       user = .ready(newuser)
     } catch {

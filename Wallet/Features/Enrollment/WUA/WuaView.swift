@@ -9,12 +9,11 @@ struct WuaView: View {
 
   init(
     walletId: String,
-    keyTag: String,
-    gatewayClient: GatewayClient,
+    gatewayAPIClient: GatewayAPIClient,
     onSubmit: @escaping (String) throws -> Void
   ) {
     self.onSubmit = onSubmit
-    viewModel = WuaViewModel(walletId: walletId, keyTag: keyTag, gatewayClient: gatewayClient)
+    viewModel = WuaViewModel(walletId: walletId, gatewayAPIClient: gatewayAPIClient)
   }
 
   var body: some View {

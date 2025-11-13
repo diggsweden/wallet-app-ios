@@ -1,6 +1,6 @@
 import Security
 
-enum KeychainManagerError: Error {
+enum KeychainError: Error {
   case keyGenerationFailed
   case keyNotFound
   case keychainError(OSStatus)

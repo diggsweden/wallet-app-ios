@@ -15,3 +15,29 @@ extension AsyncResult: Equatable where Value: Equatable {
     }
   }
 }
+
+extension AsyncResult {
+  var isLoading: Bool {
+    if case .loading = self {
+      true
+    } else {
+      false
+    }
+  }
+
+  var value: Value? {
+    if case let .success(value) = self {
+      value
+    } else {
+      nil
+    }
+  }
+
+  var error: Error? {
+    if case let .failure(error) = self {
+      error
+    } else {
+      nil
+    }
+  }
+}

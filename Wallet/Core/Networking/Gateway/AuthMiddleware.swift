@@ -3,6 +3,8 @@ import HTTPTypes
 import OpenAPIRuntime
 
 struct AuthenticationMiddleware: ClientMiddleware {
+  let sessionManager: SessionManager
+
   func intercept(
     _ request: HTTPRequest,
     body: HTTPBody?,
@@ -15,8 +17,16 @@ struct AuthenticationMiddleware: ClientMiddleware {
   ) {
     var request = request
 
-    if let name = HTTPField.Name("X-API-KEY") {
-      request.headerFields[name] = "my_secret_key"
+    if operationID == "createAccount" {
+      if let name = HTTPField.Name("X-API-KEY") {
+        request.headerFields[name] = "my_secret_key"
+      }
+      return try await next(request, body, baseURL)
+    }
+
+    if let name = HTTPField.Name("Cookie") {
+      let token = try await sessionManager.getToken()
+      request.headerFields[name] = "JSESSIONID=\(token)"
     }
 
     return try await next(request, body, baseURL)

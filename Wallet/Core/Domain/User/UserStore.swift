@@ -1,13 +1,17 @@
 import SwiftData
 import SwiftUI
 
-enum SessionError: Error {
+enum UserStoreError: Error {
   case notFound
   case persistence(Error)
 }
 
 @ModelActor
-actor UserStore {
+actor UserStore: AccountIDProvider {
+  func accountID() async -> String? {
+    try? await getOrCreate().accountId
+  }
+
   init() throws {
     let modelContainer = try ModelContainer(for: User.self)
     self.init(modelContainer: modelContainer)
@@ -44,7 +48,7 @@ actor UserStore {
       try modelContext.delete(model: User.self)
       try modelContext.save()
     } catch {
-      throw SessionError.persistence(error)
+      throw UserStoreError.persistence(error)
     }
   }
 
@@ -66,14 +70,12 @@ actor UserStore {
     do {
       return try modelContext.fetch(FetchDescriptor<User>()).first
     } catch {
-      throw SessionError.notFound
+      throw UserStoreError.notFound
     }
   }
 
   private func snapshot(from model: User) -> UserSnapshot {
     UserSnapshot(
-      walletKeyTag: model.walletKeyTag,
-      deviceKeyTag: model.deviceKeyTag,
       deviceId: model.deviceId,
       accountId: model.accountId,
       walletUnitAttestation: model.walletUnitAttestation,
@@ -85,7 +87,7 @@ actor UserStore {
     do {
       try modelContext.save()
     } catch {
-      throw SessionError.persistence(error)
+      throw UserStoreError.persistence(error)
     }
   }
 }
