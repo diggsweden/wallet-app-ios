@@ -35,7 +35,7 @@ final actor SessionManager {
     }
 
     let nonce = try await getChallenge(keyId: keyId)
-    let token = try await validateChallenge(key: deviceKey, nonce: nonce)
+    let token = try await validateChallenge(key: deviceKey, keyId: keyId, nonce: nonce)
 
     self.token = token
     return token
@@ -59,8 +59,8 @@ final actor SessionManager {
     return nonce
   }
 
-  private func validateChallenge(key: SecKey, nonce: String) async throws -> String {
-    let jwt = try JWTUtil.createJWT(with: key, payload: ["nonce": nonce])
+  private func validateChallenge(key: SecKey, keyId: String, nonce: String) async throws -> String {
+    let jwt = try JWTUtil.createJWT(with: key, headers: ["kid": keyId], payload: ["nonce": nonce])
     let input = Operations.ValidateChallenge.Input(body: .json(.init(signedJwt: jwt)))
     let response = try await client.validateChallenge(input)
 
