@@ -29,6 +29,12 @@ struct AuthenticationMiddleware: ClientMiddleware {
       request.headerFields[name] = "JSESSIONID=\(token)"
     }
 
-    return try await next(request, body, baseURL)
+    let (response, body) = try await next(request, body, baseURL)
+
+    if response.status.code == 403 {
+      await sessionManager.reset()
+    }
+
+    return (response, body)
   }
 }

@@ -27,6 +27,10 @@ final actor SessionManager {
     }
   }
 
+  func reset() {
+    token = nil
+  }
+
   private func initSession() async throws -> String {
     let deviceKey = try CryptoKeyStore.shared.getOrCreateKey(withTag: .deviceKey)
 
