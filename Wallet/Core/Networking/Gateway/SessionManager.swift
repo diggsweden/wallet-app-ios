@@ -27,6 +27,10 @@ final actor SessionManager {
     }
   }
 
+  func reset() {
+    token = nil
+  }
+
   private func initSession() async throws -> String {
     let deviceKey = try CryptoKeyStore.shared.getOrCreateKey(withTag: .deviceKey)
 
@@ -35,10 +39,10 @@ final actor SessionManager {
     }
 
     let nonce = try await getChallenge(keyId: keyId)
-    let token = try await validateChallenge(key: deviceKey, keyId: keyId, nonce: nonce)
+    let sessionToken = try await validateChallenge(key: deviceKey, keyId: keyId, nonce: nonce)
 
-    self.token = token
-    return token
+    self.token = sessionToken
+    return sessionToken
   }
 
   private func getChallenge(keyId: String) async throws -> String {
@@ -64,13 +68,10 @@ final actor SessionManager {
     let input = Operations.ValidateChallenge.Input(body: .json(.init(signedJwt: jwt)))
     let response = try await client.validateChallenge(input)
 
-    guard
-      case let .ok(payload) = response,
-      let accountId = try payload.body.json.accountId
-    else {
+    guard case let .ok(payload) = response else {
       throw SessionError.failedChallenge
     }
 
-    return accountId
+    return payload.headers.session
   }
 }

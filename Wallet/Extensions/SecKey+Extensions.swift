@@ -33,11 +33,12 @@ extension SecKey {
   func toJWK() throws -> ECPublicKey {
     let (x, y) = try getJWKCoordinates()
 
-    return try ECPublicKey(
+    return ECPublicKey(
       crv: .P256,
       x: x,
       y: y,
+      additionalParameters: ["kid": "testar"]
     )
-    .withThumbprintAsKeyId()
+    //    .withThumbprintAsKeyId()
   }
 }

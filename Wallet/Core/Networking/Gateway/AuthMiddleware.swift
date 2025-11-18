@@ -18,17 +18,19 @@ struct AuthenticationMiddleware: ClientMiddleware {
     var request = request
 
     if operationID == "createAccount" {
-      if let name = HTTPField.Name("X-API-KEY") {
-        request.headerFields[name] = "my_secret_key"
-      }
+      request.setHeader("X-API-KEY", "my_secret_key")
       return try await next(request, body, baseURL)
     }
 
-    if let name = HTTPField.Name("Cookie") {
-      let token = try await sessionManager.getToken()
-      request.headerFields[name] = "JSESSIONID=\(token)"
+    let token = try await sessionManager.getToken()
+    request.setHeader("session", token)
+
+    let (response, body) = try await next(request, body, baseURL)
+
+    if response.status.code == 403 {
+      await sessionManager.reset()
     }
 
-    return try await next(request, body, baseURL)
+    return (response, body)
   }
 }

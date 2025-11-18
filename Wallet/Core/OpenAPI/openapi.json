@@ -11,7 +11,8 @@
   ],
   "security": [
     {
-      "ApiKeyScheme": []
+      "ApiKeyScheme": [],
+      "SessionIdScheme": []
     }
   ],
   "paths": {
@@ -41,6 +42,10 @@
           "required": true
         },
         "responses": {
+          "401": {
+            "description": "Not authorized",
+            "content": {}
+          },
           "500": {
             "description": "Could not create Wua",
             "content": {}
@@ -54,10 +59,6 @@
                 }
               }
             }
-          },
-          "401": {
-            "description": "Not authorized",
-            "content": {}
           },
           "201": {
             "description": "Wua created",
@@ -98,6 +99,10 @@
           "required": true
         },
         "responses": {
+          "401": {
+            "description": "Not authorized",
+            "content": {}
+          },
           "500": {
             "description": "Could not create Wua",
             "content": {}
@@ -111,10 +116,6 @@
                 }
               }
             }
-          },
-          "401": {
-            "description": "Not authorized",
-            "content": {}
           },
           "201": {
             "description": "Wua created",
@@ -150,12 +151,24 @@
           "required": true
         },
         "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
           "500": {
             "description": "Unknown error",
             "content": {}
           },
           "400": {
             "description": "Bad input, session not created",
+            "headers": {
+              "session": {
+                "description": "Session ID",
+                "style": "simple",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -164,18 +177,18 @@
               }
             }
           },
-          "401": {
-            "description": "Unauthorized"
-          },
           "200": {
             "description": "Session created",
-            "content": {
-              "application/json": {
+            "headers": {
+              "session": {
+                "required": true,
+                "description": "Session ID",
+                "style": "simple",
                 "schema": {
-                  "$ref": "#/components/schemas/ValidationResult"
+                  "type": "string"
                 }
               }
-            }
+            },
           }
         }
       }
@@ -198,6 +211,9 @@
           }
         ],
         "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
           "500": {
             "description": "Unknown error",
             "content": {
@@ -217,9 +233,6 @@
                 }
               }
             }
-          },
-          "401": {
-            "description": "Unauthorized"
           },
           "200": {
             "description": "Attestation found",
@@ -254,6 +267,9 @@
           "required": true
         },
         "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
           "500": {
             "description": "Could not create attestation, server error",
             "content": {}
@@ -267,9 +283,6 @@
                 }
               }
             }
-          },
-          "401": {
-            "description": "Unauthorized"
           },
           "201": {
             "description": "Attestation created",
@@ -313,6 +326,9 @@
           "required": true
         },
         "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
           "500": {
             "description": "Could not create account, server error",
             "content": {}
@@ -326,9 +342,6 @@
                 }
               }
             }
-          },
-          "401": {
-            "description": "Unauthorized"
           },
           "201": {
             "description": "Account created",
@@ -370,6 +383,9 @@
           }
         ],
         "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
           "500": {
             "description": "Unknown error",
             "content": {
@@ -389,9 +405,6 @@
                 }
               }
             }
-          },
-          "401": {
-            "description": "Unauthorized"
           },
           "200": {
             "description": "Challenge issued",
@@ -424,6 +437,9 @@
           }
         ],
         "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
           "500": {
             "description": "Unknown error",
             "content": {
@@ -443,9 +459,6 @@
                 }
               }
             }
-          },
-          "401": {
-            "description": "Unauthorized"
           },
           "200": {
             "description": "Attestation found",
@@ -559,14 +572,6 @@
           "signedJwt"
         ]
       },
-      "ValidationResult": {
-        "type": "object",
-        "properties": {
-          "accountId": {
-            "type": "string"
-          }
-        }
-      },
       "CreateAttestationDto": {
         "type": "object",
         "properties": {
@@ -670,6 +675,11 @@
       "ApiKeyScheme": {
         "type": "apiKey",
         "name": "X-API-KEY",
+        "in": "header"
+      },
+      "SessionIdScheme": {
+        "type": "apiKey",
+        "name": "SESSION",
         "in": "header"
       }
     }

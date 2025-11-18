@@ -59,9 +59,9 @@ struct GatewayAPIClient {
       y: jwk.y
     )
     let bodyDto = Components.Schemas.CreateWuaDto(walletId: UUID().uuidString, jwk: jwkDto)
-    let input = Operations.CreateWua.Input(body: .json(bodyDto))
+    let input = Operations.CreateWua1.Input(body: .json(bodyDto))
 
-    let response = try await client.createWua(input)
+    let response = try await client.createWua1(input)
     guard
       case let .created(payload) = response,
       let jwt = try? payload.body.json.jwt
