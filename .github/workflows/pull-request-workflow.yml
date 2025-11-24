@@ -1,0 +1,70 @@
+# SPDX-FileCopyrightText: 2025 Digg - Agency for Digital Government
+#
+# SPDX-License-Identifier: CC0-1.0
+
+name: Pull Request Workflow
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pr-checks:
+    uses: diggsweden/reusable-ci/.github/workflows/pullrequest-orchestrator.yml@1bf6632ce48686293b0dead5f7bd2bcb5e820172 # v2.3.1
+    permissions:
+      contents: read
+      packages: read
+      security-events: write
+    secrets: inherit
+    with:
+      project-type: xcode-ios
+      linters.commitlint: true
+      linters.licenselint: false
+      linters.dependencyreview: true
+      linters.megalint: false
+      linters.swiftformat: true
+      linters.swiftlint: false
+
+  # TODO: Enable when tests are implemented
+  # unit-tests:
+  #   runs-on: ${{ vars.MACOS_VERSION || 'macos-14' }}
+  #   needs: pr-checks
+  #   if: always()
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: ./.github/actions/setup-env
+  #       with:
+  #         xcode-version: ${{ vars.XCODE_VERSION || '16.1' }}
+  #
+  #     - name: Run unit tests
+  #       run: |
+  #         set -o pipefail
+  #         xcodebuild test \
+  #           -scheme WalletTests \
+  #           -destination 'platform=iOS Simulator,name=iPhone 16' \
+  #         | xcbeautify
+
+  # TODO: Enable when UI tests are implemented
+  # ui-tests:
+  #   runs-on: ${{ vars.MACOS_VERSION || 'macos-14' }}
+  #   needs: pr-checks
+  #   if: always()
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: ./.github/actions/setup-env
+  #       with:
+  #         xcode-version: ${{ vars.XCODE_VERSION || '16.1' }}
+  #
+  #     - name: Run UI tests
+  #       run: |
+  #         set -o pipefail
+  #         xcodebuild test \
+  #           -scheme WalletUITests \
+  #           -destination 'platform=iOS Simulator,name=iPhone 16' \
+  #         | xcbeautify

@@ -1,0 +1,21 @@
+# SPDX-FileCopyrightText: 2025 Digg - Agency for Digital Government
+#
+# SPDX-License-Identifier: CC0-1.0
+
+# Artifacts Configuration for wallet-app-ios
+# iOS application - IPA files attached to GitHub Release and published to TestFlight
+
+artifacts:
+  - name: wallet-ios-demo
+    project-type: xcode-ios
+    working-directory: .
+    build-type: application
+    publish-to: []
+    config:
+      xcode-version: "26.1"
+      scheme: "Wallet Demo"
+      project: "Wallet.xcodeproj"
+      configuration: Release
+      enable-code-signing: true
+      export-options-var: EXPORT_OPTIONS_BASE64
+      macos-version: macos-15
