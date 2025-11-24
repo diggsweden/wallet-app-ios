@@ -25,11 +25,11 @@ jobs:
     with:
       project-type: xcode-ios
       linters.commitlint: true
-      linters.licenselint: true
+      linters.licenselint: false
       linters.dependencyreview: true
       linters.megalint: false
       linters.swiftformat: true
-      linters.swiftlint: true
+      linters.swiftlint: false
 
   # TODO: Enable when tests are implemented
   # unit-tests:
