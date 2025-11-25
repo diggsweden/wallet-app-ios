@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   pr-checks:
-    uses: diggsweden/reusable-ci/.github/workflows/pullrequest-orchestrator.yml@5ab55f88949ad92b83cf299724b5b8e0ec3d7d8a # v2.3.6-dev
+    uses: diggsweden/reusable-ci/.github/workflows/pullrequest-orchestrator.yml@f73a041696690cdbad73ee2c9ecac2743e52018e # v2.3.7
     permissions:
       contents: read
       packages: read
