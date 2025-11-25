@@ -10,6 +10,17 @@ struct EnrollmentContext {
 
 struct EnrollmentFlow {
   var step: EnrollmentStep = .intro
+  
+  var currentStepNumber: Int? {
+    guard let caseIndex = EnrollmentStep.allCases.firstIndex(of: step) else {
+      return nil
+    }
+    return caseIndex + 1
+  }
+  
+  var totalSteps: Int {
+    return EnrollmentStep.allCases.count
+  }
 
   mutating func advance(with context: EnrollmentContext) throws {
     do {
@@ -28,7 +39,7 @@ struct EnrollmentFlow {
   }
 }
 
-enum EnrollmentStep {
+enum EnrollmentStep: CaseIterable {
   case intro, contactInfo, pin, verifyPin, wua, pid, done
 
   func next() -> EnrollmentStep {

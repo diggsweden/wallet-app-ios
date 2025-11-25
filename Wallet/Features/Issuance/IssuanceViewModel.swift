@@ -129,7 +129,7 @@ class IssuanceViewModel {
   private func createBindingKey(from secKey: SecKey) throws -> BindingKey {
     return .jwk(
       algorithm: JWSAlgorithm(.ES256),
-      jwk: try secKey.toJWK(),
+      jwk: try secKey.toECPublicKey(),
       privateKey: .secKey(secKey),
       issuer: "wallet-dev"
     )

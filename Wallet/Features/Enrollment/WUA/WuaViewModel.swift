@@ -12,7 +12,7 @@ final class WuaViewModel {
 
   func fetchWua() async throws -> String {
     let key = try CryptoKeyStore.shared.getOrCreateKey(withTag: .walletKey)
-    let jwk = try key.toJWK()
+    let jwk = try key.toECPublicKey().toPublicJWK()
 
     let jwt = try await gatewayAPIClient.getWalletUnitAttestation(
       walletId: walletId,

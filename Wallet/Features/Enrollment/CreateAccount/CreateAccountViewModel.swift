@@ -3,14 +3,14 @@ import Foundation
 @MainActor
 @Observable
 final class CreateAccountViewModel {
-  let gatewayAPIClient: GatewayAPIClient
+  let gatewayAPIClient: GatewayAPI
   let onSubmit: (String) async throws -> Void
   var data = CreateAccountFormData()
   var accountIdResult: AsyncResult<String> = .idle
   var showAllValidationErrors: Bool = false
 
   init(
-    gatewayAPIClient: GatewayAPIClient,
+    gatewayAPIClient: GatewayAPI,
     onSubmit: @escaping (String) async throws -> Void
   ) {
     self.gatewayAPIClient = gatewayAPIClient
@@ -30,7 +30,7 @@ final class CreateAccountViewModel {
         personalIdentityNumber: random12DigitString(),
         emailAddress: data.email,
         telephoneNumber: data.phoneNumber,
-        jwk: key.toJWK()
+        jwk: key.toECPublicKey().toPublicJWK()
       )
 
       accountIdResult = .success(accountId)

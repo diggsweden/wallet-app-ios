@@ -9,7 +9,7 @@ struct DashboardView: View {
     ScrollView {
       VStack(alignment: .center, spacing: 20) {
         Text("dashboard_welcome")
-          .font(theme.fonts.title)
+          .font(theme.fonts.h5)
           .padding(.top, 10)
         Text("dashboard_content_1")
 

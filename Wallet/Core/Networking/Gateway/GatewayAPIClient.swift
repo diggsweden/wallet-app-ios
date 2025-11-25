@@ -4,7 +4,29 @@ import OpenAPIRuntime
 import OpenAPIURLSession
 import WalletMacrosClient
 
-struct GatewayAPIClient {
+struct PublicJWK: Sendable {
+  let kty: String
+  let kid: String?
+  let crv: String
+  let x: String
+  let y: String
+}
+
+protocol GatewayAPI: Sendable {
+  func createAccount(
+    personalIdentityNumber: String,
+    emailAddress: String,
+    telephoneNumber: String?,
+    jwk: PublicJWK
+  ) async throws -> String
+
+  func getWalletUnitAttestation(
+    walletId: String,
+    jwk: PublicJWK
+  ) async throws -> String
+}
+
+actor GatewayAPIClient: GatewayAPI {
   let client: Client
 
   init(baseUrl: URL? = nil, sessionManager: SessionManager) {
@@ -16,18 +38,18 @@ struct GatewayAPIClient {
     )
   }
 
-  public func createAccount(
+  func createAccount(
     personalIdentityNumber: String,
     emailAddress: String,
     telephoneNumber: String?,
-    jwk: ECPublicKey
+    jwk: PublicJWK
   ) async throws -> String {
     let jwkDto = Components.Schemas.JwkDto(
-      kty: jwk.keyType.rawValue,
-      kid: jwk.parameters["kid"],
-      crv: jwk.crv.rawValue,
+      kty: jwk.kty,
+      kid: jwk.kid,
+      crv: jwk.crv,
       x: jwk.x,
-      y: jwk.y,
+      y: jwk.y
     )
     let bodyDto = Components.Schemas.CreateAccountRequestDto(
       personalIdentityNumber: personalIdentityNumber,
@@ -48,13 +70,13 @@ struct GatewayAPIClient {
     return accountId
   }
 
-  public func getWalletUnitAttestation(
+  func getWalletUnitAttestation(
     walletId: String,
-    jwk: ECPublicKey
+    jwk: PublicJWK
   ) async throws -> String {
     let jwkDto = Components.Schemas.JwkDto(
-      kty: jwk.keyType.rawValue,
-      crv: jwk.crv.rawValue,
+      kty: jwk.kty,
+      crv: jwk.crv,
       x: jwk.x,
       y: jwk.y
     )

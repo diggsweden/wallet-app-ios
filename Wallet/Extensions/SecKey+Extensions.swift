@@ -30,15 +30,15 @@ extension SecKey {
     )
   }
 
-  func toJWK() throws -> ECPublicKey {
+  func toECPublicKey() throws -> ECPublicKey {
     let (x, y) = try getJWKCoordinates()
 
-    return ECPublicKey(
+    return try ECPublicKey(
       crv: .P256,
       x: x,
       y: y,
       additionalParameters: ["kid": "testar"]
     )
-    //    .withThumbprintAsKeyId()
+//    .withThumbprintAsKeyId()
   }
 }

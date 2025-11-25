@@ -14,6 +14,18 @@ extension JWK {
   }
 }
 
+extension ECPublicKey {
+  func toPublicJWK() -> PublicJWK {
+    return PublicJWK(
+      kty: self.keyType.rawValue,
+      kid: self.parameters["kid"],
+      crv: self.keyType.rawValue,
+      x: self.x,
+      y: self.y
+    )
+  }
+}
+
 extension WebKeySet.Key {
   func toEcPublicKey() throws -> ECPublicKey {
     guard

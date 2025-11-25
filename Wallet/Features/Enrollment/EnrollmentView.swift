@@ -17,24 +17,41 @@ struct EnrollmentView: View {
   var body: some View {
     let slideTransition: AnyTransition = orientation.isLandscape ? .move(edge: .bottom) : .slide
 
-    adaptiveStack {
-      landscapeSpacer
+    ScrollView {
+      adaptiveStack {
+        Image(.diggLogo)
+          .resizable()
+          .scaledToFit()
+          .frame(height: 16)
 
-      headerView
-        .id(flow.step)
-        .transition(.blurReplace)
+        Text("Kom igång med plånboken")
+          .font(theme.fonts.h4)
+          .padding(.horizontal, 20)
+          .padding(.vertical, 12)
+          .frame(maxWidth: .infinity, alignment: .leading)
+          .background(theme.colors.primaryVariant)
+          .padding(.horizontal, -30)
+          .padding(.vertical, -5)
 
-      landscapeSpacer
+        stepCountView
 
-      currentStepView
-        .transition(
-          slideTransition.combined(with: .opacity)
-        )
+        headerView
+          .id(flow.step)
+          .transition(.blurReplace)
+
+        landscapeSpacer
+
+        currentStepView
+          .transition(
+            slideTransition.combined(with: .opacity)
+          )
+      }
+      .animation(.easeInOut, value: flow.step)
+      .padding(.top, 10)
+      .padding(.horizontal, 25)
     }
-    .animation(.easeInOut, value: flow.step)
-    .padding()
   }
-
+  
   private func advanceIfValid() throws {
     try flow.advance(with: context)
   }
@@ -47,7 +64,8 @@ struct EnrollmentView: View {
       case .landscape:
         HStack(spacing: 24) { content() }
       case .portrait:
-        VStack(spacing: 24) { content() }
+        VStack(alignment: .leading, spacing: 20) { content() }
+          .frame(maxHeight: .infinity, alignment: .top)
     }
   }
 
@@ -58,36 +76,41 @@ struct EnrollmentView: View {
     }
   }
 
+  @ViewBuilder
+  private var stepCountView: some View {
+    if let currentStepNumber = flow.currentStepNumber {
+      Text("Steg \(currentStepNumber) av \(flow.totalSteps)").font(theme.fonts.bodyLarge)
+    }
+  }
+
   private var headerView: some View {
-    VStack(spacing: 12) {
+    VStack(alignment: .leading, spacing: 28) {
       switch flow.step {
         case .intro:
-          Image(.diggLogo)
-          Text("Välkommen!")
+          titleWithCount("Välkommen!")
 
         case .contactInfo:
-          Image(systemName: "person.badge.plus")
-          Text("Kontaktuppgifter")
+          titleWithCount("Användaruppgifter")
 
         case .pin:
           Image(systemName: "lock.open.fill")
-          Text("Ange ny PIN-kod")
+          titleWithCount("Ange ny PIN-kod")
           Text("6 siffror")
             .font(theme.fonts.body)
 
         case .verifyPin:
           Image(systemName: "lock.fill")
-          Text("Bekräfta PIN-kod")
+          titleWithCount("Bekräfta PIN-kod")
           Text("6 siffror")
             .font(theme.fonts.body)
 
         case .wua:
           Image(systemName: "gearshape.arrow.trianglehead.2.clockwise.rotate.90")
-          Text("Sätter upp plånbok")
+          titleWithCount("Sätter upp plånbok")
 
         case .pid:
           Image(systemName: "person.text.rectangle")
-          Text("Lägg till ID-handling")
+          titleWithCount("Lägg till ID-handling")
 
         case .done:
           Image(systemName: "checkmark.circle.fill")
@@ -95,7 +118,16 @@ struct EnrollmentView: View {
           Text("Klart!")
       }
     }
-    .font(theme.fonts.titleLarge)
+  }
+
+  private func titleWithCount(_ text: String) -> some View {
+    if let currentStepNumber = flow.currentStepNumber {
+      Text("\(currentStepNumber). \(text)")
+        .font(theme.fonts.h3)
+    } else {
+      Text(text)
+        .font(theme.fonts.h3)
+    }
   }
 
   @ViewBuilder

@@ -34,7 +34,7 @@ final actor SessionManager {
   private func initSession() async throws -> String {
     let deviceKey = try CryptoKeyStore.shared.getOrCreateKey(withTag: .deviceKey)
 
-    guard let keyId = try? deviceKey.toJWK().parameters["kid"] else {
+    guard let keyId = try? deviceKey.toECPublicKey().parameters["kid"] else {
       throw SessionError.noKeyId
     }
 

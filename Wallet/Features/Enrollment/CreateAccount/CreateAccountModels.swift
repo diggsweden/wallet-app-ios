@@ -4,6 +4,7 @@ struct CreateAccountFormData {
   var email: String = ""
   var verifyEmail: String = ""
   var phoneNumber: String? = nil
+  var acceptedTerms: Bool = false
 }
 
 extension CreateAccountFormData {

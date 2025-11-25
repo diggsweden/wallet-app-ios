@@ -1,4 +1,5 @@
 import SwiftUI
+import WalletMacrosClient
 
 struct CreateAccountForm: View {
   private enum Field: Hashable {
@@ -9,9 +10,12 @@ struct CreateAccountForm: View {
   @State private var touchedFields = Set<Field>()
   @State private var viewModel: CreateAccountViewModel
   @Environment(ToastViewModel.self) private var toastViewModel
+  @Environment(\.theme) private var theme
+  @Environment(\.openURL) private var openURL
+  private let exampleEmail = "exempel@domän.se"
 
   init(
-    gatewayAPIClient: GatewayAPIClient,
+    gatewayAPIClient: GatewayAPI,
     onSubmit: @escaping (String) async throws -> Void,
   ) {
     _viewModel = State(
@@ -23,36 +27,42 @@ struct CreateAccountForm: View {
   }
 
   var body: some View {
-    VStack(spacing: 18) {
-      emailField(label: "E-post", text: $viewModel.data.email)
-        .textFieldStyle(
-          .primary(
-            error: errorMessage(for: .email)
-          )
-        )
-        .focused($focusedField, equals: .email)
-
-      emailField(label: "Verifiera e-post", text: $viewModel.data.verifyEmail)
-        .textFieldStyle(
-          .primary(
-            error: errorMessage(for: .verifyEmail)
-          )
-        )
-        .focused($focusedField, equals: .verifyEmail)
-
-      TextField(
-        "Telefonnummer",
-        value: $viewModel.data.phoneNumber,
-        format: .optional
+    VStack(alignment: .leading, spacing: 14) {
+      Text(
+        "Vi behöver dina användaruppgifter för att kunna skapa ett konto. Med kontot kan du administrera din plånbok även om du till exempel tappar bort din telefon."
       )
-      .textFieldStyle(
-        .primary(
-          error: errorMessage(for: .phoneNumber)
-        )
-      )
-      .keyboardType(.phonePad)
-      .textContentType(.telephoneNumber)
-      .focused($focusedField, equals: .phoneNumber)
+      HStack(alignment: .bottom) {
+        Text("Läs mer på wallet.se")
+          .underline()
+        Image(systemName: "arrow.up.forward.app")
+      }
+      .onTapGesture {
+        openURL(#URL("https://wallet.sandbox.digg.se"))
+      }
+    }
+    .padding(.bottom, 40)
+
+    VStack(alignment: .leading, spacing: 15) {
+      PrimaryTextFieldWrapper(
+        title: "E-post (\(exampleEmail))",
+        error: errorMessage(for: .email)
+      ) {
+        emailField(label: exampleEmail, text: $viewModel.data.email)
+          .focused($focusedField, equals: .email)
+      }
+
+      PrimaryTextFieldWrapper(
+        title: "Validera e-post (\(exampleEmail))",
+        error: errorMessage(for: .verifyEmail)
+      ) {
+        emailField(label: exampleEmail, text: $viewModel.data.verifyEmail)
+          .focused($focusedField, equals: .verifyEmail)
+      }
+
+      phoneNumberField
+        .focused($focusedField, equals: .phoneNumber)
+
+      checkBox.padding(.top, 20)
     }
     .disabled(viewModel.accountIdResult.isLoading)
     .onChange(of: viewModel.accountIdResult) { _, new in
@@ -71,6 +81,33 @@ struct CreateAccountForm: View {
       EnrollmentBottomToolbarButton {
         loadingToolBar
       }
+    }
+  }
+
+  private var checkBox: some View {
+    HStack(alignment: .top) {
+      Text("Jag samtycker till att DIGG får lagra mina användaruppgifter")
+      Spacer()
+      Toggle("", isOn: $viewModel.data.acceptedTerms)
+        .labelsHidden()
+        .toggleStyle(.switch)
+        .padding(.leading, 5)
+        .tint(theme.colors.successInverse)
+    }
+  }
+
+  private var phoneNumberField: some View {
+    PrimaryTextFieldWrapper(
+      title: "Telefonnummer (frivilligt)",
+      error: errorMessage(for: .phoneNumber)
+    ) {
+      TextField(
+        "070 123 45 67",
+        value: $viewModel.data.phoneNumber,
+        format: .optional
+      )
+      .keyboardType(.phonePad)
+      .textContentType(.telephoneNumber)
     }
   }
 
@@ -115,10 +152,14 @@ struct CreateAccountForm: View {
   }
 }
 
-//#Preview {
-//  CreateAccountForm(
-//    gatewayClient: GatewayApiService(),
-//    keyTag: "",
-//    onSubmit: { _ in },
-//  )
-//}
+#Preview {
+  VStack {
+    CreateAccountForm(
+      gatewayAPIClient: GatewayAPIMock(),
+      onSubmit: { _ in },
+    )
+  }
+  .themed
+  .withToast
+  .padding()
+}

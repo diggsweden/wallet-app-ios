@@ -23,7 +23,7 @@ struct JWTUtil {
     headers: [String: Any] = [:],
     payload: [String: Any],
   ) throws -> String {
-    let jwk = try key.toJWK()
+    let jwk = try key.toECPublicKey()
 
     let headerParams = [
       "alg": SignatureAlgorithm.ES256.rawValue
