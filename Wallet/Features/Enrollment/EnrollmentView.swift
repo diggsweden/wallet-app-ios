@@ -31,13 +31,14 @@ struct EnrollmentView: View {
           .frame(maxWidth: .infinity, alignment: .leading)
           .background(theme.colors.primaryVariant)
           .padding(.horizontal, -30)
-          .padding(.vertical, -5)
-
+        
         stepCountView
+          .padding(.vertical, 4)
 
         headerView
           .id(flow.step)
           .transition(.blurReplace)
+          .padding(.bottom, 5)
 
         landscapeSpacer
 
@@ -51,7 +52,7 @@ struct EnrollmentView: View {
       .padding(.horizontal, 25)
     }
   }
-  
+
   private func advanceIfValid() throws {
     try flow.advance(with: context)
   }
@@ -64,7 +65,7 @@ struct EnrollmentView: View {
       case .landscape:
         HStack(spacing: 24) { content() }
       case .portrait:
-        VStack(alignment: .leading, spacing: 20) { content() }
+        VStack(alignment: .leading, spacing: 15) { content() }
           .frame(maxHeight: .infinity, alignment: .top)
     }
   }

@@ -13,6 +13,14 @@ extension CreateAccountFormData {
     case emailInvalid = "Ogiltig e-postadress"
     case emailsDoNotMatch = "E-post matchar inte"
     case phoneInvalid = "Ogiltigt telefonnummer"
+    case notAcceptedTerms = "Samtycke krävs för att du ska kunna använda plånboken"
+  }
+  var emailMatchError: String? {
+    guard Validators.isValidEmail(email) && Validators.isValidEmail(verifyEmail) else {
+      return nil
+    }
+    
+    return email == verifyEmail ? nil : ValidationError.emailsDoNotMatch.rawValue
   }
 
   var emailError: String? {
@@ -32,8 +40,8 @@ extension CreateAccountFormData {
       return ValidationError.emailEmpty.rawValue
     }
 
-    guard verifyEmail == email else {
-      return ValidationError.emailsDoNotMatch.rawValue
+    guard Validators.isValidEmail(verifyEmail) else {
+      return ValidationError.emailInvalid.rawValue
     }
 
     return nil
@@ -51,19 +59,22 @@ extension CreateAccountFormData {
     return nil
   }
 
+  var termsError: String? {
+    return acceptedTerms ? nil : ValidationError.notAcceptedTerms.rawValue
+  }
+
   var isValid: Bool {
-    [emailError, verifyEmailError, phoneError].allSatisfy { $0 == nil }
+    [emailError, verifyEmailError, phoneError, termsError].allSatisfy { $0 == nil }
   }
 }
 
 fileprivate enum Validators {
-  static func isValidEmail(_ s: String) -> Bool {
+  static func isValidEmail(_ input: String) -> Bool {
     let emailRegex = /(?i)^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/
-    return s.wholeMatch(of: emailRegex) != nil
+    return input.wholeMatch(of: emailRegex) != nil
   }
 
-  static func isValidPhone(_ s: String) -> Bool {
-    let allowed = CharacterSet(charactersIn: "+- 0123456789")
-    return s.unicodeScalars.allSatisfy { allowed.contains($0) }
+  static func isValidPhone(_ input: String) -> Bool {
+    input.wholeMatch(of: /^\d{10}$/) != nil
   }
 }

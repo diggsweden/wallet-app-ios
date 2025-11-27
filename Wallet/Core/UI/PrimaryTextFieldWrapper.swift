@@ -30,7 +30,7 @@ struct PrimaryTextFieldWrapper<Content: View>: View {
         }
       }
     }
-    .animation(.easeInOut, value: error != nil)
+    .animation(.smooth, value: error != nil)
   }
 }
 

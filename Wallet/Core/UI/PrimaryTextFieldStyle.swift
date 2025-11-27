@@ -19,7 +19,7 @@ extension TextFieldStyle where Self == PrimaryTextFieldStyle {
   static func primary(error: Bool) -> PrimaryTextFieldStyle {
     PrimaryTextFieldStyle(error: error)
   }
-  static var primary: PrimaryTextFieldStyle { PrimaryTextFieldStyle(error: false)}
+  static var primary: PrimaryTextFieldStyle { PrimaryTextFieldStyle(error: false) }
 }
 
 #Preview {

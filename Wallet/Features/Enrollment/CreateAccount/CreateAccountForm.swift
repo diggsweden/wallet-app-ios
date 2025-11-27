@@ -85,20 +85,32 @@ struct CreateAccountForm: View {
   }
 
   private var checkBox: some View {
-    HStack(alignment: .top) {
-      Text("Jag samtycker till att DIGG får lagra mina användaruppgifter")
-      Spacer()
-      Toggle("", isOn: $viewModel.data.acceptedTerms)
-        .labelsHidden()
-        .toggleStyle(.switch)
-        .padding(.leading, 5)
-        .tint(theme.colors.successInverse)
+    VStack(alignment: .leading, spacing: 8) {
+      HStack(alignment: .top) {
+        Text("Jag samtycker till att DIGG får lagra mina användaruppgifter")
+        Spacer()
+        Toggle("", isOn: $viewModel.data.acceptedTerms)
+          .labelsHidden()
+          .toggleStyle(.switch)
+          .padding(.leading, 5)
+          .tint(theme.colors.successInverse)
+      }
+
+      if let error = viewModel.data.termsError, viewModel.showAllValidationErrors {
+        HStack(spacing: 6) {
+          Image(systemName: "exclamationmark.circle")
+            .bold()
+          Text(error)
+            .font(theme.fonts.bodySmall)
+        }
+        .foregroundStyle(theme.colors.errorInverse)
+      }
     }
   }
 
   private var phoneNumberField: some View {
     PrimaryTextFieldWrapper(
-      title: "Telefonnummer (frivilligt)",
+      title: "Telefonnummer 10 siffror (frivilligt)",
       error: errorMessage(for: .phoneNumber)
     ) {
       TextField(
@@ -106,7 +118,7 @@ struct CreateAccountForm: View {
         value: $viewModel.data.phoneNumber,
         format: .optional
       )
-      .keyboardType(.phonePad)
+      .keyboardType(.numberPad)
       .textContentType(.telephoneNumber)
     }
   }
@@ -139,12 +151,19 @@ struct CreateAccountForm: View {
     let data = viewModel.data
     return switch field {
       case .email:
-        data.emailError
+        data.emailError ?? (showMatchingEmailError ? data.emailMatchError : nil)
       case .verifyEmail:
-        data.verifyEmailError
+        data.verifyEmailError ?? (showMatchingEmailError ? data.emailMatchError : nil)
       case .phoneNumber:
         data.phoneError
     }
+  }
+
+  private var showMatchingEmailError: Bool {
+    if viewModel.showAllValidationErrors {
+      return true
+    }
+    return touchedFields.contains(.email) && touchedFields.contains(.verifyEmail)
   }
 
   private func shouldShowErrorMessage(for field: Field) -> Bool {

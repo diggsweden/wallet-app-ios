@@ -37,8 +37,7 @@ extension SecKey {
       crv: .P256,
       x: x,
       y: y,
-      additionalParameters: ["kid": "testar"]
     )
-//    .withThumbprintAsKeyId()
+    .withThumbprintAsKeyId()
   }
 }

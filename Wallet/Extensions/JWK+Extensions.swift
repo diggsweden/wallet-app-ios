@@ -2,18 +2,6 @@ import Foundation
 import JOSESwift
 import SiopOpenID4VP
 
-extension JWK {
-  func toDictionary() -> [String: Any] {
-    var dict = self.parameters
-    if let ecPublicKey = self as? ECPublicKey {
-      dict["crv"] = ecPublicKey.crv.rawValue
-      dict["x"] = ecPublicKey.x
-      dict["y"] = ecPublicKey.y
-    }
-    return dict
-  }
-}
-
 extension ECPublicKey {
   func toPublicJWK() -> PublicJWK {
     return PublicJWK(
