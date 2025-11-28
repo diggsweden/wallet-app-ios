@@ -31,7 +31,7 @@ struct EnrollmentView: View {
           .frame(maxWidth: .infinity, alignment: .leading)
           .background(theme.colors.primaryVariant)
           .padding(.horizontal, -30)
-        
+
         stepCountView
           .padding(.vertical, 4)
 

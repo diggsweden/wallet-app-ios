@@ -27,6 +27,29 @@ struct CreateAccountForm: View {
   }
 
   var body: some View {
+    VStack(spacing: 40) {
+      header
+
+      form
+        .disabled(viewModel.accountIdResult.isLoading)
+
+      nextButton
+    }
+    .onChange(of: viewModel.accountIdResult) { _, new in
+      if let error = new.error {
+        toastViewModel.showError(error.message)
+      }
+    }
+    .onChange(of: focusedField) { old, new in
+      guard let old, new != old else {
+        return
+      }
+
+      touchedFields.insert(old)
+    }
+  }
+
+  private var header: some View {
     VStack(alignment: .leading, spacing: 14) {
       Text(
         "Vi behöver dina användaruppgifter för att kunna skapa ett konto. Med kontot kan du administrera din plånbok även om du till exempel tappar bort din telefon."
@@ -40,8 +63,9 @@ struct CreateAccountForm: View {
         openURL(#URL("https://wallet.sandbox.digg.se"))
       }
     }
-    .padding(.bottom, 40)
+  }
 
+  private var form: some View {
     VStack(alignment: .leading, spacing: 15) {
       PrimaryTextFieldWrapper(
         title: "E-post (\(exampleEmail))",
@@ -63,24 +87,6 @@ struct CreateAccountForm: View {
         .focused($focusedField, equals: .phoneNumber)
 
       checkBox.padding(.top, 20)
-    }
-    .disabled(viewModel.accountIdResult.isLoading)
-    .onChange(of: viewModel.accountIdResult) { _, new in
-      if let error = new.error {
-        toastViewModel.showError(error.message)
-      }
-    }
-    .onChange(of: focusedField) { old, new in
-      guard let old, new != old else {
-        return
-      }
-
-      touchedFields.insert(old)
-    }
-    .toolbar {
-      EnrollmentBottomToolbarButton {
-        loadingToolBar
-      }
     }
   }
 
@@ -124,7 +130,7 @@ struct CreateAccountForm: View {
   }
 
   @ViewBuilder
-  private var loadingToolBar: some View {
+  private var nextButton: some View {
     if viewModel.accountIdResult.isLoading {
       ProgressView()
     } else {

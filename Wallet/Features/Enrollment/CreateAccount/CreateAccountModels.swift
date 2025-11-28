@@ -19,7 +19,7 @@ extension CreateAccountFormData {
     guard Validators.isValidEmail(email) && Validators.isValidEmail(verifyEmail) else {
       return nil
     }
-    
+
     return email == verifyEmail ? nil : ValidationError.emailsDoNotMatch.rawValue
   }
 

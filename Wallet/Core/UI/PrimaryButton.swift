@@ -12,7 +12,7 @@ struct PrimaryButton: View {
   init(
     _ text: String,
     icon: String? = nil,
-    maxWidth: CGFloat = 320,
+    maxWidth: CGFloat = 360,
     onClick: @escaping () -> Void
   ) {
     self.text = text
@@ -46,7 +46,6 @@ struct PrimaryButton: View {
 
 #Preview {
   VStack {
-    Color.blue.frame(maxWidth: 60, maxHeight: 20)
     PrimaryButton("WIDTH", maxWidth: 60) {}
     PrimaryButton("TEST", icon: "heart") {}
   }
