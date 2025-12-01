@@ -18,7 +18,7 @@ struct Theme {
     let secondary: Color
     let tertiary: Color
     let error = Color.rgba(248, 229, 229)
-    let errorInverse = Color.rgba(181, 0, 0)
+    let errorInverse: Color
     let warning = Color.rgba(254, 247, 231)
     let warningInverse = Color.rgba(244, 176, 19)
     let success = Color.rgba(234, 245, 236)
@@ -28,10 +28,10 @@ struct Theme {
     let iconDisabled: Color
     let stroke = BrandColors.neutral.70
     let strokeDisabled: Color
+    let textError: Color
   }
 
   let colors: Colors
-  let fonts = Fonts()
   let radius: CGFloat = 2
   let spacing: CGFloat = 12
 }
@@ -54,8 +54,10 @@ extension Theme {
       primaryVariant: BrandColors.green.25,
       secondary: BrandColors.pink.25,
       tertiary: BrandColors.yellow.25,
+      errorInverse: Color.rgba(181, 0, 0),
       iconDisabled: Color.rgba(232, 232, 232),
-      strokeDisabled: BrandColors.neutral.50
+      strokeDisabled: BrandColors.neutral.50,
+      textError: Color.rgba(45, 0, 0),
     ),
   )
 
@@ -76,8 +78,10 @@ extension Theme {
       primaryVariant: BrandColors.green.150,
       secondary: BrandColors.pink.150,
       tertiary: BrandColors.yellow.150,
+      errorInverse: Color.rgba(237, 191, 191),
       iconDisabled: Color.rgba(148, 147, 147),
-      strokeDisabled: BrandColors.neutral.100
+      strokeDisabled: BrandColors.neutral.100,
+      textError: Color.rgba(237, 191, 191),
     ),
   )
 }

@@ -54,7 +54,7 @@ struct CreateAccountForm: View {
       Text(
         "Vi behöver dina användaruppgifter för att kunna skapa ett konto. Med kontot kan du administrera din plånbok även om du till exempel tappar bort din telefon."
       )
-      HStack(alignment: .bottom) {
+      HStack(alignment: .firstTextBaseline) {
         Text("Läs mer på wallet.se")
           .underline()
         Image(systemName: "arrow.up.forward.app")
@@ -107,7 +107,7 @@ struct CreateAccountForm: View {
           Image(systemName: "exclamationmark.circle")
             .bold()
           Text(error)
-            .font(theme.fonts.bodySmall)
+            .textStyle(.bodySmall)
         }
         .foregroundStyle(theme.colors.errorInverse)
       }

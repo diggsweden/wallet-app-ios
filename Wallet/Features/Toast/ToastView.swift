@@ -18,7 +18,8 @@ struct ToastView: View {
         Image(systemName: icon)
           .font(.system(size: 30))
           .foregroundStyle(accentColor)
-        Text(toast.title).font(theme.fonts.h5)
+        Text(toast.title)
+          .textStyle(.h5)
         Button {
           onTap()
         } label: {

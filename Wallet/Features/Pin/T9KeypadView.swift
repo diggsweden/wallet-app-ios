@@ -93,11 +93,11 @@ struct T9KeypadView: View {
     } label: {
       VStack(spacing: 2) {
         Text(String(key.digit))
-          .font(theme.fonts.h3)
+          .textStyle(.h3)
           .foregroundStyle(theme.colors.linkPrimary)
         if dynamicType <= .xLarge {
           Text(key.letters)
-            .font(theme.fonts.caption)
+            .textStyle(.caption)
         }
       }
       .frame(width: width, height: height)

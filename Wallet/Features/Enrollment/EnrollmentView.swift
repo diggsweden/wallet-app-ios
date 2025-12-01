@@ -25,7 +25,7 @@ struct EnrollmentView: View {
           .frame(height: 16)
 
         Text("Kom igång med plånboken")
-          .font(theme.fonts.h4)
+          .textStyle(.h4)
           .padding(.horizontal, 20)
           .padding(.vertical, 12)
           .frame(maxWidth: .infinity, alignment: .leading)
@@ -80,7 +80,8 @@ struct EnrollmentView: View {
   @ViewBuilder
   private var stepCountView: some View {
     if let currentStepNumber = flow.currentStepNumber {
-      Text("Steg \(currentStepNumber) av \(flow.totalSteps)").font(theme.fonts.bodyLarge)
+      Text("Steg \(currentStepNumber) av \(flow.totalSteps)")
+        .textStyle(.bodyLarge)
     }
   }
 
@@ -97,13 +98,13 @@ struct EnrollmentView: View {
           Image(systemName: "lock.open.fill")
           titleWithCount("Ange ny PIN-kod")
           Text("6 siffror")
-            .font(theme.fonts.body)
+            .textStyle(.body)
 
         case .verifyPin:
           Image(systemName: "lock.fill")
           titleWithCount("Bekräfta PIN-kod")
           Text("6 siffror")
-            .font(theme.fonts.body)
+            .textStyle(.body)
 
         case .wua:
           Image(systemName: "gearshape.arrow.trianglehead.2.clockwise.rotate.90")
@@ -124,10 +125,10 @@ struct EnrollmentView: View {
   private func titleWithCount(_ text: String) -> some View {
     if let currentStepNumber = flow.currentStepNumber {
       Text("\(currentStepNumber). \(text)")
-        .font(theme.fonts.h3)
+        .textStyle(.h3)
     } else {
       Text(text)
-        .font(theme.fonts.h3)
+        .textStyle(.h3)
     }
   }
 

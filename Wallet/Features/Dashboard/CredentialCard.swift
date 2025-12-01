@@ -42,7 +42,7 @@ struct CredentialCard: View {
         Text("Identity document with \(credential.disclosures.count) disclosures")
         Spacer()
         Text(credential.issuedAt, format: .dateTime.day().month().year())
-          .font(theme.fonts.caption)
+          .textStyle(.caption)
           .frame(maxWidth: .infinity, alignment: .trailing)
       }
       .padding()

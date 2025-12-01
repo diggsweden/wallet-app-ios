@@ -15,18 +15,20 @@ struct PrimaryTextFieldWrapper<Content: View>: View {
   var body: some View {
     VStack(alignment: .leading, spacing: 8) {
       Text(title)
-        .font(theme.fonts.h6)
+        .textStyle(.h6)
 
       content()
         .textFieldStyle(.primary(error: error != nil))
+        .lineHeightIfAvailable(multiple: nil)
 
       if let error {
-        HStack(spacing: 6) {
+        HStack(alignment: .firstTextBaseline, spacing: 6) {
           Image(systemName: "exclamationmark.circle")
             .bold()
             .foregroundStyle(theme.colors.errorInverse)
           Text(error)
-            .font(theme.fonts.bodySmall)
+            .textStyle(.bodySmall)
+            .foregroundStyle(theme.colors.textError)
         }
       }
     }

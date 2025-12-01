@@ -6,6 +6,7 @@ struct PrimaryTextFieldStyle: TextFieldStyle {
 
   func _body(configuration: TextField<Self._Label>) -> some View {
     let shape = RoundedRectangle(cornerRadius: 4)
+
     configuration
       .padding(10)
       .background(error ? theme.colors.secondary : theme.colors.background, in: shape)
