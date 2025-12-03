@@ -27,6 +27,7 @@ struct PrimaryButton: View {
     } label: {
       HStack(alignment: .firstTextBaseline, spacing: 4) {
         Text(LocalizedStringKey(text))
+          .lineHeightIfAvailable(multiple: nil)
         if let icon {
           Image(systemName: icon)
         }
@@ -36,7 +37,7 @@ struct PrimaryButton: View {
       .frame(maxWidth: maxWidth)
       .background(
         theme.colors.button.opacity(isEnabled ? 1 : 0.5),
-        in: RoundedRectangle(cornerRadius: theme.radius)
+        in: RoundedRectangle(cornerRadius: theme.cornerRadius)
       )
       .foregroundStyle(theme.colors.onPrimary)
     }

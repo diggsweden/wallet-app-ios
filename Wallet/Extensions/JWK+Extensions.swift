@@ -7,7 +7,7 @@ extension ECPublicKey {
     return PublicJWK(
       kty: self.keyType.rawValue,
       kid: self.parameters["kid"],
-      crv: self.keyType.rawValue,
+      crv: self.crv.rawValue,
       x: self.x,
       y: self.y
     )

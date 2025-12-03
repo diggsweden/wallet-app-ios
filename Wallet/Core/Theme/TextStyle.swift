@@ -22,17 +22,17 @@ enum TextStyle {
     return switch self {
       case .h1:
         TextMetrics(
-          font: .custom("Ubuntu-Bold", size: 48, relativeTo: .largeTitle),
+          font: .custom("Ubuntu-Bold", size: 32, relativeTo: .largeTitle),
           lineHeightFactor: nil
         )
       case .h2:
         TextMetrics(
-          font: .custom("Ubuntu-Bold", size: 32, relativeTo: .title),
+          font: .custom("Ubuntu-Bold", size: 24, relativeTo: .title),
           lineHeightFactor: nil
         )
       case .h3:
         TextMetrics(
-          font: .custom("Ubuntu-Bold", size: 24, relativeTo: .title3),
+          font: .custom("Ubuntu-Bold", size: 20, relativeTo: .title3),
           lineHeightFactor: nil
         )
       case .h4:

@@ -27,11 +27,19 @@ struct CreateAccountForm: View {
   }
 
   var body: some View {
-    VStack(spacing: 40) {
+    VStack(alignment: .leading, spacing: 30) {
       header
+        .padding(.bottom, 10)
 
       form
         .disabled(viewModel.accountIdResult.isLoading)
+        .frame(maxHeight: .infinity)
+      Text(
+        "[Så behandlar vi dina personuppgifter](https://www.digg.se/om-oss/sa-behandlar-vi-dina-personuppgifter)"
+      )
+      .tint(theme.colors.linkPrimary)
+      .underline()
+      .frame(maxWidth: .infinity, alignment: .center)
 
       nextButton
     }
@@ -50,12 +58,12 @@ struct CreateAccountForm: View {
   }
 
   private var header: some View {
-    VStack(alignment: .leading, spacing: 14) {
+    VStack(alignment: .leading, spacing: 5) {
       Text(
-        "Vi behöver dina användaruppgifter för att kunna skapa ett konto. Med kontot kan du administrera din plånbok även om du till exempel tappar bort din telefon."
+        "Med användaruppgifterna kan du administrera din plånbok även om du till exempel tappar bort din telefon. "
       )
       HStack(alignment: .firstTextBaseline) {
-        Text("Läs mer på wallet.se")
+        Text("Läs mer om plånboken på wallet.se")
           .underline()
         Image(systemName: "arrow.up.forward.app")
       }
@@ -68,7 +76,7 @@ struct CreateAccountForm: View {
   private var form: some View {
     VStack(alignment: .leading, spacing: 15) {
       PrimaryTextFieldWrapper(
-        title: "E-post (\(exampleEmail))",
+        title: "E-postadress",
         error: errorMessage(for: .email)
       ) {
         emailField(label: exampleEmail, text: $viewModel.data.email)
@@ -76,7 +84,7 @@ struct CreateAccountForm: View {
       }
 
       PrimaryTextFieldWrapper(
-        title: "Validera e-post (\(exampleEmail))",
+        title: "Skriv din e-postadress igen",
         error: errorMessage(for: .verifyEmail)
       ) {
         emailField(label: exampleEmail, text: $viewModel.data.verifyEmail)
@@ -86,20 +94,18 @@ struct CreateAccountForm: View {
       phoneNumberField
         .focused($focusedField, equals: .phoneNumber)
 
-      checkBox.padding(.top, 20)
+      terms.padding(.top, 10)
     }
   }
 
-  private var checkBox: some View {
+  private var terms: some View {
     VStack(alignment: .leading, spacing: 8) {
-      HStack(alignment: .top) {
+      HStack(alignment: .firstTextBaseline) {
+        Checkbox(isOn: $viewModel.data.acceptedTerms)
+          .alignmentGuide(.firstTextBaseline) { d in
+            d[VerticalAlignment.center]
+          }
         Text("Jag samtycker till att DIGG får lagra mina användaruppgifter")
-        Spacer()
-        Toggle("", isOn: $viewModel.data.acceptedTerms)
-          .labelsHidden()
-          .toggleStyle(.switch)
-          .padding(.leading, 5)
-          .tint(theme.colors.successInverse)
       }
 
       if let error = viewModel.data.termsError, viewModel.showAllValidationErrors {
@@ -184,7 +190,8 @@ struct CreateAccountForm: View {
       onSubmit: { _ in },
     )
   }
+  .frame(maxHeight: .infinity)
+  .padding()
   .themed
   .withToast
-  .padding()
 }

@@ -11,6 +11,7 @@ struct ThemeModifier: ViewModifier {
       .environment(\.theme, theme)
       .environment(\.font, defaultTextStyle.metrics.font)
       .textStyle(defaultTextStyle)
+      .background(theme.colors.background)
       .foregroundStyle(theme.colors.textPrimary)
   }
 }

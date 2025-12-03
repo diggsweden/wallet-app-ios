@@ -26,13 +26,16 @@ struct Theme {
     let info = Color.rgba(232, 240, 249)
     let infoInverse = Color.rgba(24, 108, 198)
     let iconDisabled: Color
-    let stroke = BrandColors.neutral.70
+    let stroke: Color
     let strokeDisabled: Color
     let textError: Color
+    let backgroundPage: Color
+    let layerAccent: Color
+    let borderInteractive: Color
   }
 
   let colors: Colors
-  let radius: CGFloat = 2
+  let cornerRadius: CGFloat = 2
   let spacing: CGFloat = 12
 }
 
@@ -56,8 +59,12 @@ extension Theme {
       tertiary: BrandColors.yellow.25,
       errorInverse: Color.rgba(181, 0, 0),
       iconDisabled: Color.rgba(232, 232, 232),
+      stroke: BrandColors.neutral.100,
       strokeDisabled: BrandColors.neutral.50,
       textError: Color.rgba(45, 0, 0),
+      backgroundPage: Color.rgba(243, 243, 243),
+      layerAccent: BrandColors.yellow.100,
+      borderInteractive: BrandColors.green.100,
     ),
   )
 
@@ -80,8 +87,12 @@ extension Theme {
       tertiary: BrandColors.yellow.150,
       errorInverse: Color.rgba(237, 191, 191),
       iconDisabled: Color.rgba(148, 147, 147),
+      stroke: Color.white,
       strokeDisabled: BrandColors.neutral.100,
       textError: Color.rgba(237, 191, 191),
+      backgroundPage: BrandColors.neutral.130,
+      layerAccent: BrandColors.yellow.70,
+      borderInteractive: BrandColors.green.25,
     ),
   )
 }

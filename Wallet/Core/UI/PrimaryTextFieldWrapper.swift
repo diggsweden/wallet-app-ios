@@ -13,7 +13,7 @@ struct PrimaryTextFieldWrapper<Content: View>: View {
   }
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 8) {
+    VStack(alignment: .leading, spacing: 12) {
       Text(title)
         .textStyle(.h6)
 
@@ -30,9 +30,11 @@ struct PrimaryTextFieldWrapper<Content: View>: View {
             .textStyle(.bodySmall)
             .foregroundStyle(theme.colors.textError)
         }
+        .transition(.scale.combined(with: .opacity))
+        .padding(.top, -6)
       }
     }
-    .animation(.smooth, value: error != nil)
+    .animation(.snappy, value: error != nil)
   }
 }
 

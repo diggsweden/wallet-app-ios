@@ -2,17 +2,26 @@ import SwiftUI
 
 struct PrimaryTextFieldStyle: TextFieldStyle {
   var error: Bool
-  @Environment(\.theme) var theme
+  @Environment(\.theme) private var theme
+  @FocusState private var isFocused: Bool
 
   func _body(configuration: TextField<Self._Label>) -> some View {
     let shape = RoundedRectangle(cornerRadius: 4)
+    let strokeColor =
+      if error {
+        theme.colors.errorInverse
+      } else if isFocused {
+        theme.colors.borderInteractive
+      } else {
+        Color.clear
+      }
 
     configuration
+      .focused($isFocused)
       .padding(10)
-      .background(error ? theme.colors.secondary : theme.colors.background, in: shape)
-      .overlay(
-        shape.stroke(error ? theme.colors.errorInverse : theme.colors.stroke, lineWidth: 2)
-      )
+      .background(error ? theme.colors.secondary : theme.colors.backgroundPage, in: shape)
+      .overlay(shape.stroke(strokeColor, lineWidth: 2))
+      .animation(.snappy, value: isFocused)
   }
 }
 

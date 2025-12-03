@@ -11,7 +11,7 @@ struct ToastView: View {
   }
 
   var body: some View {
-    let shape = RoundedRectangle(cornerRadius: theme.radius)
+    let shape = RoundedRectangle(cornerRadius: theme.cornerRadius)
 
     VStack(alignment: .trailing, spacing: 12) {
       HStack(alignment: .top, spacing: 20) {
