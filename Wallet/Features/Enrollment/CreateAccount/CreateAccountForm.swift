@@ -33,7 +33,7 @@ struct CreateAccountForm: View {
 
       form
         .disabled(viewModel.accountIdResult.isLoading)
-        .frame(maxHeight: .infinity)
+
       Text(
         "[Så behandlar vi dina personuppgifter](https://www.digg.se/om-oss/sa-behandlar-vi-dina-personuppgifter)"
       )
@@ -42,6 +42,7 @@ struct CreateAccountForm: View {
       .frame(maxWidth: .infinity, alignment: .center)
 
       nextButton
+        .frame(maxWidth: .infinity, alignment: .center)
     }
     .onChange(of: viewModel.accountIdResult) { _, new in
       if let error = new.error {
@@ -106,6 +107,7 @@ struct CreateAccountForm: View {
             d[VerticalAlignment.center]
           }
         Text("Jag samtycker till att DIGG får lagra mina användaruppgifter")
+          .fixedSize(horizontal: false, vertical: true)
       }
 
       if let error = viewModel.data.termsError, viewModel.showAllValidationErrors {

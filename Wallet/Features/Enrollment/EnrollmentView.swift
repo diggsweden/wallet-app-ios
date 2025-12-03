@@ -17,24 +17,33 @@ struct EnrollmentView: View {
   var body: some View {
     let slideTransition: AnyTransition = orientation.isLandscape ? .move(edge: .bottom) : .slide
 
-    ScrollView(showsIndicators: false) {
-      adaptiveStack {
-        header
-          .padding(.bottom, 30)
+    GeometryReader { proxy in
+      ScrollView(showsIndicators: false) {
+        adaptiveStack {
+          if flow.step != .intro {
+            header
+              .padding(.bottom, 30)
+          }
 
-        currentStepView
-          .transition(
-            slideTransition.combined(with: .opacity)
-          )
+          currentStepView
+            .transition(
+              slideTransition.combined(with: .opacity)
+            )
 
-        //        Text("Verifiera ditt konto för att fortsätta")
-        //          .textStyle(.bodySmall)
-        //          .padding(.top, 5)
-        //          .frame(maxWidth: .infinity, alignment: .center)
+          //        Text("Verifiera ditt konto för att fortsätta")
+          //          .textStyle(.bodySmall)
+          //          .padding(.top, 5)
+          //          .frame(maxWidth: .infinity, alignment: .center)
+        }
+        .frame(
+          maxWidth: .infinity,
+          minHeight: proxy.size.height,
+          alignment: .top
+        )
+        .animation(.easeInOut, value: flow.step)
+        .padding(.top, 10)
+        .padding(.horizontal, 25)
       }
-      .animation(.easeInOut, value: flow.step)
-      .padding(.top, 10)
-      .padding(.horizontal, 25)
     }
   }
 
@@ -75,7 +84,6 @@ struct EnrollmentView: View {
       VStack(alignment: .leading, spacing: 0) {
         content()
       }
-      .frame(maxHeight: .infinity, alignment: .top)
     }
   }
 
@@ -142,11 +150,8 @@ struct EnrollmentView: View {
   private var currentStepView: some View {
     switch flow.step {
       case .intro:
-        EnrollmentInfoView(
-          bodyText:
-            "Detta är en demo av den svenska identitetsplånboken. Fortsätt för att skapa ett konto och ladda ner ditt ID-bevis."
-        ) {
-          try advanceIfValid()
+        WelcomeScreen {
+          try? advanceIfValid()
         }
 
       case .contactInfo:

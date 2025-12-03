@@ -12,14 +12,18 @@ struct EnrollmentFlow {
   var step: EnrollmentStep = .intro
 
   var currentStepNumber: Int? {
-    guard let caseIndex = EnrollmentStep.allCases.firstIndex(of: step) else {
+    guard let caseIndex = allSteps.firstIndex(of: step) else {
       return nil
     }
     return caseIndex + 1
   }
 
   var totalSteps: Int {
-    return EnrollmentStep.allCases.count
+    return allSteps.count
+  }
+
+  private var allSteps: [EnrollmentStep] {
+    return EnrollmentStep.allCases.filter { $0 != .intro }
   }
 
   mutating func advance(with context: EnrollmentContext) throws {
