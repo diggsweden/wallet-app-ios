@@ -4,15 +4,17 @@ import Foundation
 @Observable
 final class CreateAccountViewModel {
   let gatewayAPIClient: GatewayAPI
-  let onSubmit: (String) async throws -> Void
-  var data = CreateAccountFormData()
+  let onSubmit: (String, String) async throws -> Void
+  var data: CreateAccountFormData
   var accountIdResult: AsyncResult<String> = .idle
   var showAllValidationErrors: Bool = false
 
   init(
     gatewayAPIClient: GatewayAPI,
-    onSubmit: @escaping (String) async throws -> Void
+    phoneNumber: String?,
+    onSubmit: @escaping (String, String) async throws -> Void
   ) {
+    self.data = CreateAccountFormData(phoneNumber: phoneNumber)
     self.gatewayAPIClient = gatewayAPIClient
     self.onSubmit = onSubmit
   }
@@ -34,7 +36,7 @@ final class CreateAccountViewModel {
       )
 
       accountIdResult = .success(accountId)
-      try await onSubmit(accountId)
+      try await onSubmit(accountId, data.email)
     } catch {
       accountIdResult = .failure(error)
     }

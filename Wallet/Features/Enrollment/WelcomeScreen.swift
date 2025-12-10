@@ -2,21 +2,34 @@ import SwiftUI
 
 struct WelcomeScreen: View {
   let onComplete: () -> Void
+  @Environment(\.theme) private var theme
 
   var body: some View {
     VStack(alignment: .center) {
-      Image(.diggLogo)
+      HStack {
+        Image(.diggLogo)
+          .resizable()
+          .scaledToFit()
+          .frame(height: 30)
+        Spacer()
+      }
+
+      Image(.welcome)
         .resizable()
         .scaledToFit()
-        .frame(height: 200)
+        .frame(height: 350)
 
-      Text("Välkommen!")
+      Text("Din data, ditt val")
         .textStyle(.h1)
-        .padding(.bottom, 20)
+        .padding(.top, 20)
+
+      Spacer()
 
       Text(
-        "Detta är en demo av den svenska identitetsplånboken. Fortsätt för att skapa ett konto och ladda ner ditt ID-bevis."
+        "[Så behandlar vi dina personuppgifter](https://www.digg.se/om-oss/sa-behandlar-vi-dina-personuppgifter)"
       )
+      .tint(theme.colors.linkPrimary)
+      .underline()
 
       Spacer()
 
@@ -24,6 +37,14 @@ struct WelcomeScreen: View {
         onComplete()
       }
       .padding(.bottom, 25)
+    }
+    .toolbar {
+      ToolbarItem(placement: .navigation) {
+        Image(systemName: "chevron.left")
+      }
+      ToolbarItem(placement: .destructiveAction) {
+        Image(systemName: "x.circle")
+      }
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)
   }

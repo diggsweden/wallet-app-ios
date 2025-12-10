@@ -4,15 +4,21 @@ import WalletMacrosClient
 
 struct EnrollmentView: View {
   let userSnapshot: UserSnapshot
-  let setKeyAttestation: (String) async -> Void
-  let signIn: (String) async -> Void
 
   @Environment(\.gatewayAPIClient) private var gatewayAPIClient
   @Environment(\.theme) private var theme
   @Environment(\.orientation) private var orientation
   @Environment(\.openURL) private var openURL
-  @State private var flow = EnrollmentFlow()
-  @State private var context = EnrollmentContext()
+  @State private var viewModel: EnrollmentViewModel
+
+  init(
+    userSnapshot: UserSnapshot,
+    setKeyAttestation: @escaping (String) async -> Void,
+    signIn: @escaping (String) async -> Void,
+  ) {
+    self.userSnapshot = userSnapshot
+    _viewModel = State(wrappedValue: .init(setKeyAttestation: setKeyAttestation, signIn: signIn))
+  }
 
   var body: some View {
     let slideTransition: AnyTransition = orientation.isLandscape ? .move(edge: .bottom) : .slide
@@ -20,7 +26,7 @@ struct EnrollmentView: View {
     GeometryReader { proxy in
       ScrollView(showsIndicators: false) {
         adaptiveStack {
-          if flow.step != .intro {
+          if viewModel.step != .intro {
             header
               .padding(.bottom, 30)
           }
@@ -29,45 +35,37 @@ struct EnrollmentView: View {
             .transition(
               slideTransition.combined(with: .opacity)
             )
-
-          //        Text("Verifiera ditt konto för att fortsätta")
-          //          .textStyle(.bodySmall)
-          //          .padding(.top, 5)
-          //          .frame(maxWidth: .infinity, alignment: .center)
         }
         .frame(
           maxWidth: .infinity,
           minHeight: proxy.size.height,
           alignment: .top
         )
-        .animation(.easeInOut, value: flow.step)
+        .animation(.easeInOut, value: viewModel.step)
         .padding(.top, 10)
         .padding(.horizontal, 25)
       }
     }
-  }
-
-  private func advanceIfValid() throws {
-    try flow.advance(with: context)
+    .toolbar {
+      if viewModel.step.previous() != nil {
+        ToolbarItem(placement: .navigation) {
+          Button {
+            viewModel.back()
+          } label: {
+            Image(systemName: "chevron.left")
+          }
+        }
+      }
+    }
   }
 
   private var header: some View {
     VStack(alignment: .leading, spacing: 20) {
-      Image(.diggLogo)
-        .resizable()
-        .scaledToFit()
-        .frame(height: 16)
-        .padding(.bottom, 10)
-
-      Text("Kom igång med plånboken")
-        .textStyle(.h3)
-
       stepCountView
 
       title
-        .padding(.top, 10)
-        .padding(.leading, 10)
-        .id(flow.step)
+        .padding(.top, 70)
+        .id(viewModel.step)
         .transition(.blurReplace)
     }
   }
@@ -76,7 +74,7 @@ struct EnrollmentView: View {
   private func adaptiveStack<Content: View>(
     @ViewBuilder content: () -> Content
   ) -> some View {
-    if (flow.step == .pin || flow.step == .verifyPin) && orientation.isLandscape {
+    if (viewModel.step == .pin || viewModel.step == .verifyPin) && orientation.isLandscape {
       HStack(spacing: 24) {
         content()
       }
@@ -96,23 +94,35 @@ struct EnrollmentView: View {
 
   @ViewBuilder
   private var stepCountView: some View {
-    if let currentStepNumber = flow.currentStepNumber {
-      Text("Steg \(currentStepNumber) av \(flow.totalSteps)")
+    if let currentStepNumber = viewModel.currentStepNumber {
+      Text("Steg \(currentStepNumber) av \(viewModel.totalSteps)")
       PrimaryProgressView(
         value: CGFloat(currentStepNumber),
-        total: CGFloat(flow.totalSteps)
+        total: CGFloat(viewModel.totalSteps)
       )
     }
   }
 
   private var title: some View {
     VStack(alignment: .leading) {
-      switch flow.step {
+      switch viewModel.step {
         case .intro:
           titleWithCount("Välkommen!")
 
-        case .contactInfo:
+        case .terms:
           titleWithCount("Användaruppgifter")
+
+        case .phoneNumber:
+          titleWithCount("Ditt telefonnummer")
+
+        case .verifyPhone:
+          titleWithCount("Kod för bekräftelse")
+
+        case .email:
+          titleWithCount("Din e-postadress")
+
+        case .verifyEmail:
+          titleWithCount("Bekräfta e-post")
 
         case .pin:
           titleWithCount("Ange ny PIN-kod")
@@ -137,7 +147,7 @@ struct EnrollmentView: View {
   }
 
   private func titleWithCount(_ text: String) -> some View {
-    if let currentStepNumber = flow.currentStepNumber {
+    if let currentStepNumber = viewModel.currentStepNumber {
       Text("\(currentStepNumber). \(text)")
         .textStyle(.h2)
     } else {
@@ -148,31 +158,51 @@ struct EnrollmentView: View {
 
   @ViewBuilder
   private var currentStepView: some View {
-    switch flow.step {
+    switch viewModel.step {
       case .intro:
         WelcomeScreen {
-          try? advanceIfValid()
+          viewModel.next()
         }
 
-      case .contactInfo:
-        CreateAccountForm(
-          gatewayAPIClient: gatewayAPIClient
-        ) { accountId in
-          await signIn(accountId)
-          try advanceIfValid()
+      case .terms:
+        TermsAndConditionsView {
+          viewModel.next()
+        }
+
+      case .phoneNumber:
+        AddPhoneNumberForm { phoneNumber in
+          viewModel.setPhoneNumber(phoneNumber)
+        } onSkip: {
+          viewModel.skipPhoneNumber()
+        }
+
+      case .verifyPhone:
+        VerifyContactInfoView(contactInfoData: viewModel.phoneNumber) {
+          viewModel.next()
+        }
+
+      case .email:
+        AddEmailForm(
+          gatewayAPIClient: gatewayAPIClient,
+          phoneNumber: viewModel.phoneNumber
+        ) { accountId, email in
+          await viewModel.signIn(accountId: accountId, email: email)
+        }
+
+      case .verifyEmail:
+        VerifyContactInfoView(contactInfoData: viewModel.email) {
+          viewModel.next()
         }
 
       case .pin:
         PinView(buttonText: "enrollmentNext") { pin in
-          context.pin = pin
-          try advanceIfValid()
+          try viewModel.setPin(pin)
         }
         .frame(maxWidth: .infinity, alignment: .center)
 
       case .verifyPin:
         PinView(buttonText: "Bekräfta") { pin in
-          context.verifyPin = pin
-          try advanceIfValid()
+          try viewModel.confirmPin(pin)
         }
         .frame(maxWidth: .infinity, alignment: .center)
 
@@ -182,9 +212,8 @@ struct EnrollmentView: View {
           gatewayAPIClient: gatewayAPIClient
         ) { jwt in
           Task {
-            await setKeyAttestation(jwt)
+            await viewModel.addKeyAttestation(jwt)
           }
-          try advanceIfValid()
         }
 
       case .pid:
@@ -193,17 +222,11 @@ struct EnrollmentView: View {
           openURL(url)
         }
         .onChange(of: userSnapshot.credential) {
-          try? advanceIfValid()
+          viewModel.next()
         }
 
       case .done:
-        EnrollmentInfoView(bodyText: "Nu är din plånbok redo för att användas!") {
-          let user = UserProfile(
-            email: context.email,
-            pin: context.pin,
-            phoneNumber: context.phoneNumber
-          )
-        }
+        EnrollmentInfoView(bodyText: "Nu är din plånbok redo för att användas!") {}
     }
   }
 }

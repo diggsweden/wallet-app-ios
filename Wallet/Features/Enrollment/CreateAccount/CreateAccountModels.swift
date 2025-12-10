@@ -1,10 +1,9 @@
 import Foundation
 
 struct CreateAccountFormData {
+  let phoneNumber: String?
   var email: String = ""
   var verifyEmail: String = ""
-  var phoneNumber: String? = nil
-  var acceptedTerms: Bool = false
 }
 
 extension CreateAccountFormData {
@@ -12,8 +11,6 @@ extension CreateAccountFormData {
     case emailEmpty = "Tom e-post"
     case emailInvalid = "Ogiltig e-postadress"
     case emailsDoNotMatch = "E-post matchar inte"
-    case phoneInvalid = "Ogiltigt telefonnummer"
-    case notAcceptedTerms = "Samtycke krävs för att du ska kunna använda plånboken"
   }
   var emailMatchError: String? {
     guard Validators.isValidEmail(email) && Validators.isValidEmail(verifyEmail) else {
@@ -47,24 +44,8 @@ extension CreateAccountFormData {
     return nil
   }
 
-  var phoneError: String? {
-    guard let phoneNumber, !phoneNumber.isEmpty else {
-      return nil
-    }
-
-    guard Validators.isValidPhone(phoneNumber) else {
-      return ValidationError.phoneInvalid.rawValue
-    }
-
-    return nil
-  }
-
-  var termsError: String? {
-    return acceptedTerms ? nil : ValidationError.notAcceptedTerms.rawValue
-  }
-
   var isValid: Bool {
-    [emailError, verifyEmailError, phoneError, termsError].allSatisfy { $0 == nil }
+    [emailError, verifyEmailError].allSatisfy { $0 == nil }
   }
 }
 

@@ -82,7 +82,7 @@ struct PinView: View {
       try onComplete(pin)
       error = nil
     } catch {
-      toastViewModel.showError(error.message ?? "Något gick fel!")
+      toastViewModel.showError(error.message)
       onErrorFeedback.toggle()
       pin = ""
     }
