@@ -35,7 +35,7 @@ struct Theme {
   }
 
   let colors: Colors
-  let cornerRadius: CGFloat = 2
+  let cornerRadius: CGFloat = 4
   let spacing: CGFloat = 12
 }
 

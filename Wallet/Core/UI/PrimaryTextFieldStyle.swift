@@ -20,8 +20,9 @@ struct PrimaryTextFieldStyle: TextFieldStyle {
       .focused($isFocused)
       .padding(10)
       .background(error ? theme.colors.secondary : theme.colors.backgroundPage, in: shape)
+      .tint(theme.colors.borderInteractive)
       .overlay(shape.stroke(strokeColor, lineWidth: 2))
-      .animation(.snappy, value: isFocused)
+      .animation(.snappy(duration: 0.25), value: isFocused)
   }
 }
 
