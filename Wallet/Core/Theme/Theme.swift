@@ -8,6 +8,7 @@ struct Theme {
     let onSurface: Color
     let textPrimary: Color
     let textPlaceholder: Color
+    let textInformation: Color
     let linkPrimary: Color
     let button: Color
     let buttonSecondaryHover: Color
@@ -16,6 +17,7 @@ struct Theme {
     let onPrimary: Color
     let primaryVariant: Color
     let secondary: Color
+    let secondaryAccent: Color
     let tertiary: Color
     let error = Color.rgba(248, 229, 229)
     let errorInverse: Color
@@ -35,7 +37,7 @@ struct Theme {
   }
 
   let colors: Colors
-  let cornerRadius: CGFloat = 4
+  let cornerRadius: CGFloat = 10
   let spacing: CGFloat = 12
 }
 
@@ -48,6 +50,7 @@ extension Theme {
       onSurface: BrandColors.green.100,
       textPrimary: Color.rgba(43, 42, 41),
       textPlaceholder: BrandColors.neutral.25,
+      textInformation: BrandColors.neutral.70,
       linkPrimary: BrandColors.green.100,
       button: BrandColors.green.100,
       buttonSecondaryHover: BrandColors.pink.130,
@@ -56,12 +59,13 @@ extension Theme {
       onPrimary: Color.white,
       primaryVariant: BrandColors.green.25,
       secondary: BrandColors.pink.25,
+      secondaryAccent: BrandColors.pink.10,
       tertiary: BrandColors.yellow.25,
       errorInverse: Color.rgba(181, 0, 0),
       iconDisabled: Color.rgba(232, 232, 232),
       stroke: BrandColors.neutral.100,
       strokeDisabled: BrandColors.neutral.50,
-      textError: Color.rgba(45, 0, 0),
+      textError: Color.rgba(181, 0, 0),
       backgroundPage: Color.rgba(243, 243, 243),
       layerAccent: BrandColors.yellow.100,
       borderInteractive: BrandColors.green.100,
@@ -76,6 +80,7 @@ extension Theme {
       onSurface: BrandColors.green.25,
       textPrimary: Color.white,
       textPlaceholder: BrandColors.neutral.10,
+      textInformation: BrandColors.neutral.10,
       linkPrimary: Color.white,
       button: BrandColors.green.25,
       buttonSecondaryHover: BrandColors.pink.50,
@@ -84,6 +89,7 @@ extension Theme {
       onPrimary: Color.rgba(43, 42, 41),
       primaryVariant: BrandColors.green.150,
       secondary: BrandColors.pink.150,
+      secondaryAccent: BrandColors.pink.175,
       tertiary: BrandColors.yellow.150,
       errorInverse: Color.rgba(237, 191, 191),
       iconDisabled: Color.rgba(148, 147, 147),

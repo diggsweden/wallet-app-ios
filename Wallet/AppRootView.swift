@@ -36,7 +36,8 @@ struct AppRootView: View {
           EnrollmentView(
             userSnapshot: user,
             setKeyAttestation: userViewModel.setKeyAttestation,
-            signIn: userViewModel.signIn
+            signIn: userViewModel.signIn,
+            onReset: userViewModel.signOut,
           )
         } else {
           DashboardView(credential: user.credential)

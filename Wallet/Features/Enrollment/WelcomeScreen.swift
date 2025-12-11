@@ -1,8 +1,10 @@
 import SwiftUI
+import WalletMacrosClient
 
 struct WelcomeScreen: View {
   let onComplete: () -> Void
   @Environment(\.theme) private var theme
+  @Environment(\.openURL) private var openURL
 
   var body: some View {
     VStack(alignment: .center) {
@@ -25,25 +27,20 @@ struct WelcomeScreen: View {
 
       Spacer()
 
-      Text(
-        "[Så behandlar vi dina personuppgifter](https://www.digg.se/om-oss/sa-behandlar-vi-dina-personuppgifter)"
-      )
-      .tint(theme.colors.linkPrimary)
-      .underline()
-
+      Button {
+        openURL(#URL("https://wallet.sandbox.digg.se"))
+      } label: {
+        HStack(alignment: .center) {
+          Text("Läs mer om plånboken på wallet.se")
+            .underline()
+          Image(systemName: "arrow.up.forward.app")
+        }
+      }
+      
       Spacer()
 
       PrimaryButton("enrollmentNext") {
         onComplete()
-      }
-      .padding(.bottom, 25)
-    }
-    .toolbar {
-      ToolbarItem(placement: .navigation) {
-        Image(systemName: "chevron.left")
-      }
-      ToolbarItem(placement: .destructiveAction) {
-        Image(systemName: "x.circle")
       }
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)

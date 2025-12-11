@@ -13,6 +13,7 @@ struct TermsAndConditionsView: View {
           .alignmentGuide(.firstTextBaseline) { d in
             d[VerticalAlignment.center]
           }
+          .padding(.trailing, 8)
         Text("Jag samtycker till att DIGG får lagra mina användaruppgifter")
           .fixedSize(horizontal: false, vertical: true)
       }

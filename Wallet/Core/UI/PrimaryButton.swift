@@ -42,6 +42,7 @@ struct PrimaryButton: View {
       .foregroundStyle(theme.colors.onPrimary)
     }
     .buttonStyle(.plain)
+    .padding(.horizontal, 15)
   }
 }
 

@@ -5,6 +5,7 @@ import SwiftUI
 final class EnrollmentViewModel {
   private let setKeyAttestation: (String) async -> Void
   private let signIn: (String) async -> Void
+  private let onReset: () async -> Void
 
   private(set) var step: EnrollmentStep = .intro
   private(set) var pin = ""
@@ -13,10 +14,12 @@ final class EnrollmentViewModel {
 
   init(
     setKeyAttestation: @escaping (String) async -> Void,
-    signIn: @escaping (String) async -> Void
+    signIn: @escaping (String) async -> Void,
+    onReset: @escaping () async -> Void
   ) {
     self.setKeyAttestation = setKeyAttestation
     self.signIn = signIn
+    self.onReset = onReset
   }
 
   var currentStepNumber: Int? {
@@ -80,8 +83,13 @@ final class EnrollmentViewModel {
       step = previous
     }
   }
+  
+  func canGoBack() -> Bool {
+    step.previous() != nil
+  }
 
-  func reset() {
+  func reset() async {
+    await onReset()
     step = .intro
   }
 }

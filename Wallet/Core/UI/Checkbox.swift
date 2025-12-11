@@ -8,7 +8,7 @@ struct Checkbox: View {
     Button {
       isOn.toggle()
     } label: {
-      RoundedRectangle(cornerRadius: theme.cornerRadius)
+      RoundedRectangle(cornerRadius: 2)
         .fill(Color.clear)
         .stroke(theme.colors.linkPrimary, lineWidth: 2)
         .overlay {

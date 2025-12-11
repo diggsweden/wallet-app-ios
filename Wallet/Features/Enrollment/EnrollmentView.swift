@@ -15,9 +15,16 @@ struct EnrollmentView: View {
     userSnapshot: UserSnapshot,
     setKeyAttestation: @escaping (String) async -> Void,
     signIn: @escaping (String) async -> Void,
+    onReset: @escaping () async -> Void
   ) {
     self.userSnapshot = userSnapshot
-    _viewModel = State(wrappedValue: .init(setKeyAttestation: setKeyAttestation, signIn: signIn))
+    _viewModel = State(
+      wrappedValue: .init(
+        setKeyAttestation: setKeyAttestation,
+        signIn: signIn,
+        onReset: onReset
+      )
+    )
   }
 
   var body: some View {
@@ -28,7 +35,6 @@ struct EnrollmentView: View {
         adaptiveStack {
           if viewModel.step != .intro {
             header
-              .padding(.bottom, 30)
           }
 
           currentStepView
@@ -42,12 +48,11 @@ struct EnrollmentView: View {
           alignment: .top
         )
         .animation(.easeInOut, value: viewModel.step)
-        .padding(.top, 10)
         .padding(.horizontal, 25)
       }
     }
     .toolbar {
-      if viewModel.step.previous() != nil {
+      if viewModel.canGoBack() {
         ToolbarItem(placement: .navigation) {
           Button {
             viewModel.back()
@@ -56,15 +61,26 @@ struct EnrollmentView: View {
           }
         }
       }
+      
+      if viewModel.step != .intro {
+        ToolbarItem(placement: .destructiveAction) {
+          Button {
+            Task {
+              await viewModel.reset()
+            }
+          } label: {
+            Image(systemName: "xmark")
+          }
+        }
+      }
     }
   }
 
   private var header: some View {
-    VStack(alignment: .leading, spacing: 20) {
+    VStack(alignment: .leading, spacing: 40) {
       stepCountView
 
       title
-        .padding(.top, 70)
         .id(viewModel.step)
         .transition(.blurReplace)
     }
@@ -79,7 +95,7 @@ struct EnrollmentView: View {
         content()
       }
     } else {
-      VStack(alignment: .leading, spacing: 0) {
+      VStack(alignment: .leading, spacing: 50) {
         content()
       }
     }
@@ -95,11 +111,13 @@ struct EnrollmentView: View {
   @ViewBuilder
   private var stepCountView: some View {
     if let currentStepNumber = viewModel.currentStepNumber {
-      Text("Steg \(currentStepNumber) av \(viewModel.totalSteps)")
-      PrimaryProgressView(
-        value: CGFloat(currentStepNumber),
-        total: CGFloat(viewModel.totalSteps)
-      )
+      VStack(alignment: .leading, spacing: 20) {
+        Text("Steg \(currentStepNumber) av \(viewModel.totalSteps)")
+        PrimaryProgressView(
+          value: CGFloat(currentStepNumber),
+          total: CGFloat(viewModel.totalSteps)
+        )
+      }
     }
   }
 
@@ -240,7 +258,8 @@ struct EnrollmentView: View {
       credential: nil
     ),
     setKeyAttestation: { _ in },
-    signIn: { _ in }
+    signIn: { _ in },
+    onReset: { }
   )
   .themed
 }

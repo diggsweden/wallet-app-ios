@@ -24,10 +24,11 @@ struct AddPhoneNumberForm: View {
   }
 
   var body: some View {
-    VStack {
+    VStack(spacing: 8) {
       PrimaryTextFieldWrapper(
         title: "Ange ditt mobiltelefonnummer",
-        error: error
+        error: error,
+        infoCaption: "10 siffror, t.ex. 070 123 45 67"
       ) {
         TextField(
           "070 123 45 67",
@@ -47,11 +48,13 @@ struct AddPhoneNumberForm: View {
 
         onSubmit(phoneNumber)
       }
+      
       Button {
         onSkip()
       } label: {
         Text("Hoppa över")
           .foregroundStyle(theme.colors.linkPrimary)
+          .underline()
       }
     }
   }

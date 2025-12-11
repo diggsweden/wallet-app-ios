@@ -6,7 +6,7 @@ struct PrimaryTextFieldStyle: TextFieldStyle {
   @FocusState private var isFocused: Bool
 
   func _body(configuration: TextField<Self._Label>) -> some View {
-    let shape = RoundedRectangle(cornerRadius: 4)
+    let shape = RoundedRectangle(cornerRadius: theme.cornerRadius)
     let strokeColor =
       if error {
         theme.colors.errorInverse
@@ -19,10 +19,17 @@ struct PrimaryTextFieldStyle: TextFieldStyle {
     configuration
       .focused($isFocused)
       .padding(10)
-      .background(error ? theme.colors.secondary : theme.colors.backgroundPage, in: shape)
+      .background(error ? theme.colors.secondaryAccent : .clear, in: shape)
       .tint(theme.colors.borderInteractive)
+      .overlay(alignment: .bottom) {
+        if !isFocused && !error {
+          Rectangle()
+            .frame(height: 2)
+            .foregroundStyle(theme.colors.borderInteractive)
+        }
+      }
       .overlay(shape.stroke(strokeColor, lineWidth: 2))
-      .animation(.snappy(duration: 0.25), value: isFocused)
+      .animation(.snappy, value: isFocused)
   }
 }
 
@@ -37,11 +44,19 @@ extension TextFieldStyle where Self == PrimaryTextFieldStyle {
   @Previewable
   @State
   var text: String = ""
+  
+  @Previewable
+  @FocusState
+  var focused: Bool
+  
   VStack(spacing: 20) {
-    TextField("Test", text: $text)
+    TextField("Error", text: $text)
       .textFieldStyle(.primary(error: true))
     TextField("Test", text: $text)
       .textFieldStyle(.primary)
+    TextField("Focused", text: $text)
+      .textFieldStyle(.primary)
+      .focused($focused)
   }
   .padding(12)
   .themed

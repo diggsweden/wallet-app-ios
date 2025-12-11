@@ -3,17 +3,24 @@ import SwiftUI
 struct PrimaryTextFieldWrapper<Content: View>: View {
   let title: String
   let error: String?
+  let infoCaption: String?
   @ViewBuilder var content: () -> Content
   @Environment(\.theme) private var theme
 
-  init(title: String, error: String? = nil, @ViewBuilder content: @escaping () -> Content) {
+  init(
+    title: String,
+    error: String? = nil,
+    infoCaption: String? = nil,
+    @ViewBuilder content: @escaping () -> Content
+  ) {
     self.title = title
     self.error = error
+    self.infoCaption = infoCaption
     self.content = content
   }
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 12) {
+    VStack(alignment: .leading, spacing: 8) {
       Text(title)
         .textStyle(.h6)
 
@@ -21,9 +28,16 @@ struct PrimaryTextFieldWrapper<Content: View>: View {
         .textFieldStyle(.primary(error: error != nil))
         .lineHeightIfAvailable(multiple: nil)
 
+      if let infoCaption {
+        Text(infoCaption)
+          .textStyle(.bodySmall)
+          .foregroundStyle(theme.colors.textInformation)
+      }
+
       if let error {
         HStack(alignment: .firstTextBaseline, spacing: 6) {
           Image(systemName: "exclamationmark.circle")
+            .font(.system(size: 18))
             .bold()
             .foregroundStyle(theme.colors.errorInverse)
           Text(error)
@@ -31,7 +45,6 @@ struct PrimaryTextFieldWrapper<Content: View>: View {
             .foregroundStyle(theme.colors.textError)
         }
         .transition(.scale.combined(with: .opacity))
-        .padding(.top, -6)
       }
     }
     .animation(.snappy, value: error != nil)
@@ -48,6 +61,20 @@ struct PrimaryTextFieldWrapper<Content: View>: View {
     }
 
     PrimaryTextFieldWrapper(title: "Test 2") {
+      TextField("Test", text: $text)
+    }
+    
+    Divider()
+
+    PrimaryTextFieldWrapper(
+      title: "Test med info och fel",
+      error: "Något gick fel",
+      infoCaption: "Info"
+    ) {
+      TextField("Test", text: $text)
+    }
+
+    PrimaryTextFieldWrapper(title: "Test med info", infoCaption: "Information") {
       TextField("Test", text: $text)
     }
   }
