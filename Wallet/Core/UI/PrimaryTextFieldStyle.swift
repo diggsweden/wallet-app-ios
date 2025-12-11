@@ -44,11 +44,11 @@ extension TextFieldStyle where Self == PrimaryTextFieldStyle {
   @Previewable
   @State
   var text: String = ""
-  
+
   @Previewable
   @FocusState
   var focused: Bool
-  
+
   VStack(spacing: 20) {
     TextField("Error", text: $text)
       .textFieldStyle(.primary(error: true))

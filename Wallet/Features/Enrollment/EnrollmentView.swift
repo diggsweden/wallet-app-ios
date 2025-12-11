@@ -28,8 +28,6 @@ struct EnrollmentView: View {
   }
 
   var body: some View {
-    let slideTransition: AnyTransition = orientation.isLandscape ? .move(edge: .bottom) : .slide
-
     GeometryReader { proxy in
       ScrollView(showsIndicators: false) {
         adaptiveStack {
@@ -39,7 +37,7 @@ struct EnrollmentView: View {
 
           currentStepView
             .transition(
-              slideTransition.combined(with: .opacity)
+              stepTransition.combined(with: .opacity)
             )
         }
         .frame(
@@ -61,7 +59,7 @@ struct EnrollmentView: View {
           }
         }
       }
-      
+
       if viewModel.step != .intro {
         ToolbarItem(placement: .destructiveAction) {
           Button {
@@ -76,8 +74,16 @@ struct EnrollmentView: View {
     }
   }
 
+  private var stepTransition: AnyTransition {
+    if viewModel.step == .intro {
+      return .opacity
+    }
+
+    return orientation.isLandscape ? .move(edge: .bottom) : .slide
+  }
+
   private var header: some View {
-    VStack(alignment: .leading, spacing: 40) {
+    VStack(spacing: 40) {
       stepCountView
 
       title
@@ -95,7 +101,7 @@ struct EnrollmentView: View {
         content()
       }
     } else {
-      VStack(alignment: .leading, spacing: 50) {
+      VStack(spacing: 50) {
         content()
       }
     }
@@ -122,11 +128,11 @@ struct EnrollmentView: View {
   }
 
   private var title: some View {
-    VStack(alignment: .leading) {
+    VStack {
       switch viewModel.step {
         case .intro:
-          titleWithCount("Välkommen!")
-
+          EmptyView()
+          
         case .terms:
           titleWithCount("Användaruppgifter")
 
@@ -167,10 +173,10 @@ struct EnrollmentView: View {
   private func titleWithCount(_ text: String) -> some View {
     if let currentStepNumber = viewModel.currentStepNumber {
       Text("\(currentStepNumber). \(text)")
-        .textStyle(.h2)
+        .textStyle(.h1)
     } else {
       Text(text)
-        .textStyle(.h2)
+        .textStyle(.h1)
     }
   }
 
@@ -195,7 +201,7 @@ struct EnrollmentView: View {
         }
 
       case .verifyPhone:
-        VerifyContactInfoView(contactInfoData: viewModel.phoneNumber) {
+        VerifyContactInfoWithCode(contactInfoData: viewModel.phoneNumber ?? "", type: .phone) {
           viewModel.next()
         }
 
@@ -208,7 +214,7 @@ struct EnrollmentView: View {
         }
 
       case .verifyEmail:
-        VerifyContactInfoView(contactInfoData: viewModel.email) {
+        VerifyContactInfoWithCode(contactInfoData: viewModel.email, type: .email) {
           viewModel.next()
         }
 
@@ -259,7 +265,7 @@ struct EnrollmentView: View {
     ),
     setKeyAttestation: { _ in },
     signIn: { _ in },
-    onReset: { }
+    onReset: {}
   )
   .themed
 }

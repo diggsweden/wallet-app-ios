@@ -51,18 +51,15 @@ struct AddEmailForm: View {
   }
 
   private var header: some View {
-    VStack(alignment: .leading, spacing: 5) {
+    HStack(alignment: .top) {
+      Image(.enterEmail)
+        .resizable()
+        .scaledToFit()
+        .frame(height: 86)
       Text(
-        "Med användaruppgifterna kan du administrera din plånbok även om du till exempel tappar bort din telefon. "
+        "Vi behöver din e-postadress för att skapa ett konto.\nKontot används för att administrera din plånbok om du till exempel skulle tappa din enhet."
       )
-      HStack(alignment: .firstTextBaseline) {
-        Text("Läs mer om plånboken på wallet.se")
-          .underline()
-        Image(systemName: "arrow.up.forward.app")
-      }
-      .onTapGesture {
-        openURL(#URL("https://wallet.sandbox.digg.se"))
-      }
+      .fixedSize(horizontal: false, vertical: true)
     }
   }
 

@@ -36,7 +36,7 @@ struct WelcomeScreen: View {
           Image(systemName: "arrow.up.forward.app")
         }
       }
-      
+
       Spacer()
 
       PrimaryButton("enrollmentNext") {

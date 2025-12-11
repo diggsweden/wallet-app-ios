@@ -48,7 +48,7 @@ struct AddPhoneNumberForm: View {
 
         onSubmit(phoneNumber)
       }
-      
+
       Button {
         onSkip()
       } label: {

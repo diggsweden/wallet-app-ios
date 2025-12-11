@@ -83,7 +83,7 @@ final class EnrollmentViewModel {
       step = previous
     }
   }
-  
+
   func canGoBack() -> Bool {
     step.previous() != nil
   }

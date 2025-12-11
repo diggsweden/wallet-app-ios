@@ -63,7 +63,7 @@ struct PrimaryTextFieldWrapper<Content: View>: View {
     PrimaryTextFieldWrapper(title: "Test 2") {
       TextField("Test", text: $text)
     }
-    
+
     Divider()
 
     PrimaryTextFieldWrapper(
