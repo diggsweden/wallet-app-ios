@@ -34,14 +34,16 @@ struct ContactInfoOneTimeCode: View {
           .frame(width: 134)
       }
 
-      Text("Det kan ta några minuter innan du får din kod, den är aktiv i en timme.\n\nKom inte koden gå ett steg tillbaka.")
-        .textStyle(.bodySmall)
+      Text(
+        "Det kan ta några minuter innan du får din kod, den är aktiv i en timme.\n\nKom inte koden gå ett steg tillbaka."
+      )
+      .textStyle(.bodySmall)
 
       codeInput
 
       Spacer()
 
-      PrimaryButton("enrollmentNext") {
+      PrimaryButton("onboardingNext") {
         onComplete()
       }
     }

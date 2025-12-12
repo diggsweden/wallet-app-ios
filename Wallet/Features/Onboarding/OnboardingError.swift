@@ -1,6 +1,6 @@
 import Foundation
 
-enum EnrollmentError: LocalizedError {
+enum OnboardingError: LocalizedError {
   case invalidPinDigits
   case pinMismatch
 

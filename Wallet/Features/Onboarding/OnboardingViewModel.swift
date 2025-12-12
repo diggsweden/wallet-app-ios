@@ -2,12 +2,12 @@ import SwiftUI
 
 @MainActor
 @Observable
-final class EnrollmentViewModel {
+final class OnboardingViewModel {
   private let setKeyAttestation: (String) async -> Void
   private let signIn: (String) async -> Void
   private let onReset: () async -> Void
 
-  private(set) var step: EnrollmentStep = .intro
+  private(set) var step: OnboardingStep = .intro
   private(set) var pin = ""
   private(set) var phoneNumber: String?
   private(set) var email = ""
@@ -33,13 +33,13 @@ final class EnrollmentViewModel {
     return allSteps.count
   }
 
-  private var allSteps: [EnrollmentStep] {
-    return EnrollmentStep.allCases.filter { $0 != .intro }
+  private var allSteps: [OnboardingStep] {
+    return OnboardingStep.allCases.filter { $0 != .intro }
   }
 
   func setPin(_ pin: String) throws {
     guard pin.count == 6 else {
-      throw EnrollmentError.invalidPinDigits
+      throw OnboardingError.invalidPinDigits
     }
 
     self.pin = pin
@@ -69,7 +69,7 @@ final class EnrollmentViewModel {
   func confirmPin(_ pin: String) throws {
     guard self.pin == pin else {
       step = .pin
-      throw EnrollmentError.pinMismatch
+      throw OnboardingError.pinMismatch
     }
     next()
   }

@@ -1,14 +1,14 @@
 import SwiftUI
 
-struct EnrollmentInfoView: View {
+struct OnboardingInfoView: View {
   let bodyText: String
   let onComplete: () throws -> Void
 
   var body: some View {
     Text(bodyText)
       .toolbar {
-        EnrollmentBottomToolbarButton {
-          PrimaryButton("enrollmentNext") {
+        OnboardingBottomToolbarButton {
+          PrimaryButton("onboardingNext") {
             try? onComplete()
           }
         }
@@ -17,5 +17,5 @@ struct EnrollmentInfoView: View {
 }
 
 #Preview {
-  EnrollmentInfoView(bodyText: "Test") {}
+  OnboardingInfoView(bodyText: "Test") {}
 }

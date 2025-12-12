@@ -1,9 +1,9 @@
 import Foundation
 
-enum EnrollmentStep: CaseIterable {
+enum OnboardingStep: CaseIterable {
   case intro, terms, phoneNumber, verifyPhone, email, verifyEmail, pin, verifyPin, wua, pid, done
 
-  func next() -> EnrollmentStep {
+  func next() -> OnboardingStep {
     return switch self {
       case .intro: .terms
       case .terms: .phoneNumber
@@ -19,7 +19,7 @@ enum EnrollmentStep: CaseIterable {
     }
   }
 
-  func previous() -> EnrollmentStep? {
+  func previous() -> OnboardingStep? {
     return switch self {
       case .verifyPhone: .phoneNumber
       case .verifyEmail: .email

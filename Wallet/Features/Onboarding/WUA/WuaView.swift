@@ -19,7 +19,7 @@ struct WuaView: View {
   var body: some View {
     content
       .toolbar {
-        EnrollmentBottomToolbarButton {
+        OnboardingBottomToolbarButton {
           toolbarButton
         }
       }
@@ -43,7 +43,7 @@ struct WuaView: View {
   private var toolbarButton: some View {
     switch result {
       case .success(let jwt):
-        PrimaryButton("enrollmentNext") {
+        PrimaryButton("onboardingNext") {
           do {
             try onSubmit(jwt)
           } catch {

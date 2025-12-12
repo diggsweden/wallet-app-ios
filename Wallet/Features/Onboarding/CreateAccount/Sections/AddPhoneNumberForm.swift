@@ -47,7 +47,7 @@ struct AddPhoneNumberForm: View {
 
       Spacer()
 
-      PrimaryButton("enrollmentNext") {
+      PrimaryButton("onboardingNext") {
         guard isValidPhone(phoneNumber) else {
           didAttemptSubmit = true
           return

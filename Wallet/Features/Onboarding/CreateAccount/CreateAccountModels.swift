@@ -45,7 +45,7 @@ extension CreateAccountFormData {
   }
 
   var isValid: Bool {
-    [emailError, verifyEmailError].allSatisfy { $0 == nil }
+    [emailError, verifyEmailError, emailMatchError].allSatisfy { $0 == nil }
   }
 }
 

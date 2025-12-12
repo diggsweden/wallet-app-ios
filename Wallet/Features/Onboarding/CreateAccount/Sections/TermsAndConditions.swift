@@ -30,7 +30,7 @@ struct TermsAndConditionsView: View {
 
       Spacer()
 
-      PrimaryButton("enrollmentNext") {
+      PrimaryButton("onboardingNext") {
         guard hasAccepted else {
           didAttemptSubmit = true
           return

@@ -39,7 +39,7 @@ struct WelcomeScreen: View {
 
       Spacer()
 
-      PrimaryButton("enrollmentNext") {
+      PrimaryButton("onboardingNext") {
         onComplete()
       }
     }

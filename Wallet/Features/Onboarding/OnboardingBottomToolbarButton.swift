@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct EnrollmentBottomToolbarButton<Content: View>: ToolbarContent {
+struct OnboardingBottomToolbarButton<Content: View>: ToolbarContent {
   @ViewBuilder let content: () -> Content
 
   var body: some ToolbarContent {

@@ -2,14 +2,14 @@ import SwiftData
 import SwiftUI
 import WalletMacrosClient
 
-struct EnrollmentView: View {
+struct OnboardingRootView: View {
   let userSnapshot: UserSnapshot
 
   @Environment(\.gatewayAPIClient) private var gatewayAPIClient
   @Environment(\.theme) private var theme
   @Environment(\.orientation) private var orientation
   @Environment(\.openURL) private var openURL
-  @State private var viewModel: EnrollmentViewModel
+  @State private var viewModel: OnboardingViewModel
 
   init(
     userSnapshot: UserSnapshot,
@@ -219,7 +219,7 @@ struct EnrollmentView: View {
         }
 
       case .pin:
-        PinView(buttonText: "enrollmentNext") { pin in
+        PinView(buttonText: "onboardingNext") { pin in
           try viewModel.setPin(pin)
         }
         .frame(maxWidth: .infinity, alignment: .center)
@@ -241,7 +241,7 @@ struct EnrollmentView: View {
         }
 
       case .pid:
-        EnrollmentInfoView(bodyText: "För att använda appen behöver du lägga till en ID-handling") {
+        OnboardingInfoView(bodyText: "För att använda appen behöver du lägga till en ID-handling") {
           let url = #URL("https://wallet.sandbox.digg.se/prepare-credential-offer")
           openURL(url)
         }
@@ -250,13 +250,13 @@ struct EnrollmentView: View {
         }
 
       case .done:
-        EnrollmentInfoView(bodyText: "Nu är din plånbok redo för att användas!") {}
+        OnboardingInfoView(bodyText: "Nu är din plånbok redo för att användas!") {}
     }
   }
 }
 
 #Preview {
-  EnrollmentView(
+  OnboardingRootView(
     userSnapshot: UserSnapshot(
       deviceId: "",
       accountId: nil,

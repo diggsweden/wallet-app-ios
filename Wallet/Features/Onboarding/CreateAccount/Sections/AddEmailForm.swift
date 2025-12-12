@@ -88,7 +88,7 @@ struct AddEmailForm: View {
     if viewModel.accountIdResult.isLoading {
       ProgressView()
     } else {
-      PrimaryButton("enrollmentNext") {
+      PrimaryButton("onboardingNext") {
         Task { await viewModel.createAccount() }
       }
     }
@@ -114,7 +114,10 @@ struct AddEmailForm: View {
   }
 
   private var shouldShowMatchingError: Bool {
-    if viewModel.showAllValidationErrors { return true }
+    if viewModel.showAllValidationErrors {
+      return true
+    }
+    
     return emailFields.isSubset(of: touchedFields)
   }
 
@@ -126,6 +129,7 @@ struct AddEmailForm: View {
     guard let old, new != old else {
       return
     }
+    
     touchedFields.insert(old)
   }
 }

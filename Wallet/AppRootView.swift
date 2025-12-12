@@ -33,7 +33,7 @@ struct AppRootView: View {
     switch userViewModel.user {
       case .ready(let user):
         if !userViewModel.isEnrolled {
-          EnrollmentView(
+          OnboardingRootView(
             userSnapshot: user,
             setKeyAttestation: userViewModel.setKeyAttestation,
             signIn: userViewModel.signIn,
