@@ -2,14 +2,14 @@
 #
 # SPDX-License-Identifier: CC0-1.0
 
-# Dev Release Workflow
+# Release Dev Workflow
 #
 # This workflow builds the iOS app and uploads to TestFlight for testing.
 # Triggered manually via workflow_dispatch (GitHub Actions UI).
 #
 # How to use:
 # 1. Go to Actions tab in GitHub
-# 2. Select "Dev Release Workflow"
+# 2. Select "Release Dev Workflow"
 # 3. Click "Run workflow"
 # 4. Select branch to build from
 # 5. Click "Run workflow"
@@ -17,7 +17,7 @@
 # Created artifacts:
 # - IPA uploaded to TestFlight
 
-name: Dev Release Workflow
+name: Release Dev Workflow
 
 on:
   workflow_dispatch:
