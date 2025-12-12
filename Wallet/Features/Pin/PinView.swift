@@ -91,6 +91,7 @@ struct PinView: View {
 
 #Preview {
   PinView { _ in }
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
     .themed
     .withOrientation
     .withToast

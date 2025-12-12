@@ -117,7 +117,7 @@ struct AddEmailForm: View {
     if viewModel.showAllValidationErrors {
       return true
     }
-    
+
     return emailFields.isSubset(of: touchedFields)
   }
 
@@ -129,7 +129,7 @@ struct AddEmailForm: View {
     guard let old, new != old else {
       return
     }
-    
+
     touchedFields.insert(old)
   }
 }
