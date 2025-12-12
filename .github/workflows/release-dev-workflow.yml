@@ -43,6 +43,7 @@ jobs:
       enable-code-signing: true
       export-options-var: EXPORT_OPTIONS_BASE64
       artifact-name: wallet-ios-demo-dev
+      include-tag: false
 
   upload-testflight:
     needs: build
