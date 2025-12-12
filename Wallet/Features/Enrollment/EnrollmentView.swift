@@ -132,7 +132,7 @@ struct EnrollmentView: View {
       switch viewModel.step {
         case .intro:
           EmptyView()
-          
+
         case .terms:
           titleWithCount("Användaruppgifter")
 
@@ -201,7 +201,7 @@ struct EnrollmentView: View {
         }
 
       case .verifyPhone:
-        VerifyContactInfoWithCode(contactInfoData: viewModel.phoneNumber ?? "", type: .phone) {
+        ContactInfoOneTimeCode(contactInfoData: viewModel.phoneNumber ?? "", type: .phone) {
           viewModel.next()
         }
 
@@ -214,7 +214,7 @@ struct EnrollmentView: View {
         }
 
       case .verifyEmail:
-        VerifyContactInfoWithCode(contactInfoData: viewModel.email, type: .email) {
+        ContactInfoOneTimeCode(contactInfoData: viewModel.email, type: .email) {
           viewModel.next()
         }
 

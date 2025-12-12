@@ -7,6 +7,7 @@ struct AddPhoneNumberForm: View {
   @Environment(\.theme) private var theme
   @State private var phoneNumber: String = ""
   @State private var didAttemptSubmit: Bool = false
+  @FocusState private var isFocused: Bool
 
   private var error: String? {
     guard didAttemptSubmit else {
@@ -36,6 +37,12 @@ struct AddPhoneNumberForm: View {
         )
         .keyboardType(.numberPad)
         .textContentType(.telephoneNumber)
+        .focused($isFocused)
+        .onChange(of: phoneNumber) {
+          if phoneNumber.count == 10 {
+            isFocused = false
+          }
+        }
       }
 
       Spacer()
@@ -55,6 +62,14 @@ struct AddPhoneNumberForm: View {
         Text("Hoppa över")
           .foregroundStyle(theme.colors.linkPrimary)
           .underline()
+      }
+    }
+    .toolbar {
+      ToolbarItemGroup(placement: .keyboard) {
+        Spacer()
+        Button("Klar") {
+          isFocused = false
+        }
       }
     }
   }
