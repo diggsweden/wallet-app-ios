@@ -87,6 +87,7 @@ struct OnboardingRootView: View {
       stepCountView
 
       title
+        .fixedSize(horizontal: false, vertical: true)
         .id(viewModel.step)
         .transition(.blurReplace)
     }
@@ -128,46 +129,21 @@ struct OnboardingRootView: View {
   }
 
   private var title: some View {
-    VStack {
+    let titleText =
       switch viewModel.step {
-        case .intro:
-          EmptyView()
-
-        case .terms:
-          titleWithCount("Användaruppgifter")
-
-        case .phoneNumber:
-          titleWithCount("Ditt telefonnummer")
-
-        case .verifyPhone:
-          titleWithCount("Kod för bekräftelse")
-
-        case .email:
-          titleWithCount("Din e-postadress")
-
-        case .verifyEmail:
-          titleWithCount("Bekräfta e-post")
-
-        case .pin:
-          titleWithCount("Ange ny PIN-kod")
-          Text("6 siffror")
-            .textStyle(.body)
-
-        case .verifyPin:
-          titleWithCount("Bekräfta PIN-kod")
-          Text("6 siffror")
-            .textStyle(.body)
-
-        case .wua:
-          titleWithCount("Sätter upp plånbok")
-
-        case .pid:
-          titleWithCount("Lägg till ID-handling")
-
-        case .done:
-          Text("Klart!")
+        case .intro: ""
+        case .terms: "Tillåt behörigheter"
+        case .phoneNumber: "Ditt telefonnummer"
+        case .verifyPhone: "Kod för bekräftelse"
+        case .email: "Din e-postadress"
+        case .verifyEmail: "Bekräfta e-post"
+        case .pin: "Ange ny PIN-kod för identifiering"
+        case .verifyPin: "Bekräfta PIN-kod för identifiering"
+        case .wua: "Sätter upp plånbok"
+        case .pid: "Hämta uppgifter"
       }
-    }
+
+    return titleWithCount(titleText)
   }
 
   private func titleWithCount(_ text: String) -> some View {
@@ -248,9 +224,6 @@ struct OnboardingRootView: View {
         .onChange(of: userSnapshot.credential) {
           viewModel.next()
         }
-
-      case .done:
-        OnboardingInfoView(bodyText: "Nu är din plånbok redo för att användas!") {}
     }
   }
 }

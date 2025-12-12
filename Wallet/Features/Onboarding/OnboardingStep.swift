@@ -1,7 +1,7 @@
 import Foundation
 
 enum OnboardingStep: CaseIterable {
-  case intro, terms, phoneNumber, verifyPhone, email, verifyEmail, pin, verifyPin, wua, pid, done
+  case intro, terms, phoneNumber, verifyPhone, email, verifyEmail, pin, verifyPin, wua, pid
 
   func next() -> OnboardingStep {
     return switch self {
@@ -14,8 +14,7 @@ enum OnboardingStep: CaseIterable {
       case .pin: .verifyPin
       case .verifyPin: .wua
       case .wua: .pid
-      case .pid: .done
-      case .done: .done
+      case .pid: .pid
     }
   }
 
