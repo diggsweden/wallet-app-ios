@@ -6,3 +6,9 @@
 [![Tag](https://img.shields.io/github/v/tag/diggsweden/wallet-app-ios?style=for-the-badge&color=green)](https://github.com/diggsweden/wallet-app-ios/tags)
 
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/diggsweden/wallet-app-ios/badge?style=for-the-badge)](https://scorecard.dev/viewer/?uri=github.com/diggsweden/wallet-app-ios)
+
+## License
+
+Source code is EUPL-1.2.
+
+Copies from Apple App Store are licensed under their store EULA plus our Terms of Use; that doesn’t change the EUPL license for the source.

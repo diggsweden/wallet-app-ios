@@ -2,38 +2,55 @@
 #
 # SPDX-License-Identifier: CC0-1.0
 
-name: Release Workflow
+# Dev Release Workflow
+#
+# This workflow builds the iOS app and uploads to TestFlight for testing.
+# Triggered manually via workflow_dispatch (GitHub Actions UI).
+#
+# How to use:
+# 1. Go to Actions tab in GitHub
+# 2. Select "Dev Release Workflow"
+# 3. Click "Run workflow"
+# 4. Select branch to build from
+# 5. Click "Run workflow"
+#
+# Created artifacts:
+# - IPA uploaded to TestFlight
+
+name: Dev Release Workflow
 
 on:
-  push:
-    tags:
-      - "v[0-9]+.[0-9]+.[0-9]+"
-      - "v[0-9]+.[0-9]+.[0-9]+-alpha*"
-      - "v[0-9]+.[0-9]+.[0-9]+-beta*"
-      - "v[0-9]+.[0-9]+.[0-9]+-rc*"
+  workflow_dispatch:
 
 concurrency:
-  group: release-${{ github.ref }}
-  cancel-in-progress: false
+  group: release-dev-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
 
 jobs:
-  release:
-    uses: diggsweden/reusable-ci/.github/workflows/release-orchestrator.yml@e29145e720cef0b86ef147c72c2d001b5ac6c8b9 # v2.4.2
+  build:
+    uses: diggsweden/reusable-ci/.github/workflows/build-xcode-ios.yml@12603231353981dadbe2c56a056e611528f29a15 # v2.4.3
     permissions:
-      contents: write
-      packages: write
-      id-token: write
-      attestations: write
-      security-events: write
-      actions: read
+      contents: read
     secrets: inherit
     with:
-      artifacts-config: .github/artifacts.yml
-      release-publisher: github-cli
-      release.attachartifacts: |
-        build/export/*.ipa
-      release.signartifacts: false
-      release.generatesbom: true
+      xcode-version: "26.0.1"
+      scheme: "Wallet Demo"
+      project: "Wallet.xcodeproj"
+      configuration: Release
+      enable-code-signing: true
+      export-options-var: EXPORT_OPTIONS_BASE64
+      artifact-name: wallet-ios-demo-dev
+
+  upload-testflight:
+    needs: build
+    uses: diggsweden/reusable-ci/.github/workflows/publish-apple-appstore.yml@12603231353981dadbe2c56a056e611528f29a15 # v2.4.3
+    permissions:
+      contents: read
+    secrets: inherit
+    with:
+      ipa-artifact-name: wallet-ios-demo-dev
+      submit-for-review: false
+      skip-validation: false

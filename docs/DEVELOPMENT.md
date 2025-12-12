@@ -4,15 +4,96 @@
 
 This project uses `just` + `mise` for local builds and quality checks.
 
-### Prerequisites
+### Prerequisites - Linux
 
-1. Install [mise](https://mise.jdx.dev/) and run:
+1. Install [mise](https://mise.jdx.dev/):
 
-```bash
-mise install
-```
+   ```bash
+   curl https://mise.run | sh
+   ```
 
-2. Install Xcode from the App Store
+2. Activate mise in your shell:
+
+   ```bash
+   # For bash - add to ~/.bashrc
+   eval "$(mise activate bash)"
+
+   # For zsh - add to ~/.zshrc
+   eval "$(mise activate zsh)"
+
+   # For fish - add to ~/.config/fish/config.fish
+   mise activate fish | source
+   ```
+
+   Then restart your terminal.
+
+3. Install pipx:
+
+   ```bash
+   # Debian/Ubuntu
+   sudo apt install pipx
+   ```
+
+4. Install project tools:
+
+   ```bash
+   mise install
+   ```
+
+5. Show available tasks:
+
+   ```bash
+   just
+   ```
+
+### Prerequisites - macOS
+
+1. Install Xcode from the App Store
+
+2. Install [mise](https://mise.jdx.dev/):
+
+   ```bash
+   brew install mise
+   ```
+
+3. Activate mise in your shell:
+
+   ```bash
+   # For zsh - add to ~/.zshrc
+   eval "$(mise activate zsh)"
+
+   # For bash - add to ~/.bashrc
+   eval "$(mise activate bash)"
+
+   # For fish - add to ~/.config/fish/config.fish
+   mise activate fish | source
+   ```
+
+   Then restart your terminal.
+
+4. Install newer bash than macOS default:
+
+   ```bash
+   brew install bash
+   ```
+
+5. Install pipx:
+
+   ```bash
+   brew install pipx
+   ```
+
+6. Install project tools:
+
+   ```bash
+   mise install
+   ```
+
+7. Show available tasks:
+
+   ```bash
+   just
+   ```
 
 ### Building
 
