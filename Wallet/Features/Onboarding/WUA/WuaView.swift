@@ -33,7 +33,7 @@ struct WuaView: View {
       case .success:
         Text("Redo!")
       case .failure(let error):
-        ErrorView(text: error.message, show: true)
+        Text("Något gick fel!")
       case nil:
         ProgressView("Hämtar intyg")
     }

@@ -36,6 +36,7 @@ struct WelcomeScreen: View {
           Image(systemName: "arrow.up.forward.app")
         }
       }
+      .padding(.vertical, 86)
 
       Spacer()
 

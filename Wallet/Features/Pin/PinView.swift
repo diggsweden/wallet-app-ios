@@ -40,7 +40,7 @@ struct PinView: View {
           )
         }
       )
-
+      .padding(.bottom, 10)
       PrimaryButton(buttonText, maxWidth: gridWidth) {
         handlePinComplete()
       }

@@ -50,27 +50,7 @@ struct OnboardingRootView: View {
       }
     }
     .toolbar {
-      if viewModel.canGoBack() {
-        ToolbarItem(placement: .navigation) {
-          Button {
-            viewModel.back()
-          } label: {
-            Image(systemName: "chevron.left")
-          }
-        }
-      }
-
-      if viewModel.step != .intro {
-        ToolbarItem(placement: .destructiveAction) {
-          Button {
-            Task {
-              await viewModel.reset()
-            }
-          } label: {
-            Image(systemName: "xmark")
-          }
-        }
-      }
+      toolbarContent
     }
   }
 
@@ -109,13 +89,6 @@ struct OnboardingRootView: View {
   }
 
   @ViewBuilder
-  private var landscapeSpacer: some View {
-    if orientation.isLandscape {
-      Spacer()
-    }
-  }
-
-  @ViewBuilder
   private var stepCountView: some View {
     if let currentStepNumber = viewModel.currentStepNumber {
       VStack(alignment: .leading, spacing: 20) {
@@ -129,6 +102,7 @@ struct OnboardingRootView: View {
   }
 
   private var title: some View {
+    let stepCount = viewModel.currentStepNumber.map { "\($0). " }
     let titleText =
       switch viewModel.step {
         case .intro: ""
@@ -143,17 +117,8 @@ struct OnboardingRootView: View {
         case .pid: "Hämta uppgifter"
       }
 
-    return titleWithCount(titleText)
-  }
-
-  private func titleWithCount(_ text: String) -> some View {
-    if let currentStepNumber = viewModel.currentStepNumber {
-      Text("\(currentStepNumber). \(text)")
-        .textStyle(.h1)
-    } else {
-      Text(text)
-        .textStyle(.h1)
-    }
+    return Text("\(stepCount, default: "")\(titleText)")
+      .textStyle(.h1)
   }
 
   @ViewBuilder
@@ -195,16 +160,24 @@ struct OnboardingRootView: View {
         }
 
       case .pin:
-        PinView(buttonText: "onboardingNext") { pin in
-          try viewModel.setPin(pin)
+        VStack(spacing: 20) {
+          Text("Pinkod används när du ska identifiera dig")
+            .textStyle(.bodyLarge)
+          PinView(buttonText: "onboardingNext") { pin in
+            try viewModel.setPin(pin)
+          }
+          .frame(maxWidth: .infinity, alignment: .center)
         }
-        .frame(maxWidth: .infinity, alignment: .center)
 
       case .verifyPin:
-        PinView(buttonText: "Bekräfta") { pin in
-          try viewModel.confirmPin(pin)
+        VStack(spacing: 20) {
+          Text("Pinkod används när du ska identifiera dig")
+            .textStyle(.bodyLarge)
+          PinView(buttonText: "Bekräfta") { pin in
+            try viewModel.confirmPin(pin)
+          }
+          .frame(maxWidth: .infinity, alignment: .center)
         }
-        .frame(maxWidth: .infinity, alignment: .center)
 
       case .wua:
         WuaView(
@@ -224,6 +197,31 @@ struct OnboardingRootView: View {
         .onChange(of: userSnapshot.credential) {
           viewModel.next()
         }
+    }
+  }
+
+  @ToolbarContentBuilder
+  private var toolbarContent: some ToolbarContent {
+    if viewModel.canGoBack() {
+      ToolbarItem(placement: .navigation) {
+        Button {
+          viewModel.back()
+        } label: {
+          Image(systemName: "chevron.left")
+        }
+      }
+    }
+
+    if viewModel.step != .intro {
+      ToolbarItem(placement: .destructiveAction) {
+        Button {
+          Task {
+            await viewModel.reset()
+          }
+        } label: {
+          Image(systemName: "xmark")
+        }
+      }
     }
   }
 }
