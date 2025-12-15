@@ -6,7 +6,7 @@ This project uses `just` + `mise` for local builds and quality checks.
 
 ### Prerequisites - Linux
 
-1. Install [mise](https://mise.jdx.dev/):
+1. Install [mise](https://mise.jdx.dev/) (manages linting tools):
 
    ```bash
    curl https://mise.run | sh
@@ -27,7 +27,7 @@ This project uses `just` + `mise` for local builds and quality checks.
 
    Then restart your terminal.
 
-3. Install pipx:
+3. Install pipx (needed for reuse license linting):
 
    ```bash
    # Debian/Ubuntu
