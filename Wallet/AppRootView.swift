@@ -1,3 +1,4 @@
+import AuthenticationServices
 import SwiftData
 import SwiftUI
 
@@ -5,6 +6,7 @@ struct AppRootView: View {
   @State private var userViewModel: UserViewModel
   @State private var router = Router()
   @Environment(\.theme) private var theme
+  @State private var anchor: ASPresentationAnchor?
 
   init(userStore: UserStore) {
     _userViewModel = State(wrappedValue: .init(userStore: userStore))
@@ -13,6 +15,7 @@ struct AppRootView: View {
   var body: some View {
     NavigationStack(path: $router.navigationPath) {
       rootView
+        .background(AuthAnchorReader { anchor = $0 })
         .containerRelativeFrame([.horizontal, .vertical])
         .background(theme.colors.background)
         .navigationDestination(for: Route.self) { route in
@@ -21,6 +24,7 @@ struct AppRootView: View {
             .background(theme.colors.background)
         }
     }
+    .environment(\.authAnchor, anchor)
     .environment(router)
     .onOpenURL(perform: handleOpenURL)
     .task {

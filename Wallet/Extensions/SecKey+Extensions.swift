@@ -37,6 +37,7 @@ extension SecKey {
       crv: .P256,
       x: x,
       y: y,
+      additionalParameters: ["alg": "ECDH-ES"]
     )
     .withThumbprintAsKeyId()
   }

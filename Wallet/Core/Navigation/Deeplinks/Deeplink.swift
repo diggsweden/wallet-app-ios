@@ -13,6 +13,7 @@ extension DeeplinkRouter {
 enum Deeplink {
   case issuance
   case presentation
+  case walletApp
 
   init(from url: URL) throws {
     switch url.scheme {
@@ -20,6 +21,8 @@ enum Deeplink {
         self = .issuance
       case "openid4vp", "eudi-openid4vp":
         self = .presentation
+      case "wallet-app":
+        self = .walletApp
       default:
         throw DeeplinkError.invalidScheme
     }
@@ -31,6 +34,15 @@ enum Deeplink {
         return IssuanceRouter()
       case .presentation:
         return PresentationRouter()
+      case .walletApp:
+        return WalletAppRouter()
     }
+  }
+}
+
+private struct WalletAppRouter: DeeplinkRouter {
+  func route(from url: URL) async throws -> Route {
+    print(url)
+    return .settings
   }
 }

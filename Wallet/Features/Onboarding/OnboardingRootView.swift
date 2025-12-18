@@ -56,6 +56,9 @@ struct OnboardingRootView: View {
     .backGesture(isEnabled: viewModel.canGoBack()) {
       viewModel.back()
     }
+    .onOpenURL { url in
+      print(url)
+    }
   }
 
   private var stepTransition: AnyTransition {
@@ -110,6 +113,7 @@ struct OnboardingRootView: View {
     let titleText =
       switch viewModel.step {
         case .intro: ""
+        case .login: "Logga in"
         case .terms: "Tillåt behörigheter"
         case .phoneNumber: "Ditt telefonnummer"
         case .verifyPhone: "Bekräfta telefonnummer"
@@ -131,6 +135,9 @@ struct OnboardingRootView: View {
         WelcomeScreen {
           viewModel.next()
         }
+
+      case .login:
+        LoginView()
 
       case .terms:
         ConsentView {

@@ -41,13 +41,32 @@ struct OpenID4VCIUtil {
   func fetchCredential(
     url: URL,
     token: String,
-    credentialRequest: CredentialRequestOld
+    credentialRequest: CredentialRequest
   ) async throws -> String {
     let response: CredentialResponse = try await NetworkClient.shared.fetch(
       url,
       method: .post,
       token: token,
       body: try encoder.encode(credentialRequest)
+    )
+    guard let credential = response.credentials.first else {
+      throw AppError(reason: "Could not fetch credential")
+    }
+
+    return credential.credential
+  }
+
+  func fetchCredential(
+    url: URL,
+    token: String,
+    jwe: String,
+  ) async throws -> String {
+    let response: CredentialResponse = try await NetworkClient.shared.fetch(
+      url,
+      method: .post,
+      contentType: "application/jwt",
+      token: token,
+      body: jwe.utf8Data
     )
     guard let credential = response.credentials.first else {
       throw AppError(reason: "Could not fetch credential")

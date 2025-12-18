@@ -57,7 +57,7 @@ struct JWTUtil {
 
   static func createJWE(
     payload: [String: Any],
-    recipientKey: ECPublicKey
+    recipientKey: JWK
   ) throws -> String {
     let header = JWEHeader(
       keyManagementAlgorithm: .ECDH_ES,

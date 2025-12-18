@@ -1,7 +1,9 @@
+import AuthenticationServices
 import Crypto
 import Foundation
 import JOSESwift
 import OpenID4VCI
+import UIKit
 import WalletMacrosClient
 
 enum IssuanceState {
@@ -24,6 +26,7 @@ class IssuanceViewModel {
   var authorizationCode: String = ""
   private var key: SecKey?
   private let openId4VciUtil = OpenID4VCIUtil()
+  private var oauth = OAuthCoordinator()
 
   init(credentialOfferUri: String, wua: String) {
     self.credentialOfferUri = credentialOfferUri
@@ -43,29 +46,55 @@ class IssuanceViewModel {
     }
   }
 
-  func authorize(with input: String, credentialOffer: CredentialOffer) async {
+  func authorize(
+    with input: String,
+    credentialOffer: CredentialOffer,
+    anchor: ASPresentationAnchor
+  ) async {
     do {
       guard
-        let issuer,
-        case let .preAuthorizedCode(preAuthCode)? = credentialOffer.grants,
-        let preAuthCodeString = preAuthCode.preAuthorizedCode,
-        let txCode = preAuthCode.txCode
+        let issuer
       else {
         throw AppError(reason: "Missing pre-auth code")
       }
 
-      let result = try await issuer.authorizeWithPreAuthorizationCode(
-        credentialOffer: credentialOffer,
-        authorizationCode: IssuanceAuthorization(
-          preAuthorizationCode: preAuthCodeString,
-          txCode: txCode
-        ),
-        client: .init(public: "wallet-dev"),
-        transactionCode: input
-      )
+      let prepared = try await issuer.prepareAuthorizationRequest(credentialOffer: credentialOffer)
+        .get()
 
-      let authorizedRequest = try result.get()
-      state = .authorized(request: authorizedRequest)
+      guard case let .prepared(data) = prepared else {
+        return
+      }
+
+      let url = try await oauth.start(
+        url: data.authorizationCodeURL.url,
+        callbackScheme: "wallet-app",
+        anchor: anchor
+      )
+      print(url)
+      guard let code = url.queryItemValue(for: "code") else {
+        return
+      }
+      let requestWithAuthCode =
+        try await issuer.handleAuthorizationCode(
+          request: prepared,
+          authorizationCode: .init(authorizationCode: code)
+        )
+        .get()
+
+      let res = try await issuer.authorizeWithAuthorizationCode(request: requestWithAuthCode).get()
+
+      //      let result = try await issuer.authorizeWithPreAuthorizationCode(
+      //        credentialOffer: credentialOffer,
+      //        authorizationCode: IssuanceAuthorization(
+      //          preAuthorizationCode: preAuthCodeString,
+      //          txCode: txCode
+      //        ),
+      //        client: .init(public: "wallet-dev"),
+      //        transactionCode: input
+      //      )
+      //
+      //      let authorizedRequest = try result.get()
+      state = .authorized(request: res)
     } catch {
       print(error)
     }
@@ -93,29 +122,56 @@ class IssuanceViewModel {
       let jwtProof = try JWTUtil.createJWT(
         with: key,
         headers: [
-          "typ": "openid4vci-proof+jwt",
-          "key_attestation": wua,
+          "typ": "openid4vci-proof+jwt"
+            //          "key_attestation": wua,
         ],
         payload: [
           "nonce": nonce,
           "aud": await issuer.issuerMetadata.credentialIssuerIdentifier.url.absoluteString,
         ],
       )
-
-      //      let credentialRequest = CredentialRequest(
-      //        credentialConfigurationId: configId.value,
-      //        proofs: JWTProofType(jwt: [jwtProof])
-      //      )
-
-      let oldCredentialRequest = CredentialRequestOld(
+      let credentialRequest = CredentialRequest(
         credentialConfigurationId: configId.value,
-        proof: ProofOld(jwt: jwtProof, proofType: "jwt")
+        proofs: JWTProofType(jwt: [jwtProof])
       )
-      let credential = try await openId4VciUtil.fetchCredential(
-        url: issuer.issuerMetadata.credentialEndpoint.url,
-        token: request.accessToken.accessToken,
-        credentialRequest: oldCredentialRequest
-      )
+
+      let test: [String: Any] = [
+        "proofs": ["jwt": [jwtProof]],
+        "credential_configuration_id": configId.value,
+        "credential_response_encryption": [
+          "jwk": try key.toECPublicKey().toDictionary(),
+          "enc": "A128GCM",
+        ],
+      ]
+
+      var credential: String = ""
+      if case let .required(jwks, encryptionMethods, compressionMethods) =
+        await issuer.issuerMetadata.credentialRequestEncryption
+      {
+        //swift-format-ignore
+        let jwk = jwks.first!
+        let t = try JWTUtil.createJWE(
+          payload: test,
+          recipientKey: jwk
+        )
+        credential = try await openId4VciUtil.fetchCredential(
+          url: issuer.issuerMetadata.credentialEndpoint.url,
+          token: request.accessToken.accessToken,
+          jwe: t
+        )
+      } else {
+        credential = try await openId4VciUtil.fetchCredential(
+          url: issuer.issuerMetadata.credentialEndpoint.url,
+          token: request.accessToken.accessToken,
+          credentialRequest: credentialRequest
+        )
+      }
+
+      //      let credential = try await openId4VciUtil.fetchCredential(
+      //        url: issuer.issuerMetadata.credentialEndpoint.url,
+      //        token: request.accessToken.accessToken,
+      //        credentialRequest: credentialRequest
+      //      )
 
       let display = await issuer.issuerMetadata.display.first
       let parsedCredential = try parseCredential(credential, issuer: display)
@@ -177,7 +233,7 @@ class IssuanceViewModel {
       issuerMetadata: credentialOffer.credentialIssuerMetadata,
       config: OpenId4VCIConfig(
         client: .init(public: "wallet-dev"),
-        authFlowRedirectionURI: #URL("eudi-wallet://auth")
+        authFlowRedirectionURI: #URL("wallet-app://authorize")
       )
     )
   }

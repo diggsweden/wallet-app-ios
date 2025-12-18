@@ -6,6 +6,7 @@ struct IssuanceView: View {
   @Environment(Router.self) private var router
   @Environment(\.modelContext) private var modelContext
   @Environment(\.theme) private var theme
+  @Environment(\.authAnchor) private var anchor
 
   init(
     credentialOfferUri: String,
@@ -83,15 +84,26 @@ struct IssuanceView: View {
               .textFieldStyle(.roundedBorder)
               .onSubmit {
                 Task {
+                  guard let anchor else {
+                    return
+                  }
                   await viewModel.authorize(
                     with: viewModel.authorizationCode,
-                    credentialOffer: offer
+                    credentialOffer: offer,
+                    anchor: anchor
                   )
                 }
               }
             Button {
               Task {
-                await viewModel.authorize(with: viewModel.authorizationCode, credentialOffer: offer)
+                guard let anchor else {
+                  return
+                }
+                await viewModel.authorize(
+                  with: viewModel.authorizationCode,
+                  credentialOffer: offer,
+                  anchor: anchor
+                )
               }
             } label: {
               Image(systemName: "arrow.right.circle.fill")

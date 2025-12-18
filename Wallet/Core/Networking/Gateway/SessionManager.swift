@@ -11,7 +11,7 @@ final actor SessionManager {
   let accountIDProvider: AccountIDProvider
 
   init(baseUrl: URL? = nil, accountIDProvider: AccountIDProvider) {
-    let url = baseUrl ?? #URL("https://wallet.sandbox.digg.se/api")
+    let url = baseUrl ?? AppConfig.apiBaseURL
     client = Client(
       serverURL: url,
       transport: URLSessionTransport(),
