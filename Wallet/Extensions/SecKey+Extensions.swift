@@ -30,13 +30,14 @@ extension SecKey {
     )
   }
 
-  func toECPublicKey() throws -> ECPublicKey {
+  func toECPublicKey(alg: String = KeyManagementAlgorithm.ECDH_ES.rawValue) throws -> ECPublicKey {
     let (x, y) = try getJWKCoordinates()
 
     return try ECPublicKey(
       crv: .P256,
       x: x,
       y: y,
+      additionalParameters: ["alg": alg]
     )
     .withThumbprintAsKeyId()
   }

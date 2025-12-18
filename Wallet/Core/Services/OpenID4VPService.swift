@@ -9,7 +9,7 @@ final class OpenID4VPService {
   }
 
   init() throws {
-    let walletKey = try KeychainService.shared.getOrCreateKey(withTag: .deviceKey)
+    let walletKey = try KeychainService.getOrCreateKey(withTag: .deviceKey)
 
     walletConfig = OpenId4VPConfiguration(
       privateKey: walletKey,

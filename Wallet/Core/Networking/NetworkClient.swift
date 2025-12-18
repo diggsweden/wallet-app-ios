@@ -87,6 +87,7 @@ final class NetworkClient: Sendable {
     _ url: URL,
     method: HTTPMethod = .get,
     contentType: String? = "application/json",
+    accept: String? = "application/json",
     token: String? = nil,
     body: Data? = nil
   ) async throws -> T {
@@ -94,7 +95,7 @@ final class NetworkClient: Sendable {
       url,
       method: method,
       contentType: contentType,
-      accept: "application/json",
+      accept: accept,
       token: token,
       body: body
     )
@@ -104,5 +105,25 @@ final class NetworkClient: Sendable {
     } catch {
       throw HTTPError.decodingError(error)
     }
+  }
+
+  func fetchJwt(
+    _ url: URL,
+    method: HTTPMethod = .get,
+    contentType: String? = "application/jwt",
+    accept: String? = "application/jwt",
+    token: String? = nil,
+    body: Data? = nil
+  ) async throws -> String {
+    let data = try await sendRequest(
+      url,
+      method: method,
+      contentType: contentType,
+      accept: accept,
+      token: token,
+      body: body
+    )
+
+    return String(decoding: data, as: UTF8.self)
   }
 }

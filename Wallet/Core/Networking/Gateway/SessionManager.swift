@@ -11,7 +11,7 @@ final actor SessionManager {
   let accountIDProvider: AccountIDProvider
 
   init(baseUrl: URL? = nil, accountIDProvider: AccountIDProvider) {
-    let url = baseUrl ?? #URL("https://wallet.sandbox.digg.se/api")
+    let url = baseUrl ?? AppConfig.apiBaseURL
     client = Client(
       serverURL: url,
       transport: URLSessionTransport(),
@@ -32,7 +32,7 @@ final actor SessionManager {
   }
 
   private func initSession() async throws -> String {
-    let deviceKey = try KeychainService.shared.getOrCreateKey(withTag: .deviceKey)
+    let deviceKey = try KeychainService.getOrCreateKey(withTag: .deviceKey)
 
     guard let keyId = try? deviceKey.toECPublicKey().parameters["kid"] else {
       throw SessionError.noKeyId
@@ -64,7 +64,12 @@ final actor SessionManager {
   }
 
   private func validateChallenge(key: SecKey, keyId: String, nonce: String) async throws -> String {
-    let jwt = try JWTUtil.createJWT(with: key, headers: ["kid": keyId], payload: ["nonce": nonce])
+    struct SessionPayload: Codable {
+      let nonce: String
+    }
+
+    let payload = SessionPayload(nonce: nonce)
+    let jwt = try JWTUtil().signJWT(with: key, payload: payload, headers: ["kid": keyId])
     let input = Operations.ValidateChallenge.Input(body: .json(.init(signedJwt: jwt)))
     let response = try await client.validateChallenge(input)
 

@@ -41,6 +41,7 @@ struct ToastView: View {
             .frame(width: 3)
             .frame(maxWidth: .infinity, alignment: .leading)
         )
+        .allowsHitTesting(false)
     }
     .accessibilityElement(children: .combine)
     .padding(.horizontal, 32)

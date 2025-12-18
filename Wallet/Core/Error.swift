@@ -6,3 +6,12 @@ struct AppError: LocalizedError {
     return reason
   }
 }
+
+struct ErrorEvent: Identifiable, Equatable {
+  let id = UUID()
+  let message: String
+
+  init(_ message: String) {
+    self.message = message
+  }
+}

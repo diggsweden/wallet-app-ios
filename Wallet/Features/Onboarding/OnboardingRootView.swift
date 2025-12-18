@@ -3,20 +3,22 @@ import SwiftUI
 import WalletMacrosClient
 
 struct OnboardingRootView: View {
-  let userSnapshot: UserSnapshot
+  private let gatewayAPIClient: GatewayAPI
+  private let userSnapshot: UserSnapshot
 
-  @Environment(\.gatewayAPIClient) private var gatewayAPIClient
   @Environment(\.theme) private var theme
   @Environment(\.orientation) private var orientation
   @Environment(\.openURL) private var openURL
   @State private var viewModel: OnboardingViewModel
 
   init(
+    gatewayAPIClient: GatewayAPI,
     userSnapshot: UserSnapshot,
     setKeyAttestation: @escaping (String) async -> Void,
     signIn: @escaping (String) async -> Void,
     onReset: @escaping () async -> Void
   ) {
+    self.gatewayAPIClient = gatewayAPIClient
     self.userSnapshot = userSnapshot
     _viewModel = State(
       wrappedValue: .init(
@@ -199,8 +201,7 @@ struct OnboardingRootView: View {
         ) { jwt in
           Task {
             await viewModel.addKeyAttestation(jwt)
-            let url = #URL("https://wallet.sandbox.digg.se/prepare-credential-offer")
-            openURL(url)
+            openURL(AppConfig.pidIssuerURL)
           }
         }
         .onChange(of: userSnapshot.credential) {
@@ -237,6 +238,7 @@ struct OnboardingRootView: View {
 
 #Preview {
   OnboardingRootView(
+    gatewayAPIClient: GatewayAPIMock(),
     userSnapshot: UserSnapshot(
       deviceId: "",
       accountId: nil,

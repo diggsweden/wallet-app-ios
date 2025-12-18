@@ -6,6 +6,8 @@ struct IssuanceView: View {
   @Environment(Router.self) private var router
   @Environment(\.modelContext) private var modelContext
   @Environment(\.theme) private var theme
+  @Environment(\.authPresentationAnchor) private var anchor
+  @Environment(ToastViewModel.self) private var toastViewModel
 
   init(
     credentialOfferUri: String,
@@ -25,17 +27,17 @@ struct IssuanceView: View {
     VStack {
       ScrollView {
         VStack(alignment: .leading, spacing: 10) {
-          if let metadata = viewModel.issuerMetadata {
+          if case let .issuerFetched(offer) = viewModel.state,
+            let issuerDisplayData = offer.credentialIssuerMetadata.display.first
+          {
             CardView {
               VStack(alignment: .leading, spacing: 10) {
-                if let display = metadata.display.first {
-                  AsyncImage(url: display.logo?.uri)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.bottom, 10)
+                AsyncImage(url: issuerDisplayData.logo?.uri)
+                  .frame(maxWidth: .infinity, alignment: .center)
+                  .padding(.bottom, 10)
 
-                  Text("Utfärdare:").font(.headline)
-                  Text(display.name ?? "Inget namn")
-                }
+                Text("Utfärdare:").font(.headline)
+                Text(issuerDisplayData.name ?? "Inget namn")
               }
               .frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -70,30 +72,17 @@ struct IssuanceView: View {
           }
 
         case .issuerFetched(let offer):
-          HStack {
-            TextField("Ange kod", text: $viewModel.authorizationCode)
-              .textFieldStyle(.roundedBorder)
-              .onSubmit {
-                Task {
-                  await viewModel.authorize(
-                    with: viewModel.authorizationCode,
-                    credentialOffer: offer
-                  )
-                }
+          PrimaryButton("Logga in", icon: "arrow.right.circle.fill") {
+            Task {
+              guard let anchor else {
+                return
               }
-            Button {
-              Task {
-                await viewModel.authorize(with: viewModel.authorizationCode, credentialOffer: offer)
-              }
-            } label: {
-              Image(systemName: "arrow.right.circle.fill")
-                .font(.title2)
-                .foregroundColor(viewModel.authorizationCode.isEmpty ? .gray : theme.colors.primary)
+              await viewModel.authorize(
+                credentialOffer: offer,
+                authPresentationAnchor: anchor
+              )
             }
-            .disabled(viewModel.authorizationCode.isEmpty)
-            .padding(.leading, 4)
           }
-          .padding(24)
 
         case .authorized(let request):
           PrimaryButton("Hämta ID-handling") {
@@ -114,6 +103,12 @@ struct IssuanceView: View {
     .navigationTitle(Text("Hämta attributsintyg"))
     .task {
       await viewModel.fetchIssuer()
+    }
+    .onChange(of: viewModel.error) { _, error in
+      guard let error else {
+        return
+      }
+      toastViewModel.showError(error.message)
     }
   }
 }
