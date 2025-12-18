@@ -6,19 +6,20 @@
   },
   "servers": [
     {
-      "url": "/api"
+      "url": ""
     }
   ],
   "security": [
     {
-      "ApiKeyScheme": []
+      "ApiKeyScheme": [],
+      "SessionIdScheme": []
     }
   ],
   "paths": {
     "/wua": {
       "post": {
         "tags": [
-          "wua-controller"
+          "wua-controller-v-1"
         ],
         "operationId": "createWua",
         "requestBody": {
@@ -41,22 +42,13 @@
           "required": true
         },
         "responses": {
+          "401": {
+            "description": "Not authorized",
+            "content": {}
+          },
           "500": {
             "description": "Could not create Wua",
             "content": {}
-          },
-          "201": {
-            "description": "Wua created",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/WuaDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Not authorized"
           },
           "400": {
             "description": "Bad input",
@@ -67,6 +59,136 @@
                 }
               }
             }
+          },
+          "201": {
+            "description": "Wua created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WuaDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wua/v2": {
+      "post": {
+        "tags": [
+          "wua-controller"
+        ],
+        "operationId": "createWua_1",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWuaDto"
+              },
+              "example": {
+                "walletId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                "jwk": {
+                  "kty": "EC",
+                  "crv": "P-256",
+                  "x": "1fH0eqXgMMwCIafNaDc1axdCjLlw7zpTLvLWjpPvhEc",
+                  "y": "5qOejJs7BK-jLingaUTEhBrzP_YPyHfptS5yWE98I40"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "401": {
+            "description": "Not authorized",
+            "content": {}
+          },
+          "500": {
+            "description": "Could not create Wua",
+            "content": {}
+          },
+          "400": {
+            "description": "Bad input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestDto"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Wua created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WuaDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/public/auth/session/response": {
+      "post": {
+        "tags": [
+          "auth-controller"
+        ],
+        "operationId": "validateChallenge",
+        "requestBody": {
+          "description": "Challenge response",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthChallengeResponseDto"
+              },
+              "example": {
+                "signedJwt": "insert.signed.jwt"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Unknown error",
+            "content": {}
+          },
+          "400": {
+            "description": "Bad input, session not created",
+            "headers": {
+              "session": {
+                "description": "Session ID",
+                "style": "simple",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestDto"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Session created",
+            "headers": {
+              "session": {
+                "required": true,
+                "description": "Session ID",
+                "style": "simple",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
           }
         }
       }
@@ -89,10 +211,23 @@
           }
         ],
         "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
           "500": {
             "description": "Unknown error",
             "content": {
               "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "*/*": {
                 "schema": {
                   "$ref": "#/components/schemas/BadRequestDto"
                 }
@@ -132,9 +267,22 @@
           "required": true
         },
         "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
           "500": {
             "description": "Could not create attestation, server error",
             "content": {}
+          },
+          "400": {
+            "description": "Bad input, unable to create attestation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestDto"
+                }
+              }
+            }
           },
           "201": {
             "description": "Attestation created",
@@ -145,13 +293,125 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/accounts/v1": {
+      "post": {
+        "tags": [
+          "account-controller"
+        ],
+        "operationId": "createAccount",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAccountRequestDto"
+              },
+              "example": {
+                "personalIdentityNumber": "01234",
+                "emailAdress": "digg@example.com",
+                "telephoneNumber": "070 007",
+                "publicKey": {
+                  "kty": "EC",
+                  "crv": "P-256",
+                  "x": "1fH0eqXgMMwCIafNaDc1axdCjLlw7zpTLvLWjpPvhEc",
+                  "y": "5qOejJs7BK-jLingaUTEhBrzP_YPyHfptS5yWE98I40",
+                  "kid": "myKey"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Could not create account, server error",
+            "content": {}
           },
           "400": {
-            "description": "Bad input, unable to create attestation",
+            "description": "Bad input, unable to create account",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/BadRequestDto"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Account created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateAccountResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/public/auth/session/challenge": {
+      "get": {
+        "tags": [
+          "auth-controller"
+        ],
+        "operationId": "initChallenge",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "keyId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Unknown error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestDto"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Challenge issued",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthChallengeDto"
                 }
               }
             }
@@ -177,10 +437,23 @@
           }
         ],
         "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
           "500": {
             "description": "Unknown error",
             "content": {
               "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "*/*": {
                 "schema": {
                   "$ref": "#/components/schemas/BadRequestDto"
                 }
@@ -287,6 +560,18 @@
           }
         }
       },
+      "AuthChallengeResponseDto": {
+        "type": "object",
+        "properties": {
+          "signedJwt": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "signedJwt"
+        ]
+      },
       "CreateAttestationDto": {
         "type": "object",
         "properties": {
@@ -329,6 +614,47 @@
           }
         }
       },
+      "CreateAccountRequestDto": {
+        "type": "object",
+        "properties": {
+          "personalIdentityNumber": {
+            "type": "string",
+            "minLength": 1
+          },
+          "emailAdress": {
+            "type": "string",
+            "minLength": 1
+          },
+          "telephoneNumber": {
+            "type": "string"
+          },
+          "publicKey": {
+            "$ref": "#/components/schemas/JwkDto"
+          }
+        },
+        "required": [
+          "emailAdress",
+          "personalIdentityNumber",
+          "publicKey"
+        ]
+      },
+      "CreateAccountResponseDto": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "AuthChallengeDto": {
+        "type": "object",
+        "properties": {
+          "nonce": {
+            "type": "string"
+          }
+        }
+      },
       "ClientAttestationListDto": {
         "type": "object",
         "properties": {
@@ -349,6 +675,11 @@
       "ApiKeyScheme": {
         "type": "apiKey",
         "name": "X-API-KEY",
+        "in": "header"
+      },
+      "SessionIdScheme": {
+        "type": "apiKey",
+        "name": "SESSION",
         "in": "header"
       }
     }

@@ -2,7 +2,7 @@ import Foundation
 import OpenID4VCI
 import SwiftData
 
-struct Disclosure: Codable, Identifiable, Hashable {
+struct Disclosure: Codable, Identifiable, Hashable, Sendable {
   let base64: String
   let displayName: String
   let value: String
@@ -10,13 +10,13 @@ struct Disclosure: Codable, Identifiable, Hashable {
   var id: String { base64 }
 }
 
-struct IssuerDisplay: Codable, Hashable {
+struct IssuerDisplay: Codable, Hashable, Sendable {
   let name: String
   let info: String?
   let imageUrl: URL?
 }
 
-struct Credential: Codable, Hashable {
+struct Credential: Codable, Hashable, Sendable {
   let issuer: IssuerDisplay
   let sdJwt: String
   let disclosures: [String: Disclosure]
