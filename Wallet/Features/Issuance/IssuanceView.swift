@@ -79,41 +79,18 @@ struct IssuanceView: View {
           }
 
         case .issuerFetched(let offer):
-          HStack {
-            TextField("Enter authorization code", text: $viewModel.authorizationCode)
-              .textFieldStyle(.roundedBorder)
-              .onSubmit {
-                Task {
-                  guard let anchor else {
-                    return
-                  }
-                  await viewModel.authorize(
-                    with: viewModel.authorizationCode,
-                    credentialOffer: offer,
-                    anchor: anchor
-                  )
-                }
+          PrimaryButton("Logga in", icon: "arrow.right.circle.fill") {
+            Task {
+              guard let anchor else {
+                return
               }
-            Button {
-              Task {
-                guard let anchor else {
-                  return
-                }
-                await viewModel.authorize(
-                  with: viewModel.authorizationCode,
-                  credentialOffer: offer,
-                  anchor: anchor
-                )
-              }
-            } label: {
-              Image(systemName: "arrow.right.circle.fill")
-                .font(.title2)
-                .foregroundColor(viewModel.authorizationCode.isEmpty ? .gray : theme.colors.primary)
+              await viewModel.authorize(
+                with: viewModel.authorizationCode,
+                credentialOffer: offer,
+                anchor: anchor
+              )
             }
-            .disabled(viewModel.authorizationCode.isEmpty)
-            .padding(.leading, 4)
           }
-          .padding(24)
 
         case .authorized(let request):
           PrimaryButton("Hämta ID-handling") {

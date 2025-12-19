@@ -64,7 +64,12 @@ final actor SessionManager {
   }
 
   private func validateChallenge(key: SecKey, keyId: String, nonce: String) async throws -> String {
-    let jwt = try JWTUtil.createJWT(with: key, headers: ["kid": keyId], payload: ["nonce": nonce])
+    struct SessionPayload: Codable {
+      let nonce: String
+    }
+
+    let payload = SessionPayload(nonce: nonce)
+    let jwt = try JWTUtil().signJWT(with: key, payload: payload, headers: ["kid": keyId])
     let input = Operations.ValidateChallenge.Input(body: .json(.init(signedJwt: jwt)))
     let response = try await client.validateChallenge(input)
 

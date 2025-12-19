@@ -27,6 +27,7 @@ class IssuanceViewModel {
   private var key: SecKey?
   private let openId4VciUtil = OpenID4VCIUtil()
   private var oauth = OAuthCoordinator()
+  private let jwtUtil = JWTUtil()
 
   init(credentialOfferUri: String, wua: String) {
     self.credentialOfferUri = credentialOfferUri
@@ -119,46 +120,46 @@ class IssuanceViewModel {
           ""
         }
 
-      let jwtProof = try JWTUtil.createJWT(
+      let jwtProof = try jwtUtil.signJWT(
         with: key,
+        payload: JWTProofPayload(
+          nonce: nonce,
+          aud: await issuer.issuerMetadata.credentialIssuerIdentifier.url.absoluteString
+        ),
         headers: [
           "typ": "openid4vci-proof+jwt"
             //          "key_attestation": wua,
         ],
-        payload: [
-          "nonce": nonce,
-          "aud": await issuer.issuerMetadata.credentialIssuerIdentifier.url.absoluteString,
-        ],
       )
+
       let credentialRequest = CredentialRequest(
         credentialConfigurationId: configId.value,
+        credentialResponseEncryption: CredentialResponseEncryptionDTO(
+          jwk: try key.toECPublicKey(),
+          enc: "A128GCM"
+        ),
         proofs: JWTProofType(jwt: [jwtProof])
       )
 
-      let test: [String: Any] = [
-        "proofs": ["jwt": [jwtProof]],
-        "credential_configuration_id": configId.value,
-        "credential_response_encryption": [
-          "jwk": try key.toECPublicKey().toDictionary(),
-          "enc": "A128GCM",
-        ],
-      ]
-
       var credential: String = ""
       if case let .required(jwks, encryptionMethods, compressionMethods) =
-        await issuer.issuerMetadata.credentialRequestEncryption
+        await issuer.issuerMetadata.credentialRequestEncryption, let jwk = jwks.first
       {
-        //swift-format-ignore
-        let jwk = jwks.first!
-        let t = try JWTUtil.createJWE(
-          payload: test,
+        let jwe = try jwtUtil.encryptJWE(
+          payload: credentialRequest,
           recipientKey: jwk
         )
-        credential = try await openId4VciUtil.fetchCredential(
+        let encryptedResponse = try await openId4VciUtil.fetchCredential(
           url: issuer.issuerMetadata.credentialEndpoint.url,
           token: request.accessToken.accessToken,
-          jwe: t
+          jwe: jwe
         )
+
+        let response: CredentialResponse = try jwtUtil.decryptJWE(
+          encryptedResponse,
+          recipientKey: key
+        )
+        credential = response.credentials.first?.credential ?? ""
       } else {
         credential = try await openId4VciUtil.fetchCredential(
           url: issuer.issuerMetadata.credentialEndpoint.url,

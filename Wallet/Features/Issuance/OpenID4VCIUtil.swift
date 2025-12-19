@@ -1,36 +1,5 @@
 import Foundation
 
-struct CredentialRequest: Codable {
-  let credentialConfigurationId: String
-  let proofs: JWTProofType
-}
-
-struct CredentialRequestOld: Codable {
-  let credentialConfigurationId: String
-  let proof: ProofOld
-}
-
-struct ProofOld: Codable {
-  let jwt: String
-  let proofType: String
-}
-
-struct JWTProofType: Codable {
-  let jwt: [String]
-}
-
-struct NonceResponse: Codable {
-  let cNonce: String
-}
-
-struct CredentialResponse: Codable {
-  let credentials: [CredentialBody]
-}
-
-struct CredentialBody: Codable {
-  let credential: String
-}
-
 struct OpenID4VCIUtil {
   private let encoder: JSONEncoder = {
     let encoder = JSONEncoder()
@@ -61,18 +30,14 @@ struct OpenID4VCIUtil {
     token: String,
     jwe: String,
   ) async throws -> String {
-    let response: CredentialResponse = try await NetworkClient.shared.fetch(
+    return try await NetworkClient.shared.fetchJwt(
       url,
       method: .post,
       contentType: "application/jwt",
+      accept: "application/jwt",
       token: token,
       body: jwe.utf8Data
     )
-    guard let credential = response.credentials.first else {
-      throw AppError(reason: "Could not fetch credential")
-    }
-
-    return credential.credential
   }
 
   func fetchNonce(
