@@ -10,11 +10,16 @@ struct AuthAnchorReader: UIViewRepresentable {
 
   func makeUIView(context: Context) -> UIView {
     let v = UIView()
-    DispatchQueue.main.async { onResolve(v.window) }
+
+    DispatchQueue.main.async {
+      onResolve(v.window)
+    }
     return v
   }
 
   func updateUIView(_ uiView: UIView, context: Context) {
-    DispatchQueue.main.async { onResolve(uiView.window) }
+    DispatchQueue.main.async {
+      onResolve(uiView.window)
+    }
   }
 }

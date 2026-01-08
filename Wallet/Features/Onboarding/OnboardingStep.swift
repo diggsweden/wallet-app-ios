@@ -5,7 +5,7 @@ enum OnboardingStep: CaseIterable {
 
   func next() -> OnboardingStep {
     return switch self {
-      case .intro: .login
+      case .intro: .terms
       case .login: .terms
       case .terms: .phoneNumber
       case .phoneNumber: .verifyPhone

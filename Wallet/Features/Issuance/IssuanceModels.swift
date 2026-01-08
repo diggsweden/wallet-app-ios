@@ -52,6 +52,6 @@ struct PidClaim: Identifiable {
 }
 
 struct JWTProofPayload: Codable {
-  let nonce: String
+  let nonce: String?
   let aud: String
 }

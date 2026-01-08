@@ -12,6 +12,10 @@ final class UserViewModel {
   var user: UserStatus = .loading
   private let userStore: UserStore
 
+  init(userStore: UserStore) {
+    self.userStore = userStore
+  }
+
   var isEnrolled: Bool {
     guard case let .ready(user) = user else {
       return false
@@ -19,10 +23,6 @@ final class UserViewModel {
     return user.accountId != nil
       && user.walletUnitAttestation != nil
       && user.credential != nil
-  }
-
-  init(userStore: UserStore) {
-    self.userStore = userStore
   }
 
   func initUser() async {
@@ -50,7 +50,7 @@ final class UserViewModel {
   func signOut() async {
     do {
       try await userStore.deleteAll()
-      try CryptoKeyStore.shared.deleteAll()
+      try KeychainService.deleteAll()
       let newuser = try await userStore.getOrCreate()
       user = .ready(newuser)
     } catch {

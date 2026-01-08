@@ -9,7 +9,7 @@ final class OpenID4VPService {
   }
 
   init() throws {
-    let walletKey = try CryptoKeyStore.shared.getOrCreateKey(withTag: .deviceKey)
+    let walletKey = try KeychainService.getOrCreateKey(withTag: .deviceKey)
 
     walletConfig = SiopOpenId4VPConfiguration(
       subjectSyntaxTypesSupported: [.jwkThumbprint],

@@ -48,7 +48,7 @@ class PresentationViewModel {
 
   func sendDisclosures() async throws {
     guard
-      let key = try? CryptoKeyStore.shared.getOrCreateKey(withTag: .walletKey),
+      let key = try? KeychainService.getOrCreateKey(withTag: .walletKey),
       case let .directPostJWT(responseURI: responseUrl) = data.responseMode,
       let credential
     else {

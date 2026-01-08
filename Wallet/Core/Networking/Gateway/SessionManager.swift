@@ -32,7 +32,7 @@ final actor SessionManager {
   }
 
   private func initSession() async throws -> String {
-    let deviceKey = try CryptoKeyStore.shared.getOrCreateKey(withTag: .deviceKey)
+    let deviceKey = try KeychainService.getOrCreateKey(withTag: .deviceKey)
 
     guard let keyId = try? deviceKey.toECPublicKey().parameters["kid"] else {
       throw SessionError.noKeyId

@@ -21,11 +21,13 @@ struct WalletApp: App {
 
   var body: some Scene {
     WindowGroup {
-      AppRootView(userStore: userStore)
-        .themed
-        .withOrientation
-        .withToast
-        .environment(\.gatewayAPIClient, gatewayAPIClient)
+      AppRootView(
+        userStore: userStore,
+        gatewayAPIClient: gatewayAPIClient,
+      )
+      .themed
+      .withOrientation
+      .withToast
     }
   }
 }

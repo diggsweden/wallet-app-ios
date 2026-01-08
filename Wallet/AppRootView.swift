@@ -3,13 +3,15 @@ import SwiftData
 import SwiftUI
 
 struct AppRootView: View {
+  private let gatewayAPIClient: GatewayAPI
   @State private var userViewModel: UserViewModel
   @State private var router = Router()
   @Environment(\.theme) private var theme
   @State private var anchor: ASPresentationAnchor?
 
-  init(userStore: UserStore) {
+  init(userStore: UserStore, gatewayAPIClient: GatewayAPI) {
     _userViewModel = State(wrappedValue: .init(userStore: userStore))
+    self.gatewayAPIClient = gatewayAPIClient
   }
 
   var body: some View {

@@ -85,9 +85,8 @@ struct IssuanceView: View {
                 return
               }
               await viewModel.authorize(
-                with: viewModel.authorizationCode,
                 credentialOffer: offer,
-                anchor: anchor
+                authPresentationAnchor: anchor
               )
             }
           }

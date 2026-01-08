@@ -36,7 +36,7 @@ class IssuanceViewModel {
 
   func fetchIssuer() async {
     do {
-      key = try CryptoKeyStore.shared.getOrCreateKey(withTag: .walletKey)
+      key = try KeychainService.getOrCreateKey(withTag: .walletKey)
       let credentialOffer = try await fetchCredentialOffer(with: credentialOfferUri)
       claimsMetadata = getClaimsMetadata(from: credentialOffer)
       issuerMetadata = credentialOffer.credentialIssuerMetadata
@@ -48,15 +48,12 @@ class IssuanceViewModel {
   }
 
   func authorize(
-    with input: String,
     credentialOffer: CredentialOffer,
-    anchor: ASPresentationAnchor
+    authPresentationAnchor: ASPresentationAnchor
   ) async {
     do {
-      guard
-        let issuer
-      else {
-        throw AppError(reason: "Missing pre-auth code")
+      guard let issuer else {
+        throw AppError(reason: "No issuer found")
       }
 
       let prepared = try await issuer.prepareAuthorizationRequest(credentialOffer: credentialOffer)
@@ -66,15 +63,16 @@ class IssuanceViewModel {
         return
       }
 
-      let url = try await oauth.start(
+      let oAuthCallback = try await oauth.start(
         url: data.authorizationCodeURL.url,
         callbackScheme: "wallet-app",
-        anchor: anchor
+        anchor: authPresentationAnchor
       )
-      print(url)
-      guard let code = url.queryItemValue(for: "code") else {
+
+      guard let code = oAuthCallback.queryItemValue(for: "code") else {
         return
       }
+
       let requestWithAuthCode =
         try await issuer.handleAuthorizationCode(
           request: prepared,
@@ -84,17 +82,6 @@ class IssuanceViewModel {
 
       let res = try await issuer.authorizeWithAuthorizationCode(request: requestWithAuthCode).get()
 
-      //      let result = try await issuer.authorizeWithPreAuthorizationCode(
-      //        credentialOffer: credentialOffer,
-      //        authorizationCode: IssuanceAuthorization(
-      //          preAuthorizationCode: preAuthCodeString,
-      //          txCode: txCode
-      //        ),
-      //        client: .init(public: "wallet-dev"),
-      //        transactionCode: input
-      //      )
-      //
-      //      let authorizedRequest = try result.get()
       state = .authorized(request: res)
     } catch {
       print(error)
@@ -104,9 +91,7 @@ class IssuanceViewModel {
   func fetchCredential(_ request: AuthorizedRequest) async {
     guard
       let issuer,
-      let configId = await issuer.issuerMetadata.credentialsSupported.keys.first(where: {
-        $0.value.contains("jwt") && $0.value.contains("pid")
-      }),
+      case let (cred, .sdJwtVc(config))? = await issuer.issuerMetadata.credentialsSupported.first,
       let key
     else {
       return
@@ -133,7 +118,7 @@ class IssuanceViewModel {
       )
 
       let credentialRequest = CredentialRequest(
-        credentialConfigurationId: configId.value,
+        credentialConfigurationId: cred.value,
         credentialResponseEncryption: CredentialResponseEncryptionDTO(
           jwk: try key.toECPublicKey(),
           enc: "A128GCM"
@@ -168,12 +153,6 @@ class IssuanceViewModel {
         )
       }
 
-      //      let credential = try await openId4VciUtil.fetchCredential(
-      //        url: issuer.issuerMetadata.credentialEndpoint.url,
-      //        token: request.accessToken.accessToken,
-      //        credentialRequest: credentialRequest
-      //      )
-
       let display = await issuer.issuerMetadata.display.first
       let parsedCredential = try parseCredential(credential, issuer: display)
 
@@ -181,15 +160,6 @@ class IssuanceViewModel {
     } catch {
       print("Error fetching credential: \(error)")
     }
-  }
-
-  private func createBindingKey(from secKey: SecKey) throws -> BindingKey {
-    return .jwk(
-      algorithm: JWSAlgorithm(.ES256),
-      jwk: try secKey.toECPublicKey(),
-      privateKey: .secKey(secKey),
-      issuer: "wallet-dev"
-    )
   }
 
   private func parseCredential(_ credential: String, issuer: Display?) throws -> Credential {
