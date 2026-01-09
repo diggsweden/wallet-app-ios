@@ -40,7 +40,7 @@ struct PinView: View {
           )
         }
       )
-
+      .padding(.bottom, 10)
       PrimaryButton(buttonText, maxWidth: gridWidth) {
         handlePinComplete()
       }
@@ -63,7 +63,7 @@ struct PinView: View {
   }
 
   private struct GridWidthKey: PreferenceKey {
-    static var defaultValue: CGFloat = 0
+    static let defaultValue: CGFloat = 0
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
       value = max(value, nextValue())
     }
@@ -82,7 +82,7 @@ struct PinView: View {
       try onComplete(pin)
       error = nil
     } catch {
-      toastViewModel.showError(error.message ?? "Något gick fel!")
+      toastViewModel.showError(error.message)
       onErrorFeedback.toggle()
       pin = ""
     }
@@ -91,6 +91,7 @@ struct PinView: View {
 
 #Preview {
   PinView { _ in }
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
     .themed
     .withOrientation
     .withToast

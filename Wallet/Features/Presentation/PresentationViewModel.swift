@@ -2,20 +2,18 @@ import CryptoKit
 import Foundation
 import JOSESwift
 import OpenID4VCI
-import SiopOpenID4VP
+import OpenID4VP
 import UIKit
 
 @MainActor
 @Observable
 class PresentationViewModel {
   let data: ResolvedRequestData.VpTokenData
-  let keyTag: UUID
   let credential: Credential?
   var selectedDisclosures: [DisclosureSelection] = []
 
-  init(data: ResolvedRequestData.VpTokenData, keyTag: UUID, credential: Credential?) {
+  init(data: ResolvedRequestData.VpTokenData, credential: Credential?) {
     self.data = data
-    self.keyTag = keyTag
     self.credential = credential
   }
 
@@ -49,8 +47,9 @@ class PresentationViewModel {
 
   func sendDisclosures() async throws {
     guard
-      let key = try? KeychainManager.shared.getOrCreateKey(withTag: keyTag.uuidString),
-      case let .directPostJWT(responseURI: responseUrl) = data.responseMode,
+      let key = try? KeychainService.shared.getOrCreateKey(withTag: .walletKey),
+      // TODO: Support DirectPostJwt
+      case let .directPost(responseURI: responseUrl) = data.responseMode,
       let credential
     else {
       return
@@ -86,19 +85,7 @@ class PresentationViewModel {
   }
 
   private func createRequestBody(with payload: [String: Any]) throws -> String {
-    guard
-      let recipientKey = data.clientMetaData?.jwkSet?.keys.first,
-      let publicKey = try? recipientKey.toEcPublicKey()
-    else {
-      throw AppError(reason: "Could not create JWE")
-    }
-
-    let jwe = try JWTUtil.createJWE(
-      payload: payload,
-      recipientKey: publicKey,
-    )
-
-    return "response=\(jwe)"
+    return payload.map { "\($0.key)=\($0.value)" }.joined(separator: "&")
   }
 
   private func createSubmissionPayload(for vpToken: String) throws -> [String: Any] {
@@ -109,10 +96,12 @@ class PresentationViewModel {
       return ""
     }()
 
+    let vpJsonData = try JSONEncoder().encode([id: [vpToken]])
+
     return [
       "state": data.state ?? "",
       "nonce": data.nonce,
-      "vp_token": [id: [vpToken]],
+      "vp_token": String(decoding: vpJsonData, as: UTF8.self),
     ]
   }
 

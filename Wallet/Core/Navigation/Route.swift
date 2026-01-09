@@ -1,5 +1,5 @@
 import Foundation
-import SiopOpenID4VP
+import OpenID4VP
 
 enum Route: Hashable {
   case presentation(vpTokenData: ResolvedRequestData.VpTokenData)

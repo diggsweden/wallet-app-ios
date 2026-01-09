@@ -9,7 +9,6 @@ struct IssuanceView: View {
 
   init(
     credentialOfferUri: String,
-    keyTag: UUID,
     walletUnitAttestation: String?,
     onSave: @escaping (Credential) async -> Void
   ) {
@@ -17,7 +16,6 @@ struct IssuanceView: View {
     _viewModel = .init(
       wrappedValue: .init(
         credentialOfferUri: credentialOfferUri,
-        keyTag: keyTag,
         wua: walletUnitAttestation ?? ""
       )
     )
@@ -35,17 +33,9 @@ struct IssuanceView: View {
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.bottom, 10)
 
-                  Text("Issuer:").font(.headline)
-                  Text(display.name ?? "No name")
-
-                  Text("Description:").font(.headline)
-                  Text(display.description ?? "No description")
+                  Text("Utfärdare:").font(.headline)
+                  Text(display.name ?? "Inget namn")
                 }
-
-                Text("Credential endpoint").font(.headline)
-                Text(
-                  metadata.credentialEndpoint.url.absoluteString
-                )
               }
               .frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -54,7 +44,7 @@ struct IssuanceView: View {
           if case let .credentialFetched(credential) = viewModel.state {
             CardView {
               VStack(alignment: .leading, spacing: 10) {
-                Text("Disclosures:").font(.headline)
+                Text("Attribut:").font(.headline)
                 ForEach(Array(credential.disclosures.values)) { disclosure in
                   DisclosureView(
                     title: disclosure.displayName,
@@ -81,7 +71,7 @@ struct IssuanceView: View {
 
         case .issuerFetched(let offer):
           HStack {
-            TextField("Enter authorization code", text: $viewModel.authorizationCode)
+            TextField("Ange kod", text: $viewModel.authorizationCode)
               .textFieldStyle(.roundedBorder)
               .onSubmit {
                 Task {
@@ -113,7 +103,7 @@ struct IssuanceView: View {
           }
 
         case .credentialFetched(let credential):
-          PrimaryButton("Spara \(credential.disclosures.count) attribut") {
+          PrimaryButton("Spara") {
             Task {
               await onSave(credential)
             }
@@ -121,7 +111,7 @@ struct IssuanceView: View {
           }
       }
     }
-    .navigationTitle(Text("Issue PID"))
+    .navigationTitle(Text("Hämta attributsintyg"))
     .task {
       await viewModel.fetchIssuer()
     }

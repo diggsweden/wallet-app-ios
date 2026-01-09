@@ -39,10 +39,10 @@ struct CredentialCard: View {
           Text(credential.issuer.name).bold()
         }
 
-        Text("Identity document with \(credential.disclosures.count) disclosures")
+        Text("ID-handling med \(credential.disclosures.count) attribut")
         Spacer()
         Text(credential.issuedAt, format: .dateTime.day().month().year())
-          .font(theme.fonts.caption)
+          .textStyle(.caption)
           .frame(maxWidth: .infinity, alignment: .trailing)
       }
       .padding()
@@ -66,7 +66,7 @@ struct CredentialCard: View {
           .resizable()
           .frame(width: 44, height: 44)
           .foregroundStyle(theme.colors.onSurface)
-        Text("Add new credential")
+        Text("Lägg till attributsintyg")
       }
       .frame(maxWidth: .infinity, maxHeight: .infinity)
       .contentShape(Rectangle())
