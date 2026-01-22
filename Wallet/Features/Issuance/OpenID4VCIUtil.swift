@@ -1,37 +1,13 @@
 import Foundation
+import JOSESwift
 
-struct CredentialRequest: Codable {
-  let credentialConfigurationId: String
-  let proofs: JWTProofType
-}
-
-struct CredentialRequestOld: Codable {
-  let credentialConfigurationId: String
-  let proof: ProofOld
-}
-
-struct ProofOld: Codable {
-  let jwt: String
-  let proofType: String
-}
-
-struct JWTProofType: Codable {
-  let jwt: [String]
-}
-
-struct NonceResponse: Codable {
-  let cNonce: String
-}
-
-struct CredentialResponse: Codable {
-  let credentials: [CredentialBody]
-}
-
-struct CredentialBody: Codable {
-  let credential: String
+struct CryptoSpec {
+  let key: JWK
+  let enc: ContentEncryptionAlgorithm
 }
 
 struct OpenID4VCIUtil {
+  private let jwtUtil = JWTUtil()
   private let encoder: JSONEncoder = {
     let encoder = JSONEncoder()
     encoder.keyEncodingStrategy = .convertToSnakeCase
@@ -41,7 +17,7 @@ struct OpenID4VCIUtil {
   func fetchCredential(
     url: URL,
     token: String,
-    credentialRequest: CredentialRequestOld
+    credentialRequest: CredentialRequest
   ) async throws -> String {
     let response: CredentialResponse = try await NetworkClient.shared.fetch(
       url,
@@ -49,6 +25,41 @@ struct OpenID4VCIUtil {
       token: token,
       body: try encoder.encode(credentialRequest)
     )
+    guard let credential = response.credentials.first else {
+      throw AppError(reason: "Could not fetch credential")
+    }
+
+    return credential.credential
+  }
+
+  func fetchCredential(
+    url: URL,
+    token: String,
+    credentialRequest: CredentialRequest,
+    requestEncryption: CryptoSpec,
+    responseDecryption: CryptoSpec,
+  ) async throws -> String {
+    let jwe = try jwtUtil.encryptJWE(
+      payload: credentialRequest,
+      recipientKey: requestEncryption.key,
+      enc: requestEncryption.enc
+    )
+
+    let encryptedResponse = try await NetworkClient.shared.fetchJwt(
+      url,
+      method: .post,
+      contentType: "application/jwt",
+      accept: "application/jwt",
+      token: token,
+      body: jwe.utf8Data
+    )
+
+    let response: CredentialResponse = try jwtUtil.decryptJWE(
+      encryptedResponse,
+      decryptionKey: responseDecryption.key,
+      enc: responseDecryption.enc
+    )
+
     guard let credential = response.credentials.first else {
       throw AppError(reason: "Could not fetch credential")
     }

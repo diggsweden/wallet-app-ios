@@ -4,83 +4,97 @@ import JOSESwift
 import OpenID4VP
 
 struct JWTUtil {
-  static private func createPayload(initial payload: [String: Any]) throws -> Payload {
-    var payload = payload
-    for (key, value) in payload {
-      if let dataValue = value as? Data,
-        let jsonObject = try? JSONSerialization.jsonObject(with: dataValue, options: [])
-      {
-        payload[key] = jsonObject
-      }
+  private let ttlSeconds: Int = 600
+  private let jsonEncoder: JSONEncoder = {
+    let decoder = JSONEncoder()
+    decoder.keyEncodingStrategy = .convertToSnakeCase
+    return decoder
+  }()
+  private let jsonDecoder: JSONDecoder = {
+    let decoder = JSONDecoder()
+    decoder.keyDecodingStrategy = .convertFromSnakeCase
+    return decoder
+  }()
+
+  func signJWT<T: Codable>(
+    with key: SecKey,
+    payload: T,
+    headers: [String: Any] = [:],
+    includeJWK: Bool = true
+  ) throws -> String {
+    let now = Int(Date().timeIntervalSince1970)
+    let defaults = DefaultJWTClaims(iat: now, nbf: now, exp: now + ttlSeconds)
+    let claims = JWTClaims(defaults: defaults, payload: payload)
+    let payloadData = try jsonEncoder.encode(claims)
+    let josePayload = Payload(payloadData)
+    let alg = SignatureAlgorithm.ES256
+
+    var headerParams: [String: Any] = ["alg": alg.rawValue]
+    headers.forEach {
+      headerParams[$0.key] = $0.value
     }
 
-    let payloadData = try JSONSerialization.data(withJSONObject: payload)
-    return Payload(payloadData)
-  }
-
-  static func createJWT(
-    with key: SecKey,
-    headers: [String: Any] = [:],
-    payload: [String: Any],
-  ) throws -> String {
-    let jwk = try key.toECPublicKey()
-
-    let headerParams = [
-      "alg": SignatureAlgorithm.ES256.rawValue
-    ]
-    .merging(headers) { (_, new) in new }
-
     var header = try JWSHeader(parameters: headerParams)
-    header.jwkTyped = jwk
 
-    guard let signer = Signer(signatureAlgorithm: .ES256, key: key) else {
+    if includeJWK {
+      header.jwkTyped = try key.toECPublicKey(alg: alg.rawValue)
+    }
+
+    guard let signer = Signer(signatureAlgorithm: alg, key: key) else {
       throw JWTError.invalidSigner
     }
 
-    let now = Int(Date().timeIntervalSince1970)
-
-    let payload = [
-      "iat": now,
-      "nbf": now,
-      "exp": now + 600,
-    ]
-    .merging(payload) { (_, new) in new }
-
-    let jws = try JWS(
-      header: header,
-      payload: try createPayload(initial: payload),
-      signer: signer
-    )
-
+    let jws = try JWS(header: header, payload: josePayload, signer: signer)
     return jws.compactSerializedString
   }
 
-  static func createJWE(
-    payload: [String: Any],
-    recipientKey: ECPublicKey
+  func encryptJWE<T: Codable>(
+    payload: T,
+    recipientKey: JWK,
+    alg: KeyManagementAlgorithm = .ECDH_ES,
+    enc: ContentEncryptionAlgorithm = .A128GCM,
   ) throws -> String {
     let header = JWEHeader(
-      keyManagementAlgorithm: .ECDH_ES,
-      contentEncryptionAlgorithm: .A128GCM
+      keyManagementAlgorithm: alg,
+      contentEncryptionAlgorithm: enc
     )
 
-    let encrypter = Encrypter(
-      keyManagementAlgorithm: .ECDH_ES,
-      contentEncryptionAlgorithm: .A128GCM,
-      encryptionKey: recipientKey
-    )
-
-    guard let encrypter = encrypter else {
-      throw JWTError.invalidJWE
+    guard
+      let encrypter = Encrypter(
+        keyManagementAlgorithm: alg,
+        contentEncryptionAlgorithm: enc,
+        encryptionKey: recipientKey
+      )
+    else {
+      throw JWTError.invalidEncrypter
     }
 
-    let jwe = try JWE(
-      header: header,
-      payload: try createPayload(initial: payload),
-      encrypter: encrypter
-    )
-
+    let data = try jsonEncoder.encode(payload)
+    let jwe = try JWE(header: header, payload: Payload(data), encrypter: encrypter)
     return jwe.compactSerializedString
+  }
+
+  func decryptJWE<T: Decodable>(
+    _ compactString: String,
+    decryptionKey: JWK,
+    alg: KeyManagementAlgorithm = .ECDH_ES,
+    enc: ContentEncryptionAlgorithm = .A128GCM,
+  ) throws -> T {
+    let jwe = try JWE(compactSerialization: compactString)
+
+    guard
+      let decrypter = Decrypter(
+        keyManagementAlgorithm: alg,
+        contentEncryptionAlgorithm: enc,
+        decryptionKey: decryptionKey
+      )
+    else {
+      throw JWTError.invalidDecrypter
+    }
+
+    let payload = try jwe.decrypt(using: decrypter)
+    let s = String(decoding: payload.data(), as: UTF8.self)
+    return try jsonDecoder.decode(T.self, from: payload.data())
   }
 
   static func base64UrlDecode(_ base64url: String) -> Data? {

@@ -11,6 +11,7 @@ class PresentationViewModel {
   let data: ResolvedRequestData.VpTokenData
   let credential: Credential?
   var selectedDisclosures: [DisclosureSelection] = []
+  let jwtUtil = JWTUtil()
 
   init(data: ResolvedRequestData.VpTokenData, credential: Credential?) {
     self.data = data
@@ -47,7 +48,7 @@ class PresentationViewModel {
 
   func sendDisclosures() async throws {
     guard
-      let key = try? KeychainService.shared.getOrCreateKey(withTag: .walletKey),
+      let key = try? KeychainService.getOrCreateKey(withTag: .walletKey),
       // TODO: Support DirectPostJwt
       case let .directPost(responseURI: responseUrl) = data.responseMode,
       let credential
@@ -58,14 +59,14 @@ class PresentationViewModel {
     let clientId = data.client.id.originalClientId
 
     guard
-      let vpToken = try? createVpToken(
+      let sdJwt = try? createSdJwt(
         with: key,
         credentialJwt: credential.sdJwt,
         clientId: clientId,
         nonce: data.nonce
       ),
-      let payload = try? createSubmissionPayload(for: vpToken),
-      let body = try? createRequestBody(with: payload)
+      let vpToken = try? createVerifiablePresentationToken(for: sdJwt),
+      let body = try? createRequestBody(with: vpToken)
     else {
       throw AppError(reason: "Failed creating request body")
     }
@@ -84,11 +85,40 @@ class PresentationViewModel {
     await UIApplication.shared.open(redirectUrl)
   }
 
-  private func createRequestBody(with payload: [String: Any]) throws -> String {
-    return payload.map { "\($0.key)=\($0.value)" }.joined(separator: "&")
+  private func createRequestBody(with vpToken: VerifiablePresentationToken) throws -> String {
+    let token = try JSONEncoder().encode(vpToken.vpToken)
+    let payload: [String: String?] = [
+      "state": vpToken.state,
+      "nonce": vpToken.nonce,
+      "vp_token": String(decoding: token, as: UTF8.self),
+    ]
+
+    return
+      payload
+      .compactMapValues { $0 }
+      .map { "\($0.key)=\($0.value)" }
+      .joined(separator: "&")
   }
 
-  private func createSubmissionPayload(for vpToken: String) throws -> [String: Any] {
+  private func createJweResponseBody(with vpToken: VerifiablePresentationToken) throws -> String {
+    guard
+      let recipientKey = data.clientMetaData?.jwkSet?.keys.first,
+      let publicKey = try? recipientKey.toEcPublicKey()
+    else {
+      throw AppError(reason: "Could not create JWE")
+    }
+
+    let jwe = try jwtUtil.encryptJWE(
+      payload: vpToken,
+      recipientKey: publicKey,
+    )
+
+    return "response=\(jwe)"
+  }
+
+  private func createVerifiablePresentationToken(
+    for sdJwt: String
+  ) throws -> VerifiablePresentationToken {
     let id: String = {
       if case let .byDigitalCredentialsQuery(dcql) = data.presentationQuery {
         return dcql.credentials.first?.id.value ?? ""
@@ -96,16 +126,14 @@ class PresentationViewModel {
       return ""
     }()
 
-    let vpJsonData = try JSONEncoder().encode([id: [vpToken]])
-
-    return [
-      "state": data.state ?? "",
-      "nonce": data.nonce,
-      "vp_token": String(decoding: vpJsonData, as: UTF8.self),
-    ]
+    return VerifiablePresentationToken(
+      state: data.state,
+      nonce: data.nonce,
+      vpToken: [id: [sdJwt]],
+    )
   }
 
-  private func createVpToken(
+  private func createSdJwt(
     with secKey: SecKey,
     credentialJwt: String,
     clientId: String,
@@ -134,12 +162,12 @@ class PresentationViewModel {
     }
     let hash = SHA256.hash(data: sdJwtData)
     let sdHash = Data(hash).base64URLEncodedString()
-    let payload: [String: String] = [
-      "aud": aud,
-      "nonce": nonce,
-      "sd_hash": sdHash,
-    ]
+    let payload = KeyBinding(
+      aud: aud,
+      nonce: nonce,
+      sdHash: sdHash
+    )
 
-    return try JWTUtil.createJWT(with: secKey, headers: ["typ": "kb+jwt"], payload: payload)
+    return try jwtUtil.signJWT(with: secKey, payload: payload, headers: ["typ": "kb+jwt"])
   }
 }

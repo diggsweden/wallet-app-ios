@@ -1,29 +1,42 @@
 import Foundation
+import JOSESwift
 import OpenID4VCI
 
-struct GrantModel: Identifiable {
-  let id = UUID()
-  let salt: String
-  let parameter: String
-  let value: String
-}
+struct CredentialRequest: Codable {
+  let credentialConfigurationId: String
+  let credentialResponseEncryption: CredentialResponseEncryptionDTO?
+  let proofs: JWTProofType
 
-struct CredentialResponseModel: Codable {
-  let credential: String
-  let cNonce: String?
-  let cNonceExpiresIn: String?
-
-  enum CodingKeys: String, CodingKey {
-    case credential
-    case cNonce = "c_nonce"
-    case cNonceExpiresIn = "c_nonce_expires_in"
+  init(
+    credentialConfigurationId: String,
+    credentialResponseEncryption: CredentialResponseEncryptionDTO? = nil,
+    proofs: JWTProofType
+  ) {
+    self.credentialConfigurationId = credentialConfigurationId
+    self.credentialResponseEncryption = credentialResponseEncryption
+    self.proofs = proofs
   }
 }
 
-struct CredentialRequestModel: Codable {
-  let format: String
-  let vct: String
-  let proof: Proof
+struct CredentialResponseEncryptionDTO: Codable {
+  let jwk: ECPublicKey
+  let enc: String
+}
+
+struct JWTProofType: Codable {
+  let jwt: [String]
+}
+
+struct NonceResponse: Codable {
+  let cNonce: String
+}
+
+struct CredentialResponse: Codable {
+  let credentials: [CredentialBody]
+}
+
+struct CredentialBody: Codable {
+  let credential: String
 }
 
 struct PidClaim: Identifiable {
@@ -31,4 +44,9 @@ struct PidClaim: Identifiable {
   let claim: Claim
   // TODO: Parse value into correct format based on claim.value_type
   let value: String
+}
+
+struct JWTProofPayload: Codable {
+  let nonce: String?
+  let aud: String
 }

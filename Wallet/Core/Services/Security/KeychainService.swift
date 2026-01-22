@@ -2,15 +2,13 @@ import CryptoKit
 import Foundation
 import Security
 
-final class KeychainService: Sendable {
+enum KeychainService {
   enum KeyTag: String, CaseIterable {
     case deviceKey = "device_key_tag"
     case walletKey = "wallet_key_tag"
   }
 
-  static let shared = KeychainService()
-
-  func getOrCreateKey(withTag tag: KeyTag) throws -> SecKey {
+  static func getOrCreateKey(withTag tag: KeyTag) throws -> SecKey {
     return if let existingKey = try? fetchKey(withTag: tag.rawValue) {
       existingKey
     } else {
@@ -18,13 +16,13 @@ final class KeychainService: Sendable {
     }
   }
 
-  func deleteAll() throws {
+  static func deleteAll() throws {
     for tag in KeyTag.allCases {
       try deleteKey(withTag: tag.rawValue)
     }
   }
 
-  private func deleteKey(withTag tag: String) throws {
+  static private func deleteKey(withTag tag: String) throws {
     let query: [String: Any] = [
       kSecClass as String: kSecClassKey,
       kSecAttrApplicationTag as String: tag.utf8Data,
@@ -38,7 +36,7 @@ final class KeychainService: Sendable {
     }
   }
 
-  private func generateKey(withTag tag: String) throws -> SecKey {
+  static private func generateKey(withTag tag: String) throws -> SecKey {
     var attributes: [String: Any] = [
       kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
       kSecAttrKeySizeInBits as String: 256,
@@ -61,7 +59,7 @@ final class KeychainService: Sendable {
     return privateKey
   }
 
-  private func fetchKey(withTag tag: String) throws -> SecKey {
+  static private func fetchKey(withTag tag: String) throws -> SecKey {
     let query: [String: Any] = [
       kSecClass as String: kSecClassKey,
       kSecAttrApplicationTag as String: tag.utf8Data,
@@ -80,7 +78,7 @@ final class KeychainService: Sendable {
     return key as! SecKey
   }
 
-  private var isSimulator: Bool {
+  static private var isSimulator: Bool {
     #if targetEnvironment(simulator)
       return true
     #else

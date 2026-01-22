@@ -25,7 +25,7 @@ final class OnboardingPidViewModel {
 
     isLoading = true
 
-    let key = try KeychainService.shared.getOrCreateKey(withTag: .walletKey)
+    let key = try KeychainService.getOrCreateKey(withTag: .walletKey)
     let jwk = try key.toECPublicKey()
 
     let jwt = try await gatewayAPIClient.getWalletUnitAttestation(

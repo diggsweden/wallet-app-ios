@@ -12,6 +12,7 @@
 		<dict>
 			<key>CFBundleURLSchemes</key>
 			<array>
+				<string>wallet-app</string>
 				<string>openid-credential-offer</string>
 				<string>openid4vp</string>
 				<string>eudi-openid4vp</string>

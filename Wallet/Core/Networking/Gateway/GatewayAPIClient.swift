@@ -22,7 +22,7 @@ struct GatewayAPIClient: GatewayAPI {
   let client: Client
 
   init(baseUrl: URL? = nil, sessionManager: SessionManager) {
-    let url = baseUrl ?? #URL("https://wallet.sandbox.digg.se/api")
+    let url = baseUrl ?? AppConfig.apiBaseURL
     client = Client(
       serverURL: url,
       transport: URLSessionTransport(),

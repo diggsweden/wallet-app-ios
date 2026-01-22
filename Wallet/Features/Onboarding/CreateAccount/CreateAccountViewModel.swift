@@ -27,7 +27,7 @@ final class CreateAccountViewModel {
 
     accountIdResult = .loading
     do {
-      let key = try KeychainService.shared.getOrCreateKey(withTag: .deviceKey)
+      let key = try KeychainService.getOrCreateKey(withTag: .deviceKey)
       let accountId = try await gatewayAPIClient.createAccount(
         personalIdentityNumber: random12DigitString(),
         emailAddress: data.email,
