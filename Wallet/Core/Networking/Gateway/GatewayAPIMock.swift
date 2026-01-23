@@ -6,7 +6,8 @@ struct GatewayAPIMock: GatewayAPI {
     personalIdentityNumber: String,
     emailAddress: String,
     telephoneNumber: String?,
-    jwk: ECPublicKey
+    jwk: ECPublicKey,
+    oidcSessionId: String,
   ) async throws -> String {
     return ""
   }

@@ -16,6 +16,7 @@ final class OnboardingViewModel {
   private(set) var pin = ""
   private(set) var phoneNumber: String?
   private(set) var email = ""
+  var oidcSessionId: String?
 
   init(
     setKeyAttestation: @escaping (String) async -> Void,

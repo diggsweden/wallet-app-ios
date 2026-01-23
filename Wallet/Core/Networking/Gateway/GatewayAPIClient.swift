@@ -9,7 +9,8 @@ protocol GatewayAPI: Sendable {
     personalIdentityNumber: String,
     emailAddress: String,
     telephoneNumber: String?,
-    jwk: ECPublicKey
+    jwk: ECPublicKey,
+    oidcSessionId: String,
   ) async throws -> String
 
   func getWalletUnitAttestation(
@@ -34,7 +35,8 @@ struct GatewayAPIClient: GatewayAPI {
     personalIdentityNumber: String,
     emailAddress: String,
     telephoneNumber: String?,
-    jwk: ECPublicKey
+    jwk: ECPublicKey,
+    oidcSessionId: String,
   ) async throws -> String {
     let jwkDto = Components.Schemas.JwkDto(
       kty: jwk.keyType.rawValue,
@@ -49,7 +51,8 @@ struct GatewayAPIClient: GatewayAPI {
       telephoneNumber: telephoneNumber,
       publicKey: jwkDto
     )
-    let input = Operations.CreateAccount.Input(body: .json(bodyDto))
+    let headers = Operations.CreateAccount.Input.Headers(session: oidcSessionId)
+    let input = Operations.CreateAccount.Input(headers: headers, body: .json(bodyDto))
 
     let response = try await client.createAccount(input)
     guard

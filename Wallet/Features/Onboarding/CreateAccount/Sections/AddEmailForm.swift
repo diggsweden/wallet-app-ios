@@ -17,12 +17,14 @@ struct AddEmailForm: View {
 
   init(
     gatewayAPIClient: GatewayAPI,
+    oidcSessionId: String,
     phoneNumber: String? = nil,
     onSubmit: @escaping (String, String) async throws -> Void,
   ) {
     _viewModel = State(
       wrappedValue: CreateAccountViewModel(
         gatewayAPIClient: gatewayAPIClient,
+        oidcSessionId: oidcSessionId,
         phoneNumber: phoneNumber,
         onSubmit: onSubmit
       )
@@ -138,6 +140,7 @@ struct AddEmailForm: View {
   VStack {
     AddEmailForm(
       gatewayAPIClient: GatewayAPIMock(),
+      oidcSessionId: "",
       onSubmit: { _, _ in },
     )
   }
