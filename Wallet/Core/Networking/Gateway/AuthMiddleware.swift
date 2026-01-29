@@ -15,12 +15,11 @@ struct AuthenticationMiddleware: ClientMiddleware {
     HTTPResponse,
     HTTPBody?
   ) {
-    var request = request
-
     if operationID == "createAccount" {
-      request.setHeader("X-API-KEY", AppConfig.apiKey)
       return try await next(request, body, baseURL)
     }
+
+    var request = request
 
     let token = try await sessionManager.getToken()
     request.setHeader("session", token)

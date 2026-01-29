@@ -119,6 +119,7 @@ struct OnboardingRootView: View {
       switch viewModel.step {
         case .intro: ""
         case .terms: "Tillåt behörigheter"
+        case .login: "Logga in"
         case .phoneNumber: "Ditt telefonnummer"
         case .verifyPhone: "Bekräfta telefonnummer"
         case .email: "Din e-postadress"
@@ -145,6 +146,12 @@ struct OnboardingRootView: View {
           viewModel.next(from: .terms)
         }
 
+      case .login:
+        LoginView { code in
+          viewModel.oidcSessionId = code
+          viewModel.next(from: .login)
+        }
+
       case .phoneNumber:
         AddPhoneNumberForm { phoneNumber in
           viewModel.setPhoneNumber(phoneNumber)
@@ -159,12 +166,19 @@ struct OnboardingRootView: View {
         }
 
       case .email:
-        AddEmailForm(
-          gatewayAPIClient: gatewayAPIClient,
-          phoneNumber: viewModel.phoneNumber
-        ) { accountId, email in
-          await viewModel.signIn(accountId: accountId, email: email)
-          viewModel.next(from: .email)
+        if let sessionId = viewModel.oidcSessionId {
+          AddEmailForm(
+            gatewayAPIClient: gatewayAPIClient,
+            oidcSessionId: sessionId,
+            phoneNumber: viewModel.phoneNumber
+          ) { accountId, email in
+            await viewModel.signIn(accountId: accountId, email: email)
+            viewModel.next(from: .email)
+          }
+        } else {
+          LoginView { code in
+            viewModel.oidcSessionId = code
+          }
         }
 
       case .verifyEmail:

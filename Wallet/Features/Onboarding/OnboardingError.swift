@@ -3,13 +3,16 @@ import Foundation
 enum OnboardingError: LocalizedError {
   case invalidPinDigits
   case pinMismatch
+  case authFailure
 
   var errorDescription: String? {
-    switch self {
+    return switch self {
       case .invalidPinDigits:
-        return "PIN-koden måste bestå av 6 siffror"
+        "PIN-koden måste bestå av 6 siffror"
       case .pinMismatch:
-        return "PIN-koderna matchar inte"
+        "PIN-koderna matchar inte"
+      case .authFailure:
+        "Kunde inte logga in"
     }
   }
 }
