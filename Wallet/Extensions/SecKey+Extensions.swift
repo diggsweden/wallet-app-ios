@@ -3,40 +3,19 @@ import JOSESwift
 import Security
 
 extension SecKey {
-  func getP256Coordinates() throws -> (x: Data, y: Data) {
+  func toECPublicKey(alg: String = KeyManagementAlgorithm.ECDH_ES.rawValue) throws -> ECPublicKey {
     let publicKey = SecKeyCopyPublicKey(self) ?? self
 
-    guard
-      let bytes = SecKeyCopyExternalRepresentation(publicKey, nil) as Data?,
-      bytes.first == 0x04,
-      bytes.count == 65
-    else {
-      throw AppError(reason: "Failed getting P256 coordinates for public key")
+    guard let data = SecKeyCopyExternalRepresentation(publicKey, nil) as Data? else {
+      throw AppError(reason: "Failed converting SecKey to data")
     }
 
-    // x: first 32 bytes
-    let x = bytes.dropFirst().prefix(32)
-    // y: last 32 bytes
-    let y = bytes.dropFirst(33)
-
-    return (Data(x), Data(y))
-  }
-
-  func getJWKCoordinates() throws -> (x: String, y: String) {
-    let (xData, yData) = try getP256Coordinates()
-    return (
-      x: xData.base64URLEncodedString(),
-      y: yData.base64URLEncodedString()
-    )
-  }
-
-  func toECPublicKey(alg: String = KeyManagementAlgorithm.ECDH_ES.rawValue) throws -> ECPublicKey {
-    let (x, y) = try getJWKCoordinates()
+    let (x, y) = try P256Point.coordinates(fromX963: data)
 
     return try ECPublicKey(
       crv: .P256,
-      x: x,
-      y: y,
+      x: x.base64URLEncodedString(),
+      y: y.base64URLEncodedString(),
       additionalParameters: ["alg": alg]
     )
     .withThumbprintAsKeyId()

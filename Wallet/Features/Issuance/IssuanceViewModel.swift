@@ -159,11 +159,12 @@ class IssuanceViewModel {
     url: URL,
     accessToken: String,
   ) async throws -> String {
+    let key = P256.KeyAgreement.PrivateKey()
     let enc: ContentEncryptionAlgorithm = .A128GCM
     let credentialRequest = CredentialRequest(
       credentialConfigurationId: configId,
       credentialResponseEncryption: CredentialResponseEncryptionDTO(
-        jwk: try responseDecryptionKey.toECPublicKey(),
+        jwk: try key.publicKey.toECPublicKey(),
         enc: enc.rawValue
       ),
       proofs: JWTProofType(jwt: [jwtProof])
@@ -175,7 +176,7 @@ class IssuanceViewModel {
       credentialRequest: credentialRequest,
       requestEncryption: requestEncryption,
       responseDecryption: CryptoSpec(
-        key: try ECPrivateKey(privateKey: responseDecryptionKey),
+        key: try key.toECPrivateKey(),
         enc: enc
       )
     )
