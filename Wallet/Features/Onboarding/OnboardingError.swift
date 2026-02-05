@@ -4,6 +4,7 @@ enum OnboardingError: LocalizedError {
   case invalidPinDigits
   case pinMismatch
   case authFailure
+  case pidFailure
 
   var errorDescription: String? {
     return switch self {
@@ -13,6 +14,8 @@ enum OnboardingError: LocalizedError {
         "PIN-koderna matchar inte"
       case .authFailure:
         "Kunde inte logga in"
+      case .pidFailure:
+        "Kunde inte hämta ID-handling"
     }
   }
 }

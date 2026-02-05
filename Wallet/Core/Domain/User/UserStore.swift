@@ -29,16 +29,9 @@ actor UserStore: AccountIDProvider {
     return snapshot(from: session)
   }
 
-  func addCredential(_ credential: Credential) async throws -> UserSnapshot {
+  func saveCredential(_ credential: Credential) async throws -> UserSnapshot {
     let session = try await getOrCreateModel()
     session.credential = credential
-    try await save()
-    return snapshot(from: session)
-  }
-
-  func addKeyAttestation(_ keyAttestation: String) async throws -> UserSnapshot {
-    let session = try await getOrCreateModel()
-    session.walletUnitAttestation = keyAttestation
     try await save()
     return snapshot(from: session)
   }
@@ -78,7 +71,6 @@ actor UserStore: AccountIDProvider {
     UserSnapshot(
       deviceId: model.deviceId,
       accountId: model.accountId,
-      walletUnitAttestation: model.walletUnitAttestation,
       credential: model.credential
     )
   }

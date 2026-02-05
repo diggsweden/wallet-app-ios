@@ -14,7 +14,7 @@ struct OnboardingRootView: View {
   init(
     gatewayAPIClient: GatewayAPI,
     userSnapshot: UserSnapshot,
-    setKeyAttestation: @escaping (String) async -> Void,
+    saveCredential: @escaping (Credential) async -> Void,
     signIn: @escaping (String) async -> Void,
     onReset: @escaping () async -> Void
   ) {
@@ -22,7 +22,7 @@ struct OnboardingRootView: View {
     self.userSnapshot = userSnapshot
     _viewModel = State(
       wrappedValue: .init(
-        setKeyAttestation: setKeyAttestation,
+        setPidCredential: saveCredential,
         signIn: signIn,
         onReset: onReset
       )
@@ -127,6 +127,7 @@ struct OnboardingRootView: View {
         case .pin: "Ange pinkod för identifiering"
         case .verifyPin: "Bekräfta pinkod för identifiering"
         case .pid: "Hämta personuppgifter"
+        case .issueCredential: "Lägg till ID-handling"
       }
 
     return Text("\(stepCount, default: "")\(titleText)")
@@ -148,7 +149,7 @@ struct OnboardingRootView: View {
 
       case .login:
         LoginView { code in
-          viewModel.oidcSessionId = code
+          viewModel.setOidcSessionId(code)
           viewModel.next(from: .login)
         }
 
@@ -161,28 +162,28 @@ struct OnboardingRootView: View {
         }
 
       case .verifyPhone:
-        ContactInfoOneTimeCode(contactInfoData: viewModel.phoneNumber ?? "", type: .phone) {
+        ContactInfoOneTimeCode(contactInfoData: viewModel.context.phoneNumber ?? "", type: .phone) {
           viewModel.next(from: .verifyPhone)
         }
 
       case .email:
-        if let sessionId = viewModel.oidcSessionId {
+        if let sessionId = viewModel.context.oidcSessionId {
           AddEmailForm(
             gatewayAPIClient: gatewayAPIClient,
             oidcSessionId: sessionId,
-            phoneNumber: viewModel.phoneNumber
+            phoneNumber: viewModel.context.phoneNumber
           ) { accountId, email in
             await viewModel.signIn(accountId: accountId, email: email)
             viewModel.next(from: .email)
           }
         } else {
           LoginView { code in
-            viewModel.oidcSessionId = code
+            viewModel.setOidcSessionId(code)
           }
         }
 
       case .verifyEmail:
-        ContactInfoOneTimeCode(contactInfoData: viewModel.email, type: .email) {
+        ContactInfoOneTimeCode(contactInfoData: viewModel.context.email, type: .email) {
           viewModel.next(from: .verifyEmail)
         }
 
@@ -212,14 +213,23 @@ struct OnboardingRootView: View {
         OnboardingPidView(
           walletId: userSnapshot.deviceId,
           gatewayAPIClient: gatewayAPIClient
-        ) { jwt in
-          Task {
-            await viewModel.addKeyAttestation(jwt)
-            openURL(AppConfig.pidIssuerURL)
-          }
-        }
-        .onChange(of: userSnapshot.credential) {
+        ) { credentialOfferUri in
+          viewModel.setCredentialOfferUri(credentialOfferUri)
           viewModel.next(from: .pid)
+        }
+
+      case .issueCredential:
+        if let uri = viewModel.context.credentialOfferUri {
+          IssuanceView(credentialOfferUri: uri) { credential in
+            await viewModel.setPidCredential(credential)
+          }
+        } else {
+          OnboardingPidView(
+            walletId: userSnapshot.deviceId,
+            gatewayAPIClient: gatewayAPIClient
+          ) { credentialOfferUri in
+            viewModel.setCredentialOfferUri(credentialOfferUri)
+          }
         }
     }
   }
@@ -256,10 +266,9 @@ struct OnboardingRootView: View {
     userSnapshot: UserSnapshot(
       deviceId: "",
       accountId: nil,
-      walletUnitAttestation: nil,
       credential: nil
     ),
-    setKeyAttestation: { _ in },
+    saveCredential: { _ in },
     signIn: { _ in },
     onReset: {}
   )

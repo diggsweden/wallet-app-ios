@@ -39,7 +39,7 @@ struct AppRootView: View {
           OnboardingRootView(
             gatewayAPIClient: gatewayAPIClient,
             userSnapshot: user,
-            setKeyAttestation: userViewModel.setKeyAttestation,
+            saveCredential: userViewModel.saveCredential,
             signIn: userViewModel.signIn,
             onReset: userViewModel.signOut,
           )
@@ -73,11 +73,9 @@ struct AppRootView: View {
         )
 
       case .issuance(let url):
-        IssuanceView(
-          credentialOfferUri: url,
-          walletUnitAttestation: userSnapshot.walletUnitAttestation
-        ) { credential in
-          await userViewModel.setCredential(credential)
+        IssuanceView(credentialOfferUri: url) { credential in
+          await userViewModel.saveCredential(credential)
+          router.pop()
         }
 
       case .credentialDetails(let credential):

@@ -16,7 +16,6 @@ enum IssuanceState {
 @Observable
 class IssuanceViewModel {
   private let credentialOfferUri: String
-  private let wua: String
   private(set) var claimsMetadata: [String: Claim] = [:]
   private var issuer: Issuer?
   private var credentialOffer: CredentialOffer?
@@ -27,9 +26,8 @@ class IssuanceViewModel {
   var state: IssuanceState = .initial
   var error: ErrorEvent? = nil
 
-  init(credentialOfferUri: String, wua: String) {
+  init(credentialOfferUri: String) {
     self.credentialOfferUri = credentialOfferUri
-    self.wua = wua
   }
 
   func fetchIssuer() async {

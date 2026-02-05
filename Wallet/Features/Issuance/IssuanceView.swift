@@ -3,24 +3,14 @@ import SwiftUI
 struct IssuanceView: View {
   private let onSave: (Credential) async -> Void
   @State private var viewModel: IssuanceViewModel
-  @Environment(Router.self) private var router
   @Environment(\.modelContext) private var modelContext
   @Environment(\.theme) private var theme
   @Environment(\.authPresentationAnchor) private var anchor
   @Environment(ToastViewModel.self) private var toastViewModel
 
-  init(
-    credentialOfferUri: String,
-    walletUnitAttestation: String?,
-    onSave: @escaping (Credential) async -> Void
-  ) {
+  init(credentialOfferUri: String, onSave: @escaping (Credential) async -> Void) {
     self.onSave = onSave
-    _viewModel = .init(
-      wrappedValue: .init(
-        credentialOfferUri: credentialOfferUri,
-        wua: walletUnitAttestation ?? ""
-      )
-    )
+    _viewModel = State(wrappedValue: .init(credentialOfferUri: credentialOfferUri))
   }
 
   var body: some View {
@@ -96,7 +86,6 @@ struct IssuanceView: View {
             Task {
               await onSave(credential)
             }
-            router.pop()
           }
       }
     }

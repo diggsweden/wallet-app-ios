@@ -10,7 +10,7 @@ final class OAuthCoordinator: NSObject,
   func start(
     url: URL,
     callbackScheme: String,
-    anchor: ASPresentationAnchor
+    anchor: ASPresentationAnchor?
   ) async throws -> URL {
     self.anchor = anchor
 
