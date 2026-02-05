@@ -19,20 +19,7 @@ final class OnboardingPidViewModel {
   }
 
   func fetchWua() async throws {
-    defer {
-      isLoading = false
-    }
-
-    isLoading = true
-
-    let key = try KeychainService.getOrCreateKey(withTag: .walletKey)
-    let jwk = try key.toECPublicKey()
-
-    let jwt = try await gatewayAPIClient.getWalletUnitAttestation(
-      walletId: walletId,
-      jwk: jwk
-    )
-
-    try onSubmit(jwt)
+    // TODO: Remove when integrating wua v3
+    try onSubmit("")
   }
 }
