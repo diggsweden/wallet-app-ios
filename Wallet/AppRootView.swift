@@ -16,10 +16,12 @@ struct AppRootView: View {
   var body: some View {
     NavigationStack(path: $router.navigationPath) {
       rootView
+        .padding(theme.horizontalPadding)
         .containerRelativeFrame([.horizontal, .vertical])
         .background(theme.colors.background)
         .navigationDestination(for: Route.self) { route in
           destination(for: route)
+            .padding(theme.horizontalPadding)
             .containerRelativeFrame([.horizontal, .vertical])
             .background(theme.colors.background)
         }
@@ -73,7 +75,7 @@ struct AppRootView: View {
         )
 
       case .issuance(let url):
-        IssuanceView(credentialOfferUri: url) { credential in
+        IssuanceViewWrapper(credentialOfferUri: url) { credential in
           await userViewModel.saveCredential(credential)
           router.pop()
         }

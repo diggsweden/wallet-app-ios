@@ -37,13 +37,11 @@ struct OnboardingRootView: View {
             header
           }
 
-          ZStack {
-            currentStepView
-              .id(viewModel.step)
-              .transition(
-                stepTransition.combined(with: .opacity)
-              )
-          }
+          currentStepView
+            .id(viewModel.step)
+            .transition(
+              stepTransition.combined(with: .opacity)
+            )
         }
         .frame(
           maxWidth: .infinity,
@@ -52,7 +50,6 @@ struct OnboardingRootView: View {
         )
 
         .animation(.easeInOut, value: viewModel.step)
-        .padding(.horizontal, 25)
       }
     }
     .toolbar {
@@ -220,8 +217,8 @@ struct OnboardingRootView: View {
 
       case .issueCredential:
         if let uri = viewModel.context.credentialOfferUri {
-          IssuanceView(credentialOfferUri: uri) { credential in
-            await viewModel.setPidCredential(credential)
+          IssuanceView(credentialOfferUri: uri, title: "") { credential in
+            await viewModel.setCredentialOfferUri(credential)
           }
         } else {
           OnboardingPidView(

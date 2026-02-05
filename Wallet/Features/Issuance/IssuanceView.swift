@@ -2,94 +2,37 @@ import SwiftUI
 
 struct IssuanceView: View {
   private let onSave: (Credential) async -> Void
+  private let title: String
   @State private var viewModel: IssuanceViewModel
-  @Environment(\.modelContext) private var modelContext
   @Environment(\.theme) private var theme
   @Environment(\.authPresentationAnchor) private var anchor
   @Environment(ToastViewModel.self) private var toastViewModel
 
-  init(credentialOfferUri: String, onSave: @escaping (Credential) async -> Void) {
+  init(
+    credentialOfferUri: String,
+    title: String = "Hämta attributsintyg",
+    onSave: @escaping (Credential) async -> Void
+  ) {
     self.onSave = onSave
+    self.title = title
     _viewModel = State(wrappedValue: .init(credentialOfferUri: credentialOfferUri))
   }
 
   var body: some View {
-    VStack {
-      ScrollView {
-        VStack(alignment: .leading, spacing: 10) {
-          if case let .issuerFetched(offer) = viewModel.state,
-            let issuerDisplayData = offer.credentialIssuerMetadata.display.first
-          {
-            CardView {
-              VStack(alignment: .leading, spacing: 10) {
-                AsyncImage(url: issuerDisplayData.logo?.uri)
-                  .frame(maxWidth: .infinity, alignment: .center)
-                  .padding(.bottom, 10)
-
-                Text("Utfärdare:").font(.headline)
-                Text(issuerDisplayData.name ?? "Inget namn")
-              }
-              .frame(maxWidth: .infinity, alignment: .leading)
-            }
-          }
-
-          if case let .credentialFetched(credential) = viewModel.state {
-            CardView {
-              VStack(alignment: .leading, spacing: 10) {
-                Text("Attribut:").font(.headline)
-                ForEach(Array(credential.disclosures.values)) { disclosure in
-                  DisclosureView(
-                    title: disclosure.displayName,
-                    value: disclosure.value
-                  )
-                }
-              }
-              .frame(maxWidth: .infinity, alignment: .leading)
-            }
-          }
-        }
-        .padding(.horizontal, 5)
-        .frame(maxWidth: .infinity)
-        .cornerRadius(8)
+    VStack(spacing: 30) {
+      if let display = viewModel.issuerDisplayData {
+        IssuerDisplayView(issuerDisplayData: display)
       }
 
-      switch viewModel.state {
-        case .initial:
-          PrimaryButton("Hämta metadata") {
-            Task {
-              await viewModel.fetchIssuer()
-            }
-          }
-
-        case .issuerFetched(let offer):
-          PrimaryButton("Logga in", icon: "arrow.right.circle.fill") {
-            Task {
-              guard let anchor else {
-                return
-              }
-              await viewModel.authorize(
-                credentialOffer: offer,
-                authPresentationAnchor: anchor
-              )
-            }
-          }
-
-        case .authorized(let request):
-          PrimaryButton("Hämta ID-handling") {
-            Task {
-              await viewModel.fetchCredential(request)
-            }
-          }
-
-        case .credentialFetched(let credential):
-          PrimaryButton("Spara") {
-            Task {
-              await onSave(credential)
-            }
-          }
+      if case let .credentialFetched(credential) = viewModel.state {
+        CredentialView(disclosures: Array(credential.disclosures.values))
       }
+
+      Spacer()
+
+      button
     }
-    .navigationTitle(Text("Hämta attributsintyg"))
+    .navigationTitle(title)
     .task {
       await viewModel.fetchIssuer()
     }
@@ -98,6 +41,44 @@ struct IssuanceView: View {
         return
       }
       toastViewModel.showError(error.message)
+    }
+  }
+
+  private var button: some View {
+    switch viewModel.state {
+      case .initial:
+        PrimaryButton("Hämta metadata") {
+          Task {
+            await viewModel.fetchIssuer()
+          }
+        }
+
+      case .issuerFetched(let offer):
+        PrimaryButton("Logga in", icon: "arrow.right.circle.fill") {
+          Task {
+            guard let anchor else {
+              return
+            }
+            await viewModel.authorize(
+              credentialOffer: offer,
+              authPresentationAnchor: anchor
+            )
+          }
+        }
+
+      case .authorized(let request):
+        PrimaryButton("Hämta ID-handling") {
+          Task {
+            await viewModel.fetchCredential(request)
+          }
+        }
+
+      case .credentialFetched(let credential):
+        PrimaryButton("Spara") {
+          Task {
+            await onSave(credential)
+          }
+        }
     }
   }
 }

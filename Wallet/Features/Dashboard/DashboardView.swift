@@ -20,7 +20,6 @@ struct DashboardView: View {
           CredentialCard(credential: nil)
         }
       }
-      .padding(.horizontal, 30)
     }
     .toolbar {
       ToolbarItem(placement: .title) {

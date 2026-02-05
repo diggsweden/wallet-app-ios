@@ -61,7 +61,7 @@ final class OnboardingViewModel {
     context.email = email
   }
 
-  func setPidCredential(_ credential: Credential) async {
+  func setCredentialOfferUri(_ credential: Credential) async {
     await setPidCredential(credential)
   }
 
