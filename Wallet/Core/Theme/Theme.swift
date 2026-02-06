@@ -39,6 +39,7 @@ struct Theme {
   let colors: Colors
   let cornerRadius: CGFloat = 10
   let spacing: CGFloat = 12
+  let horizontalPadding: CGFloat = 30
 }
 
 extension Theme {

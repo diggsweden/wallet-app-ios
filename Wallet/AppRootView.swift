@@ -16,10 +16,12 @@ struct AppRootView: View {
   var body: some View {
     NavigationStack(path: $router.navigationPath) {
       rootView
+        .padding(theme.horizontalPadding)
         .containerRelativeFrame([.horizontal, .vertical])
         .background(theme.colors.background)
         .navigationDestination(for: Route.self) { route in
           destination(for: route)
+            .padding(theme.horizontalPadding)
             .containerRelativeFrame([.horizontal, .vertical])
             .background(theme.colors.background)
         }
@@ -39,7 +41,7 @@ struct AppRootView: View {
           OnboardingRootView(
             gatewayAPIClient: gatewayAPIClient,
             userSnapshot: user,
-            setKeyAttestation: userViewModel.setKeyAttestation,
+            saveCredential: userViewModel.saveCredential,
             signIn: userViewModel.signIn,
             onReset: userViewModel.signOut,
           )
@@ -73,11 +75,9 @@ struct AppRootView: View {
         )
 
       case .issuance(let url):
-        IssuanceView(
-          credentialOfferUri: url,
-          walletUnitAttestation: userSnapshot.walletUnitAttestation
-        ) { credential in
-          await userViewModel.setCredential(credential)
+        IssuanceViewWrapper(credentialOfferUri: url) { credential in
+          await userViewModel.saveCredential(credential)
+          router.pop()
         }
 
       case .credentialDetails(let credential):

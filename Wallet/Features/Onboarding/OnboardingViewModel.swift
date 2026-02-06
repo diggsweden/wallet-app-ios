@@ -7,23 +7,20 @@ final class OnboardingViewModel {
     case start, forward, back
   }
 
-  private let setKeyAttestation: (String) async -> Void
+  private let setPidCredential: (Credential) async -> Void
   private let signIn: (String) async -> Void
   private let onReset: () async -> Void
 
+  private(set) var context = OnboardingContext()
   private(set) var step: OnboardingStep = .intro
   private(set) var stepTransition: StepTransition = .start
-  private(set) var pin = ""
-  private(set) var phoneNumber: String?
-  private(set) var email = ""
-  var oidcSessionId: String?
 
   init(
-    setKeyAttestation: @escaping (String) async -> Void,
+    setPidCredential: @escaping (Credential) async -> Void,
     signIn: @escaping (String) async -> Void,
     onReset: @escaping () async -> Void
   ) {
-    self.setKeyAttestation = setKeyAttestation
+    self.setPidCredential = setPidCredential
     self.signIn = signIn
     self.onReset = onReset
   }
@@ -48,11 +45,11 @@ final class OnboardingViewModel {
       throw OnboardingError.invalidPinDigits
     }
 
-    self.pin = pin
+    context.pin = pin
   }
 
   func setPhoneNumber(_ phoneNumber: String) {
-    self.phoneNumber = phoneNumber
+    context.phoneNumber = phoneNumber
   }
 
   func skipPhoneNumber() {
@@ -61,19 +58,27 @@ final class OnboardingViewModel {
 
   func signIn(accountId: String, email: String) async {
     await signIn(accountId)
-    self.email = email
+    context.email = email
   }
 
-  func addKeyAttestation(_ keyAttestation: String) async {
-    await setKeyAttestation(keyAttestation)
+  func setCredentialOfferUri(_ credential: Credential) async {
+    await setPidCredential(credential)
   }
 
   func confirmPin(_ pin: String) throws {
-    guard self.pin == pin else {
+    guard context.pin == pin else {
       stepTransition = .back
       step = .pin
       throw OnboardingError.pinMismatch
     }
+  }
+
+  func setOidcSessionId(_ oidcSessionId: String) {
+    context.oidcSessionId = oidcSessionId
+  }
+
+  func setCredentialOfferUri(_ credentialOfferUri: String) {
+    context.credentialOfferUri = credentialOfferUri
   }
 
   func next(from step: OnboardingStep) {
@@ -98,6 +103,7 @@ final class OnboardingViewModel {
 
   func reset() async {
     await onReset()
+    context = OnboardingContext()
     stepTransition = .start
     step = .intro
   }

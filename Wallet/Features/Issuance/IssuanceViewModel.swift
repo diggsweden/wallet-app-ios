@@ -16,7 +16,6 @@ enum IssuanceState {
 @Observable
 class IssuanceViewModel {
   private let credentialOfferUri: String
-  private let wua: String
   private(set) var claimsMetadata: [String: Claim] = [:]
   private var issuer: Issuer?
   private var credentialOffer: CredentialOffer?
@@ -24,12 +23,12 @@ class IssuanceViewModel {
   private let openId4VciUtil = OpenID4VCIUtil()
   private var oauth = OAuthCoordinator()
   private let jwtUtil = JWTUtil()
+  var issuerDisplayData: Display?
   var state: IssuanceState = .initial
   var error: ErrorEvent? = nil
 
-  init(credentialOfferUri: String, wua: String) {
+  init(credentialOfferUri: String) {
     self.credentialOfferUri = credentialOfferUri
-    self.wua = wua
   }
 
   func fetchIssuer() async {
@@ -39,6 +38,7 @@ class IssuanceViewModel {
       self.credentialOffer = credentialOffer
       claimsMetadata = getClaimsMetadata(from: credentialOffer)
       issuer = try await createIssuer(from: credentialOffer)
+      issuerDisplayData = await issuer?.issuerMetadata.display.first
       state = .issuerFetched(offer: credentialOffer)
     } catch {
       self.error = error.toErrorEvent()

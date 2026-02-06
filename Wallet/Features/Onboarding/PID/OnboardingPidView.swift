@@ -5,6 +5,7 @@ import WalletMacrosClient
 struct OnboardingPidView: View {
   private var viewModel: OnboardingPidViewModel
   @Environment(ToastViewModel.self) private var toastViewModel
+  @Environment(\.authPresentationAnchor) private var anchor
 
   init(
     walletId: String,
@@ -45,16 +46,12 @@ struct OnboardingPidView: View {
 
   @ViewBuilder
   private var button: some View {
-    if viewModel.isLoading {
-      ProgressView()
-    } else {
-      PrimaryButton("Hämta personuppgifter", icon: "arrow.up.forward.app") {
-        Task {
-          do {
-            try await viewModel.fetchWua()
-          } catch {
-            toastViewModel.showError("Något gick fel, försök igen!")
-          }
+    PrimaryButton("Hämta personuppgifter", icon: "arrow.up.forward.app") {
+      Task {
+        do {
+          try await viewModel.fetchPid(anchor)
+        } catch {
+          toastViewModel.showError("Något gick fel, försök igen!")
         }
       }
     }

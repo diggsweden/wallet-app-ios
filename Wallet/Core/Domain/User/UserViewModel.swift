@@ -20,9 +20,8 @@ final class UserViewModel {
     guard case let .ready(user) = user else {
       return false
     }
-    return user.accountId != nil
-      && user.walletUnitAttestation != nil
-      && user.credential != nil
+
+    return user.accountId != nil && user.credential != nil
   }
 
   func initUser() async {
@@ -58,18 +57,9 @@ final class UserViewModel {
     }
   }
 
-  func setKeyAttestation(_ attestation: String) async {
+  func saveCredential(_ credential: Credential) async {
     do {
-      let updated = try await userStore.addKeyAttestation(attestation)
-      user = .ready(updated)
-    } catch {
-      user = .error(String(describing: error))
-    }
-  }
-
-  func setCredential(_ credential: Credential) async {
-    do {
-      let updated = try await userStore.addCredential(credential)
+      let updated = try await userStore.saveCredential(credential)
       user = .ready(updated)
     } catch {
       user = .error(String(describing: error))
