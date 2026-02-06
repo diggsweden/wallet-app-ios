@@ -55,11 +55,7 @@ struct CredentialCard: View {
 
   private var addNewCredentialButton: some View {
     Button {
-      guard let url = URL(string: "https://wallet.sandbox.digg.se/prepare-credential-offer")
-      else {
-        return
-      }
-      openURL(url)
+      openURL(AppConfig.pidIssuerURL)
     } label: {
       VStack(spacing: 12) {
         Image(systemName: "plus.circle.fill")

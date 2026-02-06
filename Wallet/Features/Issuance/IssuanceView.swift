@@ -2,7 +2,6 @@ import SwiftUI
 
 struct IssuanceView: View {
   private let onSave: (Credential) async -> Void
-  private let title: String
   @State private var viewModel: IssuanceViewModel
   @Environment(\.theme) private var theme
   @Environment(\.authPresentationAnchor) private var anchor
@@ -10,12 +9,16 @@ struct IssuanceView: View {
 
   init(
     credentialOfferUri: String,
-    title: String = "Hämta attributsintyg",
+    gatewayAPIClient: GatewayAPI,
     onSave: @escaping (Credential) async -> Void
   ) {
     self.onSave = onSave
-    self.title = title
-    _viewModel = State(wrappedValue: .init(credentialOfferUri: credentialOfferUri))
+    _viewModel = State(
+      wrappedValue: .init(
+        credentialOfferUri: credentialOfferUri,
+        gatewayAPIClient: gatewayAPIClient
+      )
+    )
   }
 
   var body: some View {
@@ -32,7 +35,6 @@ struct IssuanceView: View {
 
       button
     }
-    .navigationTitle(title)
     .task {
       await viewModel.fetchIssuer()
     }
@@ -74,7 +76,7 @@ struct IssuanceView: View {
         }
 
       case .credentialFetched(let credential):
-        PrimaryButton("Spara") {
+        PrimaryButton("Godkänn", icon: "checkmark.circle") {
           Task {
             await onSave(credential)
           }

@@ -13,10 +13,7 @@ protocol GatewayAPI: Sendable {
     oidcSessionId: String,
   ) async throws -> String
 
-  func getWalletUnitAttestation(
-    walletId: String,
-    jwk: ECPublicKey
-  ) async throws -> String
+  func getWalletUnitAttestation(nonce: String) async throws -> String
 }
 
 struct GatewayAPIClient: GatewayAPI {
@@ -66,18 +63,10 @@ struct GatewayAPIClient: GatewayAPI {
   }
 
   func getWalletUnitAttestation(
-    walletId: String,
-    jwk: ECPublicKey
+    nonce: String,
   ) async throws -> String {
-    let jwkDto = Components.Schemas.JwkDto(
-      kty: jwk.keyType.rawValue,
-      kid: jwk.parameters["kid"],
-      crv: jwk.crv.rawValue,
-      x: jwk.x,
-      y: jwk.y
-    )
-    let bodyDto = Components.Schemas.CreateWuaDto(walletId: UUID().uuidString, jwk: jwkDto)
-    let input = Operations.CreateWua1.Input(body: .json(bodyDto))
+    let nonceQuery = Operations.CreateWua1.Input.Query(nonce: nonce)
+    let input = Operations.CreateWua1.Input(query: nonceQuery)
 
     let response = try await client.createWua1(input)
     guard

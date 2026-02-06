@@ -70,15 +70,79 @@
               }
             }
           }
+        },
+        "deprecated": true
+      }
+    },
+    "/wua/v3": {
+      "post": {
+        "tags": [
+          "wua-controller"
+        ],
+        "operationId": "createWua_1",
+        "parameters": [
+          {
+            "name": "nonce",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "walletId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                "jwk": {
+                  "kty": "EC",
+                  "crv": "P-256",
+                  "x": "1fH0eqXgMMwCIafNaDc1axdCjLlw7zpTLvLWjpPvhEc",
+                  "y": "5qOejJs7BK-jLingaUTEhBrzP_YPyHfptS5yWE98I40"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "500": {
+            "description": "Could not create Wua",
+            "content": {}
+          },
+          "400": {
+            "description": "Bad input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authorized",
+            "content": {}
+          },
+          "201": {
+            "description": "Wua created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WuaDto"
+                }
+              }
+            }
+          }
         }
       }
     },
     "/wua/v2": {
       "post": {
         "tags": [
-          "wua-controller"
+          "wua-controller-v-2"
         ],
-        "operationId": "createWua_1",
+        "operationId": "createWua_2",
         "requestBody": {
           "content": {
             "application/json": {
@@ -127,7 +191,8 @@
               }
             }
           }
-        }
+        },
+        "deprecated": true
       }
     },
     "/public/auth/session/response": {
@@ -141,7 +206,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AuthChallengeResponseDto"
+                "$ref": "#/components/schemas/ValidateAuthChallengeRequestDto"
               },
               "example": {
                 "signedJwt": "insert.signed.jwt"
@@ -173,10 +238,17 @@
             "headers": {
               "session": {
                 "description": "Session ID",
-                "required": true,
+                "deprecated": true,
                 "style": "simple",
                 "schema": {
                   "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidateAuthChallengeResponseDto"
                 }
               }
             }
@@ -414,7 +486,8 @@
               }
             }
           }
-        }
+        },
+        "deprecated": true
       }
     },
     "/public/auth/session/challenge": {
@@ -655,7 +728,7 @@
           }
         }
       },
-      "AuthChallengeResponseDto": {
+      "ValidateAuthChallengeRequestDto": {
         "type": "object",
         "properties": {
           "signedJwt": {
@@ -665,6 +738,19 @@
         },
         "required": [
           "signedJwt"
+        ]
+      },
+      "ValidateAuthChallengeResponseDto": {
+        "type": "object",
+        "properties": {
+          "sessionId": {
+            "type": "string",
+            "description": "Session ID",
+            "example": "3f2e7c0b-91d2-4a7e-9f34-0d8d9a5a9e77"
+          }
+        },
+        "required": [
+          "sessionId"
         ]
       },
       "CreateAccountRequestDto": {

@@ -21,36 +21,31 @@ struct PresentationView: View {
   }
 
   private var presentView: some View {
-    VStack {
+    GeometryReader { proxy in
       ScrollView {
-        CardView {
-          VStack(spacing: 12) {
-            Text("Vill du dela följande data?").bold()
-            ForEach(viewModel.selectedDisclosures) { match in
-              DisclosureView(
-                title: match.disclosure.displayName,
-                value: match.disclosure.value,
-                onToggle: { newValue in
-                  if let index = viewModel.selectedDisclosures
-                    .firstIndex(where: { $0.id == match.id })
-                  {
-                    viewModel.selectedDisclosures[index].isSelected = newValue
-                  }
-                }
-              )
+        VStack(spacing: 30) {
+          Text("Vill du dela följande data?").textStyle(.h2)
+
+          CredentialView(disclosures: viewModel.selectedDisclosures.map(\.disclosure))
+
+          Spacer()
+
+          PrimaryButton("Dela", icon: "paperplane") {
+            Task {
+              try? await viewModel.sendDisclosures()
+              router.pop()
             }
           }
         }
+        .frame(
+          maxWidth: .infinity,
+          minHeight: proxy.size.height,
+          alignment: .top
+        )
       }
-      PrimaryButton("Skicka") {
-        Task {
-          try? await viewModel.sendDisclosures()
-          router.pop()
-        }
-      }
-      .disabled(viewModel.selectedDisclosures.filter(\.self.isSelected).isEmpty)
+      .navigationTitle("Dela attribut")
+      .navigationBarTitleDisplayMode(.inline)
     }
-    .navigationTitle("Dela attribut")
     .task {
       try? viewModel.matchDisclosures()
     }

@@ -124,7 +124,7 @@ struct OnboardingRootView: View {
         case .pin: "Ange pinkod för identifiering"
         case .verifyPin: "Bekräfta pinkod för identifiering"
         case .pid: "Hämta personuppgifter"
-        case .issueCredential: "Lägg till ID-handling"
+        case .issueCredential: "Hämtade personuppgifter"
       }
 
     return Text("\(stepCount, default: "")\(titleText)")
@@ -217,7 +217,10 @@ struct OnboardingRootView: View {
 
       case .issueCredential:
         if let uri = viewModel.context.credentialOfferUri {
-          IssuanceView(credentialOfferUri: uri, title: "") { credential in
+          IssuanceView(
+            credentialOfferUri: uri,
+            gatewayAPIClient: gatewayAPIClient
+          ) { credential in
             await viewModel.setCredentialOfferUri(credential)
           }
         } else {

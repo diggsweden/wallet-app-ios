@@ -12,7 +12,7 @@ struct GatewayAPIMock: GatewayAPI {
     return ""
   }
 
-  func getWalletUnitAttestation(walletId: String, jwk: ECPublicKey) async throws -> String {
+  func getWalletUnitAttestation(nonce: String) async throws -> String {
     return ""
   }
 }

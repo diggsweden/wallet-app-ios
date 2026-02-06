@@ -19,26 +19,25 @@ class IssuanceViewModel {
   private(set) var claimsMetadata: [String: Claim] = [:]
   private var issuer: Issuer?
   private var credentialOffer: CredentialOffer?
-  private var walletKey: SecKey?
   private let openId4VciUtil = OpenID4VCIUtil()
   private var oauth = OAuthCoordinator()
   private let jwtUtil = JWTUtil()
-  var issuerDisplayData: Display?
+  private let gatewayAPICLient: GatewayAPI
+  var issuerDisplayData: IssuerDisplay?
   var state: IssuanceState = .initial
   var error: ErrorEvent? = nil
 
-  init(credentialOfferUri: String) {
+  init(credentialOfferUri: String, gatewayAPIClient: GatewayAPI) {
     self.credentialOfferUri = credentialOfferUri
+    self.gatewayAPICLient = gatewayAPIClient
   }
 
   func fetchIssuer() async {
     do {
-      walletKey = try KeychainService.getOrCreateKey(withTag: .walletKey)
       let credentialOffer = try await fetchCredentialOffer(with: credentialOfferUri)
       self.credentialOffer = credentialOffer
       claimsMetadata = getClaimsMetadata(from: credentialOffer)
       issuer = try await createIssuer(from: credentialOffer)
-      issuerDisplayData = await issuer?.issuerMetadata.display.first
       state = .issuerFetched(offer: credentialOffer)
     } catch {
       self.error = error.toErrorEvent()
@@ -78,8 +77,21 @@ class IssuanceViewModel {
         )
         .get()
 
+      let issuanceState = data.state
+      let authCodeUrl = await issuer.issuerMetadata.authorizationServers?.first
+
       let authResponse =
-        try await issuer.authorizeWithAuthorizationCode(request: requestWithAuthCode).get()
+        try await issuer
+        .authorizeWithAuthorizationCode(
+          request: requestWithAuthCode,
+          grant: .authorizationCode(
+            .init(
+              issuerState: issuanceState,
+              authorizationServer: authCodeUrl,
+            )
+          )
+        )
+        .get()
 
       state = .authorized(request: authResponse)
       await fetchCredential(authResponse)
@@ -90,27 +102,19 @@ class IssuanceViewModel {
 
   func fetchCredential(_ authRequest: AuthorizedRequest) async {
     do {
-      guard
-        let issuer,
-        let walletKey,
-        let configId = credentialOffer?.credentialConfigurationIdentifiers.first?.value
-      else {
+      guard let issuer else {
         throw IssuanceError.issuerNotFound
       }
 
-      let nonce = try await getNonce(issuer)
-      let jwtProof = try jwtUtil.signJWT(
-        with: walletKey,
-        payload: JWTProofPayload(
-          nonce: nonce,
-          aud: await issuer.issuerMetadata.credentialIssuerIdentifier.url.absoluteString
-        ),
-        headers: [
-          "typ": "openid4vci-proof+jwt"
-            //          "key_attestation": wua,
-        ],
-      )
+      guard
+        let configId = credentialOffer?.credentialConfigurationIdentifiers.first,
+        let supportedCredential = await issuer.issuerMetadata.credentialsSupported[configId],
+        supportedCredential.proofTypesSupported?["jwt"] != nil
+      else {
+        throw IssuanceError.credentialNotSupported
+      }
 
+      let jwtProof = try await createProof(issuer)
       let requestEncryption = await issuer.issuerMetadata.credentialRequestEncryption.toCryptoSpec()
       let url = await issuer.issuerMetadata.credentialEndpoint.url
       let accessToken = authRequest.accessToken.accessToken
@@ -119,16 +123,15 @@ class IssuanceViewModel {
       if let requestEncryption {
         credential = try await fetchEncryptedCredential(
           requestEncryption: requestEncryption,
-          responseDecryptionKey: walletKey,
           jwtProof: jwtProof,
-          configId: configId,
+          configId: configId.value,
           url: url,
           accessToken: accessToken
         )
       } else {
         credential = try await fetchUnencryptedCredential(
           jwtProof: jwtProof,
-          configId: configId,
+          configId: configId.value,
           url: url,
           accessToken: accessToken
         )
@@ -143,17 +146,31 @@ class IssuanceViewModel {
     }
   }
 
-  private func getNonce(_ issuer: Issuer) async throws -> String? {
-    guard let url = await issuer.issuerMetadata.nonceEndpoint?.url else {
-      return nil
+  private func createProof(_ issuer: Issuer) async throws -> String {
+    let aud = await issuer.issuerMetadata.credentialIssuerIdentifier.url.absoluteString
+    var headers: [String: Any] = ["typ": "openid4vci-proof+jwt"]
+
+    let payload: JWTProofPayload
+    if let nonceURL = await issuer.issuerMetadata.nonceEndpoint?.url {
+      let nonce = try await openId4VciUtil.fetchNonce(url: nonceURL)
+      let wua = try await gatewayAPICLient.getWalletUnitAttestation(nonce: nonce)
+
+      headers["key_attestation"] = wua
+      payload = JWTProofPayload(nonce: nonce, aud: aud)
+    } else {
+      payload = JWTProofPayload(nonce: nil, aud: aud)
     }
 
-    return try await openId4VciUtil.fetchNonce(url: url)
+    return try jwtUtil.signJWT(
+      with: KeychainService.getOrCreateKey(withTag: .walletKey),
+      payload: payload,
+      headers: headers,
+      includeJWK: false
+    )
   }
 
   private func fetchEncryptedCredential(
     requestEncryption: CryptoSpec,
-    responseDecryptionKey: SecKey,
     jwtProof: String,
     configId: String,
     url: URL,
@@ -239,7 +256,7 @@ class IssuanceViewModel {
   }
 
   private func createIssuer(from credentialOffer: CredentialOffer) async throws -> Issuer {
-    return try Issuer(
+    let issuer = try Issuer(
       authorizationServerMetadata: credentialOffer.authorizationServerMetadata,
       issuerMetadata: credentialOffer.credentialIssuerMetadata,
       config: OpenId4VCIConfig(
@@ -247,6 +264,16 @@ class IssuanceViewModel {
         authFlowRedirectionURI: #URL("wallet-app://authorize")
       )
     )
+
+    if let display = await issuer.issuerMetadata.display.first {
+      issuerDisplayData = IssuerDisplay(
+        name: display.name ?? "Okänd utfärdare",
+        info: display.description,
+        imageUrl: display.logo?.uri
+      )
+    }
+
+    return issuer
   }
 
   private func fetchCredentialOffer(with url: String) async throws -> CredentialOffer {
