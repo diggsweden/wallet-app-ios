@@ -32,14 +32,14 @@ final actor SessionManager {
   }
 
   private func initSession() async throws -> String {
-    let deviceKey = try KeychainService.getOrCreateKey(withTag: .deviceKey)
+    let key = try KeychainService.getOrCreateKey(withTag: .walletKey)
 
-    guard let keyId = try? deviceKey.toECPublicKey().parameters["kid"] else {
+    guard let keyId = try? key.toECPublicKey().parameters["kid"] else {
       throw SessionError.noKeyId
     }
 
     let nonce = try await getChallenge(keyId: keyId)
-    let sessionToken = try await validateChallenge(key: deviceKey, keyId: keyId, nonce: nonce)
+    let sessionToken = try await validateChallenge(key: key, keyId: keyId, nonce: nonce)
 
     self.token = sessionToken
     return sessionToken
@@ -77,6 +77,6 @@ final actor SessionManager {
       throw SessionError.failedChallenge
     }
 
-    return payload.headers.session
+    return try payload.body.json.sessionId
   }
 }

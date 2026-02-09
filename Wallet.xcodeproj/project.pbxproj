@@ -9,10 +9,11 @@
 /* Begin PBXBuildFile section */
 		262A55772E97908C00A837BB /* OpenAPIRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = 262A55762E97908C00A837BB /* OpenAPIRuntime */; };
 		262A557A2E9790A200A837BB /* OpenAPIURLSession in Frameworks */ = {isa = PBXBuildFile; productRef = 262A55792E9790A200A837BB /* OpenAPIURLSession */; };
+		266D76EF2F363AB100E7E647 /* OpenID4VCI in Frameworks */ = {isa = PBXBuildFile; productRef = 266D76EE2F363AB100E7E647 /* OpenID4VCI */; };
+		269D0DC52F362266009E8B35 /* OpenID4VCI in Frameworks */ = {isa = PBXBuildFile; productRef = 269D0DC42F362266009E8B35 /* OpenID4VCI */; };
 		26AD9ED52F0FB49800E5F6C4 /* OpenID4VP in Frameworks */ = {isa = PBXBuildFile; productRef = 26AD9ED42F0FB49800E5F6C4 /* OpenID4VP */; };
 		26B65B172EBCCB28003CE151 /* Versions.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 26B65B152EBCCB20003CE151 /* Versions.xcconfig */; };
 		26C8C7972E0A9DED00F976B2 /* Config-Release.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 26C8C7962E0A9DED00F976B2 /* Config-Release.xcconfig */; };
-		26FA8D112E4B793500619952 /* OpenID4VCI in Frameworks */ = {isa = PBXBuildFile; productRef = 26FA8D102E4B793500619952 /* OpenID4VCI */; };
 		26FA8D142E4B795B00619952 /* JOSESwift in Frameworks */ = {isa = PBXBuildFile; productRef = 26FA8D132E4B795B00619952 /* JOSESwift */; };
 /* End PBXBuildFile section */
 
@@ -78,11 +79,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				26FA8D112E4B793500619952 /* OpenID4VCI in Frameworks */,
 				262A55772E97908C00A837BB /* OpenAPIRuntime in Frameworks */,
 				262A557A2E9790A200A837BB /* OpenAPIURLSession in Frameworks */,
 				26AD9ED52F0FB49800E5F6C4 /* OpenID4VP in Frameworks */,
+				266D76EF2F363AB100E7E647 /* OpenID4VCI in Frameworks */,
 				26FA8D142E4B795B00619952 /* JOSESwift in Frameworks */,
+				269D0DC52F362266009E8B35 /* OpenID4VCI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -156,11 +158,12 @@
 			);
 			name = WalletDemo;
 			packageProductDependencies = (
-				26FA8D102E4B793500619952 /* OpenID4VCI */,
 				26FA8D132E4B795B00619952 /* JOSESwift */,
 				262A55762E97908C00A837BB /* OpenAPIRuntime */,
 				262A55792E9790A200A837BB /* OpenAPIURLSession */,
 				26AD9ED42F0FB49800E5F6C4 /* OpenID4VP */,
+				269D0DC42F362266009E8B35 /* OpenID4VCI */,
+				266D76EE2F363AB100E7E647 /* OpenID4VCI */,
 			);
 			productName = wallet;
 			productReference = 8DF0DE392DAFCA2600270636 /* WalletDemo.app */;
@@ -246,12 +249,12 @@
 			mainGroup = 8DF0DE302DAFCA2600270636;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				26FA8D0F2E4B793500619952 /* XCRemoteSwiftPackageReference "eudi-lib-ios-openid4vci-swift" */,
 				26FA8D122E4B795B00619952 /* XCRemoteSwiftPackageReference "JOSESwift" */,
 				262A55742E97906900A837BB /* XCRemoteSwiftPackageReference "swift-openapi-generator" */,
 				262A55752E97908C00A837BB /* XCRemoteSwiftPackageReference "swift-openapi-runtime" */,
 				262A55782E9790A200A837BB /* XCRemoteSwiftPackageReference "swift-openapi-urlsession" */,
 				26AD9ED32F0FB49800E5F6C4 /* XCRemoteSwiftPackageReference "eudi-lib-ios-openid4vp-swift" */,
+				266D76ED2F363AB100E7E647 /* XCRemoteSwiftPackageReference "eudi-lib-ios-openid4vci-swift" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 8DF0DE3A2DAFCA2600270636 /* Products */;
@@ -653,20 +656,20 @@
 				minimumVersion = 1.2.0;
 			};
 		};
+		266D76ED2F363AB100E7E647 /* XCRemoteSwiftPackageReference "eudi-lib-ios-openid4vci-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-openid4vci-swift.git";
+			requirement = {
+				kind = exactVersion;
+				version = 0.20.0;
+			};
+		};
 		26AD9ED32F0FB49800E5F6C4 /* XCRemoteSwiftPackageReference "eudi-lib-ios-openid4vp-swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-openid4vp-swift.git";
 			requirement = {
 				kind = exactVersion;
 				version = 0.19.0;
-			};
-		};
-		26FA8D0F2E4B793500619952 /* XCRemoteSwiftPackageReference "eudi-lib-ios-openid4vci-swift" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-openid4vci-swift.git";
-			requirement = {
-				kind = exactVersion;
-				version = 0.16.0;
 			};
 		};
 		26FA8D122E4B795B00619952 /* XCRemoteSwiftPackageReference "JOSESwift" */ = {
@@ -695,19 +698,23 @@
 			package = 262A55742E97906900A837BB /* XCRemoteSwiftPackageReference "swift-openapi-generator" */;
 			productName = "plugin:OpenAPIGenerator";
 		};
+		266D76EE2F363AB100E7E647 /* OpenID4VCI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 266D76ED2F363AB100E7E647 /* XCRemoteSwiftPackageReference "eudi-lib-ios-openid4vci-swift" */;
+			productName = OpenID4VCI;
+		};
 		26877ABF2EBE1F580051CFF9 /* WalletMacrosClient */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = WalletMacrosClient;
+		};
+		269D0DC42F362266009E8B35 /* OpenID4VCI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = OpenID4VCI;
 		};
 		26AD9ED42F0FB49800E5F6C4 /* OpenID4VP */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 26AD9ED32F0FB49800E5F6C4 /* XCRemoteSwiftPackageReference "eudi-lib-ios-openid4vp-swift" */;
 			productName = OpenID4VP;
-		};
-		26FA8D102E4B793500619952 /* OpenID4VCI */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 26FA8D0F2E4B793500619952 /* XCRemoteSwiftPackageReference "eudi-lib-ios-openid4vci-swift" */;
-			productName = OpenID4VCI;
 		};
 		26FA8D132E4B795B00619952 /* JOSESwift */ = {
 			isa = XCSwiftPackageProductDependency;

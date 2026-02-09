@@ -15,7 +15,8 @@ struct PrimaryTextFieldStyle: TextFieldStyle {
       .padding(10)
       .background(error ? theme.colors.secondaryAccent : .clear, in: shape)
       .tint(theme.colors.borderInteractive)
-      .overlay(shape.stroke(strokeColor, lineWidth: lineWidth))
+      .overlay(shape.strokeBorder(strokeColor, lineWidth: lineWidth))
+      .clipShape(shape)
       .animation(.snappy, value: isFocused)
   }
 }

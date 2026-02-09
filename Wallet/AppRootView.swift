@@ -75,7 +75,10 @@ struct AppRootView: View {
         )
 
       case .issuance(let url):
-        IssuanceViewWrapper(credentialOfferUri: url) { credential in
+        IssuanceViewWrapper(
+          credentialOfferUri: url,
+          gatewayAPIClient: gatewayAPIClient
+        ) { credential in
           await userViewModel.saveCredential(credential)
           router.pop()
         }
