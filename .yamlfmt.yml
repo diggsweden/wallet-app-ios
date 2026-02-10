@@ -1,0 +1,3 @@
+gitignore_excludes: true
+excludes:
+  - "*/.build/"

@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2025 diggsweden/wallet-app-ios
+# SPDX-FileCopyrightText: 2026 diggsweden/wallet-app-ios
 #
 # SPDX-License-Identifier: CC0-1.0
 
@@ -7,22 +7,36 @@ version = 1
 # Main project files
 [[annotations]]
 path = [
-    "**/*.md",
-    "**/*.toml",
-    "**/*.xml",
-    "**/*.yml",
-    "**/*.pro",
-    "**/*.properties",
-    "**/*.json",
-    ".gitignore",
-    "**/*.webp",
-    "**/*.swift-format",
-    "**/*.xcconfig",
-    "*.xcodeproj/**",
-    "**/*.xcassets/**",
-    "**/*.xcstrings",
-    "**/*.plist",
+  "CHANGELOG.md",
+  "README.md",
+  "docs/DEVELOPMENT.md",
+  "REUSE.toml",
+  ".gitignore",
+  ".mise.toml",
+  ".conform.yaml",
+  ".yamlfmt.yml",
+  ".swift-format",
+  "justfile",
+  "**/*.xcconfig",
+  "**/*.plist",
+  "**/*.xcassets/**",
+  "**/*.xcstrings",
+  "**/*.yml",
+  "**/*.yaml",
+  "**/*.json",
+  "**/*.xcodeproj/**",
+  "**/*.xcworkspace/**",
+  "**/*.xcscheme",
 ]
 precedence = "aggregate"
-SPDX-FileCopyrightText = "2025 diggsweden/wallet-app-ios"
+SPDX-FileCopyrightText = "2026 diggsweden/wallet-app-ios"
 SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = [
+  "Wallet/Resources/Fonts/Ubuntu-Bold.ttf",
+  "Wallet/Resources/Fonts/Ubuntu-Regular.ttf"
+]
+precedence = "override"
+SPDX-FileCopyrightText = "Copyright 2011, 2022, 2023 Canonical Ltd. Licensed under the Ubuntu Font Licence 1.0"
+SPDX-License-Identifier = "Ubuntu-font-1.0"
