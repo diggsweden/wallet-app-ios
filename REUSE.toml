@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2026 diggsweden/wallet-app-ios
+# SPDX-FileCopyrightText: 2026 Digg - Agency for digital government
 #
 # SPDX-License-Identifier: CC0-1.0
 
@@ -29,7 +29,7 @@ path = [
   "**/*.xcscheme",
 ]
 precedence = "aggregate"
-SPDX-FileCopyrightText = "2026 diggsweden/wallet-app-ios"
+SPDX-FileCopyrightText = "2026 Digg - Agency for digital government"
 SPDX-License-Identifier = "CC0-1.0"
 
 [[annotations]]
