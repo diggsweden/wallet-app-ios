@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 diggsweden/wallet-app-ios
+//
+// SPDX-License-Identifier: EUPL-1.2
+
 import OpenID4VCI
 import SwiftUI
 import WalletMacrosClient

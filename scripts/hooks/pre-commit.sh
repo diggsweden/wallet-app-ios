@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+
+# SPDX-FileCopyrightText: 2026 diggsweden/wallet-app-ios
+#
+# SPDX-License-Identifier: EUPL-1.2
+
 set -e
 
 readarray -t files < <(git diff --cached --name-only --diff-filter=ACM | grep '\.swift$' || true)
