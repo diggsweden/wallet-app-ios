@@ -9,6 +9,6 @@
 
 ## License
 
-Source code is EUPL-1.2.
+Source code is EUPL-1.2. Most other assets are CC0-1.0
 
 Copies from Apple App Store are licensed under their store EULA plus our Terms of Use; that doesn’t change the EUPL license for the source.
