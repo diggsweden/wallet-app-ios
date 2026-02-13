@@ -66,5 +66,9 @@ struct AddPhoneNumberForm: View {
           .underline()
       }
     }
+    .contentShape(Rectangle())
+    .onTapGesture {
+      isFocused = false
+    }
   }
 }

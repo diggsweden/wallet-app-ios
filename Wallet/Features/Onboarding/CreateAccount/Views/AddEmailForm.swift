@@ -54,6 +54,10 @@ struct AddEmailForm: View {
       }
     }
     .onChange(of: focusedField, handleFocusChange)
+    .contentShape(Rectangle())
+    .onTapGesture {
+      focusedField = nil
+    }
   }
 
   private var header: some View {
@@ -77,6 +81,9 @@ struct AddEmailForm: View {
       ) {
         emailField(label: exampleEmail, text: $viewModel.data.email)
           .focused($focusedField, equals: .email)
+          .onSubmit {
+            focusedField = .verifyEmail
+          }
       }
 
       PrimaryTextFieldWrapper(

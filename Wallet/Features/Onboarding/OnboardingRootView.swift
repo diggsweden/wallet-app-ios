@@ -189,25 +189,15 @@ struct OnboardingRootView: View {
         }
 
       case .pin:
-        VStack(spacing: 20) {
-          Text("Pinkod används när du ska identifiera dig")
-            .textStyle(.bodyLarge)
-          PinView(buttonText: "onboardingNext") { pin in
-            try viewModel.setPin(pin)
-            viewModel.next(from: .pin)
-          }
-          .frame(maxWidth: .infinity, alignment: .center)
+        OnboardingPinViewWrapper("Pinkod används när du ska identifiera dig") { pin in
+          try viewModel.setPin(pin)
+          viewModel.next(from: .pin)
         }
 
       case .verifyPin:
-        VStack(spacing: 20) {
-          Text("Pinkod används när du ska identifiera dig")
-            .textStyle(.bodyLarge)
-          PinView(buttonText: "Bekräfta") { pin in
-            try viewModel.confirmPin(pin)
-            viewModel.next(from: .verifyPin)
-          }
-          .frame(maxWidth: .infinity, alignment: .center)
+        OnboardingPinViewWrapper("Pinkod används när du ska identifiera dig") { pin in
+          try viewModel.confirmPin(pin)
+          viewModel.next(from: .verifyPin)
         }
 
       case .pid:
