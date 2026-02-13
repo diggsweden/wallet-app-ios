@@ -23,7 +23,7 @@ struct ContactInfoOneTimeCode: View {
   let length: Int = 6
 
   @State private var code = ""
-  @FocusState private var focused: Bool
+  @FocusState private var isFocused: Bool
 
   var body: some View {
     VStack(spacing: 30) {
@@ -39,7 +39,7 @@ struct ContactInfoOneTimeCode: View {
       }
 
       Text(
-        "Det kan ta några minuter innan du får din kod, den är aktiv i en timme.\n\nKom inte koden gå ett steg tillbaka."
+        "Det kan ta några minuter innan du får din kod, den är aktiv i en timme."
       )
       .textStyle(.bodySmall)
 
@@ -54,6 +54,10 @@ struct ContactInfoOneTimeCode: View {
 
         onComplete()
       }
+    }
+    .contentShape(Rectangle())
+    .onTapGesture {
+      isFocused = false
     }
   }
 
@@ -72,28 +76,27 @@ struct ContactInfoOneTimeCode: View {
             .accessibilityHidden(true)
         }
       }
-      .contentShape(Rectangle())
-      .onTapGesture {
-        focused = true
-      }
 
       TextField("", text: $code)
-        .focused($focused)
+        .focused($isFocused)
         .textContentType(.oneTimeCode)
         .keyboardType(.numberPad)
         .textInputAutocapitalization(.never)
         .disableAutocorrection(true)
         .onChange(of: code) {
           if code.count == length {
-            focused = false
+            isFocused = false
           }
         }
-        .foregroundStyle(.clear)
         .opacity(0)
         .accessibilityLabel("Verifieringskod")
         .accessibilityValue("\(code.count) av \(length) siffror")
     }
     .accessibilityElement(children: .combine)
+    .contentShape(Rectangle())
+    .onTapGesture {
+      isFocused = true
+    }
   }
 
   private func char(at index: Int) -> String {

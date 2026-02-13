@@ -16,6 +16,10 @@ final class OAuthCoordinator: NSObject,
     callbackScheme: String,
     anchor: ASPresentationAnchor?
   ) async throws -> URL {
+    guard session == nil else {
+      throw OAuthError.sessionAlreadyRunning
+    }
+
     self.anchor = anchor
 
     return try await withCheckedThrowingContinuation { cont in
@@ -49,5 +53,17 @@ final class OAuthCoordinator: NSObject,
       .compactMap { $0 as? UIWindowScene }
       .flatMap { $0.windows }
       .first { $0.isKeyWindow } ?? ASPresentationAnchor()
+  }
+}
+
+extension OAuthCoordinator {
+  enum OAuthError: LocalizedError {
+    case sessionAlreadyRunning
+
+    var errorDescription: String? {
+      return switch self {
+        case .sessionAlreadyRunning: "En websession är redan aktiv! Avbryter"
+      }
+    }
   }
 }
