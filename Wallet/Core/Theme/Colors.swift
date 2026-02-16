@@ -38,6 +38,17 @@ enum BrandColors {
     `175`: Color.rgba(52, 32, 13),
   )
 
+  static let brown = ColorScale(
+    `10`: Color.rgba(240, 239, 238),
+    `25`: Color.rgba(219, 215, 214),
+    `50`: Color.rgba(182, 175, 173),
+    `70`: Color.rgba(138, 128, 122),
+    `100`: Color.rgba(110, 97, 90),
+    `130`: Color.rgba(77, 68, 63),
+    `150`: Color.rgba(55, 49, 45),
+    `175`: Color.rgba(28, 24, 23),
+  )
+
   static let neutral = ColorScale(
     `10`: Color.rgba(232, 232, 232),
     `25`: Color.rgba(195, 195, 194),

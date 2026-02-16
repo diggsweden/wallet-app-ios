@@ -20,4 +20,8 @@ extension Bundle {
 
     return buildNumber
   }
+
+  var fullVersion: String {
+    return "\(appVersion) (\(buildNumber))"
+  }
 }

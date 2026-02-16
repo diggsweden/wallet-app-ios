@@ -34,8 +34,7 @@ SPDX-License-Identifier = "CC0-1.0"
 
 [[annotations]]
 path = [
-  "Wallet/Resources/Fonts/Ubuntu-Bold.ttf",
-  "Wallet/Resources/Fonts/Ubuntu-Regular.ttf"
+  "Wallet/Resources/Fonts/Ubuntu-*.ttf",
 ]
 precedence = "override"
 SPDX-FileCopyrightText = "Copyright 2011, 2022, 2023 Canonical Ltd. Licensed under the Ubuntu Font Licence 1.0"
