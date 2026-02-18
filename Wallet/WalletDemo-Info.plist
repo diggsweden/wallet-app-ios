@@ -6,6 +6,7 @@
 	<array>
 		<string>Ubuntu-Regular.ttf</string>
 		<string>Ubuntu-Bold.ttf</string>
+		<string>Ubuntu-Medium.ttf</string>
 	</array>
 	<key>CFBundleURLTypes</key>
 	<array>

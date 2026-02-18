@@ -74,7 +74,7 @@ struct ToastView: View {
       case .info: theme.colors.infoInverse
       case .success: theme.colors.successInverse
       case .warning: theme.colors.warningInverse
-      case .error: theme.colors.errorInverse
+      case .error: Theme.light.colors.errorInverse
     }
   }
 }
@@ -86,8 +86,11 @@ struct ToastView: View {
     Toast(type: .info, title: "Lite information"),
     Toast(type: .warning, title: "En varning!"),
   ]
-  VStack {
-    ForEach(toasts) { ToastView($0) {} }
+  ZStack {
+    VStack(spacing: 20) {
+      ForEach(toasts) { ToastView($0) {} }
+    }
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
   }
   .themed
 }

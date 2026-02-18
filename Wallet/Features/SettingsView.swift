@@ -16,7 +16,7 @@ struct SettingsView: View {
         .frame(height: 200)
       Text("App version:")
         .textStyle(.h3)
-      Text("\(Bundle.main.appVersion) (\(Bundle.main.buildNumber))")
+      Text(Bundle.main.fullVersion)
         .textStyle(.bodyLarge)
       Spacer()
       PrimaryButton("Logga ut") {
