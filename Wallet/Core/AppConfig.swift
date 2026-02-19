@@ -22,7 +22,7 @@ enum AppConfig {
 
   static var pidIssuerURL: URL {
     useLocalhost
-      ? #URL("http://192.168.107.14:8080/pid-issuer")
+      ? #URL("http://localhost/pid-issuer")
       : #URL("https://wallet.sandbox.digg.se/pid-issuer")
   }
 
