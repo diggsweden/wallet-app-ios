@@ -69,17 +69,16 @@ struct GatewayAPIClient: GatewayAPI {
   func getWalletUnitAttestation(
     nonce: String,
   ) async throws -> String {
-    let nonceQuery = Operations.CreateWua1.Input.Query(nonce: nonce)
-    let input = Operations.CreateWua1.Input(query: nonceQuery)
+    let nonceQuery = Operations.CreateWua.Input.Query(nonce: nonce)
+    let input = Operations.CreateWua.Input(query: nonceQuery)
 
-    let response = try await client.createWua1(input)
-    guard
-      case let .created(payload) = response,
-      let jwt = try? payload.body.json.jwt
+    let response = try await client.createWua(input)
+
+    guard case let .created(payload) = response
     else {
       throw HTTPError.invalidResponse
     }
 
-    return jwt
+    return try payload.body.json.jwt
   }
 }

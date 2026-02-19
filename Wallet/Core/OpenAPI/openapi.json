@@ -19,67 +19,9 @@
     "/wua": {
       "post": {
         "tags": [
-          "wua-controller-v-1"
-        ],
-        "operationId": "createWua",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateWuaDto"
-              },
-              "example": {
-                "walletId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-                "jwk": {
-                  "kty": "EC",
-                  "crv": "P-256",
-                  "x": "1fH0eqXgMMwCIafNaDc1axdCjLlw7zpTLvLWjpPvhEc",
-                  "y": "5qOejJs7BK-jLingaUTEhBrzP_YPyHfptS5yWE98I40"
-                }
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "500": {
-            "description": "Could not create Wua",
-            "content": {}
-          },
-          "400": {
-            "description": "Bad input",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/BadRequestDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Not authorized",
-            "content": {}
-          },
-          "201": {
-            "description": "Wua created",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/WuaDto"
-                }
-              }
-            }
-          }
-        },
-        "deprecated": true
-      }
-    },
-    "/wua/v3": {
-      "post": {
-        "tags": [
           "wua-controller"
         ],
-        "operationId": "createWua_1",
+        "operationId": "createWua",
         "parameters": [
           {
             "name": "nonce",
@@ -90,21 +32,6 @@
             }
           }
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "example": {
-                "walletId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-                "jwk": {
-                  "kty": "EC",
-                  "crv": "P-256",
-                  "x": "1fH0eqXgMMwCIafNaDc1axdCjLlw7zpTLvLWjpPvhEc",
-                  "y": "5qOejJs7BK-jLingaUTEhBrzP_YPyHfptS5yWE98I40"
-                }
-              }
-            }
-          }
-        },
         "responses": {
           "500": {
             "description": "Could not create Wua",
@@ -135,64 +62,6 @@
             }
           }
         }
-      }
-    },
-    "/wua/v2": {
-      "post": {
-        "tags": [
-          "wua-controller-v-2"
-        ],
-        "operationId": "createWua_2",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateWuaDto"
-              },
-              "example": {
-                "walletId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-                "jwk": {
-                  "kty": "EC",
-                  "crv": "P-256",
-                  "x": "1fH0eqXgMMwCIafNaDc1axdCjLlw7zpTLvLWjpPvhEc",
-                  "y": "5qOejJs7BK-jLingaUTEhBrzP_YPyHfptS5yWE98I40"
-                }
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "500": {
-            "description": "Could not create Wua",
-            "content": {}
-          },
-          "400": {
-            "description": "Bad input",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/BadRequestDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Not authorized",
-            "content": {}
-          },
-          "201": {
-            "description": "Wua created",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/WuaDto"
-                }
-              }
-            }
-          }
-        },
-        "deprecated": true
       }
     },
     "/public/auth/session/response": {
@@ -668,65 +537,18 @@
           }
         }
       },
-      "CreateWuaDto": {
-        "type": "object",
-        "properties": {
-          "walletId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "jwk": {
-            "$ref": "#/components/schemas/JwkDto"
-          }
-        },
-        "required": [
-          "jwk",
-          "walletId"
-        ]
-      },
-      "JwkDto": {
-        "type": "object",
-        "properties": {
-          "kty": {
-            "type": "string",
-            "minLength": 1
-          },
-          "kid": {
-            "type": "string"
-          },
-          "alg": {
-            "type": "string"
-          },
-          "use": {
-            "type": "string"
-          },
-          "crv": {
-            "type": "string",
-            "minLength": 1
-          },
-          "x": {
-            "type": "string",
-            "minLength": 1
-          },
-          "y": {
-            "type": "string",
-            "minLength": 1
-          }
-        },
-        "required": [
-          "crv",
-          "kty",
-          "x",
-          "y"
-        ]
-      },
       "WuaDto": {
         "type": "object",
         "properties": {
           "jwt": {
-            "type": "string"
+            "type": "string",
+            "description": "Wallet unit attestation",
+            "example": "ey5359ddf330..."
           }
-        }
+        },
+        "required": [
+          "jwt"
+        ]
       },
       "ValidateAuthChallengeRequestDto": {
         "type": "object",
@@ -773,6 +595,42 @@
         "required": [
           "emailAdress",
           "publicKey"
+        ]
+      },
+      "JwkDto": {
+        "type": "object",
+        "properties": {
+          "kty": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kid": {
+            "type": "string"
+          },
+          "alg": {
+            "type": "string"
+          },
+          "use": {
+            "type": "string"
+          },
+          "crv": {
+            "type": "string",
+            "minLength": 1
+          },
+          "x": {
+            "type": "string",
+            "minLength": 1
+          },
+          "y": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "crv",
+          "kty",
+          "x",
+          "y"
         ]
       },
       "CreateAccountResponseDto": {
