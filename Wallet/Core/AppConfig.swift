@@ -27,8 +27,6 @@ enum AppConfig {
   }
 
   static var apiKey: String {
-    useLocalhost
-      ? "apikey"
-      : "my_secret_key"
+    Bundle.main.object(forInfoDictionaryKey: "API_KEY") as? String ?? ""
   }
 }

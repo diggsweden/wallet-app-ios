@@ -12,7 +12,7 @@
 		266D76EF2F363AB100E7E647 /* OpenID4VCI in Frameworks */ = {isa = PBXBuildFile; productRef = 266D76EE2F363AB100E7E647 /* OpenID4VCI */; };
 		269D0DC52F362266009E8B35 /* OpenID4VCI in Frameworks */ = {isa = PBXBuildFile; productRef = 269D0DC42F362266009E8B35 /* OpenID4VCI */; };
 		26AD9ED52F0FB49800E5F6C4 /* OpenID4VP in Frameworks */ = {isa = PBXBuildFile; productRef = 26AD9ED42F0FB49800E5F6C4 /* OpenID4VP */; };
-		26B65B172EBCCB28003CE151 /* Versions.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 26B65B152EBCCB20003CE151 /* Versions.xcconfig */; };
+		26B65B172EBCCB28003CE151 /* Base.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 26B65B152EBCCB20003CE151 /* Base.xcconfig */; };
 		26C8C7972E0A9DED00F976B2 /* Config-Release.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 26C8C7962E0A9DED00F976B2 /* Config-Release.xcconfig */; };
 		26FA8D142E4B795B00619952 /* JOSESwift in Frameworks */ = {isa = PBXBuildFile; productRef = 26FA8D132E4B795B00619952 /* JOSESwift */; };
 /* End PBXBuildFile section */
@@ -36,7 +36,7 @@
 
 /* Begin PBXFileReference section */
 		2688D9F62E97E3BA00A6B6A7 /* WalletMacros */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = WalletMacros; sourceTree = "<group>"; };
-		26B65B152EBCCB20003CE151 /* Versions.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Versions.xcconfig; sourceTree = "<group>"; };
+		26B65B152EBCCB20003CE151 /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
 		26C8C7962E0A9DED00F976B2 /* Config-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Config-Release.xcconfig"; sourceTree = "<group>"; };
 		8DF0DE392DAFCA2600270636 /* WalletDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WalletDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8DF0DE462DAFCA2800270636 /* WalletTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WalletTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -120,7 +120,7 @@
 				8DF0DE532DAFCA2800270636 /* WalletUITests */,
 				8DF0DE3A2DAFCA2600270636 /* Products */,
 				26C8C7962E0A9DED00F976B2 /* Config-Release.xcconfig */,
-				26B65B152EBCCB20003CE151 /* Versions.xcconfig */,
+				26B65B152EBCCB20003CE151 /* Base.xcconfig */,
 				269A592F2E97D9DD00100A16 /* Frameworks */,
 				2688D9F62E97E3BA00A6B6A7 /* WalletMacros */,
 			);
@@ -274,7 +274,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				26C8C7972E0A9DED00F976B2 /* Config-Release.xcconfig in Resources */,
-				26B65B172EBCCB28003CE151 /* Versions.xcconfig in Resources */,
+				26B65B172EBCCB28003CE151 /* Base.xcconfig in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -342,7 +342,7 @@
 /* Begin XCBuildConfiguration section */
 		8DF0DE582DAFCA2800270636 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 26B65B152EBCCB20003CE151 /* Versions.xcconfig */;
+			baseConfigurationReference = 26B65B152EBCCB20003CE151 /* Base.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
