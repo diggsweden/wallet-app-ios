@@ -125,76 +125,6 @@
         }
       }
     },
-    "/oidc/accounts/v1": {
-      "post": {
-        "tags": [
-          "account-controller-v-1"
-        ],
-        "operationId": "createAccount",
-        "parameters": [
-          {
-            "name": "SESSION",
-            "in": "header",
-            "description": "OIDC session identifier",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateAccountRequestDto"
-              },
-              "example": {
-                "personalIdentityNumber": "01234",
-                "emailAdress": "digg@example.com",
-                "telephoneNumber": "070 007",
-                "publicKey": {
-                  "kty": "EC",
-                  "crv": "P-256",
-                  "x": "1fH0eqXgMMwCIafNaDc1axdCjLlw7zpTLvLWjpPvhEc",
-                  "y": "5qOejJs7BK-jLingaUTEhBrzP_YPyHfptS5yWE98I40",
-                  "kid": "myKey"
-                }
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "500": {
-            "description": "Could not create account, server error",
-            "content": {}
-          },
-          "400": {
-            "description": "Bad input, unable to create account",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/BadRequestDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "201": {
-            "description": "Account created",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CreateAccountResponseDto"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/attribute-attestations": {
       "get": {
         "tags": [
@@ -299,12 +229,12 @@
         }
       }
     },
-    "/accounts/v1": {
+    "/accounts": {
       "post": {
         "tags": [
           "account-controller"
         ],
-        "operationId": "createAccount_1",
+        "operationId": "createAccount",
         "requestBody": {
           "content": {
             "application/json": {
@@ -355,8 +285,7 @@
               }
             }
           }
-        },
-        "deprecated": true
+        }
       }
     },
     "/public/auth/session/challenge": {
@@ -638,9 +567,14 @@
         "properties": {
           "accountId": {
             "type": "string",
-            "format": "uuid"
+            "format": "uuid",
+            "description": "Account ID",
+            "example": "3685BCB1-4AA4-4C81-8806-43FBD31A0957"
           }
-        }
+        },
+        "required": [
+          "accountId"
+        ]
       },
       "CreateAttestationDto": {
         "type": "object",
