@@ -1,0 +1,7 @@
+// Copy this file to Config-Localhost.xcconfig and fill in your localhost API key.
+// Config-Localhost.xcconfig is gitignored — never commit it.
+
+#include "Config-Base.xcconfig"
+
+API_KEY = your_localhost_api_key_here
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) DEBUG LOCALHOST

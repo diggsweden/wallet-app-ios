@@ -1,0 +1,7 @@
+// Copy this file to Config-Debug.xcconfig and fill in your sandbox API key.
+// Config-Debug.xcconfig is gitignored — never commit it.
+
+#include "Config-Base.xcconfig"
+
+API_KEY = your_sandbox_api_key_here
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) DEBUG

@@ -11,8 +11,9 @@
 		262A557A2E9790A200A837BB /* OpenAPIURLSession in Frameworks */ = {isa = PBXBuildFile; productRef = 262A55792E9790A200A837BB /* OpenAPIURLSession */; };
 		266D76EF2F363AB100E7E647 /* OpenID4VCI in Frameworks */ = {isa = PBXBuildFile; productRef = 266D76EE2F363AB100E7E647 /* OpenID4VCI */; };
 		269D0DC52F362266009E8B35 /* OpenID4VCI in Frameworks */ = {isa = PBXBuildFile; productRef = 269D0DC42F362266009E8B35 /* OpenID4VCI */; };
+		26AB24F52F506AC400EE5FD2 /* Config-Debug.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 26AB24F42F506AC400EE5FD2 /* Config-Debug.xcconfig */; };
 		26AD9ED52F0FB49800E5F6C4 /* OpenID4VP in Frameworks */ = {isa = PBXBuildFile; productRef = 26AD9ED42F0FB49800E5F6C4 /* OpenID4VP */; };
-		26B65B172EBCCB28003CE151 /* Versions.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 26B65B152EBCCB20003CE151 /* Versions.xcconfig */; };
+		26B65B172EBCCB28003CE151 /* Config-Base.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 26B65B152EBCCB20003CE151 /* Config-Base.xcconfig */; };
 		26C8C7972E0A9DED00F976B2 /* Config-Release.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 26C8C7962E0A9DED00F976B2 /* Config-Release.xcconfig */; };
 		26FA8D142E4B795B00619952 /* JOSESwift in Frameworks */ = {isa = PBXBuildFile; productRef = 26FA8D132E4B795B00619952 /* JOSESwift */; };
 /* End PBXBuildFile section */
@@ -36,8 +37,11 @@
 
 /* Begin PBXFileReference section */
 		2688D9F62E97E3BA00A6B6A7 /* WalletMacros */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = WalletMacros; sourceTree = "<group>"; };
-		26B65B152EBCCB20003CE151 /* Versions.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Versions.xcconfig; sourceTree = "<group>"; };
+		26AB24F42F506AC400EE5FD2 /* Config-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Config-Debug.xcconfig"; sourceTree = "<group>"; };
+		26AB283F2F50746900EE5FD2 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		26B65B152EBCCB20003CE151 /* Config-Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Config-Base.xcconfig"; sourceTree = "<group>"; };
 		26C8C7962E0A9DED00F976B2 /* Config-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Config-Release.xcconfig"; sourceTree = "<group>"; };
+		26CF00A1FFCD00010000AAAA /* Config-Localhost.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Config-Localhost.xcconfig"; sourceTree = "<group>"; };
 		8DF0DE392DAFCA2600270636 /* WalletDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WalletDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8DF0DE462DAFCA2800270636 /* WalletTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WalletTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		8DF0DE502DAFCA2800270636 /* WalletUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WalletUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -115,12 +119,15 @@
 		8DF0DE302DAFCA2600270636 = {
 			isa = PBXGroup;
 			children = (
+				26AB283F2F50746900EE5FD2 /* README.md */,
 				8DF0DE3B2DAFCA2600270636 /* Wallet */,
 				8DF0DE492DAFCA2800270636 /* WalletTests */,
 				8DF0DE532DAFCA2800270636 /* WalletUITests */,
 				8DF0DE3A2DAFCA2600270636 /* Products */,
+				26B65B152EBCCB20003CE151 /* Config-Base.xcconfig */,
 				26C8C7962E0A9DED00F976B2 /* Config-Release.xcconfig */,
-				26B65B152EBCCB20003CE151 /* Versions.xcconfig */,
+				26AB24F42F506AC400EE5FD2 /* Config-Debug.xcconfig */,
+				26CF00A1FFCD00010000AAAA /* Config-Localhost.xcconfig */,
 				269A592F2E97D9DD00100A16 /* Frameworks */,
 				2688D9F62E97E3BA00A6B6A7 /* WalletMacros */,
 			);
@@ -274,7 +281,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				26C8C7972E0A9DED00F976B2 /* Config-Release.xcconfig in Resources */,
-				26B65B172EBCCB28003CE151 /* Versions.xcconfig in Resources */,
+				26AB24F52F506AC400EE5FD2 /* Config-Debug.xcconfig in Resources */,
+				26B65B172EBCCB28003CE151 /* Config-Base.xcconfig in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -340,9 +348,9 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
-		8DF0DE582DAFCA2800270636 /* Debug */ = {
+		26CF00A2FFCD00010000AAAB /* Debug Localhost */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 26B65B152EBCCB20003CE151 /* Versions.xcconfig */;
+			baseConfigurationReference = 26CF00A1FFCD00010000AAAA /* Config-Localhost.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -400,7 +408,134 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = "Debug Localhost";
+		};
+		26CF00A3FFCD00010000AAAC /* Debug Localhost */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = R5MUUW7M24;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Wallet/$(TARGET_NAME)-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "ID-plånboken";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = se.digg.wallet.demo;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = "Debug Localhost";
+		};
+		26CF00A4FFCD00010000AAAD /* Debug Localhost */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = R5MUUW7M24;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
+				PRODUCT_BUNDLE_IDENTIFIER = se.digg.walletTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/WalletDemo.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/WalletDemo";
+			};
+			name = "Debug Localhost";
+		};
+		26CF00A5FFCD00010000AAAE /* Debug Localhost */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = R5MUUW7M24;
+				GENERATE_INFOPLIST_FILE = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = se.digg.walletUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = wallet;
+			};
+			name = "Debug Localhost";
+		};
+		8DF0DE582DAFCA2800270636 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 26AB24F42F506AC400EE5FD2 /* Config-Debug.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = R5MUUW7M24;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -597,6 +732,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				8DF0DE582DAFCA2800270636 /* Debug */,
+				26CF00A2FFCD00010000AAAB /* Debug Localhost */,
 				8DF0DE592DAFCA2800270636 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -606,6 +742,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				8DF0DE5B2DAFCA2800270636 /* Debug */,
+				26CF00A3FFCD00010000AAAC /* Debug Localhost */,
 				8DF0DE5C2DAFCA2800270636 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -615,6 +752,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				8DF0DE5E2DAFCA2800270636 /* Debug */,
+				26CF00A4FFCD00010000AAAD /* Debug Localhost */,
 				8DF0DE5F2DAFCA2800270636 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -624,6 +762,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				8DF0DE612DAFCA2800270636 /* Debug */,
+				26CF00A5FFCD00010000AAAE /* Debug Localhost */,
 				8DF0DE622DAFCA2800270636 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;

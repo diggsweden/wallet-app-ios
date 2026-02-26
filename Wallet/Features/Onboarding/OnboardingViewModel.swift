@@ -77,10 +77,6 @@ final class OnboardingViewModel {
     }
   }
 
-  func setOidcSessionId(_ oidcSessionId: String) {
-    context.oidcSessionId = oidcSessionId
-  }
-
   func setCredentialOfferUri(_ credentialOfferUri: String) {
     context.credentialOfferUri = credentialOfferUri
   }
