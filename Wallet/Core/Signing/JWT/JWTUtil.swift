@@ -97,7 +97,6 @@ struct JWTUtil {
     }
 
     let payload = try jwe.decrypt(using: decrypter)
-    let s = String(decoding: payload.data(), as: UTF8.self)
     return try jsonDecoder.decode(T.self, from: payload.data())
   }
 

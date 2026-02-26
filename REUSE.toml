@@ -18,6 +18,7 @@ path = [
   ".swift-format",
   "justfile",
   "**/*.xcconfig",
+  "**/*.example",
   "**/*.plist",
   "**/*.xcassets/**",
   "**/*.xcstrings",
