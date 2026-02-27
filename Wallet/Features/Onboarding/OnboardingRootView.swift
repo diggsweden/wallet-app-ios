@@ -187,10 +187,7 @@ struct OnboardingRootView: View {
         }
 
       case .pid:
-        OnboardingPidView(
-          walletId: userSnapshot.deviceId,
-          gatewayAPIClient: gatewayAPIClient
-        ) { credentialOfferUri in
+        OnboardingPidView { credentialOfferUri in
           viewModel.setCredentialOfferUri(credentialOfferUri)
           viewModel.next(from: .pid)
         }
@@ -204,10 +201,7 @@ struct OnboardingRootView: View {
             await viewModel.setCredentialOfferUri(credential)
           }
         } else {
-          OnboardingPidView(
-            walletId: userSnapshot.deviceId,
-            gatewayAPIClient: gatewayAPIClient
-          ) { credentialOfferUri in
+          OnboardingPidView { credentialOfferUri in
             viewModel.setCredentialOfferUri(credentialOfferUri)
           }
         }
