@@ -10,3 +10,4 @@ megalinter-reports/
 # Local xcconfig overrides — contain API keys, never commit
 Config-Debug.xcconfig
 Config-Localhost.xcconfig
+PROJECT_INDEX.md

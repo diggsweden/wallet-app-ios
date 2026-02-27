@@ -21,7 +21,31 @@ permissions:
   contents: read
 
 jobs:
+  build-number:
+    uses: ./.github/workflows/compute-build-number.yml
+    permissions:
+      contents: read
+
+  generate-artifacts-config:
+    needs: build-number
+    runs-on: ubuntu-latest
+    outputs:
+      config: ${{ steps.generate.outputs.config }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate artifacts config with build number
+        id: generate
+        env:
+          BUILD_NUMBER: ${{ needs.build-number.outputs.value }}
+        run: |
+          {
+            echo "config<<GITHUB_OUTPUT_EOF"
+            envsubst '${BUILD_NUMBER}' < .github/artifacts-config-template.yml
+            echo "GITHUB_OUTPUT_EOF"
+          } >> $GITHUB_OUTPUT
+
   release:
+    needs: generate-artifacts-config
     uses: diggsweden/reusable-ci/.github/workflows/release-orchestrator.yml@e1e1387d5b0399bb5edb00e40485746772344176 # v2.6.0
     permissions:
       contents: write
@@ -32,9 +56,10 @@ jobs:
       actions: read
     secrets: inherit
     with:
-      artifacts-config: .github/artifacts.yml
+      artifacts-config: ${{ needs.generate-artifacts-config.outputs.config }}
       release-publisher: github-cli
       release.attachartifacts: |
         build/export/*.ipa
       release.signartifacts: false
       release.generatesbom: true
+

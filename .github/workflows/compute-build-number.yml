@@ -1,0 +1,26 @@
+# SPDX-FileCopyrightText: 2026 Digg - Agency for Digital Government
+#
+# SPDX-License-Identifier: CC0-1.0
+
+name: Compute Build Number
+
+on:
+  workflow_call:
+    outputs:
+      value:
+        description: "Build number computed from main commit count"
+        value: ${{ jobs.compute.outputs.value }}
+
+jobs:
+  compute:
+    runs-on: ubuntu-latest
+    outputs:
+      value: ${{ steps.compute.outputs.number }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Compute build number from main commit count
+        id: compute
+        run: echo "number=$(git rev-list --count origin/main)" >> $GITHUB_OUTPUT
+
