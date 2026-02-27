@@ -17,5 +17,6 @@ megalinter-reports/
 Config-Debug.xcconfig
 Config-Localhost.xcconfig
 
+# Claude
 CLAUDE.md
 PROJECT_INDEX.md

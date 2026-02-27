@@ -21,7 +21,7 @@
 Install [mise](https://mise.jdx.dev/getting-started.html), then run:
 
 ```sh
-just install   # installs all tools via mise (xcodegen, just, linters, …) and git hooks
+just install   # installs all tools via mise + git hooks
 ```
 
 Run `just` in the repo root at any time to see all available commands.
@@ -31,7 +31,7 @@ Run `just` in the repo root at any time to see all available commands.
 `Wallet.xcodeproj` is not checked in — it is generated from `project.yml`. Generate it and open the workspace in one step:
 
 ```sh
-just generate   # runs xcodegen, then reminds you to open the workspace
+just generate   # runs xcodegen
 just open       # opens Wallet.xcworkspace in Xcode
 ```
 
@@ -46,7 +46,7 @@ Re-run `just generate` whenever `project.yml` changes (e.g. after pulling commit
 The xcconfig files that contain API keys are gitignored and must be created locally from the provided examples. If you ran `just install` in step 1, this was already done for you. Otherwise, run:
 
 ```sh
-just setup-configuration   # copies all Configurations/*.example files to their non-example counterparts
+just setup-configuration
 ```
 
 This creates two files:
@@ -62,10 +62,10 @@ Open each file and set `API_KEY` to your API key.
 
 ### 4. Select a scheme
 
-| Scheme | Config file | Backend |
-|---|---|---|
-| `Wallet Demo` | `Config-Debug.xcconfig` | `https://wallet.sandbox.digg.se` |
-| `Wallet Demo Localhost` | `Config-Localhost.xcconfig` | `https://localhost` |
+| Scheme                  | Config file                 | Backend                          |
+| ----------------------- | --------------------------- | -------------------------------- |
+| `Wallet Demo`           | `Config-Debug.xcconfig`     | `https://wallet.sandbox.digg.se` |
+| `Wallet Demo Localhost` | `Config-Localhost.xcconfig` | `https://localhost`              |
 
 Select the scheme from the Xcode toolbar and run on a simulator or device.
 
