@@ -67,6 +67,11 @@ check-tools: _ensure-devtools
 tools-install: _ensure-devtools
     @mise install
 
+# ▪ Install git hooks (post-merge, post-checkout, pre-push)
+[group('setup')]
+install-hooks:
+    @./scripts/install-hooks.sh
+
 # ==================================================================================== #
 # BUILD - Application builds
 # ==================================================================================== #
