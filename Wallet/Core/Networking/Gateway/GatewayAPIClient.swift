@@ -6,7 +6,7 @@ import Foundation
 import JOSESwift
 import OpenAPIRuntime
 import OpenAPIURLSession
-import WalletMacrosClient
+import WalletMacros
 
 protocol GatewayAPI: Sendable {
   func createAccount(

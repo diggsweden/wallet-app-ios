@@ -7,6 +7,6 @@
 set -e
 
 if git diff --name-only ORIG_HEAD HEAD | grep -q "^project\.yml$"; then
-    echo "==> project.yml changed — regenerating Xcode project..."
-    xcodegen generate
+  echo "==> project.yml changed — regenerating Xcode project..."
+  xcodegen generate
 fi

@@ -7,7 +7,7 @@ import Crypto
 import Foundation
 @preconcurrency import JOSESwift
 import OpenID4VCI
-import WalletMacrosClient
+import WalletMacros
 
 enum IssuanceState {
   case initial

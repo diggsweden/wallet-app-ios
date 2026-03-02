@@ -8,14 +8,14 @@ set -e
 
 previous_head="$1"
 new_head="$2"
-is_branch_checkout="$3"  # 1 = branch checkout, 0 = file checkout (e.g. git checkout -- file.swift)
+is_branch_checkout="$3" # 1 = branch checkout, 0 = file checkout (e.g. git checkout -- file.swift)
 
 # Only regenerate on branch switches, not individual file checkouts
 if [ "$is_branch_checkout" != "1" ]; then
-    exit 0
+  exit 0
 fi
 
 if git diff --name-only "$previous_head" "$new_head" | grep -q "^project\.yml$"; then
-    echo "==> project.yml changed — regenerating Xcode project..."
-    xcodegen generate
+  echo "==> project.yml changed — regenerating Xcode project..."
+  xcodegen generate
 fi

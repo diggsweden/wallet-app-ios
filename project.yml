@@ -89,7 +89,7 @@ targets:
       - package: eudi-lib-ios-openid4vci-swift
         product: OpenID4VCI
       - package: WalletMacros
-        product: WalletMacrosClient
+        product: WalletMacros
     buildToolPlugins:
       - plugin: OpenAPIGenerator
         package: swift-openapi-generator

@@ -2,10 +2,9 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
-import SwiftCompilerPlugin
-import SwiftSyntaxMacros
+import Foundation
+import Swift
 
-@main
-struct WalletMacros: CompilerPlugin {
-  let providingMacros: [Macro.Type] = [URLMacro.self]
-}
+@freestanding(expression)
+public macro URL(_ value: String) -> URL =
+  #externalMacro(module: "WalletMacrosPlugin", type: "URLMacro")

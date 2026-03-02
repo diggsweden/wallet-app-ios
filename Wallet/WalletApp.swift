@@ -5,7 +5,6 @@
 import AuthenticationServices
 import SwiftData
 import SwiftUI
-import WalletMacrosClient
 
 @main
 struct WalletApp: App {

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import SwiftUI
-import WalletMacrosClient
+import WalletMacros
 
 struct WelcomeScreen: View {
   let onComplete: () -> Void
