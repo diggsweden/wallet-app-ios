@@ -127,7 +127,7 @@ struct OnboardingRootView: View {
         case .pin: "Ange pinkod för identifiering"
         case .verifyPin: "Bekräfta pinkod för identifiering"
         case .pid: "Hämta personuppgifter"
-        case .issueCredential: "Hämtade personuppgifter"
+        case .issueCredential: "Hämta personuppgifter"
       }
 
     return Text("\(stepCount, default: "")\(titleText)")
@@ -187,10 +187,7 @@ struct OnboardingRootView: View {
         }
 
       case .pid:
-        OnboardingPidView(
-          walletId: userSnapshot.deviceId,
-          gatewayAPIClient: gatewayAPIClient
-        ) { credentialOfferUri in
+        OnboardingPidView { credentialOfferUri in
           viewModel.setCredentialOfferUri(credentialOfferUri)
           viewModel.next(from: .pid)
         }
@@ -204,10 +201,7 @@ struct OnboardingRootView: View {
             await viewModel.setCredentialOfferUri(credential)
           }
         } else {
-          OnboardingPidView(
-            walletId: userSnapshot.deviceId,
-            gatewayAPIClient: gatewayAPIClient
-          ) { credentialOfferUri in
+          OnboardingPidView { credentialOfferUri in
             viewModel.setCredentialOfferUri(credentialOfferUri)
           }
         }

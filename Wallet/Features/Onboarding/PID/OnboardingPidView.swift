@@ -11,16 +11,8 @@ struct OnboardingPidView: View {
   @Environment(ToastViewModel.self) private var toastViewModel
   @Environment(\.authPresentationAnchor) private var anchor
 
-  init(
-    walletId: String,
-    gatewayAPIClient: GatewayAPI,
-    onSubmit: @escaping (String) throws -> Void
-  ) {
-    viewModel = OnboardingPidViewModel(
-      walletId: walletId,
-      gatewayAPIClient: gatewayAPIClient,
-      onSubmit: onSubmit
-    )
+  init(onSubmit: @escaping (String) throws -> Void) {
+    viewModel = OnboardingPidViewModel(onSubmit: onSubmit)
   }
 
   var body: some View {
@@ -63,5 +55,5 @@ struct OnboardingPidView: View {
 }
 
 #Preview {
-  OnboardingPidView(walletId: "", gatewayAPIClient: GatewayAPIMock()) { _ in }.themed.withToast
+  OnboardingPidView { _ in }.themed.withToast
 }
