@@ -1,0 +1,152 @@
+name: Wallet
+
+options:
+  deploymentTarget:
+    iOS: "17.6"
+  createIntermediateGroups: true
+
+configFiles:
+  Debug: Configurations/Config-Debug.xcconfig
+  Release: Configurations/Config-Release.xcconfig
+  Debug Localhost: Configurations/Config-Localhost.xcconfig
+
+fileGroups:
+  - Configurations
+  - README.md
+  - CHANGELOG.md
+  - project.yml
+
+configs:
+  Debug: debug
+  Release: release
+  Debug Localhost: debug
+
+settings:
+  base:
+    CURRENT_PROJECT_VERSION: 1
+    MARKETING_VERSION: 0.0.12
+  configs:
+    Debug:
+      ENABLE_TESTABILITY: YES
+      ONLY_ACTIVE_ARCH: YES
+    Release:
+      COPY_PHASE_STRIP: NO
+    Debug Localhost:
+      ENABLE_TESTABILITY: YES
+      ONLY_ACTIVE_ARCH: YES
+
+packages:
+  JOSESwift:
+    url: https://github.com/airsidemobile/JOSESwift.git
+    from: 3.0.0
+  swift-openapi-runtime:
+    url: https://github.com/apple/swift-openapi-runtime
+    from: 1.8.3
+  swift-openapi-urlsession:
+    url: https://github.com/apple/swift-openapi-urlsession
+    from: 1.2.0
+  swift-openapi-generator:
+    url: https://github.com/apple/swift-openapi-generator
+    from: 1.10.3
+  eudi-lib-ios-openid4vp-swift:
+    url: https://github.com/eu-digital-identity-wallet/eudi-lib-ios-openid4vp-swift.git
+    exactVersion: 0.19.0
+  eudi-lib-ios-openid4vci-swift:
+    url: https://github.com/eu-digital-identity-wallet/eudi-lib-ios-openid4vci-swift.git
+    exactVersion: 0.20.0
+  WalletMacros:
+    path: WalletMacros
+
+targets:
+  WalletDemo:
+    type: application
+    platform: iOS
+    sources:
+      - path: Wallet
+        excludes:
+          - WalletDemo-Info.plist
+    settings:
+      base:
+        DEVELOPMENT_TEAM: R5MUUW7M24
+        ENABLE_PREVIEWS: YES
+        INFOPLIST_FILE: Wallet/WalletDemo-Info.plist
+        PRODUCT_BUNDLE_IDENTIFIER: se.digg.wallet.demo
+        SWIFT_EMIT_LOC_STRINGS: YES
+        SWIFT_VERSION: "6.0"
+      configs:
+        Debug:
+          CODE_SIGN_STYLE: Automatic
+        Debug Localhost:
+          CODE_SIGN_STYLE: Automatic
+    dependencies:
+      - package: JOSESwift
+      - package: swift-openapi-runtime
+        product: OpenAPIRuntime
+      - package: swift-openapi-urlsession
+        product: OpenAPIURLSession
+      - package: eudi-lib-ios-openid4vp-swift
+        product: OpenID4VP
+      - package: eudi-lib-ios-openid4vci-swift
+        product: OpenID4VCI
+      - package: WalletMacros
+        product: WalletMacrosClient
+    buildToolPlugins:
+      - plugin: OpenAPIGenerator
+        package: swift-openapi-generator
+
+  WalletTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: "18.4"
+    sources: WalletTests
+    settings:
+      base:
+        BUNDLE_LOADER: "$(TEST_HOST)"
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: R5MUUW7M24
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: se.digg.walletTests
+        SWIFT_VERSION: "6.0"
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/WalletDemo.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/WalletDemo"
+    dependencies:
+      - target: WalletDemo
+
+  WalletUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    deploymentTarget: "18.4"
+    sources: WalletUITests
+    settings:
+      base:
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: R5MUUW7M24
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: se.digg.walletUITests
+        SWIFT_VERSION: "6.0"
+        TEST_TARGET_NAME: WalletDemo
+    dependencies:
+      - target: WalletDemo
+
+schemes:
+  Wallet Demo:
+    build:
+      targets:
+        WalletDemo: all
+    test:
+      targets:
+        - WalletTests
+        - WalletUITests
+
+  Wallet Demo Localhost:
+    build:
+      targets:
+        WalletDemo: all
+    run:
+      config: Debug Localhost
+    test:
+      config: Debug Localhost
+      targets:
+        - WalletTests
+        - WalletUITests
+    analyze:
+      config: Debug Localhost
