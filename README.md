@@ -64,6 +64,57 @@ Select the scheme from the Xcode toolbar and run on a simulator or device.
 
 ---
 
+## Available Commands
+
+Run `just` at any time to see all commands. Here's the full reference:
+
+### Setup
+
+| Command | Description |
+|---|---|
+| `just install` | Install devtools and tools (start here) |
+| `just install-hooks` | Install git hooks (pre-push, post-merge, post-checkout) |
+| `just setup-devtools` | Clone or update devbase-check tooling |
+| `just tools-install` | Install tools via mise |
+| `just check-tools` | Verify all required tools are installed |
+
+### Build
+
+| Command | Description |
+|---|---|
+| `just build` | Build debug for simulator (iPhone 15) |
+| `just build-release` | Build release |
+| `just build-for-testing` | Build for testing |
+| `just build-clean` | Clean build artifacts |
+
+### Test
+
+| Command | Description |
+|---|---|
+| `just test` | Run unit tests on simulator |
+| `just test-ui` | Run UI tests on simulator |
+
+### Quality
+
+| Command | Description |
+|---|---|
+| `just verify` | Run all checks (lint + tool verification) |
+| `just lint-all` | Run all linters with summary |
+| `just lint-fix` | Auto-fix all fixable issues |
+| `just lint-commits` | Validate commit messages |
+| `just lint-secrets` | Scan for secrets |
+| `just lint-yaml` | Lint YAML files |
+| `just lint-yaml-fix` | Fix YAML formatting |
+| `just lint-markdown` | Lint Markdown files |
+| `just lint-markdown-fix` | Fix Markdown formatting |
+| `just lint-shell` | Lint shell scripts |
+| `just lint-shell-fmt` | Check shell formatting |
+| `just lint-shell-fmt-fix` | Fix shell formatting |
+| `just lint-actions` | Lint GitHub Actions workflows |
+| `just lint-license` | Check license compliance (REUSE) |
+
+---
+
 ## License
 
 Source code is EUPL-1.2. Most other assets are CC0-1.0
