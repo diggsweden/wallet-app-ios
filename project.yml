@@ -11,7 +11,9 @@ configFiles:
   Debug Localhost: Configurations/Config-Localhost.xcconfig
 
 fileGroups:
-  - Configurations
+  - path: Configurations
+    excludes:
+      - "*.example"
   - README.md
   - CHANGELOG.md
   - project.yml
@@ -71,6 +73,7 @@ targets:
         ENABLE_PREVIEWS: YES
         INFOPLIST_FILE: Wallet/WalletDemo-Info.plist
         PRODUCT_BUNDLE_IDENTIFIER: se.digg.wallet.demo
+        PRODUCT_NAME: WalletDemo
         SWIFT_EMIT_LOC_STRINGS: YES
         SWIFT_VERSION: "6.0"
       configs:

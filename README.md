@@ -16,42 +16,49 @@
 - [just](https://github.com/casey/just) — command runner used for all development tasks
 - An API key for the sandbox environment (contact the team to obtain one)
 
-### 1. Install tools and git hooks
+### 1. Install tools
 
 Install [mise](https://mise.jdx.dev/getting-started.html), then run:
 
 ```sh
-just install       # installs all tools via mise (xcodegen, just, linters, …)
-just install-hooks # installs pre-push, post-merge, post-checkout git hooks
+just install   # installs all tools via mise (xcodegen, just, linters, …) and git hooks
 ```
 
 Run `just` in the repo root at any time to see all available commands.
 
-### 2. Generate the Xcode project
+### 2. Generate the Xcode project and open the workspace
 
-`Wallet.xcodeproj` is not checked in. It must be generated from the `project.yml` spec before opening the project in Xcode:
+`Wallet.xcodeproj` is not checked in — it is generated from `project.yml`. Generate it and open the workspace in one step:
 
 ```sh
-xcodegen generate
+just generate   # runs xcodegen, then reminds you to open the workspace
+just open       # opens Wallet.xcworkspace in Xcode
 ```
 
-Re-run this command whenever `project.yml` changes (e.g. after pulling new commits that modify it).
+> **Always open `Wallet.xcworkspace`, never `Wallet.xcodeproj` directly.**
+> Opening the project file instead of the workspace causes Xcode to manage
+> `Package.resolved` inside .xcodeproj instead of on workspace level
+
+Re-run `just generate` whenever `project.yml` changes (e.g. after pulling commits that modify it). The post-merge and post-checkout git hooks do this automatically.
 
 ### 3. Create your local config files
 
-The xcconfig files that contain API keys are gitignored and must be created locally from the provided examples.
+The xcconfig files that contain API keys are gitignored and must be created locally from the provided examples. If you ran `just install` in step 1, this was already done for you. Otherwise, run:
 
 ```sh
-cp Configurations/Config-Debug.xcconfig.example Configurations/Config-Debug.xcconfig
-# Optional — only needed if running backend services locally:
-cp Configurations/Config-Localhost.xcconfig.example Configurations/Config-Localhost.xcconfig
+just setup-configuration   # copies all Configurations/*.example files to their non-example counterparts
 ```
+
+This creates two files:
+
+- `Configurations/Config-Debug.xcconfig` — used by the `Wallet Demo` scheme (sandbox backend)
+- `Configurations/Config-Localhost.xcconfig` — used by the `Wallet Demo Localhost` scheme (local backend)
 
 Open each file and set `API_KEY` to your API key.
 
-> **Never commit these files.** They are listed in `.gitignore` for this reason.
+> **Never commit these files.** They are listed in `.gitignore`
 >
-> Both files are referenced in the generated `Wallet.xcodeproj` and will appear in the project navigator automatically once they exist on disk. If they are missing, Xcode shows them with a red missing-file indicator — this is expected until you run the `cp` step above.
+> Both files are referenced in the generated `Wallet.xcodeproj` and will appear in the project navigator automatically once they exist on disk. If they are missing, Xcode shows them with a red missing-file indicator — this is expected until you create them.
 
 ### 4. Select a scheme
 
@@ -66,54 +73,7 @@ Select the scheme from the Xcode toolbar and run on a simulator or device.
 
 ## Available Commands
 
-Run `just` at any time to see all commands. Here's the full reference:
-
-### Setup
-
-| Command | Description |
-|---|---|
-| `just install` | Install devtools and tools (start here) |
-| `just install-hooks` | Install git hooks (pre-push, post-merge, post-checkout) |
-| `just setup-devtools` | Clone or update devbase-check tooling |
-| `just tools-install` | Install tools via mise |
-| `just check-tools` | Verify all required tools are installed |
-
-### Build
-
-| Command | Description |
-|---|---|
-| `just build` | Build debug for simulator (iPhone 15) |
-| `just build-release` | Build release |
-| `just build-for-testing` | Build for testing |
-| `just build-clean` | Clean build artifacts |
-
-### Test
-
-| Command | Description |
-|---|---|
-| `just test` | Run unit tests on simulator |
-| `just test-ui` | Run UI tests on simulator |
-
-### Quality
-
-| Command | Description |
-|---|---|
-| `just verify` | Run all checks (lint + tool verification) |
-| `just lint-all` | Run all linters with summary |
-| `just lint-fix` | Auto-fix all fixable issues |
-| `just lint-commits` | Validate commit messages |
-| `just lint-secrets` | Scan for secrets |
-| `just lint-yaml` | Lint YAML files |
-| `just lint-yaml-fix` | Fix YAML formatting |
-| `just lint-markdown` | Lint Markdown files |
-| `just lint-markdown-fix` | Fix Markdown formatting |
-| `just lint-shell` | Lint shell scripts |
-| `just lint-shell-fmt` | Check shell formatting |
-| `just lint-shell-fmt-fix` | Fix shell formatting |
-| `just lint-actions` | Lint GitHub Actions workflows |
-| `just lint-license` | Check license compliance (REUSE) |
-
----
+Run `just` at any time to see all commands.
 
 ## License
 
