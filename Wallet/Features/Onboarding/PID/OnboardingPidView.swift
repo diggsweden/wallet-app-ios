@@ -4,7 +4,7 @@
 
 import JOSESwift
 import SwiftUI
-import WalletMacrosClient
+import WalletMacros
 
 struct OnboardingPidView: View {
   private var viewModel: OnboardingPidViewModel

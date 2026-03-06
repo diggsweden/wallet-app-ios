@@ -17,6 +17,7 @@ path = [
   ".yamlfmt.yml",
   ".swift-format",
   "justfile",
+  "**/Package.resolved",
   "**/*.xcconfig",
   "**/*.example",
   "**/*.plist",

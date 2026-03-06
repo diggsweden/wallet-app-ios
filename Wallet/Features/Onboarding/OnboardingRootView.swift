@@ -4,7 +4,7 @@
 
 import SwiftData
 import SwiftUI
-import WalletMacrosClient
+import WalletMacros
 
 struct OnboardingRootView: View {
   private let gatewayAPIClient: GatewayAPI

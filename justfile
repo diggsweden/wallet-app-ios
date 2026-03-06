@@ -30,9 +30,9 @@ default:
 # SETUP - Development environment setup
 # ==================================================================================== #
 
-# ▪ Install devtools and tools
+# ▪ Install devtools, tools, git hooks, and configuration
 [group('setup')]
-install: setup-devtools tools-install
+install: setup-devtools tools-install install-hooks setup-configuration
 
 # ▪ Setup devtools (clone or update)
 [group('setup')]
@@ -67,43 +67,64 @@ check-tools: _ensure-devtools
 tools-install: _ensure-devtools
     @mise install
 
+# ▪ Install git hooks (post-merge, post-checkout, pre-push)
+[group('setup')]
+install-hooks:
+    @./scripts/install-hooks.sh
+
+# Copy config files from .example templates (skips existing files)
+[group('setup')]
+setup-configuration:
+    @./scripts/setup-configuration.sh
+
 # ==================================================================================== #
 # BUILD - Application builds
 # ==================================================================================== #
 
-# Xcode project and scheme
-xcode_project := "Wallet.xcodeproj"
+# Xcode workspace and scheme
+xcode_workspace := "Wallet.xcworkspace"
 xcode_scheme := "Wallet Demo"
+
+# ▪ Generate the Xcode project from project.yml, then open the workspace
+[group('setup')]
+generate:
+    xcodegen generate
+    @printf "==> Open Wallet.xcworkspace — not Wallet.xcodeproj\n"
+
+# ▪ Open the workspace in Xcode
+[group('setup')]
+open:
+    open {{xcode_workspace}}
 
 # Build debug (simulator)
 [group('build')]
 build:
-    xcodebuild -project {{xcode_project}} -scheme "{{xcode_scheme}}" -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 15' build
+    xcodebuild -workspace {{xcode_workspace}} -scheme "{{xcode_scheme}}" -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 15' build
 
 # Build release
 [group('build')]
 build-release:
-    xcodebuild -project {{xcode_project}} -scheme "{{xcode_scheme}}" -configuration Release build
+    xcodebuild -workspace {{xcode_workspace}} -scheme "{{xcode_scheme}}" -configuration Release build
 
 # Build for testing
 [group('build')]
 build-for-testing:
-    xcodebuild -project {{xcode_project}} -scheme "{{xcode_scheme}}" -destination 'platform=iOS Simulator,name=iPhone 15' build-for-testing
+    xcodebuild -workspace {{xcode_workspace}} -scheme "{{xcode_scheme}}" -destination 'platform=iOS Simulator,name=iPhone 15' build-for-testing
 
 # Clean build artifacts
 [group('build')]
 build-clean:
-    xcodebuild -project {{xcode_project}} -scheme "{{xcode_scheme}}" clean
+    xcodebuild -workspace {{xcode_workspace}} -scheme "{{xcode_scheme}}" clean
 
 # Run unit tests
 [group('build')]
 test:
-    xcodebuild -project {{xcode_project}} -scheme "{{xcode_scheme}}" -destination 'platform=iOS Simulator,name=iPhone 15' test
+    xcodebuild -workspace {{xcode_workspace}} -scheme "{{xcode_scheme}}" -destination 'platform=iOS Simulator,name=iPhone 15' test
 
 # Run UI tests
 [group('build')]
 test-ui:
-    xcodebuild -project {{xcode_project}} -scheme "{{xcode_scheme}}" -destination 'platform=iOS Simulator,name=iPhone 15' -only-testing:WalletUITests test
+    xcodebuild -workspace {{xcode_workspace}} -scheme "{{xcode_scheme}}" -destination 'platform=iOS Simulator,name=iPhone 15' -only-testing:WalletUITests test
 
 # ==================================================================================== #
 # VERIFY - Quality assurance

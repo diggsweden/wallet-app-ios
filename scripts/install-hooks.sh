@@ -9,16 +9,23 @@ set -e
 repo_root=$(git rev-parse --show-toplevel)
 hooks_dir="$repo_root/.git/hooks"
 
-echo "==> Installing pre-push hook..."
-ln -sf "$repo_root/scripts/hooks/pre-push.sh" "$hooks_dir/pre-push"
-chmod +x "$hooks_dir/pre-push"
-echo "✅ pre-push hook installed at $hooks_dir/pre-push"
+mkdir -p "$hooks_dir"
 
-if [[ "$1" == "--format-on-commit" ]]; then
-  echo "==> Installing optional pre-commit format hook..."
-  ln -sf "$repo_root/scripts/format.sh" "$hooks_dir/pre-commit"
-  chmod +x "$hooks_dir/pre-commit"
-  echo "✅ pre-commit hook installed at $hooks_dir/pre-commit"
-else
-  echo "ℹ️ Skipped pre-commit hook. Use --format-on-commit to enable it."
-fi
+install_hook() {
+  local name="$1"
+  local source="$repo_root/scripts/hooks/$name.sh"
+  local target="$hooks_dir/$name"
+
+  if [[ -L "$target" && "$(readlink "$target")" == "$source" ]]; then
+    return
+  fi
+
+  echo "==> Installing $name hook..."
+  ln -sf "$source" "$target"
+  chmod +x "$target"
+  echo "✓ $name hook installed"
+}
+
+install_hook pre-push
+install_hook post-merge
+install_hook post-checkout

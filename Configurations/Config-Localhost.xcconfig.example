@@ -1,0 +1,2 @@
+API_KEY = your_localhost_api_key_here
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) LOCALHOST

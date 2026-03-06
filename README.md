@@ -12,25 +12,55 @@
 ### Prerequisites
 
 - Xcode 26 or later
+- [mise](https://mise.jdx.dev) — tool version manager (installs `just`, `xcodegen`, and linters)
+- [just](https://github.com/casey/just) — command runner used for all development tasks
 - An API key for the sandbox environment (contact the team to obtain one)
 
-### 1. Create your local config files
+### 1. Install tools
 
-The xcconfig files that contain API keys are gitignored and must be created locally from the provided examples.
+Install [mise](https://mise.jdx.dev/getting-started.html), then run:
 
 ```sh
-cp Config-Debug.xcconfig.example Config-Debug.xcconfig
-# Optional — only needed if running backend services locally:
-cp Config-Localhost.xcconfig.example Config-Localhost.xcconfig
+just install   # installs all tools via mise (xcodegen, just, linters, …) and git hooks
 ```
+
+Run `just` in the repo root at any time to see all available commands.
+
+### 2. Generate the Xcode project and open the workspace
+
+`Wallet.xcodeproj` is not checked in — it is generated from `project.yml`. Generate it and open the workspace in one step:
+
+```sh
+just generate   # runs xcodegen, then reminds you to open the workspace
+just open       # opens Wallet.xcworkspace in Xcode
+```
+
+> **Always open `Wallet.xcworkspace`, never `Wallet.xcodeproj` directly.**
+> Opening the project file instead of the workspace causes Xcode to manage
+> `Package.resolved` inside .xcodeproj instead of on workspace level
+
+Re-run `just generate` whenever `project.yml` changes (e.g. after pulling commits that modify it). The post-merge and post-checkout git hooks do this automatically.
+
+### 3. Create your local config files
+
+The xcconfig files that contain API keys are gitignored and must be created locally from the provided examples. If you ran `just install` in step 1, this was already done for you. Otherwise, run:
+
+```sh
+just setup-configuration   # copies all Configurations/*.example files to their non-example counterparts
+```
+
+This creates two files:
+
+- `Configurations/Config-Debug.xcconfig` — used by the `Wallet Demo` scheme (sandbox backend)
+- `Configurations/Config-Localhost.xcconfig` — used by the `Wallet Demo Localhost` scheme (local backend)
 
 Open each file and set `API_KEY` to your API key.
 
-> **Never commit these files.** They are listed in `.gitignore` for this reason.
+> **Never commit these files.** They are listed in `.gitignore`
 >
-> Both files are already referenced in `Wallet.xcodeproj` and will appear in the project navigator automatically once they exist on disk. Before the `cp` step, Xcode shows them with a red missing-file indicator — this is expected.
+> Both files are referenced in the generated `Wallet.xcodeproj` and will appear in the project navigator automatically once they exist on disk. If they are missing, Xcode shows them with a red missing-file indicator — this is expected until you create them.
 
-### 2. Select a scheme
+### 4. Select a scheme
 
 | Scheme | Config file | Backend |
 |---|---|---|
@@ -40,6 +70,10 @@ Open each file and set `API_KEY` to your API key.
 Select the scheme from the Xcode toolbar and run on a simulator or device.
 
 ---
+
+## Available Commands
+
+Run `just` at any time to see all commands.
 
 ## License
 

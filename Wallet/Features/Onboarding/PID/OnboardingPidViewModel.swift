@@ -4,7 +4,7 @@
 
 import AuthenticationServices
 import Foundation
-import WalletMacrosClient
+import WalletMacros
 
 @MainActor
 @Observable

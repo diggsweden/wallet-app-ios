@@ -15,8 +15,8 @@ let package = Package(
   ],
   products: [
     .library(
-      name: "WalletMacrosClient",
-      targets: ["WalletMacrosClient"]
+      name: "WalletMacros",
+      targets: ["WalletMacros"]
     )
   ],
   dependencies: [
@@ -27,7 +27,7 @@ let package = Package(
   ],
   targets: [
     .macro(
-      name: "WalletMacros",
+      name: "WalletMacrosPlugin",
       dependencies: [
         .product(name: "SwiftSyntax", package: "swift-syntax"),
         .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
@@ -35,8 +35,8 @@ let package = Package(
       ]
     ),
     .target(
-      name: "WalletMacrosClient",
-      dependencies: ["WalletMacros"]
+      name: "WalletMacros",
+      dependencies: ["WalletMacrosPlugin"]
     ),
   ]
 )

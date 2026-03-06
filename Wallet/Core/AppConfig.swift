@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import Foundation
-import WalletMacrosClient
+import WalletMacros
 
 enum AppConfig {
   static var apiBaseURL: URL {

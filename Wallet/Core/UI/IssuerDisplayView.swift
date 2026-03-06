@@ -4,7 +4,7 @@
 
 import OpenID4VCI
 import SwiftUI
-import WalletMacrosClient
+import WalletMacros
 
 struct IssuerDisplayView: View {
   let issuerDisplayData: IssuerDisplay

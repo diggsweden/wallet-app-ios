@@ -6,7 +6,7 @@ import Foundation
 import HTTPTypes
 import OpenAPIRuntime
 import OpenAPIURLSession
-import WalletMacrosClient
+import WalletMacros
 
 final actor SessionManager {
   private var token: String? = nil
