@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
-import JOSESwift
 import SwiftUI
 import WalletMacros
 

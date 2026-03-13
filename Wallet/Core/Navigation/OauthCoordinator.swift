@@ -5,7 +5,7 @@
 import AuthenticationServices
 
 @MainActor
-final class OAuthCoordinator: NSObject,
+final class OauthCoordinator: NSObject,
   ASWebAuthenticationPresentationContextProviding
 {
   private var session: ASWebAuthenticationSession?
@@ -17,7 +17,7 @@ final class OAuthCoordinator: NSObject,
     anchor: ASPresentationAnchor?
   ) async throws -> URL {
     guard session == nil else {
-      throw OAuthError.sessionAlreadyRunning
+      throw OauthError.sessionAlreadyRunning
     }
 
     self.anchor = anchor
@@ -56,8 +56,8 @@ final class OAuthCoordinator: NSObject,
   }
 }
 
-extension OAuthCoordinator {
-  enum OAuthError: LocalizedError {
+extension OauthCoordinator {
+  enum OauthError: LocalizedError {
     case sessionAlreadyRunning
 
     var errorDescription: String? {

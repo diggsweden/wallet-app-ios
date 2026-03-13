@@ -11,7 +11,7 @@ final class OnboardingViewModel {
     case start, forward, back
   }
 
-  private let setPidCredential: (Credential) async -> Void
+  private let setPidCredential: (SavedCredential) async -> Void
   private let signIn: (String) async -> Void
   private let onReset: () async -> Void
 
@@ -20,7 +20,7 @@ final class OnboardingViewModel {
   private(set) var stepTransition: StepTransition = .start
 
   init(
-    setPidCredential: @escaping (Credential) async -> Void,
+    setPidCredential: @escaping (SavedCredential) async -> Void,
     signIn: @escaping (String) async -> Void,
     onReset: @escaping () async -> Void
   ) {
@@ -65,7 +65,7 @@ final class OnboardingViewModel {
     context.email = email
   }
 
-  func setCredentialOfferUri(_ credential: Credential) async {
+  func setCredentialOfferURI(_ credential: SavedCredential) async {
     await setPidCredential(credential)
   }
 

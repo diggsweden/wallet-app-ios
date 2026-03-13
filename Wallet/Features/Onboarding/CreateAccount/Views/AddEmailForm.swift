@@ -20,13 +20,13 @@ struct AddEmailForm: View {
   private let emailFields: Set<Field> = [.email, .verifyEmail]
 
   init(
-    gatewayAPIClient: GatewayAPI,
+    gatewayApiClient: GatewayApi,
     phoneNumber: String? = nil,
     onSubmit: @escaping (String, String) async throws -> Void,
   ) {
     _viewModel = State(
       wrappedValue: CreateAccountViewModel(
-        gatewayAPIClient: gatewayAPIClient,
+        gatewayApiClient: gatewayApiClient,
         phoneNumber: phoneNumber,
         onSubmit: onSubmit
       )
@@ -148,7 +148,7 @@ struct AddEmailForm: View {
 #Preview {
   VStack {
     AddEmailForm(
-      gatewayAPIClient: GatewayAPIMock(),
+      gatewayApiClient: GatewayApiMock(),
       onSubmit: { _, _ in },
     )
   }

@@ -4,6 +4,7 @@
 
 import Foundation
 import HTTPTypes
+import JSONWebSignature
 import OpenAPIRuntime
 import OpenAPIURLSession
 import WalletMacros
@@ -12,15 +13,15 @@ final actor SessionManager {
   private var token: String? = nil
   private var expirationDate: Date = .now
   let client: Client
-  let accountIDProvider: AccountIDProvider
+  let accountIdProvider: AccountIdProvider
 
-  init(baseUrl: URL? = nil, accountIDProvider: AccountIDProvider) {
-    let url = baseUrl ?? AppConfig.apiBaseURL
+  init(baseUrl: URL? = nil, accountIdProvider: AccountIdProvider) {
+    let url = baseUrl ?? AppConfig.apiBaseUrl
     client = Client(
       serverURL: url,
       transport: URLSessionTransport(),
     )
-    self.accountIDProvider = accountIDProvider
+    self.accountIdProvider = accountIdProvider
   }
 
   func getToken() async throws -> String {
@@ -38,7 +39,7 @@ final actor SessionManager {
   private func initSession() async throws -> String {
     let key = try KeychainService.getOrCreateKey(withTag: .walletKey)
 
-    guard let keyId = try? key.toECPublicKey().parameters["kid"] else {
+    guard let keyId = try? key.jwk.thumbprint() else {
       throw SessionError.noKeyId
     }
 
@@ -50,11 +51,11 @@ final actor SessionManager {
   }
 
   private func getChallenge(keyId: String) async throws -> String {
-    guard let accountID = await accountIDProvider.accountID() else {
-      throw SessionError.noAccountID
+    guard let accountId = await accountIdProvider.accountId() else {
+      throw SessionError.noAccountId
     }
 
-    let query = Operations.InitChallenge.Input.Query(accountId: accountID, keyId: keyId)
+    let query = Operations.InitChallenge.Input.Query(accountId: accountId, keyId: keyId)
     let response = try await client.initChallenge(query: query)
 
     guard
@@ -72,8 +73,9 @@ final actor SessionManager {
       let nonce: String
     }
 
+    let header = DefaultJWSHeaderImpl(algorithm: .ES256, keyID: keyId)
     let payload = SessionPayload(nonce: nonce)
-    let jwt = try JWTUtil().signJWT(with: key, payload: payload, headers: ["kid": keyId])
+    let jwt = try JwtUtil().signJwt(with: key, payload: payload, header: header)
     let input = Operations.ValidateChallenge.Input(body: .json(.init(signedJwt: jwt)))
     let response = try await client.validateChallenge(input)
 

@@ -2,15 +2,19 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
-import JOSESwift
+import Foundation
+import JSONWebAlgorithms
+import JSONWebKey
 import OpenID4VCI
 
 extension CredentialRequestEncryption? {
   func toCryptoSpec() -> CryptoSpec? {
     guard case let .required(jwks, methods, _) = self,
-      let jwk = jwks.first,
+      let joseJwk = jwks.first,
       let method = methods.first,
-      let enc = ContentEncryptionAlgorithm(encryptionMethod: method)
+      let enc = ContentEncryptionAlgorithm(rawValue: method.name),
+      let jwkData = joseJwk.jsonData(),
+      let jwk = try? JSONDecoder().decode(JWK.self, from: jwkData)
     else {
       return nil
     }

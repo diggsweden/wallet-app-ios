@@ -6,7 +6,7 @@ import Foundation
 import WalletMacros
 
 enum AppConfig {
-  static var apiBaseURL: URL {
+  static var apiBaseUrl: URL {
     #if LOCALHOST
       #URL("http://localhost:8082/wallet-client-gateway")
     #else
@@ -14,7 +14,7 @@ enum AppConfig {
     #endif
   }
 
-  static var pidIssuerURL: URL {
+  static var pidIssuerUrl: URL {
     #if LOCALHOST
       #URL("http://localhost/pid-issuer")
     #else

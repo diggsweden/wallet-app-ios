@@ -6,18 +6,22 @@ import Foundation
 
 struct RedirectUrl: Decodable {
   let redirectUri: String
+
+  enum CodingKeys: String, CodingKey {
+    case redirectUri = "redirectUri"
+  }
 }
 
-struct DisclosureSelection: Identifiable {
-  let id = UUID()
-  let disclosure: Disclosure
-  var isSelected: Bool = true
-}
-
-struct KeyBinding: Codable {
+struct KeyBindingPayload: Codable {
   let aud: String
   let nonce: String
   let sdHash: String
+
+  enum CodingKeys: String, CodingKey {
+    case aud
+    case nonce
+    case sdHash = "sd_hash"
+  }
 }
 
 struct VerifiablePresentationToken: Codable {

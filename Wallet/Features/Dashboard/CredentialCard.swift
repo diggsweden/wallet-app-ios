@@ -5,7 +5,7 @@
 import SwiftUI
 
 struct CredentialCard: View {
-  let credential: Credential?
+  let credential: SavedCredential?
   @Environment(\.openURL) private var openURL
   @Environment(Router.self) private var router
   @Environment(\.theme) private var theme
@@ -28,7 +28,7 @@ struct CredentialCard: View {
     }
   }
 
-  private func credentialButton(credential: Credential) -> some View {
+  private func credentialButton(credential: SavedCredential) -> some View {
     Button {
       router.go(to: .credentialDetails(credential))
     } label: {
@@ -43,7 +43,7 @@ struct CredentialCard: View {
           Text(credential.issuer.name).bold()
         }
 
-        Text("ID-handling med \(credential.disclosures.count) attribut")
+        Text("ID-handling med \(credential.claimsCount) attribut")
         Spacer()
         Text(credential.issuedAt, format: .dateTime.day().month().year())
           .textStyle(.caption)
@@ -59,7 +59,7 @@ struct CredentialCard: View {
 
   private var addNewCredentialButton: some View {
     Button {
-      openURL(AppConfig.pidIssuerURL)
+      openURL(AppConfig.pidIssuerUrl)
     } label: {
       VStack(spacing: 12) {
         Image(systemName: "plus.circle.fill")
@@ -76,10 +76,11 @@ struct CredentialCard: View {
 }
 
 #Preview {
-  let credential = Credential(
+  let credential = SavedCredential(
     issuer: IssuerDisplay(name: "testIssuer", info: nil, imageUrl: nil),
-    sdJwt: "test",
-    disclosures: [:],
+    compactSerialized: "",
+    claimDisplayNames: [:],
+    claimsCount: 15,
     issuedAt: Date()
   )
 

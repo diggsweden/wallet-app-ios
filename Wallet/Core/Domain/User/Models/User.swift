@@ -10,7 +10,7 @@ final class User {
   @Attribute(.unique) var id = 0
   var deviceId: String = UUID().uuidString
   var accountId: String?
-  var credential: Credential?
+  var credential: SavedCredential?
 
   init() {}
 }

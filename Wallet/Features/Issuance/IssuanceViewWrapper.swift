@@ -6,15 +6,15 @@ import SwiftUI
 
 struct IssuanceViewWrapper: View {
   let credentialOfferUri: String
-  let gatewayAPIClient: GatewayAPI
-  let onSave: (Credential) async -> Void
+  let gatewayApiClient: GatewayApi
+  let onSave: (SavedCredential) async -> Void
 
   var body: some View {
     GeometryReader { proxy in
       ScrollView {
         IssuanceView(
           credentialOfferUri: credentialOfferUri,
-          gatewayAPIClient: gatewayAPIClient,
+          gatewayApiClient: gatewayApiClient,
           onSave: onSave
         )
         .frame(

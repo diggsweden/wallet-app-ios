@@ -39,9 +39,9 @@ settings:
       ONLY_ACTIVE_ARCH: YES
 
 packages:
-  JOSESwift:
-    url: https://github.com/airsidemobile/JOSESwift.git
-    from: 3.0.0
+  jose-swift:
+    url: https://github.com/beatt83/jose-swift.git
+    from: 6.0.0
   swift-openapi-runtime:
     url: https://github.com/apple/swift-openapi-runtime
     from: 1.8.3
@@ -57,6 +57,9 @@ packages:
   eudi-lib-ios-openid4vci-swift:
     url: https://github.com/eu-digital-identity-wallet/eudi-lib-ios-openid4vci-swift.git
     exactVersion: 0.20.0
+  eudi-lib-sdjwt-swift:
+    url: https://github.com/eu-digital-identity-wallet/eudi-lib-sdjwt-swift.git
+    exactVersion: 0.13.1
   WalletMacros:
     path: WalletMacros
 
@@ -83,7 +86,7 @@ targets:
         Debug Localhost:
           CODE_SIGN_STYLE: Automatic
     dependencies:
-      - package: JOSESwift
+      - package: jose-swift
       - package: swift-openapi-runtime
         product: OpenAPIRuntime
       - package: swift-openapi-urlsession
@@ -92,6 +95,8 @@ targets:
         product: OpenID4VP
       - package: eudi-lib-ios-openid4vci-swift
         product: OpenID4VCI
+      - package: eudi-lib-sdjwt-swift
+        product: eudi-lib-sdjwt-swift
       - package: WalletMacros
         product: WalletMacros
     buildToolPlugins:

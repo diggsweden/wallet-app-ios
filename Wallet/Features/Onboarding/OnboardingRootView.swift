@@ -7,7 +7,7 @@ import SwiftUI
 import WalletMacros
 
 struct OnboardingRootView: View {
-  private let gatewayAPIClient: GatewayAPI
+  private let gatewayApiClient: GatewayApi
   private let userSnapshot: UserSnapshot
 
   @Environment(\.theme) private var theme
@@ -16,13 +16,13 @@ struct OnboardingRootView: View {
   @State private var viewModel: OnboardingViewModel
 
   init(
-    gatewayAPIClient: GatewayAPI,
+    gatewayApiClient: GatewayApi,
     userSnapshot: UserSnapshot,
-    saveCredential: @escaping (Credential) async -> Void,
+    saveCredential: @escaping (SavedCredential) async -> Void,
     signIn: @escaping (String) async -> Void,
     onReset: @escaping () async -> Void
   ) {
-    self.gatewayAPIClient = gatewayAPIClient
+    self.gatewayApiClient = gatewayApiClient
     self.userSnapshot = userSnapshot
     _viewModel = State(
       wrappedValue: .init(
@@ -162,7 +162,7 @@ struct OnboardingRootView: View {
 
       case .email:
         AddEmailForm(
-          gatewayAPIClient: gatewayAPIClient,
+          gatewayApiClient: gatewayApiClient,
           phoneNumber: viewModel.context.phoneNumber
         ) { accountId, email in
           await viewModel.signIn(accountId: accountId, email: email)
@@ -196,9 +196,9 @@ struct OnboardingRootView: View {
         if let uri = viewModel.context.credentialOfferUri {
           IssuanceView(
             credentialOfferUri: uri,
-            gatewayAPIClient: gatewayAPIClient
+            gatewayApiClient: gatewayApiClient
           ) { credential in
-            await viewModel.setCredentialOfferUri(credential)
+            await viewModel.setCredentialOfferURI(credential)
           }
         } else {
           OnboardingPidView { credentialOfferUri in
@@ -236,7 +236,7 @@ struct OnboardingRootView: View {
 
 #Preview {
   OnboardingRootView(
-    gatewayAPIClient: GatewayAPIMock(),
+    gatewayApiClient: GatewayApiMock(),
     userSnapshot: UserSnapshot(
       deviceId: "",
       accountId: nil,

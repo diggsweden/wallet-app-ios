@@ -61,7 +61,7 @@ final class UserViewModel {
     }
   }
 
-  func saveCredential(_ credential: Credential) async {
+  func saveCredential(_ credential: SavedCredential) async {
     do {
       let updated = try await userStore.saveCredential(credential)
       user = .ready(updated)

@@ -13,6 +13,7 @@ path = [
   "REUSE.toml",
   ".gitignore",
   ".mise.toml",
+  ".gitleaks.toml",
   ".conform.yaml",
   ".yamlfmt.yml",
   ".swift-format",

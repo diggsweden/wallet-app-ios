@@ -3,18 +3,26 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import Foundation
-import JOSESwift
+import JSONWebAlgorithms
+import JSONWebKey
+import JSONWebSignature
 import OpenID4VCI
 
 struct CredentialRequest: Codable {
   let credentialConfigurationId: String
   let credentialResponseEncryption: CredentialResponseEncryptionDTO?
-  let proofs: JWTProofType
+  let proofs: JwtProofType
+
+  enum CodingKeys: String, CodingKey {
+    case credentialConfigurationId = "credential_configuration_id"
+    case credentialResponseEncryption = "credential_response_encryption"
+    case proofs
+  }
 
   init(
     credentialConfigurationId: String,
     credentialResponseEncryption: CredentialResponseEncryptionDTO? = nil,
-    proofs: JWTProofType
+    proofs: JwtProofType
   ) {
     self.credentialConfigurationId = credentialConfigurationId
     self.credentialResponseEncryption = credentialResponseEncryption
@@ -23,11 +31,11 @@ struct CredentialRequest: Codable {
 }
 
 struct CredentialResponseEncryptionDTO: Codable {
-  let jwk: ECPublicKey
+  let jwk: JWK
   let enc: String
 }
 
-struct JWTProofType: Codable {
+struct JwtProofType: Codable {
   let jwt: [String]
 }
 
@@ -50,7 +58,39 @@ struct PidClaim: Identifiable {
   let value: String
 }
 
-struct JWTProofPayload: Codable {
+struct JwtProofPayload: Codable {
   let nonce: String?
   let aud: String
+}
+
+struct KeyAttestationHeader: JWSRegisteredFieldsHeader {
+  var algorithm: JSONWebAlgorithms.SigningAlgorithm? = .ES256
+  var jwkSetURL: String? = nil
+  var jwk: JSONWebKey.JWK? = nil
+  var keyID: String? = nil
+  var x509URL: String? = nil
+  var x509CertificateChain: [String]? = nil
+  var x509CertificateSHA1Thumbprint: String? = nil
+  var x509CertificateSHA256Thumbprint: String? = nil
+  var type: String? = "openid4vci-proof+jwt"
+  var contentType: String? = nil
+  var critical: [String]? = nil
+  var base64EncodedUrlPayload: Bool? = nil
+  let keyAttestation: String?
+
+  enum CodingKeys: String, CodingKey {
+    case algorithm = "alg"
+    case jwkSetURL = "jku"
+    case jwk
+    case keyID = "kid"
+    case x509URL = "x5u"
+    case x509CertificateChain = "x5c"
+    case x509CertificateSHA1Thumbprint = "x5t"
+    case x509CertificateSHA256Thumbprint = "x5t#S256"
+    case type = "typ"
+    case contentType = "cty"
+    case critical = "crit"
+    case base64EncodedUrlPayload = "b64"
+    case keyAttestation = "key_attestation"
+  }
 }

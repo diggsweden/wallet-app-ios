@@ -5,7 +5,7 @@
 import SwiftUI
 
 struct IssuanceView: View {
-  private let onSave: (Credential) async -> Void
+  private let onSave: (SavedCredential) async -> Void
   @State private var viewModel: IssuanceViewModel
   @Environment(\.theme) private var theme
   @Environment(\.authPresentationAnchor) private var anchor
@@ -13,14 +13,14 @@ struct IssuanceView: View {
 
   init(
     credentialOfferUri: String,
-    gatewayAPIClient: GatewayAPI,
-    onSave: @escaping (Credential) async -> Void
+    gatewayApiClient: GatewayApi,
+    onSave: @escaping (SavedCredential) async -> Void
   ) {
     self.onSave = onSave
     _viewModel = State(
       wrappedValue: .init(
         credentialOfferUri: credentialOfferUri,
-        gatewayAPIClient: gatewayAPIClient
+        gatewayApiClient: gatewayApiClient
       )
     )
   }
@@ -31,8 +31,8 @@ struct IssuanceView: View {
         IssuerDisplayView(issuerDisplayData: display)
       }
 
-      if case let .credentialFetched(credential) = viewModel.state {
-        CredentialView(disclosures: Array(credential.disclosures.values))
+      if case let .credentialFetched(credential: (_, displayClaims)) = viewModel.state {
+        CredentialView(claims: displayClaims)
       }
 
       Spacer()
@@ -79,10 +79,10 @@ struct IssuanceView: View {
           }
         }
 
-      case .credentialFetched(let credential):
+      case .credentialFetched(credential: (let savedCredential, _)):
         PrimaryButton("Godkänn", icon: "checkmark.circle") {
           Task {
-            await onSave(credential)
+            await onSave(savedCredential)
           }
         }
     }

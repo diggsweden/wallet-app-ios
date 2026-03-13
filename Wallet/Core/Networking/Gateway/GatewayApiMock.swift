@@ -3,14 +3,14 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import Foundation
-import JOSESwift
+import JSONWebKey
 
-struct GatewayAPIMock: GatewayAPI {
+struct GatewayApiMock: GatewayApi {
   func createAccount(
     personalIdentityNumber: String,
     emailAddress: String,
     telephoneNumber: String?,
-    jwk: ECPublicKey,
+    jwk: JWK,
   ) async throws -> String {
     return ""
   }
