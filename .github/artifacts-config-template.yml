@@ -13,3 +13,4 @@ artifacts:
       export-options-var: EXPORT_OPTIONS_BASE64
       macos-version: macos-26
       build-number: ${BUILD_NUMBER}
+      use-xcodegen: true

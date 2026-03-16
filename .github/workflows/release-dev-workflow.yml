@@ -37,7 +37,7 @@ jobs:
 
   build:
     needs: build-number
-    uses: diggsweden/reusable-ci/.github/workflows/build-xcode-ios.yml@4662ea50beb58eb158c2e43a3e2f1aba33b94390 # feat/xcconfig-base64
+    uses: diggsweden/reusable-ci/.github/workflows/build-xcode-ios.yml@f13128fa1ee478e05df3d9611ccfcadfba7d8b8e # 2.6.2
     permissions:
       contents: read
     secrets: inherit
@@ -51,10 +51,12 @@ jobs:
       artifact-name: wallet-ios-demo-dev
       include-tag: false
       build-number: ${{ needs.build-number.outputs.value }}
+      use-xcodegen: true
 
   upload-testflight:
     needs: build
-    uses: diggsweden/reusable-ci/.github/workflows/publish-apple-appstore.yml@e1e1387d5b0399bb5edb00e40485746772344176 # v2.6.0
+    uses: diggsweden/reusable-ci/.github/workflows/publish-apple-appstore.yml@f13128fa1ee478e05df3d9611ccfcadfba7d8b8e # 2.6.2
+
     permissions:
       contents: read
     secrets: inherit
