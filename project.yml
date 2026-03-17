@@ -4,6 +4,7 @@ options:
   deploymentTarget:
     iOS: "17.6"
   createIntermediateGroups: true
+  preGenCommand: ./scripts/setup-configuration.sh
 
 configFiles:
   Debug: Configurations/Config-Debug.xcconfig
