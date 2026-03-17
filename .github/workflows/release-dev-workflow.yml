@@ -30,13 +30,19 @@ permissions:
   contents: read
 
 jobs:
+  build-number:
+    uses: ./.github/workflows/compute-build-number.yml
+    permissions:
+      contents: read
+
   build:
-    uses: diggsweden/reusable-ci/.github/workflows/build-xcode-ios.yml@e1e1387d5b0399bb5edb00e40485746772344176 # v2.6.0
+    needs: build-number
+    uses: diggsweden/reusable-ci/.github/workflows/build-xcode-ios.yml@f13128fa1ee478e05df3d9611ccfcadfba7d8b8e # 2.6.2
     permissions:
       contents: read
     secrets: inherit
     with:
-      xcode-version: "26.0.1"
+      xcode-version: "26.2"
       scheme: "Wallet Demo"
       workspace: "Wallet.xcworkspace"
       configuration: Release
@@ -44,10 +50,13 @@ jobs:
       export-options-var: EXPORT_OPTIONS_BASE64
       artifact-name: wallet-ios-demo-dev
       include-tag: false
+      build-number: ${{ needs.build-number.outputs.value }}
+      use-xcodegen: true
 
   upload-testflight:
     needs: build
-    uses: diggsweden/reusable-ci/.github/workflows/publish-apple-appstore.yml@e1e1387d5b0399bb5edb00e40485746772344176 # v2.6.0
+    uses: diggsweden/reusable-ci/.github/workflows/publish-apple-appstore.yml@f13128fa1ee478e05df3d9611ccfcadfba7d8b8e # 2.6.2
+
     permissions:
       contents: read
     secrets: inherit
