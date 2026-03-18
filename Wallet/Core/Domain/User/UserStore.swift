@@ -11,8 +11,8 @@ enum UserStoreError: Error {
 }
 
 @ModelActor
-actor UserStore: AccountIDProvider {
-  func accountID() async -> String? {
+actor UserStore: AccountIdProvider {
+  func accountId() async -> String? {
     try? await getOrCreate().accountId
   }
 
@@ -33,7 +33,7 @@ actor UserStore: AccountIDProvider {
     return snapshot(from: session)
   }
 
-  func saveCredential(_ credential: Credential) async throws -> UserSnapshot {
+  func saveCredential(_ credential: SavedCredential) async throws -> UserSnapshot {
     let session = try await getOrCreateModel()
     session.credential = credential
     try await save()

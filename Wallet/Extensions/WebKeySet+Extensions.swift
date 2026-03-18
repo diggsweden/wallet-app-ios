@@ -3,31 +3,33 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import Foundation
-import JOSESwift
+import JSONWebKey
 import OpenID4VP
 
 extension WebKeySet.Key {
-  func toEcPublicKey() throws -> ECPublicKey {
+  func toJWK() throws -> JWK {
     guard
       kty == "EC",
       crv == "P-256",
       let x,
-      let y,
-      let use,
-      let kid
+      let y
     else {
       throw AppError(reason: "Unsupported key type")
     }
 
-    return ECPublicKey(
-      crv: .P256,
-      x: x,
-      y: y,
-      additionalParameters: [
-        "use": use,
-        "kid": kid,
-        "alg": alg ?? "ECDH-ES",
-      ]
+    guard
+      let xData = Data(base64UrlEncoded: x),
+      let yData = Data(base64UrlEncoded: y)
+    else {
+      throw AppError(reason: "Invalid key coordinate data")
+    }
+
+    return JWK(
+      keyType: .ellipticCurve,
+      keyID: kid,
+      curve: .p256,
+      x: xData,
+      y: yData
     )
   }
 }

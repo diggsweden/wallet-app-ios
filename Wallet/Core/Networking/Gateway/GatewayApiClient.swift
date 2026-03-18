@@ -3,27 +3,27 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import Foundation
-import JOSESwift
+import JSONWebKey
 import OpenAPIRuntime
 import OpenAPIURLSession
 import WalletMacros
 
-protocol GatewayAPI: Sendable {
+protocol GatewayApi: Sendable {
   func createAccount(
     personalIdentityNumber: String,
     emailAddress: String,
     telephoneNumber: String?,
-    jwk: ECPublicKey,
+    jwk: JWK,
   ) async throws -> String
 
   func getWalletUnitAttestation(nonce: String) async throws -> String
 }
 
-struct GatewayAPIClient: GatewayAPI {
+struct GatewayApiClient: GatewayApi {
   let client: Client
 
   init(baseUrl: URL? = nil, sessionManager: SessionManager) {
-    let url = baseUrl ?? AppConfig.apiBaseURL
+    let url = baseUrl ?? AppConfig.apiBaseUrl
     client = Client(
       serverURL: url,
       transport: URLSessionTransport(),
@@ -35,15 +35,9 @@ struct GatewayAPIClient: GatewayAPI {
     personalIdentityNumber: String,
     emailAddress: String,
     telephoneNumber: String?,
-    jwk: ECPublicKey,
+    jwk: JWK,
   ) async throws -> String {
-    let jwkDto = Components.Schemas.JwkDto(
-      kty: jwk.keyType.rawValue,
-      kid: jwk.parameters["kid"],
-      crv: jwk.crv.rawValue,
-      x: jwk.x,
-      y: jwk.y
-    )
+    let jwkDto = try JwkDtoMapper.makeDto(from: jwk)
     let bodyDto = Components.Schemas.CreateAccountRequestDto(
       personalIdentityNumber: personalIdentityNumber,
       emailAdress: emailAddress,

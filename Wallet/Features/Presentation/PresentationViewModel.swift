@@ -4,79 +4,68 @@
 
 import CryptoKit
 import Foundation
-import JOSESwift
-import OpenID4VCI
-import OpenID4VP
+import JSONWebSignature
 import UIKit
+import eudi_lib_sdjwt_swift
 
 @MainActor
 @Observable
 class PresentationViewModel {
-  let data: ResolvedRequestData.VpTokenData
-  let credential: Credential?
-  var selectedDisclosures: [DisclosureSelection] = []
-  let jwtUtil = JWTUtil()
+  let url: URL
+  let credential: SavedCredential?
+  private(set) var requestData: PresentationRequestData?
+  private(set) var disclosedSdJwt: SignedSDJWT?
+  private(set) var claimsToPresent: [ClaimUiModel] = []
+  private let jwtUtil = JwtUtil()
 
-  init(data: ResolvedRequestData.VpTokenData, credential: Credential?) {
-    self.data = data
+  init(url: URL, credential: SavedCredential?) {
+    self.url = url
     self.credential = credential
   }
 
-  func matchDisclosures() throws {
-    guard case let .byDigitalCredentialsQuery(dcql) = data.presentationQuery else {
-      throw AppError(reason: "We support only DCQL")
-    }
+  func resolveAndMatchClaims() async throws {
+    let data = try await OpenId4VpUtil().resolve(url: url)
+    self.requestData = data
 
     guard let credential else {
       throw AppError(reason: "No credential on device")
     }
 
-    let claimPaths: [String] = dcql.credentials.reduce(into: []) { result, query in
-      guard let claims = query.claims else {
-        // Nil claims == verifier requests ALL disclosures
-        return result.append(contentsOf: Array(credential.disclosures.keys))
-      }
-
-      let claimPaths = claims.map { query in
-        query.path.value.map { $0.description }.joined(separator: ".")
-      }
-
-      result.append(contentsOf: claimPaths)
+    let sdJwt = try CompactParser().getSignedSdJwt(serialisedString: credential.compactSerialized)
+    guard let disclosedSdJwt = try sdJwt.present(query: data.claimPaths) else {
+      throw AppError(reason: "No matching claims")
     }
 
-    selectedDisclosures =
-      claimPaths
-      .compactMap { claim in credential.disclosures[claim] }
-      .map { DisclosureSelection(disclosure: $0) }
+    self.disclosedSdJwt = disclosedSdJwt
+    claimsToPresent = try disclosedSdJwt.toClaimUiModels(displayNames: credential.claimDisplayNames)
   }
 
-  func sendDisclosures() async throws {
+  func sendPresentation() async throws {
     guard
-      let key = try? KeychainService.getOrCreateKey(withTag: .walletKey),
-      // TODO: Support DirectPostJwt
-      case let .directPost(responseURI: responseUrl) = data.responseMode,
-      let credential
+      let data = requestData,
+      let disclosedSdJwt,
+      let key = try? KeychainService.getOrCreateKey(withTag: .walletKey)
     else {
       return
     }
 
-    let clientId = data.client.id.originalClientId
+    let sdJwtWithKeyBinding = try await createPresentationSdJwt(
+      with: key,
+      disclosedSdJwt: disclosedSdJwt,
+      clientId: data.clientId,
+      nonce: data.nonce
+    )
 
-    guard
-      let sdJwt = try? createSdJwt(
-        with: key,
-        credentialJwt: credential.sdJwt,
-        clientId: clientId,
-        nonce: data.nonce
-      ),
-      let vpToken = try? createVerifiablePresentationToken(for: sdJwt),
-      let body = try? createRequestBody(with: vpToken)
-    else {
-      throw AppError(reason: "Failed creating request body")
-    }
+    let vpToken = VerifiablePresentationToken(
+      state: data.state,
+      nonce: data.nonce,
+      vpToken: [data.credentialQueryId: [sdJwtWithKeyBinding]]
+    )
+
+    let body = try createRequestBody(with: vpToken)
 
     let response: RedirectUrl = try await NetworkClient.shared.fetch(
-      responseUrl,
+      data.responseUrl,
       method: .post,
       contentType: "application/x-www-form-urlencoded",
       body: body.utf8Data
@@ -105,54 +94,33 @@ class PresentationViewModel {
   }
 
   private func createJweResponseBody(with vpToken: VerifiablePresentationToken) throws -> String {
-    guard
-      let recipientKey = data.clientMetaData?.jwkSet?.keys.first,
-      let publicKey = try? recipientKey.toEcPublicKey()
-    else {
+    guard let recipientKey = requestData?.recipientJWK else {
       throw AppError(reason: "Could not create JWE")
     }
 
-    let jwe = try jwtUtil.encryptJWE(
+    let jwe = try jwtUtil.encryptJwe(
       payload: vpToken,
-      recipientKey: publicKey,
+      recipientKey: recipientKey,
     )
 
     return "response=\(jwe)"
   }
 
-  private func createVerifiablePresentationToken(
-    for sdJwt: String
-  ) throws -> VerifiablePresentationToken {
-    let id: String = {
-      if case let .byDigitalCredentialsQuery(dcql) = data.presentationQuery {
-        return dcql.credentials.first?.id.value ?? ""
-      }
-      return ""
-    }()
-
-    return VerifiablePresentationToken(
-      state: data.state,
-      nonce: data.nonce,
-      vpToken: [id: [sdJwt]],
-    )
-  }
-
-  private func createSdJwt(
+  private func createPresentationSdJwt(
     with secKey: SecKey,
-    credentialJwt: String,
+    disclosedSdJwt: SignedSDJWT,
     clientId: String,
     nonce: String
-  ) throws -> String {
-    let header = credentialJwt
-    let body: [String] = selectedDisclosures.compactMap {
-      $0.isSelected ? $0.disclosure.base64 : nil
-    }
+  ) async throws -> String {
+    let sdJwtSerialized = disclosedSdJwt.serialisation
+    let keyBindingJwt = try createKeyBinding(
+      for: sdJwtSerialized,
+      with: secKey,
+      aud: clientId,
+      nonce: nonce
+    )
 
-    let parts = [header] + body
-    let sdJwt = parts.joined(separator: "~").appending("~")
-
-    let keyBinding = try createKeyBinding(for: sdJwt, with: secKey, aud: clientId, nonce: nonce)
-    return sdJwt + keyBinding
+    return sdJwtSerialized + keyBindingJwt
   }
 
   private func createKeyBinding(
@@ -165,13 +133,14 @@ class PresentationViewModel {
       throw AppError(reason: "Failed converting sdJwt to Data")
     }
     let hash = SHA256.hash(data: sdJwtData)
-    let sdHash = Data(hash).base64URLEncodedString()
-    let payload = KeyBinding(
+    let sdHash = Data(hash).base64UrlEncodedString()
+    let header = DefaultJWSHeaderImpl(algorithm: .ES256, type: "kb+jwt")
+    let payload = KeyBindingPayload(
       aud: aud,
       nonce: nonce,
       sdHash: sdHash
     )
 
-    return try jwtUtil.signJWT(with: secKey, payload: payload, headers: ["typ": "kb+jwt"])
+    return try jwtUtil.signJwt(with: secKey, payload: payload, header: header)
   }
 }

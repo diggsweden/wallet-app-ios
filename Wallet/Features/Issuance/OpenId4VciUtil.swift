@@ -3,20 +3,17 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import Foundation
-import JOSESwift
+import JSONWebAlgorithms
+import JSONWebKey
 
 struct CryptoSpec {
   let key: JWK
   let enc: ContentEncryptionAlgorithm
 }
 
-struct OpenID4VCIUtil {
-  private let jwtUtil = JWTUtil()
-  private let encoder: JSONEncoder = {
-    let encoder = JSONEncoder()
-    encoder.keyEncodingStrategy = .convertToSnakeCase
-    return encoder
-  }()
+struct OpenId4VciUtil {
+  private let jwtUtil = JwtUtil()
+  private let encoder = JSONEncoder()
 
   func fetchCredential(
     url: URL,
@@ -43,7 +40,7 @@ struct OpenID4VCIUtil {
     requestEncryption: CryptoSpec,
     responseDecryption: CryptoSpec,
   ) async throws -> String {
-    let jwe = try jwtUtil.encryptJWE(
+    let jwe = try jwtUtil.encryptJwe(
       payload: credentialRequest,
       recipientKey: requestEncryption.key,
       enc: requestEncryption.enc
@@ -58,10 +55,9 @@ struct OpenID4VCIUtil {
       body: jwe.utf8Data
     )
 
-    let response: CredentialResponse = try jwtUtil.decryptJWE(
+    let response: CredentialResponse = try jwtUtil.decryptJwe(
       encryptedResponse,
-      decryptionKey: responseDecryption.key,
-      enc: responseDecryption.enc
+      decryptionKey: responseDecryption.key
     )
 
     guard let credential = response.credentials.first else {

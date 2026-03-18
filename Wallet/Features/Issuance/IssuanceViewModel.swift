@@ -5,35 +5,37 @@
 import AuthenticationServices
 import Crypto
 import Foundation
-@preconcurrency import JOSESwift
+import JSONWebAlgorithms
+import JSONWebKey
 import OpenID4VCI
 import WalletMacros
+import eudi_lib_sdjwt_swift
 
 enum IssuanceState {
   case initial
   case issuerFetched(offer: CredentialOffer)
   case authorized(request: AuthorizedRequest)
-  case credentialFetched(credential: Credential)
+  case credentialFetched(credential: (SavedCredential, [ClaimUiModel]))
 }
 
 @MainActor
 @Observable
 class IssuanceViewModel {
   private let credentialOfferUri: String
-  private(set) var claimsMetadata: [String: Claim] = [:]
+  private(set) var claimsMetadata: [String: String] = [:]
   private var issuer: Issuer?
   private var credentialOffer: CredentialOffer?
-  private let openId4VciUtil = OpenID4VCIUtil()
-  private var oauth = OAuthCoordinator()
-  private let jwtUtil = JWTUtil()
-  private let gatewayAPICLient: GatewayAPI
+  private let openId4VciUtil = OpenId4VciUtil()
+  private var oauth = OauthCoordinator()
+  private let jwtUtil = JwtUtil()
+  private let gatewayApiClient: GatewayApi
   var issuerDisplayData: IssuerDisplay?
   var state: IssuanceState = .initial
   var error: ErrorEvent? = nil
 
-  init(credentialOfferUri: String, gatewayAPIClient: GatewayAPI) {
+  init(credentialOfferUri: String, gatewayApiClient: GatewayApi) {
     self.credentialOfferUri = credentialOfferUri
-    self.gatewayAPICLient = gatewayAPIClient
+    self.gatewayApiClient = gatewayApiClient
   }
 
   func fetchIssuer() async {
@@ -152,23 +154,21 @@ class IssuanceViewModel {
 
   private func createProof(_ issuer: Issuer) async throws -> String {
     let aud = await issuer.issuerMetadata.credentialIssuerIdentifier.url.absoluteString
-    var headers: [String: Any] = ["typ": "openid4vci-proof+jwt"]
-
-    let payload: JWTProofPayload
+    let payload: JwtProofPayload
+    let keyAttestation: String?
     if let nonceURL = await issuer.issuerMetadata.nonceEndpoint?.url {
       let nonce = try await openId4VciUtil.fetchNonce(url: nonceURL)
-      let wua = try await gatewayAPICLient.getWalletUnitAttestation(nonce: nonce)
-
-      headers["key_attestation"] = wua
-      payload = JWTProofPayload(nonce: nonce, aud: aud)
+      keyAttestation = try await gatewayApiClient.getWalletUnitAttestation(nonce: nonce)
+      payload = JwtProofPayload(nonce: nonce, aud: aud)
     } else {
-      payload = JWTProofPayload(nonce: nil, aud: aud)
+      keyAttestation = nil
+      payload = JwtProofPayload(nonce: nil, aud: aud)
     }
 
-    return try jwtUtil.signJWT(
+    return try jwtUtil.signJwt(
       with: KeychainService.getOrCreateKey(withTag: .walletKey),
       payload: payload,
-      headers: headers,
+      header: KeyAttestationHeader(keyAttestation: keyAttestation),
       includeJWK: false
     )
   }
@@ -181,14 +181,16 @@ class IssuanceViewModel {
     accessToken: String,
   ) async throws -> String {
     let key = P256.KeyAgreement.PrivateKey()
-    let enc: ContentEncryptionAlgorithm = .A128GCM
+    var jwk = key.publicKey.jwkRepresentation
+    jwk.algorithm = KeyManagementAlgorithm.ecdhES.rawValue
+    let enc: ContentEncryptionAlgorithm = .a128GCM
     let credentialRequest = CredentialRequest(
       credentialConfigurationId: configId,
       credentialResponseEncryption: CredentialResponseEncryptionDTO(
-        jwk: try key.publicKey.toECPublicKey(),
+        jwk: jwk,
         enc: enc.rawValue
       ),
-      proofs: JWTProofType(jwt: [jwtProof])
+      proofs: JwtProofType(jwt: [jwtProof])
     )
 
     return try await openId4VciUtil.fetchCredential(
@@ -197,7 +199,7 @@ class IssuanceViewModel {
       credentialRequest: credentialRequest,
       requestEncryption: requestEncryption,
       responseDecryption: CryptoSpec(
-        key: try key.toECPrivateKey(),
+        key: key.jwkRepresentation,
         enc: enc
       )
     )
@@ -211,7 +213,7 @@ class IssuanceViewModel {
   ) async throws -> String {
     let credentialRequest = CredentialRequest(
       credentialConfigurationId: configId,
-      proofs: JWTProofType(jwt: [jwtProof])
+      proofs: JwtProofType(jwt: [jwtProof])
     )
 
     return try await openId4VciUtil.fetchCredential(
@@ -221,12 +223,14 @@ class IssuanceViewModel {
     )
   }
 
-  private func parseCredential(_ credential: String, issuer: Display?) throws -> Credential {
-    let parts = credential.components(separatedBy: "~")
-
-    guard let jwt = parts.first else {
-      throw IssuanceError.invalidCredential
-    }
+  private func parseCredential(
+    _ credential: String,
+    issuer: Display?
+  ) throws -> (SavedCredential, [ClaimUiModel]) {
+    let sdJwt = try CompactParser().getSignedSdJwt(serialisedString: credential)
+    let claims =
+      try sdJwt
+      .toClaimUiModels(displayNames: claimsMetadata)
 
     let issuerDisplay = IssuerDisplay(
       name: issuer?.name ?? "",
@@ -234,29 +238,14 @@ class IssuanceViewModel {
       imageUrl: issuer?.logo?.uri
     )
 
-    let disclosures: [String: Disclosure] = parts.dropFirst()
-      .reduce(into: [:]) { result, part in
-        guard
-          let data = JWTUtil.base64UrlDecode(part),
-          let disclosure = try? JSONDecoder().decode([String].self, from: data),
-          disclosure.count == 3
-        else {
-          return
-        }
-        let claimId = disclosure[1]
-        let claimValue = disclosure[2]
-        let displayName: String =
-          claimsMetadata[claimId]?.display?.first?.name
-          ?? claimId.replacingOccurrences(of: "_", with: " ").capitalized
-
-        return result[claimId] = Disclosure(
-          base64: part,
-          displayName: displayName,
-          value: claimValue
-        )
-      }
-
-    return Credential(issuer: issuerDisplay, sdJwt: jwt, disclosures: disclosures)
+    return (
+      SavedCredential(
+        issuer: issuerDisplay,
+        compactSerialized: credential,
+        claimDisplayNames: claimsMetadata,
+        claimsCount: claims.count,
+      ), claims
+    )
   }
 
   private func createIssuer(from credentialOffer: CredentialOffer) async throws -> Issuer {
@@ -286,7 +275,7 @@ class IssuanceViewModel {
     return try result.get()
   }
 
-  private func getClaimsMetadata(from credentialOffer: CredentialOffer) -> [String: Claim] {
+  private func getClaimsMetadata(from credentialOffer: CredentialOffer) -> [String: String] {
     return credentialOffer.credentialConfigurationIdentifiers
       .compactMap { id in
         credentialOffer.credentialIssuerMetadata.credentialsSupported[id]
@@ -301,11 +290,13 @@ class IssuanceViewModel {
             return []
         }
       }
-      .reduce(into: [String: Claim]()) { result, claim in
+      .reduce(into: [String: String]()) { result, claim in
         let claimPath = claim.path.value
           .map { $0.description }
           .joined(separator: ".")
-        result[claimPath] = claim
+        let displayName = claim.display?.first?.name
+
+        result[claimPath] = displayName
       }
   }
 }

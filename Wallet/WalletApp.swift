@@ -10,7 +10,7 @@ import SwiftUI
 struct WalletApp: App {
   private let userStore: UserStore
   private let sessionManager: SessionManager
-  private let gatewayAPIClient: GatewayAPIClient
+  private let gatewayApiClient: GatewayApiClient
 
   init() {
     do {
@@ -19,15 +19,15 @@ struct WalletApp: App {
       fatalError("Failed setting up storage")
     }
 
-    self.sessionManager = SessionManager(accountIDProvider: userStore)
-    self.gatewayAPIClient = GatewayAPIClient(sessionManager: sessionManager)
+    self.sessionManager = SessionManager(accountIdProvider: userStore)
+    self.gatewayApiClient = GatewayApiClient(sessionManager: sessionManager)
   }
 
   var body: some Scene {
     WindowGroup {
       AppRootView(
         userStore: userStore,
-        gatewayAPIClient: gatewayAPIClient,
+        gatewayApiClient: gatewayApiClient,
       )
       .withAuthPresentationAnchor
       .themed

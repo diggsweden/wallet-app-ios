@@ -7,14 +7,14 @@ import SwiftData
 import SwiftUI
 
 struct AppRootView: View {
-  private let gatewayAPIClient: GatewayAPI
+  private let gatewayApiClient: GatewayApi
   @State private var userViewModel: UserViewModel
   @State private var router = Router()
   @Environment(\.theme) private var theme
 
-  init(userStore: UserStore, gatewayAPIClient: GatewayAPI) {
+  init(userStore: UserStore, gatewayApiClient: GatewayApi) {
     _userViewModel = State(wrappedValue: .init(userStore: userStore))
-    self.gatewayAPIClient = gatewayAPIClient
+    self.gatewayApiClient = gatewayApiClient
   }
 
   var body: some View {
@@ -43,7 +43,7 @@ struct AppRootView: View {
       case .ready(let user):
         if !userViewModel.isEnrolled {
           OnboardingRootView(
-            gatewayAPIClient: gatewayAPIClient,
+            gatewayApiClient: gatewayApiClient,
             userSnapshot: user,
             saveCredential: userViewModel.saveCredential,
             signIn: userViewModel.signIn,
@@ -72,16 +72,16 @@ struct AppRootView: View {
   @ViewBuilder
   private func destination(for route: Route, userSnapshot: UserSnapshot) -> some View {
     switch route {
-      case .presentation(let data):
+      case .presentation(let url):
         PresentationView(
-          vpTokenData: data,
+          url: url,
           credential: userSnapshot.credential
         )
 
       case .issuance(let url):
         IssuanceViewWrapper(
           credentialOfferUri: url,
-          gatewayAPIClient: gatewayAPIClient
+          gatewayApiClient: gatewayApiClient
         ) { credential in
           await userViewModel.saveCredential(credential)
           router.pop()

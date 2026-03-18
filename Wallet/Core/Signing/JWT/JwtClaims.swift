@@ -4,14 +4,14 @@
 
 import Foundation
 
-struct DefaultJWTClaims: Codable {
+struct DefaultJwtClaims: Codable {
   let iat: Int
   let nbf: Int
   let exp: Int
 }
 
-struct JWTClaims<T: Codable>: Codable {
-  let defaults: DefaultJWTClaims
+struct JwtClaims<T: Codable>: Codable {
+  let defaults: DefaultJwtClaims
   let payload: T
 
   func encode(to encoder: Encoder) throws {

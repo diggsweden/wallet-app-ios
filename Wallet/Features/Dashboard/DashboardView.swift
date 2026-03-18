@@ -5,7 +5,7 @@
 import SwiftUI
 
 struct DashboardView: View {
-  let credential: Credential?
+  let credential: SavedCredential?
   @Environment(Router.self) private var router
   @Environment(\.theme) private var theme
 

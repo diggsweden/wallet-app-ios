@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
-import OpenID4VP
 import SwiftUI
 
 struct PresentationView: View {
@@ -10,9 +9,9 @@ struct PresentationView: View {
   @Environment(Router.self) private var router
   @Environment(\.theme) private var theme
 
-  init(vpTokenData: ResolvedRequestData.VpTokenData, credential: Credential?) {
+  init(url: URL, credential: SavedCredential?) {
     _viewModel = State(
-      wrappedValue: .init(data: vpTokenData, credential: credential)
+      wrappedValue: .init(url: url, credential: credential)
     )
   }
 
@@ -30,13 +29,13 @@ struct PresentationView: View {
         VStack(spacing: 30) {
           Text("Vill du dela följande data?").textStyle(.h2)
 
-          CredentialView(disclosures: viewModel.selectedDisclosures.map(\.disclosure))
+          CredentialView(claims: viewModel.claimsToPresent)
 
           Spacer()
 
           PrimaryButton("Dela", icon: "paperplane") {
             Task {
-              try? await viewModel.sendDisclosures()
+              try? await viewModel.sendPresentation()
               router.pop()
             }
           }
@@ -51,7 +50,7 @@ struct PresentationView: View {
       .navigationBarTitleDisplayMode(.inline)
     }
     .task {
-      try? viewModel.matchDisclosures()
+      try? await viewModel.resolveAndMatchClaims()
     }
   }
 

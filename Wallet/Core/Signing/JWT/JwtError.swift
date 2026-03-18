@@ -4,11 +4,7 @@
 
 import Foundation
 
-enum JWTError: Error {
+enum JwtError: Error {
   case invalidFormat
   case invalidBase64
-  case invalidSigner
-  case invalidEncrypter
-  case invalidDecrypter
-  case invalidJWE
 }

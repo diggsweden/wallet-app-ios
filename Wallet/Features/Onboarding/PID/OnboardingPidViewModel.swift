@@ -10,7 +10,7 @@ import WalletMacros
 @Observable
 final class OnboardingPidViewModel {
   private let onSubmit: (String) throws -> Void
-  private let oAuthCoordinator = OAuthCoordinator()
+  private let oAuthCoordinator = OauthCoordinator()
 
   init(onSubmit: @escaping (String) throws -> Void) {
     self.onSubmit = onSubmit
@@ -29,7 +29,7 @@ final class OnboardingPidViewModel {
 
   private func generateOfferInBrowser(_ authAnchor: ASPresentationAnchor?) async throws -> String {
     let credentialOfferUri = try await oAuthCoordinator.start(
-      url: AppConfig.pidIssuerURL,
+      url: AppConfig.pidIssuerUrl,
       callbackScheme: "openid-credential-offer",
       anchor: authAnchor,
     )
@@ -43,7 +43,7 @@ final class OnboardingPidViewModel {
   }
 
   private func generateCredentialOffer() async -> String? {
-    let url = AppConfig.pidIssuerURL.appending(path: "issuer/credentialsOffer/generate")
+    let url = AppConfig.pidIssuerUrl.appending(path: "issuer/credentialsOffer/generate")
     let body =
       "credentialIds=eu.europa.ec.eudi.pid_vc_sd_jwt&credentialsOfferUri=openid-credential-offer%3A%2F%2F"
 

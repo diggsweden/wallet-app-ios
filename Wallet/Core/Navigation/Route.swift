@@ -3,11 +3,10 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import Foundation
-import OpenID4VP
 
 enum Route: Hashable {
-  case presentation(vpTokenData: ResolvedRequestData.VpTokenData)
+  case presentation(url: URL)
   case issuance(credentialOfferUri: String)
-  case credentialDetails(_ credential: Credential)
+  case credentialDetails(_ credential: SavedCredential)
   case settings
 }
