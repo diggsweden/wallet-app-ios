@@ -42,7 +42,7 @@ struct WelcomeScreen: View {
       PrimaryButton("Kom igång med plånboken") {
         onComplete()
       }
-      .padding(.horizontal, 30)
+      .padding(.horizontal, 24)
       .padding(.bottom, 24)
 
       Button {

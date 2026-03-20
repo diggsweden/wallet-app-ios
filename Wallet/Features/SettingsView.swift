@@ -22,8 +22,8 @@ struct SettingsView: View {
       PrimaryButton("Logga ut") {
         Task {
           await onLogout()
+          router.reset()
         }
-        router.pop()
       }
     }
   }

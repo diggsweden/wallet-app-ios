@@ -10,7 +10,6 @@ struct AppRootView: View {
   private let gatewayApiClient: GatewayApi
   @State private var userViewModel: UserViewModel
   @State private var router = Router()
-  @Environment(\.theme) private var theme
 
   init(userStore: UserStore, gatewayApiClient: GatewayApi) {
     _userViewModel = State(wrappedValue: .init(userStore: userStore))
@@ -20,14 +19,10 @@ struct AppRootView: View {
   var body: some View {
     NavigationStack(path: $router.navigationPath) {
       rootView
-        .padding(.horizontal, theme.horizontalPadding)
-        .containerRelativeFrame([.horizontal, .vertical])
-        .background(theme.colors.background)
+        .defaultScreenStyle
         .navigationDestination(for: Route.self) { route in
           destination(for: route)
-            .padding(.horizontal, theme.horizontalPadding)
-            .containerRelativeFrame([.horizontal, .vertical])
-            .background(theme.colors.background)
+            .defaultScreenStyle
         }
     }
     .environment(router)

@@ -5,26 +5,34 @@
 import AuthenticationServices
 import SwiftUI
 
-struct AuthPresentationAnchorModifier: ViewModifier {
+extension EnvironmentValues {
+  @Entry var authPresentationAnchor: ASPresentationAnchor? = nil
+  @Entry var hasBottomSafeArea: Bool = false
+}
+
+struct WindowBridgeModifier: ViewModifier {
   @State private var anchor: ASPresentationAnchor?
+  @State private var hasBottomSafeArea = false
 
   func body(content: Content) -> some View {
     content
       .background(
-        PresentationAnchorProvider { window in
+        WindowProvider { window in
           guard let window, window !== anchor else {
             return
           }
 
           anchor = window
+          hasBottomSafeArea = window.safeAreaInsets.bottom > 0
         }
       )
       .environment(\.authPresentationAnchor, anchor)
+      .environment(\.hasBottomSafeArea, hasBottomSafeArea)
   }
 }
 
 extension View {
-  var withAuthPresentationAnchor: some View {
-    modifier(AuthPresentationAnchorModifier())
+  var withWindowBridge: some View {
+    modifier(WindowBridgeModifier())
   }
 }

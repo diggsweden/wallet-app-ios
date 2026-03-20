@@ -2,21 +2,16 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
-import AuthenticationServices
 import SwiftUI
 
-extension EnvironmentValues {
-  @Entry var authPresentationAnchor: ASPresentationAnchor? = nil
-}
-
-struct PresentationAnchorProvider: UIViewRepresentable {
-  let provideAnchor: (UIWindow?) -> Void
+struct WindowProvider: UIViewRepresentable {
+  let onWindow: (UIWindow?) -> Void
 
   func makeUIView(context: Context) -> UIView {
     let view = UIView()
 
     DispatchQueue.main.async {
-      provideAnchor(view.window)
+      onWindow(view.window)
     }
 
     return view
@@ -24,7 +19,7 @@ struct PresentationAnchorProvider: UIViewRepresentable {
 
   func updateUIView(_ uiView: UIView, context: Context) {
     DispatchQueue.main.async {
-      provideAnchor(uiView.window)
+      onWindow(uiView.window)
     }
   }
 }
