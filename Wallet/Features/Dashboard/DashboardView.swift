@@ -26,10 +26,6 @@ struct DashboardView: View {
       }
     }
     .toolbar {
-      ToolbarItem(placement: .title) {
-        Text("ID-plånboken")
-          .textStyle(.caption)
-      }
       ToolbarItem(placement: .topBarTrailing) {
         Button {
           router.go(to: .settings)
@@ -39,7 +35,7 @@ struct DashboardView: View {
       }
     }
     .background(.clear)
-    .toolbarRole(.editor)
+    .navigationBarTitleDisplayMode(.inline)
   }
 }
 

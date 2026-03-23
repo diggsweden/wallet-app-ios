@@ -29,7 +29,7 @@ struct WalletApp: App {
         userStore: userStore,
         gatewayApiClient: gatewayApiClient,
       )
-      .withAuthPresentationAnchor
+      .withWindowBridge
       .themed
       .withOrientation
       .withToast

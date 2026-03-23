@@ -16,4 +16,8 @@ class Router {
   func pop() {
     navigationPath.removeLast()
   }
+
+  func reset() {
+    navigationPath = NavigationPath()
+  }
 }
