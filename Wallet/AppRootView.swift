@@ -55,22 +55,11 @@ struct AppRootView: View {
 
   @ViewBuilder
   private func destination(for route: Route) -> some View {
-    switch userViewModel.user {
-      case .ready(let user):
-        destination(for: route, userSnapshot: user)
-
-      default:
-        ProgressView()
-    }
-  }
-
-  @ViewBuilder
-  private func destination(for route: Route, userSnapshot: UserSnapshot) -> some View {
     switch route {
       case .presentation(let url):
         PresentationView(
           url: url,
-          credential: userSnapshot.credential
+          credential: userViewModel.userSnapshot?.credential
         )
 
       case .issuance(let url):

@@ -5,13 +5,19 @@
 import SwiftUI
 
 struct CredentialView: View {
+  private(set) var title: String? = nil
   let claims: [ClaimUiModel]
   @Environment(\.theme) private var theme
 
   var body: some View {
     let shape = RoundedRectangle(cornerRadius: theme.cornerRadius)
 
-    VStack(spacing: 26) {
+    VStack(alignment: .leading, spacing: 26) {
+      if let title {
+        Text(title)
+          .textStyle(.h3)
+      }
+
       ForEach(claims) { claim in
         ClaimView(claim: claim)
       }

@@ -17,6 +17,10 @@ class Router {
     navigationPath.removeLast()
   }
 
+  func popToRoot() {
+    navigationPath.removeLast(navigationPath.count)
+  }
+
   func reset() {
     navigationPath = NavigationPath()
   }

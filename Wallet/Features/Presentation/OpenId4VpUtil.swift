@@ -8,18 +8,49 @@ import JSONWebKey
 import OpenID4VP
 import eudi_lib_sdjwt_swift
 
-struct PresentationRequestData {
-  let claimPaths: Set<eudi_lib_sdjwt_swift.ClaimPath>
-  let credentialQueryId: String
-  let responseUrl: URL
-  let clientId: String
-  let nonce: String
-  let state: String?
-  let recipientJWK: JWK?
-}
-
 struct OpenId4VpUtil {
   private let certificateTrustMock: CertificateTrust = { _ in true }
+
+  private func isCredentialRequired(
+    _ queryId: QueryId,
+    in credentialSets: CredentialSets?
+  ) -> Bool {
+    guard let credentialSets else {
+      return true
+    }
+
+    let matchingSets = credentialSets.filter { set in
+      set.options.contains { $0.contains(queryId) }
+    }
+
+    return matchingSets.contains { $0.required ?? true }
+  }
+
+  private func mapCredentialQueries(_ dcql: DCQL) -> [CredentialQuery] {
+    dcql.credentials.map { credential in
+      let claimPaths =
+        credential.claims?
+        .map { claim in
+          eudi_lib_sdjwt_swift.ClaimPath(
+            claim.path.value.map { element in
+              switch element {
+                case .claim(let name): .claim(name: name)
+                case .arrayElement(let index): .arrayElement(index: index)
+                case .allArrayElements: .allArrayElements
+              }
+            }
+          )
+        } ?? []
+
+      let required = isCredentialRequired(credential.id, in: dcql.credentialSets)
+
+      return CredentialQuery(
+        id: credential.id.value,
+        claimPaths: Set(claimPaths),
+        required: required
+      )
+    }
+  }
 
   func resolve(url: URL) async throws -> PresentationRequestData {
     let ephemeralKey = P256.Signing.PrivateKey()
@@ -57,41 +88,26 @@ struct OpenId4VpUtil {
         case .notSecured(let request), .jwt(let request):
           request
         case .invalidResolution(let error, _):
-          throw AppError(reason: "Failed to resolve presentation request: \(error)")
+          throw PresentationError.resolutionFailed("\(error)")
       }
 
     let data = resolvedRequest.request
 
     guard case let .byDigitalCredentialsQuery(dcql) = data.presentationQuery else {
-      throw AppError(reason: "Only DCQL queries are supported")
+      throw PresentationError.unsupportedQuery
     }
 
     guard case let .directPost(responseURI: responseUrl) = data.responseMode else {
       // TODO: Support DirectPostJwt
-      throw AppError(reason: "Only direct_post response mode is supported")
+      throw PresentationError.unsupportedResponseMode
     }
 
-    let claimPaths = dcql.credentials
-      .flatMap { $0.claims ?? [] }
-      .map { claim in
-        eudi_lib_sdjwt_swift.ClaimPath(
-          claim.path.value.map { element in
-            switch element {
-              case .claim(let name): .claim(name: name)
-              case .arrayElement(let index): .arrayElement(index: index)
-              case .allArrayElements: .allArrayElements
-            }
-          }
-        )
-      }
-
-    let credentialQueryId = dcql.credentials.first?.id.value ?? ""
+    let credentialQueries = mapCredentialQueries(dcql)
 
     let recipientJWK = try? data.clientMetaData?.jwkSet?.keys.first?.toJWK()
 
     return PresentationRequestData(
-      claimPaths: Set(claimPaths),
-      credentialQueryId: credentialQueryId,
+      credentialQueries: credentialQueries,
       responseUrl: responseUrl,
       clientId: data.client.id.originalClientId,
       nonce: data.nonce,
