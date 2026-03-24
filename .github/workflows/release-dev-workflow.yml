@@ -37,11 +37,12 @@ jobs:
 
   build:
     needs: build-number
-    uses: diggsweden/reusable-ci/.github/workflows/build-xcode-ios.yml@f13128fa1ee478e05df3d9611ccfcadfba7d8b8e # 2.6.2
+    uses: diggsweden/reusable-ci/.github/workflows/build-xcode-ios.yml@2afbedbefbb457a5fc6175de232e4644cab58a69 # v2.7.3
     permissions:
       contents: read
     secrets: inherit
     with:
+      reusable-ci-ref: v2.7.3
       xcode-version: "26.2"
       scheme: "Wallet Demo"
       workspace: "Wallet.xcworkspace"
@@ -55,12 +56,13 @@ jobs:
 
   upload-testflight:
     needs: build
-    uses: diggsweden/reusable-ci/.github/workflows/publish-apple-appstore.yml@f13128fa1ee478e05df3d9611ccfcadfba7d8b8e # 2.6.2
+    uses: diggsweden/reusable-ci/.github/workflows/publish-apple-appstore.yml@2afbedbefbb457a5fc6175de232e4644cab58a69 # v2.7.3
 
     permissions:
       contents: read
     secrets: inherit
     with:
+      reusable-ci-ref: v2.7.3
       ipa-artifact-name: wallet-ios-demo-dev
       submit-for-review: false
       skip-validation: false

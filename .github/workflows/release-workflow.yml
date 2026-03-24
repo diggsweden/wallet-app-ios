@@ -46,7 +46,7 @@ jobs:
 
   release:
     needs: generate-artifacts-config
-    uses: diggsweden/reusable-ci/.github/workflows/release-orchestrator.yml@f13128fa1ee478e05df3d9611ccfcadfba7d8b8e # 2.6.2
+    uses: diggsweden/reusable-ci/.github/workflows/release-orchestrator.yml@2afbedbefbb457a5fc6175de232e4644cab58a69 # v2.7.3
     permissions:
       contents: write
       packages: write
@@ -56,6 +56,7 @@ jobs:
       actions: read
     secrets: inherit
     with:
+      reusable-ci-ref: v2.7.3
       artifacts-config: ${{ needs.generate-artifacts-config.outputs.config }}
       release-publisher: github-cli
       release.attachartifacts: |
