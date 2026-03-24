@@ -14,7 +14,7 @@ path = [
   ".gitignore",
   ".mise.toml",
   ".gitleaks.toml",
-  ".conform.yaml",
+  ".gommitlint.yaml",
   ".yamlfmt.yml",
   ".swift-format",
   "justfile",
