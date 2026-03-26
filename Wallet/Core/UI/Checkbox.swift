@@ -13,8 +13,7 @@ struct Checkbox: View {
       isOn.toggle()
     } label: {
       RoundedRectangle(cornerRadius: 2)
-        .fill(Color.clear)
-        .stroke(theme.colors.linkPrimary, lineWidth: 2)
+        .strokeBorder(theme.colors.linkPrimary, lineWidth: 2)
         .overlay {
           if isOn {
             Image(systemName: "checkmark")

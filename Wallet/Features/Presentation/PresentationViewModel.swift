@@ -5,61 +5,99 @@
 import CryptoKit
 import Foundation
 import JSONWebSignature
-import UIKit
 import eudi_lib_sdjwt_swift
 
 @MainActor
 @Observable
-class PresentationViewModel {
+final class PresentationViewModel {
   let url: URL
   let credential: SavedCredential?
-  private(set) var requestData: PresentationRequestData?
-  private(set) var disclosedSdJwt: SignedSDJWT?
-  private(set) var claimsToPresent: [ClaimUiModel] = []
   private let jwtUtil = JwtUtil()
+  private(set) var phase: PresentationPhase = .loading
+  private(set) var requestData: PresentationRequestData?
+  private(set) var requiredItems: [PresentationItem] = []
+  private(set) var isSending = false
+  var optionalItems: [PresentationItem] = []
+  var error: ErrorEvent?
 
   init(url: URL, credential: SavedCredential?) {
     self.url = url
     self.credential = credential
   }
 
-  func resolveAndMatchClaims() async throws {
-    let data = try await OpenId4VpUtil().resolve(url: url)
-    self.requestData = data
+  func resolveAndMatchClaims() async {
+    do {
+      guard let credential else {
+        throw PresentationError.noCredential
+      }
+      let data = try await OpenId4VpUtil().resolve(url: url)
+      self.requestData = data
 
-    guard let credential else {
-      throw AppError(reason: "No credential on device")
+      let sdJwt = try CompactParser().getSignedSdJwt(serialisedString: credential.compactSerialized)
+
+      let allItems: [PresentationItem] = try data.credentialQueries.compactMap { query in
+        guard let disclosed = try sdJwt.present(query: query.claimPaths) else {
+          return nil
+        }
+        let claims = try disclosed.toClaimUiModels(displayNames: credential.claimDisplayNames)
+        return PresentationItem(
+          id: query.id,
+          required: query.required,
+          claims: claims,
+          disclosedSdJwt: disclosed,
+          isSelected: query.required
+        )
+      }
+
+      if allItems.isEmpty {
+        throw PresentationError.noMatchingClaims
+      }
+
+      requiredItems = allItems.filter(\.required)
+      optionalItems = allItems.filter { !$0.required }
+      phase = .ready
+    } catch {
+      self.error = error.toErrorEvent()
+      phase = .error
     }
-
-    let sdJwt = try CompactParser().getSignedSdJwt(serialisedString: credential.compactSerialized)
-    guard let disclosedSdJwt = try sdJwt.present(query: data.claimPaths) else {
-      throw AppError(reason: "No matching claims")
-    }
-
-    self.disclosedSdJwt = disclosedSdJwt
-    claimsToPresent = try disclosedSdJwt.toClaimUiModels(displayNames: credential.claimDisplayNames)
   }
 
-  func sendPresentation() async throws {
-    guard
-      let data = requestData,
-      let disclosedSdJwt,
-      let key = try? KeychainService.getOrCreateKey(withTag: .walletKey)
-    else {
-      return
+  func sendPresentation() async -> PresentationResult? {
+    isSending = true
+    defer { isSending = false }
+    do {
+      let redirectUrl = try await send()
+      return PresentationResult(redirectUrl: redirectUrl)
+    } catch {
+      self.error = error.toErrorEvent()
+      return nil
+    }
+  }
+
+  private func send() async throws -> URL? {
+    guard let data = requestData else {
+      throw PresentationError.noRequestData
     }
 
-    let sdJwtWithKeyBinding = try await createPresentationSdJwt(
-      with: key,
-      disclosedSdJwt: disclosedSdJwt,
-      clientId: data.clientId,
-      nonce: data.nonce
-    )
+    let key = try KeychainService.getOrCreateKey(withTag: .walletKey)
+
+    let selectedItems = requiredItems + optionalItems.filter(\.isSelected)
+
+    var vpTokenEntries: [String: [String]] = [:]
+    for item in selectedItems {
+      let serialized = try createPresentationSdJwt(
+        with: key,
+        disclosedSdJwt: item.disclosedSdJwt,
+        clientId: data.clientId,
+        nonce: data.nonce
+      )
+      vpTokenEntries[item.id] = [serialized]
+    }
 
     let vpToken = VerifiablePresentationToken(
       state: data.state,
       nonce: data.nonce,
-      vpToken: [data.credentialQueryId: [sdJwtWithKeyBinding]]
+      vpToken: vpTokenEntries
     )
 
     let body = try createRequestBody(with: vpToken)
@@ -71,31 +109,29 @@ class PresentationViewModel {
       body: body.utf8Data
     )
 
-    guard let redirectUrl = URL(string: response.redirectUri) else {
-      return
-    }
-
-    await UIApplication.shared.open(redirectUrl)
+    return response.redirectUri.flatMap { URL(string: $0) }
   }
 
   private func createRequestBody(with vpToken: VerifiablePresentationToken) throws -> String {
     let token = try JSONEncoder().encode(vpToken.vpToken)
-    let payload: [String: String?] = [
-      "state": vpToken.state,
-      "nonce": vpToken.nonce,
-      "vp_token": String(decoding: token, as: UTF8.self),
-    ]
+    let allowed = CharacterSet.urlQueryAllowed.subtracting(.init(charactersIn: "+&="))
 
-    return
-      payload
-      .compactMapValues { $0 }
-      .map { "\($0.key)=\($0.value)" }
-      .joined(separator: "&")
+    var parts: [String] = []
+    if let state = vpToken.state {
+      parts.append("state=\(state)")
+    }
+    parts.append("nonce=\(vpToken.nonce)")
+    let vpTokenString = String(decoding: token, as: UTF8.self)
+    let encodedVpToken =
+      vpTokenString.addingPercentEncoding(withAllowedCharacters: allowed) ?? vpTokenString
+    parts.append("vp_token=\(encodedVpToken)")
+
+    return parts.joined(separator: "&")
   }
 
   private func createJweResponseBody(with vpToken: VerifiablePresentationToken) throws -> String {
     guard let recipientKey = requestData?.recipientJWK else {
-      throw AppError(reason: "Could not create JWE")
+      throw PresentationError.jweEncryptionFailed
     }
 
     let jwe = try jwtUtil.encryptJwe(
@@ -111,7 +147,7 @@ class PresentationViewModel {
     disclosedSdJwt: SignedSDJWT,
     clientId: String,
     nonce: String
-  ) async throws -> String {
+  ) throws -> String {
     let sdJwtSerialized = disclosedSdJwt.serialisation
     let keyBindingJwt = try createKeyBinding(
       for: sdJwtSerialized,
@@ -130,7 +166,7 @@ class PresentationViewModel {
     nonce: String
   ) throws -> String {
     guard let sdJwtData = sdJwt.data(using: .ascii) else {
-      throw AppError(reason: "Failed converting sdJwt to Data")
+      throw PresentationError.keyBindingEncodingFailed
     }
     let hash = SHA256.hash(data: sdJwtData)
     let sdHash = Data(hash).base64UrlEncodedString()

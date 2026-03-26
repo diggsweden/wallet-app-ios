@@ -34,27 +34,19 @@ struct OnboardingRootView: View {
   }
 
   var body: some View {
-    GeometryReader { proxy in
-      ScrollView(showsIndicators: false) {
-        adaptiveStack {
-          if viewModel.step != .intro {
-            header
-          }
-
-          currentStepView
-            .id(viewModel.step)
-            .transition(
-              stepTransition.combined(with: .opacity)
-            )
+    FullHeightScrollView {
+      adaptiveStack {
+        if viewModel.step != .intro {
+          header
         }
-        .frame(
-          maxWidth: .infinity,
-          minHeight: proxy.size.height,
-          alignment: .top
-        )
 
-        .animation(.easeInOut, value: viewModel.step)
+        currentStepView
+          .id(viewModel.step)
+          .transition(
+            stepTransition.combined(with: .opacity)
+          )
       }
+      .animation(.easeInOut, value: viewModel.step)
     }
     .toolbar {
       toolbarContent

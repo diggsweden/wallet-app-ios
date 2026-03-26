@@ -20,6 +20,13 @@ final class UserViewModel {
     self.userStore = userStore
   }
 
+  var userSnapshot: UserSnapshot? {
+    if case .ready(let snapshot) = user {
+      return snapshot
+    }
+    return nil
+  }
+
   var isEnrolled: Bool {
     guard case let .ready(user) = user else {
       return false

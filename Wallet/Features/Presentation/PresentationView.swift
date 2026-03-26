@@ -7,7 +7,8 @@ import SwiftUI
 struct PresentationView: View {
   @State private var viewModel: PresentationViewModel
   @Environment(Router.self) private var router
-  @Environment(\.theme) private var theme
+  @Environment(ToastViewModel.self) private var toastViewModel
+  @Environment(\.openURL) private var openURL
 
   init(url: URL, credential: SavedCredential?) {
     _viewModel = State(
@@ -16,51 +17,74 @@ struct PresentationView: View {
   }
 
   var body: some View {
-    if viewModel.credential != nil {
-      presentView
-    } else {
-      errorView
-    }
+    rootView
+      .navigationDestination(for: PresentationRoute.self) { route in
+        destination(for: route)
+          .defaultScreenStyle
+      }
+      .onChange(of: viewModel.error) { _, error in
+        guard let error else { return }
+        toastViewModel.showError(error.message)
+      }
   }
 
-  private var presentView: some View {
-    GeometryReader { proxy in
-      ScrollView {
-        VStack(spacing: 30) {
-          Text("Vill du dela följande data?").textStyle(.h2)
+  @ViewBuilder
+  private func destination(for route: PresentationRoute) -> some View {
+    switch route {
+      case .pin:
+        PresentationPinView(
+          isLoading: viewModel.isSending
+        ) { _ in
+          Task {
+            guard let result = await viewModel.sendPresentation() else {
+              return
+            }
 
-          CredentialView(claims: viewModel.claimsToPresent)
-
-          Spacer()
-
-          PrimaryButton("Dela", icon: "paperplane") {
-            Task {
-              try? await viewModel.sendPresentation()
-              router.pop()
+            if let redirectUrl = result.redirectUrl {
+              router.popToRoot()
+              openURL(redirectUrl)
+            } else {
+              router.navigationPath.append(PresentationRoute.success)
             }
           }
         }
-        .frame(
-          maxWidth: .infinity,
-          minHeight: proxy.size.height,
-          alignment: .top
-        )
-      }
-      .navigationTitle("Dela attribut")
-      .navigationBarTitleDisplayMode(.inline)
-    }
-    .task {
-      try? await viewModel.resolveAndMatchClaims()
+
+      case .success:
+        PresentationSuccessView {
+          router.popToRoot()
+        }
     }
   }
 
-  private var errorView: some View {
-    VStack(spacing: 24) {
-      Text("Hittade ingen ID-handling!")
-        .foregroundStyle(Color.red)
-      PrimaryButton("Gå tillbaka") {
-        router.pop()
-      }
+  @ViewBuilder
+  private var rootView: some View {
+    switch viewModel.phase {
+      case .loading:
+        ProgressView()
+          .task {
+            await viewModel.resolveAndMatchClaims()
+          }
+
+      case .error:
+        PresentationErrorView(
+          onRetry: {
+            Task {
+              await viewModel.resolveAndMatchClaims()
+            }
+          },
+          onDismiss: {
+            router.pop()
+          }
+        )
+
+      case .ready:
+        PresentationReviewView(
+          requiredItems: viewModel.requiredItems,
+          optionalItems: $viewModel.optionalItems,
+          onConfirm: {
+            router.navigationPath.append(PresentationRoute.pin)
+          }
+        )
     }
   }
 }
