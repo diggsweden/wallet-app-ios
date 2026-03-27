@@ -47,13 +47,15 @@ enum KeychainService {
       kSecPrivateKeyAttrs as String: [
         kSecAttrIsPermanent as String: true,
         kSecAttrApplicationTag as String: tag.utf8Data,
+        kSecAttrIsExtractable as String: true,
         kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
       ],
     ]
 
-    if !isSimulator {
-      attributes[kSecAttrTokenID as String] = kSecAttrTokenIDSecureEnclave
-    }
+    //    TODO: Replace with CryptoKit later
+    //    if !isSimulator {
+    //      attributes[kSecAttrTokenID as String] = kSecAttrTokenIDSecureEnclave
+    //    }
 
     var error: Unmanaged<CFError>?
     guard let privateKey = SecKeyCreateRandomKey(attributes as CFDictionary, &error) else {
