@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
+import CryptoKit
 import Foundation
 import JSONWebAlgorithms
 import JSONWebEncryption
@@ -9,21 +10,39 @@ import JSONWebKey
 import JSONWebSignature
 import JSONWebToken
 
+enum JwtSigningError: Error {
+  case encodingFailed
+}
+
 struct JwtUtil {
   private let ttlSeconds: Int = 600
   private let jsonEncoder = JSONEncoder()
   private let jsonDecoder = JSONDecoder()
 
   func signJwt<T: Codable>(
-    with key: some KeyRepresentable,
+    with key: SecureEnclave.P256.Signing.PrivateKey,
     payload: T,
-    header: JWSRegisteredFieldsHeader = DefaultJWSHeaderImpl(algorithm: .ES256),
-    includeJWK: Bool = true
+    header: JWSRegisteredFieldsHeader = DefaultJWSHeaderImpl(algorithm: .ES256)
   ) throws -> String {
     let now = Int(Date().timeIntervalSince1970)
     let defaults = DefaultJwtClaims(iat: now, nbf: now, exp: now + ttlSeconds)
     let claims = JwtClaims(defaults: defaults, payload: payload)
-    return try JWT.signed(payload: claims, protectedHeader: header, key: key).jwtString
+
+    let headerData = try jsonEncoder.encode(header)
+    let payloadData = try jsonEncoder.encode(claims)
+
+    let headerB64 = headerData.base64UrlEncodedString()
+    let payloadB64 = payloadData.base64UrlEncodedString()
+
+    let signingInput = "\(headerB64).\(payloadB64)"
+    guard let signingInputData = signingInput.data(using: .ascii) else {
+      throw JwtSigningError.encodingFailed
+    }
+
+    let signature = try key.signature(for: signingInputData)
+    let signatureB64 = signature.rawRepresentation.base64UrlEncodedString()
+
+    return "\(signingInput).\(signatureB64)"
   }
 
   func encryptJwe<T: Codable>(

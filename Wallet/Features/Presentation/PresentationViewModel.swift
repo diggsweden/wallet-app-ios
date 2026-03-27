@@ -79,7 +79,7 @@ final class PresentationViewModel {
       throw PresentationError.noRequestData
     }
 
-    let key = try KeychainService.getOrCreateKey(withTag: .walletKey)
+    let key = try SigningKeyStore.getOrCreateKey(withTag: .walletKey)
 
     let selectedItems = requiredItems + optionalItems.filter(\.isSelected)
 
@@ -143,7 +143,7 @@ final class PresentationViewModel {
   }
 
   private func createPresentationSdJwt(
-    with secKey: SecKey,
+    with key: SecureEnclave.P256.Signing.PrivateKey,
     disclosedSdJwt: SignedSDJWT,
     clientId: String,
     nonce: String
@@ -151,7 +151,7 @@ final class PresentationViewModel {
     let sdJwtSerialized = disclosedSdJwt.serialisation
     let keyBindingJwt = try createKeyBinding(
       for: sdJwtSerialized,
-      with: secKey,
+      with: key,
       aud: clientId,
       nonce: nonce
     )
@@ -161,7 +161,7 @@ final class PresentationViewModel {
 
   private func createKeyBinding(
     for sdJwt: String,
-    with secKey: SecKey,
+    with key: SecureEnclave.P256.Signing.PrivateKey,
     aud: String,
     nonce: String
   ) throws -> String {
@@ -177,6 +177,6 @@ final class PresentationViewModel {
       sdHash: sdHash
     )
 
-    return try jwtUtil.signJwt(with: secKey, payload: payload, header: header)
+    return try jwtUtil.signJwt(with: key, payload: payload, header: header)
   }
 }
