@@ -31,12 +31,12 @@ final class CreateAccountViewModel {
 
     accountIdResult = .loading
     do {
-      let key = try KeychainService.getOrCreateKey(withTag: .walletKey)
+      let key = try SigningKeyStore.getOrCreateKey(withTag: .walletKey)
       let accountId = try await gatewayApiClient.createAccount(
         personalIdentityNumber: random12DigitString(),
         emailAddress: data.email,
         telephoneNumber: data.phoneNumber,
-        jwk: try key.jwk,
+        jwk: key.publicKey.jwk,
       )
 
       accountIdResult = .success(accountId)

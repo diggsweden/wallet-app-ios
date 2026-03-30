@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
+import CryptoKit
 import Foundation
 import HTTPTypes
 import JSONWebSignature
@@ -37,9 +38,8 @@ final actor SessionManager {
   }
 
   private func initSession() async throws -> String {
-    let key = try KeychainService.getOrCreateKey(withTag: .walletKey)
-
-    guard let keyId = try? key.jwk.thumbprint() else {
+    let key = try SigningKeyStore.getOrCreateKey(withTag: .walletKey)
+    guard let keyId = try? key.publicKey.jwk.thumbprint() else {
       throw SessionError.noKeyId
     }
 
@@ -68,7 +68,11 @@ final actor SessionManager {
     return nonce
   }
 
-  private func validateChallenge(key: SecKey, keyId: String, nonce: String) async throws -> String {
+  private func validateChallenge(
+    key: SecureEnclave.P256.Signing.PrivateKey,
+    keyId: String,
+    nonce: String
+  ) async throws -> String {
     struct SessionPayload: Codable {
       let nonce: String
     }

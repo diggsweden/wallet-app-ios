@@ -6,7 +6,7 @@ import CryptoKit
 import Foundation
 import Security
 
-enum KeychainService {
+enum SecKeyStore {
   enum KeyTag: String, CaseIterable {
     case deviceKey = "device_key_tag"
     case walletKey = "wallet_key_tag"

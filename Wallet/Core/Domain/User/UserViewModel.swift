@@ -60,9 +60,10 @@ final class UserViewModel {
   func signOut() async {
     do {
       try await userStore.deleteAll()
-      try KeychainService.deleteAll()
-      let newuser = try await userStore.getOrCreate()
-      user = .ready(newuser)
+      try SecKeyStore.deleteAll()
+      try SigningKeyStore.deleteAll()
+      let newUser = try await userStore.getOrCreate()
+      user = .ready(newUser)
     } catch {
       user = .error(String(describing: error))
     }

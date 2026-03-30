@@ -166,10 +166,9 @@ class IssuanceViewModel {
     }
 
     return try jwtUtil.signJwt(
-      with: KeychainService.getOrCreateKey(withTag: .walletKey),
+      with: SigningKeyStore.getOrCreateKey(withTag: .walletKey),
       payload: payload,
-      header: KeyAttestationHeader(keyAttestation: keyAttestation),
-      includeJWK: false
+      header: KeyAttestationHeader(keyAttestation: keyAttestation)
     )
   }
 
