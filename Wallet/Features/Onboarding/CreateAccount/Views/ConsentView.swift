@@ -14,39 +14,12 @@ struct ConsentView: View {
 
   var body: some View {
     VStack(alignment: .leading, spacing: 8) {
-      HStack(alignment: .top) {
-        Image(.handshake)
-          .resizable()
-          .foregroundStyle(theme.colors.linkPrimary)
-          .frame(width: 40, height: 40)
-          .alignmentGuide(.top) { d in
-            d[VerticalAlignment.center] - 12
-          }
-        Checkbox(isOn: $hasAccepted)
-          .padding(.trailing, 4)
-        VStack(alignment: .leading) {
-          Text("Samtycke")
-            .bold()
-          Text(
-            "Ja, jag samtycker till att Digg får lagra mina användar-uppgifter såsom telefonnummer och e-postadress"
-          )
-
-          if !hasAccepted && didAttemptSubmit {
-            HStack(alignment: .top, spacing: 6) {
-              Image(systemName: "exclamationmark.circle")
-                .bold()
-              Text("Samtycke krävs för att du ska kunna använda plånboken")
-                .textStyle(.bodySmall)
-            }
-            .padding(.top, 6)
-            .foregroundStyle(theme.colors.errorInverse)
-          }
+      consentCheckbox
+        .padding(.bottom, 20)
+        .accessibilityAddTraits(.isButton)
+        .onTapGesture {
+          hasAccepted.toggle()
         }
-      }
-      .padding(.bottom, 20)
-      .onTapGesture {
-        hasAccepted.toggle()
-      }
 
       InlineLink(
         "Läs mer om användarvillkor",
@@ -70,6 +43,45 @@ struct ConsentView: View {
         onComplete()
       }
     }
+  }
+
+  private var consentCheckbox: some View {
+    HStack(alignment: .top) {
+      Image(.handshake)
+        .resizable()
+        .foregroundStyle(theme.colors.linkPrimary)
+        .frame(width: 40, height: 40)
+        .accessibilityHidden(true)
+        .alignmentGuide(.top) { d in
+          d[VerticalAlignment.center] - 12
+        }
+      Checkbox(isOn: $hasAccepted)
+        .padding(.trailing, 4)
+      VStack(alignment: .leading) {
+        Text("Samtycke")
+          .bold()
+        Text(
+          // swiftlint:disable:next line_length
+          "Ja, jag samtycker till att Digg får lagra mina användar-uppgifter såsom telefonnummer och e-postadress"
+        )
+
+        if !hasAccepted, didAttemptSubmit {
+          consentError
+        }
+      }
+    }
+  }
+
+  private var consentError: some View {
+    HStack(alignment: .top, spacing: 6) {
+      Image(systemName: "exclamationmark.circle")
+        .bold()
+        .accessibilityHidden(true)
+      Text("Samtycke krävs för att du ska kunna använda plånboken")
+        .textStyle(.bodySmall)
+    }
+    .padding(.top, 6)
+    .foregroundStyle(theme.colors.errorInverse)
   }
 }
 

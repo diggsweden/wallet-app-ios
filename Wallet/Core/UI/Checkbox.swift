@@ -21,6 +21,7 @@ struct Checkbox: View {
               .bold()
               .foregroundStyle(theme.colors.linkPrimary)
               .padding(4)
+              .accessibilityHidden(true)
           }
         }
         .frame(width: 18, height: 18)

@@ -40,6 +40,7 @@ struct CredentialCard: View {
               .scaledToFit()
           }
           .frame(width: 40, height: 40)
+          .accessibilityHidden(true)
           Text(credential.issuer.name).bold()
         }
 
@@ -66,6 +67,7 @@ struct CredentialCard: View {
           .resizable()
           .frame(width: 44, height: 44)
           .foregroundStyle(theme.colors.onSurface)
+          .accessibilityHidden(true)
         Text("Lägg till attributsintyg")
       }
       .frame(maxWidth: .infinity, maxHeight: .infinity)

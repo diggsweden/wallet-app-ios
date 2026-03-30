@@ -20,12 +20,14 @@ struct OnboardingPidView: View {
         .resizable()
         .frame(width: 92, height: 92)
         .padding(.bottom, 50)
+        .accessibilityHidden(true)
 
       VStack(alignment: .leading, spacing: 12) {
         Text("Varför?")
           .textStyle(.h5)
 
         Text(
+          // swiftlint:disable:next line_length
           "För att kunna använda plånboken behöver vi hämta uppgifter om dig. Uppgifterna som hämtas används som ett id-kort."
         )
         .padding(.bottom, 8)

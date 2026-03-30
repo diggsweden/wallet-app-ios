@@ -10,7 +10,7 @@ struct ContactInfoOneTimeCode: View {
     case email
 
     var description: String {
-      return switch self {
+      switch self {
         case .phone: "ditt telefonnummer"
         case .email: "din e-postadress"
       }
@@ -26,6 +26,7 @@ struct ContactInfoOneTimeCode: View {
   @FocusState private var isFocused: Bool
 
   var body: some View {
+    // swiftlint:disable:next accessibility_trait_for_button
     VStack(spacing: 30) {
       HStack(alignment: .top) {
         Text(
@@ -36,6 +37,7 @@ struct ContactInfoOneTimeCode: View {
           .resizable()
           .scaledToFit()
           .frame(width: 134)
+          .accessibilityHidden(true)
       }
 
       Text(
@@ -62,6 +64,7 @@ struct ContactInfoOneTimeCode: View {
   }
 
   private var codeInput: some View {
+    // swiftlint:disable:next accessibility_trait_for_button
     ZStack {
       HStack(spacing: 15) {
         ForEach(0 ..< length, id: \.self) { i in

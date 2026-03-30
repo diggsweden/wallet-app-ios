@@ -44,11 +44,11 @@ final class OnboardingPidViewModel {
 
   private func generateCredentialOffer() async -> String? {
     let url = AppConfig.pidIssuerUrl.appending(path: "issuer/credentialsOffer/generate")
-    let body =
+    let body =  // swiftlint:disable:next line_length
       "credentialIds=eu.europa.ec.eudi.pid_vc_sd_jwt&credentialsOfferUri=openid-credential-offer%3A%2F%2F"
 
     guard
-      let response = try? await NetworkClient.shared.fetchJwt(
+      let response = try? await NetworkClient.fetchJwt(
         url,
         method: .post,
         contentType: "application/x-www-form-urlencoded",

@@ -102,6 +102,10 @@ targets:
     buildToolPlugins:
       - plugin: OpenAPIGenerator
         package: swift-openapi-generator
+    preBuildScripts:
+      - name: SwiftLint
+        path: scripts/swiftlint.sh
+        basedOnDependencyAnalysis: false
 
   WalletTests:
     type: bundle.unit-test

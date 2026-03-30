@@ -19,6 +19,7 @@ struct PresentationPinView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
 
           Text(
+            // swiftlint:disable:next line_length
             "Genom att fylla i din pinkod och identifiera dig, godkänner du delning av dina uppgifter."
           )
           .textStyle(.bodyLarge)

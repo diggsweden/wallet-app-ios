@@ -5,7 +5,7 @@
 import SwiftUI
 
 struct ToastModifier: ViewModifier {
-  @State var toastViewModel = ToastViewModel()
+  @State private var toastViewModel = ToastViewModel()
 
   func body(content: Content) -> some View {
     content

@@ -10,7 +10,7 @@ protocol DeeplinkRouter {
 
 extension DeeplinkRouter {
   func routingFailure(_ reason: String) -> DeeplinkError {
-    return .routingFailure(routerName: String(describing: Self.self), reason: reason)
+    .routingFailure(routerName: String(describing: Self.self), reason: reason)
   }
 }
 
@@ -22,8 +22,10 @@ enum Deeplink {
     switch url.scheme {
       case "openid-credential-offer":
         self = .issuance
+
       case "openid4vp", "eudi-openid4vp":
         self = .presentation
+
       default:
         throw DeeplinkError.invalidScheme
     }
@@ -33,6 +35,7 @@ enum Deeplink {
     switch self {
       case .issuance:
         return IssuanceRouter()
+
       case .presentation:
         return PresentationRouter()
     }

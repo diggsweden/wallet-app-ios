@@ -8,8 +8,8 @@ enum OnboardingStep: CaseIterable {
   case intro, terms, phoneNumber, verifyPhone, email, verifyEmail, pin, verifyPin, pid,
     issueCredential
 
-  func next() -> OnboardingStep {
-    return switch self {
+  func next() -> Self {
+    switch self {
       case .intro: .terms
       case .terms: .phoneNumber
       case .phoneNumber: .verifyPhone
@@ -23,8 +23,8 @@ enum OnboardingStep: CaseIterable {
     }
   }
 
-  func previous() -> OnboardingStep? {
-    return switch self {
+  func previous() -> Self? {
+    switch self {
       case .verifyPhone: .phoneNumber
       case .verifyEmail: .email
       case .verifyPin: .pin

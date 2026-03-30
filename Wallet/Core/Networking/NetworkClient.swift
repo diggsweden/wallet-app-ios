@@ -17,23 +17,19 @@ enum HTTPMethod: String {
   }
 }
 
-final class NetworkClient: Sendable {
-  static let shared = NetworkClient()
-
-  private let decoder: JSONDecoder = {
+enum NetworkClient {
+  private static let decoder: JSONDecoder = {
     let decoder = JSONDecoder()
     decoder.keyDecodingStrategy = .convertFromSnakeCase
     return decoder
   }()
 
-  private init() {}
-
-  private func makeHeaders(
+  private static func makeHeaders(
     contentType: String?,
     accept: String?,
     token: String?
   ) -> [String: String] {
-    return [
+    [
       "Content-Type": contentType,
       "Accept": accept,
       "Authorization": token.map { "Bearer \($0)" },
@@ -41,7 +37,7 @@ final class NetworkClient: Sendable {
     .compactMapValues { $0 }
   }
 
-  private func sendRequest(
+  private static func sendRequest(
     _ url: URL,
     method: HTTPMethod = .get,
     contentType: String? = nil,
@@ -72,14 +68,19 @@ final class NetworkClient: Sendable {
     switch httpResponse.statusCode {
       case 200 ... 299:
         break
+
       case 401:
         throw HTTPError.unauthorized
+
       case 403:
         throw HTTPError.forbidden
+
       case 404:
         throw HTTPError.notFound
+
       case 500 ... 599:
         throw HTTPError.serverError(httpResponse.statusCode)
+
       default:
         throw HTTPError.serverError(httpResponse.statusCode)
     }
@@ -87,7 +88,7 @@ final class NetworkClient: Sendable {
     return data
   }
 
-  func fetch<T: Decodable>(
+  static func fetch<T: Decodable>(
     _ url: URL,
     method: HTTPMethod = .get,
     contentType: String? = "application/json",
@@ -111,7 +112,7 @@ final class NetworkClient: Sendable {
     }
   }
 
-  func fetchJwt(
+  static func fetchJwt(
     _ url: URL,
     method: HTTPMethod = .get,
     contentType: String? = "application/jwt",
@@ -128,6 +129,9 @@ final class NetworkClient: Sendable {
       body: body
     )
 
-    return String(decoding: data, as: UTF8.self)
+    guard let string = String(bytes: data, encoding: .utf8) else {
+      throw HTTPError.decodingError(URLError(.badServerResponse))
+    }
+    return string
   }
 }

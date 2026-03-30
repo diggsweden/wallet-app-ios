@@ -44,6 +44,7 @@ struct PrimaryTextFieldWrapper<Content: View>: View {
             .font(.system(size: 18))
             .bold()
             .foregroundStyle(theme.colors.errorInverse)
+            .accessibilityHidden(true)
           Text(error)
             .textStyle(.bodySmall)
             .foregroundStyle(theme.colors.textError)

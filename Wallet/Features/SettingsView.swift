@@ -14,6 +14,7 @@ struct SettingsView: View {
         .resizable()
         .scaledToFit()
         .frame(height: 200)
+        .accessibilityHidden(true)
       Text("App version:")
         .textStyle(.h3)
       Text(Bundle.main.fullVersion)

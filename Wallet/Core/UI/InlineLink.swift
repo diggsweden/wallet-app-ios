@@ -23,6 +23,7 @@ struct InlineLink: View {
         Text(text)
           .underline()
         Image(systemName: "arrow.up.forward.app")
+          .accessibilityHidden(true)
       }
       .foregroundStyle(theme.colors.linkPrimary)
     }

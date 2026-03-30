@@ -18,6 +18,7 @@ struct PresentationSuccessView: View {
         .resizable()
         .frame(width: 180, height: 180)
         .foregroundStyle(theme.colors.linkPrimary)
+        .accessibilityHidden(true)
 
       Spacer()
 

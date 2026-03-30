@@ -22,7 +22,7 @@ protocol GatewayApi: Sendable {
 struct GatewayApiClient: GatewayApi {
   let client: Client
 
-  init(baseUrl: URL? = nil, sessionManager: SessionManager) {
+  init(sessionManager: SessionManager, baseUrl: URL? = nil) {
     let url = baseUrl ?? AppConfig.apiBaseUrl
     client = Client(
       serverURL: url,

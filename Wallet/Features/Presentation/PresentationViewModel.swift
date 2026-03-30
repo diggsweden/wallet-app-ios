@@ -102,7 +102,7 @@ final class PresentationViewModel {
 
     let body = try createRequestBody(with: vpToken)
 
-    let response: RedirectUrl = try await NetworkClient.shared.fetch(
+    let response: RedirectUrl = try await NetworkClient.fetch(
       data.responseUrl,
       method: .post,
       contentType: "application/x-www-form-urlencoded",
@@ -121,7 +121,7 @@ final class PresentationViewModel {
       parts.append("state=\(state)")
     }
     parts.append("nonce=\(vpToken.nonce)")
-    let vpTokenString = String(decoding: token, as: UTF8.self)
+    let vpTokenString = String(bytes: token, encoding: .utf8) ?? ""
     let encodedVpToken =
       vpTokenString.addingPercentEncoding(withAllowedCharacters: allowed) ?? vpTokenString
     parts.append("vp_token=\(encodedVpToken)")

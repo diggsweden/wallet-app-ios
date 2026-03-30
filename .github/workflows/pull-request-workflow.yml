@@ -31,7 +31,7 @@ jobs:
       linters.licenselint: false
       linters.dependencyreview: true
       linters.swiftformat: true
-      linters.swiftlint: false
+      linters.swiftlint: true
 
   # TODO: Enable when tests are implemented
   # unit-tests:

@@ -189,6 +189,16 @@ lint-actions:
 lint-license:
     @{{lint}}/license.sh
 
+# Lint Swift files with SwiftLint
+[group('lint')]
+lint-swift:
+    @./scripts/swiftlint.sh
+
+# Check Swift formatting with swift-format
+[group('lint')]
+lint-swift-format:
+    @./scripts/swift-format-lint.sh
+
 # Lint XML files (no-op for this project)
 [group('lint')]
 lint-xml:
@@ -205,7 +215,7 @@ lint-container:
 
 # ▪ Fix all auto-fixable issues
 [group('lint-fix')]
-lint-fix: _ensure-devtools lint-yaml-fix lint-markdown-fix lint-shell-fmt-fix
+lint-fix: _ensure-devtools lint-yaml-fix lint-markdown-fix lint-shell-fmt-fix lint-swift-format-fix
     #!/usr/bin/env bash
     source "{{colors}}"
     just_success "All auto-fixes completed"
@@ -224,6 +234,16 @@ lint-markdown-fix:
 [group('lint-fix')]
 lint-shell-fmt-fix:
     @{{lint}}/shell-fmt.sh fix
+
+# Fix Swift formatting with swift-format
+[group('lint-fix')]
+lint-swift-format-fix:
+    @./scripts/format.sh
+
+# Fix auto-correctable SwiftLint violations
+[group('lint-fix')]
+lint-swift-fix:
+    swiftlint --fix
 
 # ==================================================================================== #
 # INTERNAL

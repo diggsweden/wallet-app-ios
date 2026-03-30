@@ -51,7 +51,7 @@ struct ClaimView: View {
           ForEach(items) { item in
             HStack(alignment: .top, spacing: 6) {
               Text("•")
-              ClaimView(claim: item)
+              Self(claim: item)
             }
           }
         }
@@ -59,7 +59,7 @@ struct ClaimView: View {
       case .object(let claims):
         VStack(alignment: .leading, spacing: 12) {
           ForEach(claims) { child in
-            ClaimView(claim: child, labelStyle: .h6)
+            Self(claim: child, labelStyle: .h6)
           }
         }
         .padding(.leading, 12)
@@ -69,6 +69,7 @@ struct ClaimView: View {
   }
 }
 
+// swiftlint:disable:next closure_body_length
 #Preview {
   let claims: [ClaimUiModel] = [
     ClaimUiModel(id: "name", displayName: "Namn", value: .string("Anna Andersson")),

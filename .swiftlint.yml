@@ -1,0 +1,111 @@
+# SPDX-FileCopyrightText: 2026 Digg - Agency for digital government
+#
+# SPDX-License-Identifier: EUPL-1.2
+
+included:
+  - Wallet
+  - WalletTests
+  - WalletUITests
+  - WalletMacros
+
+excluded:
+  - .build
+  - DerivedData
+  - WalletMacros/.build
+
+opt_in_rules:
+  - identical_operands
+  - overridden_super_call
+  - return_value_from_void_function
+  - discarded_notification_center_observer
+  - unhandled_throwing_task
+  - unavailable_function
+  - fatal_error_message
+  - unowned_variable_capture
+  - async_without_await
+  - contains_over_filter_count
+  - contains_over_filter_is_empty
+  - contains_over_first_not_nil
+  - contains_over_range_nil_comparison
+  - first_where
+  - last_where
+  - sorted_first_last
+  - flatmap_over_map_reduce
+  - reduce_into
+  - empty_count
+  - empty_string
+  - direct_return
+  - superfluous_else
+  - redundant_nil_coalescing
+  - redundant_type_annotation
+  - toggle_bool
+  - legacy_multiple
+  - yoda_condition
+  - shorthand_optional_binding
+  - optional_enum_case_matching
+  - joined_default_parameter
+  - prefer_self_in_static_references
+  - prefer_self_type_over_type_of_self
+  - prefer_zero_over_explicit_init
+  - self_binding
+  - anonymous_argument_in_multiline_closure
+  - local_doc_comment
+  - lower_acl_than_parent
+  - prefer_key_path
+  - closure_body_length
+  - prefer_condition_list
+  - file_header
+  - private_swiftui_state
+  - accessibility_label_for_image
+  - accessibility_trait_for_button
+  - private_subject
+  - discouraged_optional_boolean
+  - function_default_parameter_at_end
+  - convenience_type
+  - multiline_function_chains
+  - modifier_order
+  - closure_end_indentation
+  - collection_alignment
+  - literal_expression_end_indentation
+  - multiline_arguments_brackets
+  - multiline_literal_brackets
+  - multiline_parameters_brackets
+  - vertical_whitespace_between_cases
+  - unneeded_parentheses_in_closure_argument
+  - period_spacing
+  - final_test_case
+  - xct_specific_matcher
+  - empty_xctest_method
+  - balanced_xctest_lifecycle
+  - test_case_accessibility
+
+# Rules disabled because they conflict with swift-format settings:
+disabled_rules:
+  - switch_case_alignment
+  - trailing_comma
+  - opening_brace
+  - closure_parameter_position
+
+# Line length is kept consistent with swift-format's lineLength setting.
+line_length:
+  warning: 100
+  error: 120
+
+# Allow single-char names and underscores for identifiers (x/y coordinates, r/g/b/a) etc.
+identifier_name:
+  min_length:
+    warning: 1
+    error: 1
+  allowed_symbols:
+    - "_"
+  # ColorScale uses CSS-style numeric property names (10, 25, 50 … 175)
+  excluded:
+    - "10"
+    - "25"
+    - "50"
+    - "70"
+    - "100"
+    - "130"
+    - "150"
+    - "175"
+

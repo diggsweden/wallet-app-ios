@@ -31,7 +31,7 @@ class IssuanceViewModel {
   private let gatewayApiClient: GatewayApi
   var issuerDisplayData: IssuerDisplay?
   var state: IssuanceState = .initial
-  var error: ErrorEvent? = nil
+  var error: ErrorEvent?
 
   init(credentialOfferUri: String, gatewayApiClient: GatewayApi) {
     self.credentialOfferUri = credentialOfferUri
@@ -185,11 +185,11 @@ class IssuanceViewModel {
     let enc: ContentEncryptionAlgorithm = .a128GCM
     let credentialRequest = CredentialRequest(
       credentialConfigurationId: configId,
+      proofs: JwtProofType(jwt: [jwtProof]),
       credentialResponseEncryption: CredentialResponseEncryptionDTO(
         jwk: jwk,
         enc: enc.rawValue
-      ),
-      proofs: JwtProofType(jwt: [jwtProof])
+      )
     )
 
     return try await openId4VciUtil.fetchCredential(
@@ -275,7 +275,7 @@ class IssuanceViewModel {
   }
 
   private func getClaimsMetadata(from credentialOffer: CredentialOffer) -> [String: String] {
-    return credentialOffer.credentialConfigurationIdentifiers
+    credentialOffer.credentialConfigurationIdentifiers
       .compactMap { id in
         credentialOffer.credentialIssuerMetadata.credentialsSupported[id]
       }
@@ -283,15 +283,17 @@ class IssuanceViewModel {
         switch supportedCredential {
           case .sdJwtVc(let config):
             return config.credentialMetadata?.claims ?? []
+
           case .msoMdoc(let config):
             return config.credentialMetadata?.claims ?? []
+
           default:
             return []
         }
       }
       .reduce(into: [String: String]()) { result, claim in
         let claimPath = claim.path.value
-          .map { $0.description }
+          .map(\.description)
           .joined(separator: ".")
         let displayName = claim.display?.first?.name
 

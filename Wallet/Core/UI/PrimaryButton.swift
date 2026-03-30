@@ -33,6 +33,7 @@ struct PrimaryButton: View {
         Text(LocalizedStringKey(text))
         if let icon {
           Image(systemName: icon)
+            .accessibilityHidden(true)
         }
       }
       .padding(.vertical, 12)

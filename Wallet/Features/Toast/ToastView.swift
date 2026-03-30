@@ -22,12 +22,14 @@ struct ToastView: View {
         Image(systemName: icon)
           .font(.system(size: 30))
           .foregroundStyle(accentColor)
+          .accessibilityHidden(true)
         Text(toast.title)
           .textStyle(.h5)
         Button {
           onTap()
         } label: {
           Image(systemName: "x.square")
+            .accessibilityLabel("Stäng")
         }
         .buttonStyle(.plain)
       }
@@ -61,7 +63,7 @@ struct ToastView: View {
   }
 
   private var background: Color {
-    return switch toast.type {
+    switch toast.type {
       case .info: theme.colors.info
       case .success: theme.colors.success
       case .warning: theme.colors.warning
@@ -70,7 +72,7 @@ struct ToastView: View {
   }
 
   private var accentColor: Color {
-    return switch toast.type {
+    switch toast.type {
       case .info: theme.colors.infoInverse
       case .success: theme.colors.successInverse
       case .warning: theme.colors.warningInverse

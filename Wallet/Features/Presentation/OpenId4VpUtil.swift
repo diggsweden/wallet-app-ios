@@ -87,6 +87,7 @@ struct OpenId4VpUtil {
       switch result {
         case .notSecured(let request), .jwt(let request):
           request
+
         case .invalidResolution(let error, _):
           throw PresentationError.resolutionFailed("\(error)")
       }
@@ -98,7 +99,7 @@ struct OpenId4VpUtil {
     }
 
     guard case let .directPost(responseURI: responseUrl) = data.responseMode else {
-      // TODO: Support DirectPostJwt
+      // DirectPostJwt is not yet supported
       throw PresentationError.unsupportedResponseMode
     }
 

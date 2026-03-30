@@ -14,15 +14,19 @@ enum KeychainError: Error {
   var localizedDescription: String {
     switch self {
       case .keyGenerationFailed:
-        return "Failed to generate key"
+        "Failed to generate key"
+
       case .keyNotFound:
-        return "Key not found in keychain"
+        "Key not found in keychain"
+
       case .keychainError(let status):
-        return "Keychain error: \(status)"
+        "Keychain error: \(status)"
+
       case .conversionFailed:
-        return "Failed to convert between key formats"
+        "Failed to convert between key formats"
+
       case .invalidKeyData:
-        return "Invalid key data format"
+        "Invalid key data format"
     }
   }
 }

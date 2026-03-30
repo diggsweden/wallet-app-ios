@@ -49,10 +49,13 @@ private extension JSON {
           return .date(date)
         }
         return .string(stringValue)
+
       case .number:
         if let i = int { return .int(i) }
         return .double(doubleValue)
+
       case .bool: return .bool(boolValue)
+
       case .array:
         return .array(
           arrayValue.enumerated()
@@ -68,6 +71,7 @@ private extension JSON {
               )
             }
         )
+
       case .dictionary:
         return .object(
           dictionaryValue
@@ -87,6 +91,7 @@ private extension JSON {
               )
             }
         )
+
       case .null: return .null
       default: return .null
     }

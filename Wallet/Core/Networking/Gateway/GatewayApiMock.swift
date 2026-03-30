@@ -11,11 +11,11 @@ struct GatewayApiMock: GatewayApi {
     emailAddress: String,
     telephoneNumber: String?,
     jwk: JWK,
-  ) async throws -> String {
-    return ""
+  ) throws -> String {
+    ""
   }
 
-  func getWalletUnitAttestation(nonce: String) async throws -> String {
-    return ""
+  func getWalletUnitAttestation(nonce: String) throws -> String {
+    ""
   }
 }

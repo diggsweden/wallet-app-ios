@@ -19,25 +19,11 @@ struct WelcomeScreen: View {
 
   var body: some View {
     VStack(alignment: .center) {
-      Image(.welcome)
-        .resizable()
-        .scaleEffect(1.2)
-        .scaledToFit()
-        .frame(maxWidth: orientation.isLandscape ? 300 : .infinity)
-        .padding(.top, orientation.isLandscape ? 0 : 28)
+      heroImage
 
       Spacer()
 
-      VStack(spacing: 2) {
-        Text("Plånboken")
-          .font(.custom("Ubuntu-Medium", size: 40, relativeTo: .largeTitle))
-          .lineHeightIfAvailable(multiple: 1.2)
-        Text("Din data, ditt val")
-          .font(.custom("Ubuntu-Medium", size: 24, relativeTo: .title))
-          .textStyle(.h2)
-      }
-      .foregroundStyle(titleColor)
-      .padding(.bottom, orientation.isLandscape ? 12 : 55)
+      titleSection
 
       PrimaryButton("Kom igång med plånboken") {
         onComplete()
@@ -45,19 +31,7 @@ struct WelcomeScreen: View {
       .padding(.horizontal, 24)
       .padding(.bottom, 24)
 
-      Button {
-        UIPasteboard.general.string = appVersion
-        UINotificationFeedbackGenerator()
-          .notificationOccurred(.success)
-      } label: {
-        HStack {
-          Text(appVersion)
-            .textStyle(.caption)
-            .textSelection(.enabled)
-          Image(systemName: "doc.on.doc")
-            .font(.footnote)
-        }
-      }
+      versionButton
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)
     .toolbar {
@@ -66,9 +40,50 @@ struct WelcomeScreen: View {
           .resizable()
           .scaledToFit()
           .frame(maxHeight: orientation.isLandscape ? 30 : 45)
+          .accessibilityHidden(true)
       }
     }
     .navigationBarTitleDisplayMode(.inline)
+  }
+
+  private var heroImage: some View {
+    Image(.welcome)
+      .resizable()
+      .scaleEffect(1.2)
+      .scaledToFit()
+      .frame(maxWidth: orientation.isLandscape ? 300 : .infinity)
+      .padding(.top, orientation.isLandscape ? 0 : 28)
+      .accessibilityHidden(true)
+  }
+
+  private var titleSection: some View {
+    VStack(spacing: 2) {
+      Text("Plånboken")
+        .font(.custom("Ubuntu-Medium", size: 40, relativeTo: .largeTitle))
+        .lineHeightIfAvailable(multiple: 1.2)
+      Text("Din data, ditt val")
+        .font(.custom("Ubuntu-Medium", size: 24, relativeTo: .title))
+        .textStyle(.h2)
+    }
+    .foregroundStyle(titleColor)
+    .padding(.bottom, orientation.isLandscape ? 12 : 55)
+  }
+
+  private var versionButton: some View {
+    Button {
+      UIPasteboard.general.string = appVersion
+      UINotificationFeedbackGenerator()
+        .notificationOccurred(.success)
+    } label: {
+      HStack {
+        Text(appVersion)
+          .textStyle(.caption)
+          .textSelection(.enabled)
+        Image(systemName: "doc.on.doc")
+          .font(.footnote)
+          .accessibilityHidden(true)
+      }
+    }
   }
 }
 

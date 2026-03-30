@@ -51,8 +51,8 @@ final class OauthCoordinator: NSObject,
   func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
     anchor ?? UIApplication.shared.connectedScenes
       .compactMap { $0 as? UIWindowScene }
-      .flatMap { $0.windows }
-      .first { $0.isKeyWindow } ?? ASPresentationAnchor()
+      .flatMap(\.windows)
+      .first(where: \.isKeyWindow) ?? ASPresentationAnchor()
   }
 }
 
@@ -61,7 +61,7 @@ extension OauthCoordinator {
     case sessionAlreadyRunning
 
     var errorDescription: String? {
-      return switch self {
+      switch self {
         case .sessionAlreadyRunning: "En websession är redan aktiv! Avbryter"
       }
     }

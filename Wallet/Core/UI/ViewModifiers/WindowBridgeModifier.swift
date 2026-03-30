@@ -6,7 +6,7 @@ import AuthenticationServices
 import SwiftUI
 
 extension EnvironmentValues {
-  @Entry var authPresentationAnchor: ASPresentationAnchor? = nil
+  @Entry var authPresentationAnchor: ASPresentationAnchor?
   @Entry var hasBottomSafeArea: Bool = false
 }
 

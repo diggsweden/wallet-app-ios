@@ -34,6 +34,7 @@ struct AddEmailForm: View {
   }
 
   var body: some View {
+    // swiftlint:disable:next accessibility_trait_for_button
     VStack(alignment: .leading, spacing: 30) {
       header
         .padding(.bottom, 10)
@@ -64,7 +65,9 @@ struct AddEmailForm: View {
         .resizable()
         .scaledToFit()
         .frame(height: 86)
+        .accessibilityHidden(true)
       Text(
+        // swiftlint:disable:next line_length
         "Vi behöver din e-postadress för att skapa ett konto.\n\nKontot används för att administrera din plånbok om du till exempel skulle tappa din enhet."
       )
       .fixedSize(horizontal: false, vertical: true)
@@ -119,6 +122,7 @@ struct AddEmailForm: View {
     switch field {
       case .email:
         return data.emailError ?? (shouldShowMatchingError ? data.emailMatchError : nil)
+
       case .verifyEmail:
         return data.verifyEmailError ?? (shouldShowMatchingError ? data.emailMatchError : nil)
     }

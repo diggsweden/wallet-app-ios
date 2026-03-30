@@ -12,5 +12,15 @@ final class User {
   var accountId: String?
   var credential: SavedCredential?
 
-  init() {}
+  init(
+    id: Int = 0,
+    deviceId: String = UUID().uuidString,
+    accountId: String? = nil,
+    credential: SavedCredential? = nil
+  ) {
+    self.id = id
+    self.deviceId = deviceId
+    self.accountId = accountId
+    self.credential = credential
+  }
 }

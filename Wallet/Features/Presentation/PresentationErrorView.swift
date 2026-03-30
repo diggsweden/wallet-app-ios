@@ -18,6 +18,7 @@ struct PresentationErrorView: View {
       Image(systemName: "exclamationmark.triangle.fill")
         .font(.system(size: 64))
         .foregroundStyle(theme.colors.errorInverse)
+        .accessibilityHidden(true)
 
       Spacer()
 

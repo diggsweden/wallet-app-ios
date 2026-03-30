@@ -4,7 +4,7 @@
 
 import SwiftUI
 
-fileprivate struct T9Key: Identifiable, Hashable {
+private struct T9Key: Identifiable, Hashable {
   let digit: Character
   let letters: String
   var id: Character { digit }
@@ -67,6 +67,7 @@ struct T9KeypadView: View {
       Image(systemName: "delete.backward")
         .font(.system(size: 22))
         .foregroundStyle(clearButtonDisabled ? theme.colors.iconDisabled : theme.colors.textPrimary)
+        .accessibilityLabel("Radera")
     }
     .buttonStyle(.plain)
     .disabled(clearButtonDisabled)

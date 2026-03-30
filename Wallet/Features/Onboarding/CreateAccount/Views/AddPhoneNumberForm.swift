@@ -26,49 +26,62 @@ struct AddPhoneNumberForm: View {
   }
 
   var body: some View {
+    // swiftlint:disable:next accessibility_trait_for_button
     VStack(spacing: 8) {
-      PrimaryTextFieldWrapper(
-        title: "Ditt mobiltelefonnummer",
-        error: error,
-        infoCaption: "10 siffror, t.ex. 070 123 45 67"
-      ) {
-        TextField(
-          "070 123 45 67",
-          text: $phoneNumber
-        )
-        .keyboardType(.numberPad)
-        .textContentType(.telephoneNumber)
-        .focused($isFocused)
-        .onChange(of: phoneNumber) {
-          if phoneNumber.count == 10 {
-            isFocused = false
-          }
-        }
-      }
+      phoneField
 
       Spacer()
 
-      PrimaryButton("onboardingNext") {
-        guard isValidPhone(phoneNumber) else {
-          didAttemptSubmit = true
-          return
-        }
+      submitButton
+        .padding(.bottom, 8)
 
-        onSubmit(phoneNumber)
-      }
-      .padding(.bottom, 8)
-
-      Button {
-        onSkip()
-      } label: {
-        Text("Hoppa över")
-          .foregroundStyle(theme.colors.linkPrimary)
-          .underline()
-      }
+      skipButton
     }
     .contentShape(Rectangle())
     .onTapGesture {
       isFocused = false
+    }
+  }
+
+  private var phoneField: some View {
+    PrimaryTextFieldWrapper(
+      title: "Ditt mobiltelefonnummer",
+      error: error,
+      infoCaption: "10 siffror, t.ex. 070 123 45 67"
+    ) {
+      TextField(
+        "070 123 45 67",
+        text: $phoneNumber
+      )
+      .keyboardType(.numberPad)
+      .textContentType(.telephoneNumber)
+      .focused($isFocused)
+      .onChange(of: phoneNumber) {
+        if phoneNumber.count == 10 {
+          isFocused = false
+        }
+      }
+    }
+  }
+
+  private var submitButton: some View {
+    PrimaryButton("onboardingNext") {
+      guard isValidPhone(phoneNumber) else {
+        didAttemptSubmit = true
+        return
+      }
+
+      onSubmit(phoneNumber)
+    }
+  }
+
+  private var skipButton: some View {
+    Button {
+      onSkip()
+    } label: {
+      Text("Hoppa över")
+        .foregroundStyle(theme.colors.linkPrimary)
+        .underline()
     }
   }
 }

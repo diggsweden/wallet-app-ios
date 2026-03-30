@@ -37,11 +37,11 @@ final class OnboardingViewModel {
   }
 
   var totalSteps: Int {
-    return allSteps.count
+    allSteps.count
   }
 
   private var allSteps: [OnboardingStep] {
-    return OnboardingStep.allCases.filter { $0 != .intro }
+    OnboardingStep.allCases.filter { $0 != .intro }
   }
 
   func setPin(_ pin: String) throws {

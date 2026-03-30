@@ -31,6 +31,7 @@ struct DashboardView: View {
           router.go(to: .settings)
         } label: {
           Image(systemName: "gearshape")
+            .accessibilityLabel("Inställningar")
         }
       }
     }

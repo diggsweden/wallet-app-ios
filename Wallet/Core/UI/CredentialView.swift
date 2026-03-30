@@ -5,7 +5,7 @@
 import SwiftUI
 
 struct CredentialView: View {
-  private(set) var title: String? = nil
+  private(set) var title: String?
   let claims: [ClaimUiModel]
   @Environment(\.theme) private var theme
 
@@ -31,6 +31,7 @@ struct CredentialView: View {
   }
 }
 
+// swiftlint:disable:next closure_body_length
 #Preview {
   let claims: [ClaimUiModel] = [
     ClaimUiModel(id: "name", displayName: "Namn", value: .string("Anna Andersson")),
