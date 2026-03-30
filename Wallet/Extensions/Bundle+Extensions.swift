@@ -22,6 +22,6 @@ extension Bundle {
   }
 
   var fullVersion: String {
-    return "\(appVersion) (\(buildNumber))"
+    "\(appVersion) (\(buildNumber))"
   }
 }

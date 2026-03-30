@@ -13,7 +13,7 @@ enum SecKeyStore {
   }
 
   static func getOrCreateKey(withTag tag: KeyTag) throws -> SecKey {
-    return if let existingKey = try? fetchKey(withTag: tag.rawValue) {
+    if let existingKey = try? fetchKey(withTag: tag.rawValue) {
       existingKey
     } else {
       try generateKey(withTag: tag.rawValue)
@@ -26,7 +26,7 @@ enum SecKeyStore {
     }
   }
 
-  static private func deleteKey(withTag tag: String) throws {
+  private static func deleteKey(withTag tag: String) throws {
     let query: [String: Any] = [
       kSecClass as String: kSecClassKey,
       kSecAttrApplicationTag as String: tag.utf8Data,
@@ -40,8 +40,8 @@ enum SecKeyStore {
     }
   }
 
-  static private func generateKey(withTag tag: String) throws -> SecKey {
-    var attributes: [String: Any] = [
+  private static func generateKey(withTag tag: String) throws -> SecKey {
+    let attributes: [String: Any] = [
       kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
       kSecAttrKeySizeInBits as String: 256,
       kSecPrivateKeyAttrs as String: [
@@ -52,7 +52,6 @@ enum SecKeyStore {
       ],
     ]
 
-    //    TODO: Replace with CryptoKit later
     //    if !isSimulator {
     //      attributes[kSecAttrTokenID as String] = kSecAttrTokenIDSecureEnclave
     //    }
@@ -65,7 +64,7 @@ enum SecKeyStore {
     return privateKey
   }
 
-  static private func fetchKey(withTag tag: String) throws -> SecKey {
+  private static func fetchKey(withTag tag: String) throws -> SecKey {
     let query: [String: Any] = [
       kSecClass as String: kSecClassKey,
       kSecAttrApplicationTag as String: tag.utf8Data,
@@ -81,10 +80,11 @@ enum SecKeyStore {
     }
 
     // swift-format-ignore
+    // swiftlint:disable:next force_cast
     return key as! SecKey
   }
 
-  static private var isSimulator: Bool {
+  private static var isSimulator: Bool {
     #if targetEnvironment(simulator)
       return true
     #else

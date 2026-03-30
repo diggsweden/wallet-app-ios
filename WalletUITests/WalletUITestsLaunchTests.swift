@@ -4,8 +4,9 @@
 
 import XCTest
 
+// swiftlint:disable:next balanced_xctest_lifecycle
 final class WalletUITestsLaunchTests: XCTestCase {
-  override class var runsForEachTargetApplicationUIConfiguration: Bool {
+  override static var runsForEachTargetApplicationUIConfiguration: Bool {
     true
   }
 

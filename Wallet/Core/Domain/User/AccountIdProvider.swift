@@ -7,5 +7,5 @@ protocol AccountIdProvider: Sendable {
 }
 
 struct NilAccountIdProvider: AccountIdProvider {
-  func accountId() async -> String? { nil }
+  func accountId() -> String? { nil }
 }

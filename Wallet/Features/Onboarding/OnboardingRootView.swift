@@ -57,11 +57,13 @@ struct OnboardingRootView: View {
   }
 
   private var stepTransition: AnyTransition {
-    return switch viewModel.stepTransition {
+    switch viewModel.stepTransition {
       case .start:
         .scale
+
       case .forward:
         .push(from: orientation.isLandscape ? .bottom : .trailing)
+
       case .back:
         .push(from: orientation.isLandscape ? .top : .leading)
     }
@@ -82,7 +84,7 @@ struct OnboardingRootView: View {
   private func adaptiveStack<Content: View>(
     @ViewBuilder content: () -> Content
   ) -> some View {
-    if (viewModel.step == .pin || viewModel.step == .verifyPin) && orientation.isLandscape {
+    if viewModel.step == .pin || viewModel.step == .verifyPin, orientation.isLandscape {
       HStack(spacing: 24) {
         content()
       }
@@ -208,6 +210,7 @@ struct OnboardingRootView: View {
           viewModel.back()
         } label: {
           Image(systemName: "chevron.left")
+            .accessibilityLabel("Tillbaka")
         }
       }
     }
@@ -220,6 +223,7 @@ struct OnboardingRootView: View {
           }
         } label: {
           Image(systemName: "xmark")
+            .accessibilityLabel("Stäng")
         }
       }
     }

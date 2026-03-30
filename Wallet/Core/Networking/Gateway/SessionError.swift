@@ -8,11 +8,13 @@ enum SessionError: LocalizedError {
   case noAccountId, failedChallenge, noKeyId
 
   var errorDescription: String? {
-    return switch self {
+    switch self {
       case .noAccountId:
         "No account ID available"
+
       case .failedChallenge:
         "Failed to complete challenge"
+
       case .noKeyId:
         "No key ID available"
     }

@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
+import Foundation
 import SwiftData
-import SwiftUI
 
 enum UserStoreError: Error {
   case notFound
@@ -12,8 +12,8 @@ enum UserStoreError: Error {
 
 @ModelActor
 actor UserStore: AccountIdProvider {
-  func accountId() async -> String? {
-    try? await getOrCreate().accountId
+  func accountId() -> String? {
+    try? getOrCreate().accountId
   }
 
   init() throws {
@@ -21,53 +21,49 @@ actor UserStore: AccountIdProvider {
     self.init(modelContainer: modelContainer)
   }
 
-  func getOrCreate() async throws -> UserSnapshot {
-    let session = try await getOrCreateModel()
+  func getOrCreate() throws -> UserSnapshot {
+    let session = try getOrCreateModel()
     return snapshot(from: session)
   }
 
-  func addAccountId(_ accountId: String) async throws -> UserSnapshot {
-    let session = try await getOrCreateModel()
+  func addAccountId(_ accountId: String) throws -> UserSnapshot {
+    let session = try getOrCreateModel()
     session.accountId = accountId
-    try await save()
+    try save()
     return snapshot(from: session)
   }
 
-  func saveCredential(_ credential: SavedCredential) async throws -> UserSnapshot {
-    let session = try await getOrCreateModel()
+  func saveCredential(_ credential: SavedCredential) throws -> UserSnapshot {
+    let session = try getOrCreateModel()
     session.credential = credential
-    try await save()
+    try save()
     return snapshot(from: session)
   }
 
-  func deleteAll() async throws {
-    do {
-      try modelContext.delete(model: User.self)
-      try modelContext.save()
-    } catch {
-      throw UserStoreError.persistence(error)
-    }
+  func deleteAll() throws {
+    try modelContext.delete(model: User.self)
+    try save()
   }
 
-  private func getOrCreateModel() async throws -> User {
-    if let existing = try? await fetchSession() {
+  private func getOrCreateModel() throws -> User {
+    if let existing = try fetchSession() {
       return existing
     }
-    return try await createSessionModel()
+    return try createSessionModel()
   }
 
-  private func createSessionModel() async throws -> User {
+  private func createSessionModel() throws -> User {
     let session = User()
     modelContext.insert(session)
-    try await save()
+    try save()
     return session
   }
 
-  private func fetchSession() async throws -> User? {
+  private func fetchSession() throws -> User? {
     do {
       return try modelContext.fetch(FetchDescriptor<User>()).first
     } catch {
-      throw UserStoreError.notFound
+      throw UserStoreError.persistence(error)
     }
   }
 
@@ -79,7 +75,7 @@ actor UserStore: AccountIdProvider {
     )
   }
 
-  private func save() async throws {
+  private func save() throws {
     do {
       try modelContext.save()
     } catch {

@@ -11,7 +11,7 @@ enum JwkMappingError: Error {
   case missingY
 }
 
-struct JwkDtoMapper {
+enum JwkDtoMapper {
   static func makeDto(from jwk: JWK) throws -> Components.Schemas.JwkDto {
     guard let curve = jwk.curve?.rawValue else {
       throw JwkMappingError.missingCurve

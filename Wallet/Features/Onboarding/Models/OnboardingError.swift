@@ -11,13 +11,16 @@ enum OnboardingError: LocalizedError {
   case pidFailure
 
   var errorDescription: String? {
-    return switch self {
+    switch self {
       case .invalidPinDigits:
         "PIN-koden måste bestå av 6 siffror"
+
       case .pinMismatch:
         "PIN-koderna matchar inte"
+
       case .authFailure:
         "Kunde inte logga in"
+
       case .pidFailure:
         "Kunde inte hämta ID-handling"
     }

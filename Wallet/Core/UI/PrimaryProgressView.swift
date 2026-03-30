@@ -34,7 +34,7 @@ struct PrimaryProgressView: View {
   }
 
   private var finalValue: Double {
-    return if let total {
+    if let total {
       value / total
     } else {
       value

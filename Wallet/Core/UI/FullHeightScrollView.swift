@@ -19,8 +19,8 @@ struct FullHeightScrollView<Content: View>: View {
     }
     .onGeometryChange(for: CGFloat.self) { proxy in
       proxy.size.height
-    } action: {
-      minHeight = $0
+    } action: { newHeight in
+      minHeight = newHeight
     }
   }
 }

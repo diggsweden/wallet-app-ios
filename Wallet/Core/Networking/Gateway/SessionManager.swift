@@ -11,12 +11,12 @@ import OpenAPIURLSession
 import WalletMacros
 
 final actor SessionManager {
-  private var token: String? = nil
+  private var token: String?
   private var expirationDate: Date = .now
   let client: Client
   let accountIdProvider: AccountIdProvider
 
-  init(baseUrl: URL? = nil, accountIdProvider: AccountIdProvider) {
+  init(accountIdProvider: AccountIdProvider, baseUrl: URL? = nil) {
     let url = baseUrl ?? AppConfig.apiBaseUrl
     client = Client(
       serverURL: url,
@@ -26,7 +26,7 @@ final actor SessionManager {
   }
 
   func getToken() async throws -> String {
-    return if let token {
+    if let token {
       token
     } else {
       try await initSession()

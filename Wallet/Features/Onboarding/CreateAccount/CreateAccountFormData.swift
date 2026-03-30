@@ -17,7 +17,7 @@ extension CreateAccountFormData {
     case emailsDoNotMatch = "E-post matchar inte"
   }
   var emailMatchError: String? {
-    guard Validators.isValidEmail(email) && Validators.isValidEmail(verifyEmail) else {
+    guard Validators.isValidEmail(email), Validators.isValidEmail(verifyEmail) else {
       return nil
     }
 
@@ -53,7 +53,7 @@ extension CreateAccountFormData {
   }
 }
 
-fileprivate enum Validators {
+private enum Validators {
   static func isValidEmail(_ input: String) -> Bool {
     let emailRegex = /(?i)^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/
     return input.wholeMatch(of: emailRegex) != nil

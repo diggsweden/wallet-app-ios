@@ -20,7 +20,7 @@ struct OpenId4VciUtil {
     token: String,
     credentialRequest: CredentialRequest
   ) async throws -> String {
-    let response: CredentialResponse = try await NetworkClient.shared.fetch(
+    let response: CredentialResponse = try await NetworkClient.fetch(
       url,
       method: .post,
       token: token,
@@ -46,7 +46,7 @@ struct OpenId4VciUtil {
       enc: requestEncryption.enc
     )
 
-    let encryptedResponse = try await NetworkClient.shared.fetchJwt(
+    let encryptedResponse = try await NetworkClient.fetchJwt(
       url,
       method: .post,
       contentType: "application/jwt",
@@ -70,7 +70,7 @@ struct OpenId4VciUtil {
   func fetchNonce(
     url: URL,
   ) async throws -> String {
-    let response: NonceResponse = try await NetworkClient.shared.fetch(
+    let response: NonceResponse = try await NetworkClient.fetch(
       url,
       method: .post
     )

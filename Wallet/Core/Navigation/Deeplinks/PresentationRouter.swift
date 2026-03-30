@@ -5,7 +5,7 @@
 import Foundation
 
 struct PresentationRouter: DeeplinkRouter {
-  func route(from url: Foundation.URL) async throws -> Route {
+  func route(from url: Foundation.URL) throws -> Route {
     .presentation(url: url)
   }
 }
