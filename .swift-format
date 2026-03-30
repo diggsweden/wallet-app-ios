@@ -7,7 +7,8 @@
   "lineBreakAroundMultilineExpressionChainComponents": true,
   "spacesAroundRangeFormationOperators": true,
   "indentSwitchCaseLabels": true,
-  "multiElementCollectionTrailingCommas": true,
+  "respectsExistingLineBreaks": true,
+  "multilineTrailingCommaBehavior": "alwaysUsed",
   "rules": {
     "AlwaysUseLowerCamelCase": true,
     "TypeNamesShouldBeCapitalized": true,
@@ -33,6 +34,14 @@
     "OneVariableDeclarationPerLine": true,
     "OneCasePerLine": true,
     "NoLabelsInCasePatterns": true,
-    "AlwaysUseLiteralForEmptyCollectionInit": true
+    "AlwaysUseLiteralForEmptyCollectionInit": true,
+
+    "OmitExplicitReturns": true,
+    "ReplaceForEachWithForLoop": true,
+    "NoBlockComments": true,
+    "UseTripleSlashForDocumentationComments": true,
+    "DontRepeatTypeInStaticProperties": true,
+    "AvoidRetroactiveConformances": true,
+    "ValidateDocumentationComments": true
   }
 }

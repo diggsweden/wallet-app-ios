@@ -26,3 +26,4 @@ PIP_INDEX_URL = "{{ get_env(name='PIP_INDEX_URL', default='') }}"
 "aqua:mvdan/sh" = "v3.12.0"
 "aqua:google/yamlfmt" = "v0.20.0"
 "pipx:reuse" = "6.2.0"
+"aqua:realm/SwiftLint" = { version = "0.63.2", os = ["macos"] }

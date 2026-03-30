@@ -71,6 +71,34 @@ Select the scheme from the Xcode toolbar and run on a simulator or device.
 
 ---
 
+## Linting
+
+The project uses two complementary Swift linting tools, both installed via mise:
+
+| Tool | Purpose | Config |
+| ---- | ------- | ------ |
+| [SwiftLint](https://github.com/realm/SwiftLint) | Enforces Swift style and best-practice rules | `.swiftlint.yml` |
+| [swift-format](https://github.com/swiftlang/swift-format) | Enforces consistent code formatting | `.swift-format` |
+
+Both run automatically as a pre-build script in Xcode and as a pre-push git hook.
+
+### Running linters manually
+
+```sh
+just lint-swift          # SwiftLint
+just lint-swift-format   # swift-format
+```
+
+### Auto-fixing
+
+```sh
+just lint-swift-format-fix   # reformat all Swift files with swift-format
+just lint-swift-fix          # apply SwiftLint auto-corrections
+just lint-fix                # run all auto-fixes (includes swift-format)
+```
+
+---
+
 ## Available Commands
 
 Run `just` at any time to see all commands.
