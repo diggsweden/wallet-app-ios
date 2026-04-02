@@ -85,16 +85,18 @@ Both run automatically as a pre-build script in Xcode and as a pre-push git hook
 ### Running linters manually
 
 ```sh
-just lint-swift          # SwiftLint
-just lint-swift-format   # swift-format
+just lint                # run both swift-format and SwiftLint
+just lint-swift          # SwiftLint only
+just lint-swift-format   # swift-format only
 ```
 
 ### Auto-fixing
 
 ```sh
+just fix                     # run both swift-format and SwiftLint auto-fixes
 just lint-swift-format-fix   # reformat all Swift files with swift-format
 just lint-swift-fix          # apply SwiftLint auto-corrections
-just lint-fix                # run all auto-fixes (includes swift-format)
+just lint-fix                # run all auto-fixes (includes non-Swift linters)
 ```
 
 ---

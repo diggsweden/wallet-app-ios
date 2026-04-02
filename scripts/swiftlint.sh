@@ -13,8 +13,4 @@ if ! command -v swiftlint &>/dev/null; then
   exit 2
 fi
 
-if [[ -n "$1" ]]; then
-  swiftlint lint --strict --path "$1"
-else
-  swiftlint lint --strict
-fi
+swiftlint lint --strict --quiet

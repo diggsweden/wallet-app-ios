@@ -189,6 +189,10 @@ lint-actions:
 lint-license:
     @{{lint}}/license.sh
 
+# ▪ Lint Swift code (swift-format + SwiftLint)
+[group('lint')]
+lint: lint-swift-format lint-swift
+
 # Lint Swift files with SwiftLint
 [group('lint')]
 lint-swift:
@@ -235,6 +239,10 @@ lint-markdown-fix:
 lint-shell-fmt-fix:
     @{{lint}}/shell-fmt.sh fix
 
+# ▪ Fix Swift code (swift-format + SwiftLint)
+[group('lint-fix')]
+fix: lint-swift-format-fix lint-swift-fix
+
 # Fix Swift formatting with swift-format
 [group('lint-fix')]
 lint-swift-format-fix:
@@ -243,7 +251,7 @@ lint-swift-format-fix:
 # Fix auto-correctable SwiftLint violations
 [group('lint-fix')]
 lint-swift-fix:
-    swiftlint --fix
+    @swiftlint --fix --quiet
 
 # ==================================================================================== #
 # INTERNAL

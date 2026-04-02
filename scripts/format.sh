@@ -11,21 +11,10 @@ if ! command -v swift-format &>/dev/null; then
   exit 2
 fi
 
-if [[ -n "$1" ]]; then
-  files=("$1")
-else
-  readarray -t files < <(git ls-files '*.swift')
-fi
+swift-format format --in-place --recursive --parallel Wallet WalletTests WalletUITests WalletMacros
 
-echo "==> Formatting..."
-swift-format -i "${files[@]}"
-
-echo "==> Verifying changes..."
 if ! output=$(./scripts/swift-format-lint.sh 2>&1); then
-  echo "✗ Could not auto-format the following files:"
-  echo -e "\033[31m$output\033[0m"
+  echo "Could not auto-format the following files:"
+  echo "$output"
   exit 1
 fi
-
-echo "✓ Done!"
-exit 0
