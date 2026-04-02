@@ -10,8 +10,8 @@ import OpenID4VCI
 
 struct CredentialRequest: Codable {
   let credentialConfigurationId: String
-  let credentialResponseEncryption: CredentialResponseEncryptionDTO?
   let proofs: JwtProofType
+  let credentialResponseEncryption: CredentialResponseEncryptionDTO?
 
   enum CodingKeys: String, CodingKey {
     case credentialConfigurationId = "credential_configuration_id"
@@ -25,8 +25,8 @@ struct CredentialRequest: Codable {
     credentialResponseEncryption: CredentialResponseEncryptionDTO? = nil
   ) {
     self.credentialConfigurationId = credentialConfigurationId
-    self.credentialResponseEncryption = credentialResponseEncryption
     self.proofs = proofs
+    self.credentialResponseEncryption = credentialResponseEncryption
   }
 }
 
@@ -59,8 +59,9 @@ struct PidClaim: Identifiable {
 }
 
 struct JwtProofPayload: Codable {
-  let nonce: String?
   let aud: String
+  var iss: String? = "wallet-app"
+  let nonce: String?
 }
 
 struct KeyAttestationHeader: JWSRegisteredFieldsHeader {
