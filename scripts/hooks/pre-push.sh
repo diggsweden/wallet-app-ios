@@ -4,18 +4,12 @@
 #
 # SPDX-License-Identifier: EUPL-1.2
 
-set -e
+failed=0
+./scripts/swift-format-lint.sh || failed=1
+./scripts/swiftlint.sh || failed=1
 
-echo "==> Checking Swift formatting before push..."
-if ! ./scripts/swift-format-lint.sh; then
+if [[ "$failed" -ne 0 ]]; then
   echo
-  echo "❌  Push blocked: formatting issues found! Please run: ./scripts/format.sh"
-  exit 1
-fi
-
-echo "==> Running SwiftLint before push..."
-if ! ./scripts/swiftlint.sh; then
-  echo
-  echo "❌  Push blocked: SwiftLint violations found! Please fix them or run: just lint-swift-fix"
+  echo "Push blocked: lint issues found. Run: just fix"
   exit 1
 fi
