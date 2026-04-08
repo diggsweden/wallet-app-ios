@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
+import Crypto
 import Foundation
 import JSONWebAlgorithms
 import JSONWebKey
@@ -18,32 +19,36 @@ struct OpenId4VciUtil {
   func fetchCredential(
     url: URL,
     token: String,
-    credentialRequest: CredentialRequest
+    credentialRequest: CredentialRequest,
+    requestEncryption: CryptoSpec? = nil
   ) async throws -> String {
-    let response: CredentialResponse = try await NetworkClient.fetch(
-      url,
-      method: .post,
-      token: token,
-      body: try encoder.encode(credentialRequest)
-    )
-    guard let credential = response.credentials.first else {
-      throw AppError(reason: "Could not fetch credential")
+    guard let requestEncryption else {
+      return try await fetchPlainCredential(
+        url: url,
+        token: token,
+        credentialRequest: credentialRequest
+      )
     }
 
-    return credential.credential
-  }
+    let ephemeralKey = P256.KeyAgreement.PrivateKey()
+    let enc = requestEncryption.enc
 
-  func fetchCredential(
-    url: URL,
-    token: String,
-    credentialRequest: CredentialRequest,
-    requestEncryption: CryptoSpec,
-    responseDecryption: CryptoSpec,
-  ) async throws -> String {
+    var responseJwk = ephemeralKey.publicKey.jwkRepresentation
+    responseJwk.algorithm = KeyManagementAlgorithm.ecdhES.rawValue
+
+    let encryptedRequest = CredentialRequest(
+      credentialConfigurationId: credentialRequest.credentialConfigurationId,
+      proofs: credentialRequest.proofs,
+      credentialResponseEncryption: CredentialResponseEncryptionDTO(
+        jwk: responseJwk,
+        enc: enc.rawValue
+      )
+    )
+
     let jwe = try jwtUtil.encryptJwe(
-      payload: credentialRequest,
+      payload: encryptedRequest,
       recipientKey: requestEncryption.key,
-      enc: requestEncryption.enc
+      enc: enc
     )
 
     let encryptedResponse = try await NetworkClient.fetchJwt(
@@ -57,9 +62,27 @@ struct OpenId4VciUtil {
 
     let response: CredentialResponse = try jwtUtil.decryptJwe(
       encryptedResponse,
-      decryptionKey: responseDecryption.key
+      decryptionKey: ephemeralKey.jwkRepresentation
     )
 
+    guard let credential = response.credentials.first else {
+      throw AppError(reason: "Could not fetch credential")
+    }
+
+    return credential.credential
+  }
+
+  private func fetchPlainCredential(
+    url: URL,
+    token: String,
+    credentialRequest: CredentialRequest
+  ) async throws -> String {
+    let response: CredentialResponse = try await NetworkClient.fetch(
+      url,
+      method: .post,
+      token: token,
+      body: try encoder.encode(credentialRequest)
+    )
     guard let credential = response.credentials.first else {
       throw AppError(reason: "Could not fetch credential")
     }

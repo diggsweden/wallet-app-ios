@@ -16,7 +16,7 @@ protocol GatewayApi: Sendable {
     jwk: JWK,
   ) async throws -> String
 
-  func getWalletUnitAttestation(nonce: String) async throws -> String
+  func getWalletUnitAttestation(nonce: String?) async throws -> String
 }
 
 struct GatewayApiClient: GatewayApi {
@@ -58,7 +58,7 @@ struct GatewayApiClient: GatewayApi {
   }
 
   func getWalletUnitAttestation(
-    nonce: String,
+    nonce: String?,
   ) async throws -> String {
     let nonceQuery = Operations.CreateWua.Input.Query(nonce: nonce)
     let input = Operations.CreateWua.Input(query: nonceQuery)

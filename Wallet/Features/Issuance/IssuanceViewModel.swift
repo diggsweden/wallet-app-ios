@@ -3,10 +3,7 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import AuthenticationServices
-import Crypto
 import Foundation
-import JSONWebAlgorithms
-import JSONWebKey
 import OpenID4VCI
 import WalletMacros
 import eudi_lib_sdjwt_swift
@@ -60,14 +57,9 @@ class IssuanceViewModel {
       }
 
       let prepared = try await issuer.prepareAuthorizationRequest(credentialOffer: credentialOffer)
-        .get()
-
-      guard case let .prepared(data) = prepared else {
-        throw IssuanceError.authRequestFailed
-      }
 
       let oAuthCallback = try await oauth.start(
-        url: data.authorizationCodeURL.url,
+        url: prepared.authorizationCodeURL.url,
         callbackScheme: "wallet-app",
         anchor: authPresentationAnchor
       )
@@ -81,15 +73,15 @@ class IssuanceViewModel {
           request: prepared,
           authorizationCode: .init(authorizationCode: code)
         )
-        .get()
 
-      let issuanceState = data.state
+      let issuanceState = prepared.state
       let authCodeUrl = await issuer.issuerMetadata.authorizationServers?.first
 
       let authResponse =
         try await issuer
         .authorizeWithAuthorizationCode(
           request: requestWithAuthCode,
+          preparedRequest: prepared,
           grant: .authorizationCode(
             .init(
               issuerState: issuanceState,
@@ -97,7 +89,6 @@ class IssuanceViewModel {
             )
           )
         )
-        .get()
 
       state = .authorized(request: authResponse)
       await fetchCredential(authResponse)
@@ -112,38 +103,40 @@ class IssuanceViewModel {
         throw IssuanceError.issuerNotFound
       }
 
+      let metadata = await issuer.issuerMetadata
+
       guard
         let configId = credentialOffer?.credentialConfigurationIdentifiers.first,
-        let supportedCredential = await issuer.issuerMetadata.credentialsSupported[configId],
-        supportedCredential.proofTypesSupported?["jwt"] != nil
+        let supportedCredential = metadata.credentialsSupported[configId],
+        case let .sdJwtVc(credentialConfig) = supportedCredential,
+        let proofTypeJwt = credentialConfig.proofTypesSupported?["jwt"]
       else {
         throw IssuanceError.credentialNotSupported
       }
 
-      let jwtProof = try await createProof(issuer)
-      let requestEncryption = await issuer.issuerMetadata.credentialRequestEncryption.toCryptoSpec()
-      let url = await issuer.issuerMetadata.credentialEndpoint.url
-      let accessToken = authRequest.accessToken.accessToken
+      let keyAttestationRequired =
+        switch proofTypeJwt.keyAttestationRequirement {
+          case .required, .requiredNoConstraints: true
+          default: false
+        }
 
-      let credential: String
-      if let requestEncryption {
-        credential = try await fetchEncryptedCredential(
-          requestEncryption: requestEncryption,
-          jwtProof: jwtProof,
-          configId: configId.value,
-          url: url,
-          accessToken: accessToken
-        )
-      } else {
-        credential = try await fetchUnencryptedCredential(
-          jwtProof: jwtProof,
-          configId: configId.value,
-          url: url,
-          accessToken: accessToken
-        )
-      }
+      let jwtProof = try await createProof(
+        issuerId: metadata.credentialIssuerIdentifier.url.absoluteString,
+        keyAttestationRequired: keyAttestationRequired,
+        nonceUrl: metadata.nonceEndpoint?.url
+      )
 
-      let display = await issuer.issuerMetadata.display.first
+      let credential = try await openId4VciUtil.fetchCredential(
+        url: metadata.credentialEndpoint.url,
+        token: authRequest.accessToken.accessToken,
+        credentialRequest: CredentialRequest(
+          credentialConfigurationId: configId.value,
+          proofs: JwtProofType(jwt: [jwtProof])
+        ),
+        requestEncryption: metadata.credentialRequestEncryption.toCryptoSpec()
+      )
+
+      let display = metadata.display.first
       let parsedCredential = try parseCredential(credential, issuer: display)
 
       state = .credentialFetched(credential: parsedCredential)
@@ -152,73 +145,35 @@ class IssuanceViewModel {
     }
   }
 
-  private func createProof(_ issuer: Issuer) async throws -> String {
-    let aud = await issuer.issuerMetadata.credentialIssuerIdentifier.url.absoluteString
-    let payload: JwtProofPayload
-    let keyAttestation: String?
-    if let nonceURL = await issuer.issuerMetadata.nonceEndpoint?.url {
-      let nonce = try await openId4VciUtil.fetchNonce(url: nonceURL)
-      keyAttestation = try await gatewayApiClient.getWalletUnitAttestation(nonce: nonce)
-      payload = JwtProofPayload(nonce: nonce, aud: aud)
-    } else {
-      keyAttestation = nil
-      payload = JwtProofPayload(nonce: nil, aud: aud)
-    }
+  private func createProof(
+    issuerId: String,
+    keyAttestationRequired: Bool,
+    nonceUrl: URL?
+  ) async throws -> String {
+    let nonce: String? =
+      if let nonceUrl {
+        try await openId4VciUtil.fetchNonce(url: nonceUrl)
+      } else {
+        nil
+      }
+
+    let keyAttestation: String? =
+      if keyAttestationRequired {
+        try await gatewayApiClient.getWalletUnitAttestation(nonce: nonce)
+      } else {
+        nil
+      }
+
+    let payload = JwtProofPayload(aud: issuerId, nonce: nonce)
+    let key = try SigningKeyStore.getOrCreateKey(withTag: .walletKey)
 
     return try jwtUtil.signJwt(
       with: SigningKeyStore.getOrCreateKey(withTag: .walletKey),
       payload: payload,
-      header: KeyAttestationHeader(keyAttestation: keyAttestation)
-    )
-  }
-
-  private func fetchEncryptedCredential(
-    requestEncryption: CryptoSpec,
-    jwtProof: String,
-    configId: String,
-    url: URL,
-    accessToken: String,
-  ) async throws -> String {
-    let key = P256.KeyAgreement.PrivateKey()
-    var jwk = key.publicKey.jwkRepresentation
-    jwk.algorithm = KeyManagementAlgorithm.ecdhES.rawValue
-    let enc: ContentEncryptionAlgorithm = .a128GCM
-    let credentialRequest = CredentialRequest(
-      credentialConfigurationId: configId,
-      proofs: JwtProofType(jwt: [jwtProof]),
-      credentialResponseEncryption: CredentialResponseEncryptionDTO(
-        jwk: jwk,
-        enc: enc.rawValue
+      header: KeyAttestationHeader(
+        jwk: keyAttestationRequired ? nil : key.publicKey.jwk,
+        keyAttestation: keyAttestation,
       )
-    )
-
-    return try await openId4VciUtil.fetchCredential(
-      url: url,
-      token: accessToken,
-      credentialRequest: credentialRequest,
-      requestEncryption: requestEncryption,
-      responseDecryption: CryptoSpec(
-        key: key.jwkRepresentation,
-        enc: enc
-      )
-    )
-  }
-
-  private func fetchUnencryptedCredential(
-    jwtProof: String,
-    configId: String,
-    url: URL,
-    accessToken: String
-  ) async throws -> String {
-    let credentialRequest = CredentialRequest(
-      credentialConfigurationId: configId,
-      proofs: JwtProofType(jwt: [jwtProof])
-    )
-
-    return try await openId4VciUtil.fetchCredential(
-      url: url,
-      token: accessToken,
-      credentialRequest: credentialRequest
     )
   }
 
