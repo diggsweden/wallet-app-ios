@@ -16,14 +16,14 @@ concurrency:
 
 jobs:
   pr-checks:
-    uses: diggsweden/reusable-ci/.github/workflows/pullrequest-orchestrator.yml@2afbedbefbb457a5fc6175de232e4644cab58a69 # v2.7.3
+    uses: diggsweden/reusable-ci/.github/workflows/pullrequest-orchestrator.yml@1e3141deda57eba0e4a9e122b015862c738a2dfb # v2.7.8
     permissions:
       contents: read
       packages: read
       security-events: write
     secrets: inherit
     with:
-      reusable-ci-ref: v2.7.3
+      reusable-ci-ref: v2.7.8
       project-type: xcode-ios
       linters.devbasecheck: true
       linters.megalint: false
