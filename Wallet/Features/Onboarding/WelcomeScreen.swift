@@ -13,9 +13,6 @@ struct WelcomeScreen: View {
   @Environment(\.orientation) private var orientation
 
   private let appVersion: String = "App version: \(Bundle.main.fullVersion)"
-  private var titleColor: Color {
-    colorScheme == .dark ? BrandColors.brown.25 : BrandColors.brown.100
-  }
 
   var body: some View {
     VStack(alignment: .center) {
@@ -57,16 +54,8 @@ struct WelcomeScreen: View {
   }
 
   private var titleSection: some View {
-    VStack(spacing: 2) {
-      Text("Plånboken")
-        .font(.custom("Ubuntu-Medium", size: 40, relativeTo: .largeTitle))
-        .lineHeightIfAvailable(multiple: 1.2)
-      Text("Din data, ditt val")
-        .font(.custom("Ubuntu-Medium", size: 24, relativeTo: .title))
-        .textStyle(.h2)
-    }
-    .foregroundStyle(titleColor)
-    .padding(.bottom, orientation.isLandscape ? 12 : 55)
+    WalletTitleView()
+      .padding(.bottom, orientation.isLandscape ? 12 : 55)
   }
 
   private var versionButton: some View {

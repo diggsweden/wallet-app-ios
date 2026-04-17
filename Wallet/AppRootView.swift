@@ -40,12 +40,15 @@ struct AppRootView: View {
           OnboardingRootView(
             gatewayApiClient: gatewayApiClient,
             userSnapshot: user,
-            saveCredential: userViewModel.saveCredential,
+            savePidCredential: userViewModel.savePid,
             signIn: userViewModel.signIn,
             onReset: userViewModel.signOut,
           )
         } else {
-          DashboardView(credential: user.credential)
+          DashboardView(
+            pid: user.pid,
+            credentials: user.credentials
+          )
         }
 
       case .loading, .error:
@@ -59,7 +62,7 @@ struct AppRootView: View {
       case .presentation(let url):
         PresentationView(
           url: url,
-          credential: userViewModel.userSnapshot?.credential
+          credential: userViewModel.userSnapshot?.pid
         )
 
       case .issuance(let url):

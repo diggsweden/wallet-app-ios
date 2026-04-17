@@ -20,6 +20,7 @@ enum IssuanceState {
 
 @MainActor
 @Observable
+// swiftlint:disable:next type_body_length
 class IssuanceViewModel {
   private let credentialOfferUri: String
   private(set) var claimsMetadata: [String: String] = [:]
@@ -52,7 +53,7 @@ class IssuanceViewModel {
 
   func authorize(
     credentialOffer: CredentialOffer,
-    authPresentationAnchor: ASPresentationAnchor
+    authPresentationAnchor: ASPresentationAnchor,
   ) async {
     do {
       guard let issuer else {
@@ -69,7 +70,7 @@ class IssuanceViewModel {
       let oAuthCallback = try await oauth.start(
         url: data.authorizationCodeURL.url,
         callbackScheme: "wallet-app",
-        anchor: authPresentationAnchor
+        anchor: authPresentationAnchor,
       )
 
       guard let code = oAuthCallback.queryItemValue(for: "code") else {
@@ -79,7 +80,7 @@ class IssuanceViewModel {
       let requestWithAuthCode =
         try await issuer.handleAuthorizationCode(
           request: prepared,
-          authorizationCode: .init(authorizationCode: code)
+          authorizationCode: .init(authorizationCode: code),
         )
         .get()
 
@@ -95,7 +96,7 @@ class IssuanceViewModel {
               issuerState: issuanceState,
               authorizationServer: authCodeUrl,
             )
-          )
+          ),
         )
         .get()
 
@@ -115,7 +116,8 @@ class IssuanceViewModel {
       guard
         let configId = credentialOffer?.credentialConfigurationIdentifiers.first,
         let supportedCredential = await issuer.issuerMetadata.credentialsSupported[configId],
-        supportedCredential.proofTypesSupported?["jwt"] != nil
+        case let .sdJwtVc(config) = supportedCredential,
+        let jwtProofType = supportedCredential.proofTypesSupported?["jwt"]
       else {
         throw IssuanceError.credentialNotSupported
       }
@@ -132,19 +134,23 @@ class IssuanceViewModel {
           jwtProof: jwtProof,
           configId: configId.value,
           url: url,
-          accessToken: accessToken
+          accessToken: accessToken,
         )
       } else {
         credential = try await fetchUnencryptedCredential(
           jwtProof: jwtProof,
           configId: configId.value,
           url: url,
-          accessToken: accessToken
+          accessToken: accessToken,
         )
       }
 
       let display = await issuer.issuerMetadata.display.first
-      let parsedCredential = try parseCredential(credential, issuer: display)
+      let parsedCredential = try parseCredential(
+        credential,
+        credentialConfiguration: config,
+        issuer: display,
+      )
 
       state = .credentialFetched(credential: parsedCredential)
     } catch {
@@ -168,7 +174,7 @@ class IssuanceViewModel {
     return try jwtUtil.signJwt(
       with: SigningKeyStore.getOrCreateKey(withTag: .walletKey),
       payload: payload,
-      header: KeyAttestationHeader(keyAttestation: keyAttestation)
+      header: KeyAttestationHeader(keyAttestation: keyAttestation),
     )
   }
 
@@ -188,8 +194,8 @@ class IssuanceViewModel {
       proofs: JwtProofType(jwt: [jwtProof]),
       credentialResponseEncryption: CredentialResponseEncryptionDTO(
         jwk: jwk,
-        enc: enc.rawValue
-      )
+        enc: enc.rawValue,
+      ),
     )
 
     return try await openId4VciUtil.fetchCredential(
@@ -199,8 +205,8 @@ class IssuanceViewModel {
       requestEncryption: requestEncryption,
       responseDecryption: CryptoSpec(
         key: key.jwkRepresentation,
-        enc: enc
-      )
+        enc: enc,
+      ),
     )
   }
 
@@ -208,33 +214,33 @@ class IssuanceViewModel {
     jwtProof: String,
     configId: String,
     url: URL,
-    accessToken: String
+    accessToken: String,
   ) async throws -> String {
     let credentialRequest = CredentialRequest(
       credentialConfigurationId: configId,
-      proofs: JwtProofType(jwt: [jwtProof])
+      proofs: JwtProofType(jwt: [jwtProof]),
     )
 
     return try await openId4VciUtil.fetchCredential(
       url: url,
       token: accessToken,
-      credentialRequest: credentialRequest
+      credentialRequest: credentialRequest,
     )
   }
 
   private func parseCredential(
     _ credential: String,
-    issuer: Display?
+    credentialConfiguration: SdJwtVcFormat.CredentialConfiguration,
+    issuer: Display?,
   ) throws -> (SavedCredential, [ClaimUiModel]) {
     let sdJwt = try CompactParser().getSignedSdJwt(serialisedString: credential)
-    let claims =
-      try sdJwt
-      .toClaimUiModels(displayNames: claimsMetadata)
+    let displayName = credentialConfiguration.credentialMetadata?.display.first?.name
+    let claims = try sdJwt.toClaimUiModels(displayNames: claimsMetadata)
 
     let issuerDisplay = IssuerDisplay(
       name: issuer?.name ?? "",
       info: issuer?.description,
-      imageUrl: issuer?.logo?.uri
+      imageUrl: issuer?.logo?.uri,
     )
 
     return (
@@ -243,7 +249,9 @@ class IssuanceViewModel {
         compactSerialized: credential,
         claimDisplayNames: claimsMetadata,
         claimsCount: claims.count,
-      ), claims
+        type: credentialConfiguration.vct ?? "",
+        displayData: CredentialDisplayData(name: displayName),
+      ), claims,
     )
   }
 
@@ -253,15 +261,15 @@ class IssuanceViewModel {
       issuerMetadata: credentialOffer.credentialIssuerMetadata,
       config: OpenId4VCIConfig(
         client: .init(public: "wallet-dev"),
-        authFlowRedirectionURI: #URL("wallet-app://authorize")
-      )
+        authFlowRedirectionURI: #URL("wallet-app://authorize"),
+      ),
     )
 
     if let display = await issuer.issuerMetadata.display.first {
       issuerDisplayData = IssuerDisplay(
         name: display.name ?? "Okänd utfärdare",
         info: display.description,
-        imageUrl: display.logo?.uri
+        imageUrl: display.logo?.uri,
       )
     }
 
