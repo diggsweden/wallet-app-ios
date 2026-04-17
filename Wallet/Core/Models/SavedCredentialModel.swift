@@ -4,6 +4,10 @@
 
 import Foundation
 
+enum CredentialType: String, Codable, Sendable {
+  case pid = "urn:eudi:pid:1"
+}
+
 struct IssuerDisplay: Codable, Hashable, Sendable {
   let name: String
   let info: String?
@@ -16,4 +20,10 @@ struct SavedCredential: Codable, Hashable, Sendable {
   let claimDisplayNames: [String: String]
   let claimsCount: Int
   var issuedAt: Date = .now
+  let type: String
+  let displayData: CredentialDisplayData?
+}
+
+struct CredentialDisplayData: Codable, Hashable, Sendable {
+  let name: String?
 }

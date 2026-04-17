@@ -38,6 +38,7 @@ struct Theme {
     let backgroundPage: Color
     let layerAccent: Color
     let borderInteractive: Color
+    let pidBackground: Color
   }
 
   let colors: Colors
@@ -74,6 +75,7 @@ extension Theme {
       backgroundPage: Color.rgba(243, 243, 243),
       layerAccent: BrandColors.yellow.100,
       borderInteractive: BrandColors.green.100,
+      pidBackground: BrandColors.brown.70
     ),
   )
 
@@ -102,8 +104,9 @@ extension Theme {
       strokeDisabled: BrandColors.neutral.100,
       textError: Color.rgba(237, 191, 191),
       backgroundPage: BrandColors.neutral.130,
-      layerAccent: BrandColors.yellow.70,
+      layerAccent: BrandColors.yellow.130,
       borderInteractive: BrandColors.green.25,
+      pidBackground: BrandColors.brown.100
     ),
   )
 }

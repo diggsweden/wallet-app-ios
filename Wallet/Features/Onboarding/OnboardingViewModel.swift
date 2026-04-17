@@ -11,7 +11,7 @@ final class OnboardingViewModel {
     case start, forward, back
   }
 
-  private let setPidCredential: (SavedCredential) async -> Void
+  private let savePidCredential: (SavedCredential) async -> Void
   private let signIn: (String) async -> Void
   private let onReset: () async -> Void
 
@@ -20,11 +20,11 @@ final class OnboardingViewModel {
   private(set) var stepTransition: StepTransition = .start
 
   init(
-    setPidCredential: @escaping (SavedCredential) async -> Void,
+    savePidCredential: @escaping (SavedCredential) async -> Void,
     signIn: @escaping (String) async -> Void,
     onReset: @escaping () async -> Void
   ) {
-    self.setPidCredential = setPidCredential
+    self.savePidCredential = savePidCredential
     self.signIn = signIn
     self.onReset = onReset
   }
@@ -66,7 +66,7 @@ final class OnboardingViewModel {
   }
 
   func setCredentialOfferURI(_ credential: SavedCredential) async {
-    await setPidCredential(credential)
+    await savePidCredential(credential)
   }
 
   func confirmPin(_ pin: String) throws {

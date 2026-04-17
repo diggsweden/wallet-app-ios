@@ -32,7 +32,7 @@ final class UserViewModel {
       return false
     }
 
-    return user.accountId != nil && user.credential != nil
+    return user.accountId != nil && user.pid != nil
   }
 
   func initUser() async {
@@ -69,9 +69,18 @@ final class UserViewModel {
     }
   }
 
+  func savePid(_ credential: SavedCredential) async {
+    do {
+      let updated = try await userStore.savePid(credential)
+      user = .ready(updated)
+    } catch {
+      user = .error(String(describing: error))
+    }
+  }
+
   func saveCredential(_ credential: SavedCredential) async {
     do {
-      let updated = try await userStore.saveCredential(credential)
+      let updated = try await userStore.addCredential(credential)
       user = .ready(updated)
     } catch {
       user = .error(String(describing: error))

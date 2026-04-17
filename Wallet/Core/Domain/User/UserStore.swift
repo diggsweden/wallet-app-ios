@@ -8,6 +8,7 @@ import SwiftData
 enum UserStoreError: Error {
   case notFound
   case persistence(Error)
+  case invalidPidCredential
 }
 
 @ModelActor
@@ -33,11 +34,21 @@ actor UserStore: AccountIdProvider {
     return snapshot(from: session)
   }
 
-  func saveCredential(_ credential: SavedCredential) throws -> UserSnapshot {
-    let session = try getOrCreateModel()
-    session.credential = credential
+  func savePid(_ credential: SavedCredential) throws -> UserSnapshot {
+    guard credential.type == CredentialType.pid.rawValue else {
+      throw UserStoreError.invalidPidCredential
+    }
+    let user = try getOrCreateModel()
+    user.pid = credential
     try save()
-    return snapshot(from: session)
+    return snapshot(from: user)
+  }
+
+  func addCredential(_ credential: SavedCredential) throws -> UserSnapshot {
+    let user = try getOrCreateModel()
+    user.credentials.append(credential)
+    try save()
+    return snapshot(from: user)
   }
 
   func deleteAll() throws {
@@ -71,7 +82,8 @@ actor UserStore: AccountIdProvider {
     UserSnapshot(
       deviceId: model.deviceId,
       accountId: model.accountId,
-      credential: model.credential
+      credentials: model.credentials,
+      pid: model.pid
     )
   }
 

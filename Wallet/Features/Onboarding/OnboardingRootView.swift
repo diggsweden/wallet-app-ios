@@ -18,7 +18,7 @@ struct OnboardingRootView: View {
   init(
     gatewayApiClient: GatewayApi,
     userSnapshot: UserSnapshot,
-    saveCredential: @escaping (SavedCredential) async -> Void,
+    savePidCredential: @escaping (SavedCredential) async -> Void,
     signIn: @escaping (String) async -> Void,
     onReset: @escaping () async -> Void
   ) {
@@ -26,7 +26,7 @@ struct OnboardingRootView: View {
     self.userSnapshot = userSnapshot
     _viewModel = State(
       wrappedValue: .init(
-        setPidCredential: saveCredential,
+        savePidCredential: savePidCredential,
         signIn: signIn,
         onReset: onReset
       )
@@ -236,9 +236,10 @@ struct OnboardingRootView: View {
     userSnapshot: UserSnapshot(
       deviceId: "",
       accountId: nil,
-      credential: nil
+      credentials: [],
+      pid: nil
     ),
-    saveCredential: { _ in },
+    savePidCredential: { _ in },
     signIn: { _ in },
     onReset: {}
   )
