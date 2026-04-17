@@ -6,6 +6,11 @@
 
 set -e
 
+if [ "$CONFIGURATION" = "Release" ]; then
+  echo "Skipping SwiftLint for Release build"
+  exit 0
+fi
+
 export PATH="$HOME/.local/share/mise/shims:/opt/homebrew/bin:$PATH"
 
 if ! command -v swiftlint &>/dev/null; then
