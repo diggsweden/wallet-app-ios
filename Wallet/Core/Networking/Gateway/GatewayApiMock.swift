@@ -15,7 +15,7 @@ struct GatewayApiMock: GatewayApi {
     ""
   }
 
-  func getWalletUnitAttestation(nonce: String) throws -> String {
+  func getWalletUnitAttestation(nonce: String?) throws -> String {
     ""
   }
 }
