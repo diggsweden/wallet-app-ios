@@ -1,0 +1,16 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "ignorePaths": ["Wallet.xcworkspace/**"],
+  "customManagers": [
+    {
+      "description": "Update Swift package versions in XcodeGen project.yml. Handles both `from:` (minimum version) and `exactVersion:` (pinned) specifiers, with or without a .git suffix on the URL.",
+      "customType": "regex",
+      "managerFilePatterns": ["project.yml"],
+      "matchStrings": [
+        "url:\\s*https://github\\.com/(?<packageName>[^/\\s]+/[^/\\s]+?)(?:\\.git)?\\s*\\n\\s*(?:from|exactVersion):\\s*(?<currentValue>[^\\s]+)"
+      ],
+      "datasourceTemplate": "github-releases"
+    }
+  ]
+}
