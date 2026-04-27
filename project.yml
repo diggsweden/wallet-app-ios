@@ -41,7 +41,7 @@ settings:
 packages:
   jose-swift:
     url: https://github.com/beatt83/jose-swift.git
-    from: 6.0.0
+    from: 6.0.4
   swift-openapi-runtime:
     url: https://github.com/apple/swift-openapi-runtime
     from: 1.8.3
