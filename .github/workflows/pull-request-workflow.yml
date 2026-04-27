@@ -33,24 +33,24 @@ jobs:
       linters.swiftformat: true
       linters.swiftlint: true
 
-  # TODO: Enable when tests are implemented
-  # unit-tests:
-  #   runs-on: ${{ vars.MACOS_VERSION || 'macos-14' }}
-  #   needs: pr-checks
-  #   if: always()
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - uses: ./.github/actions/setup-env
-  #       with:
-  #         xcode-version: ${{ vars.XCODE_VERSION || '16.1' }}
-  #
-  #     - name: Run unit tests
-  #       run: |
-  #         set -o pipefail
-  #         xcodebuild test \
-  #           -scheme WalletTests \
-  #           -destination 'platform=iOS Simulator,name=iPhone 16' \
-  #         | xcbeautify
+unit-tests:
+  runs-on: ${{ vars.MACOS_VERSION || 'macos-26' }}
+  needs: pr-checks
+  if: always()
+  steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/actions/setup-env
+      with:
+        xcode-version: ${{ vars.XCODE_VERSION || '26.4' }}
+
+    - name: Run unit tests
+      run: |
+        set -o pipefail
+        xcodebuild test \
+          -scheme WalletTests \
+          -destination 'platform=iOS Simulator,name=iPhone 16' \
+          -enableCodeCoverage YES \
+        | xcbeautify
 
   # TODO: Enable when UI tests are implemented
   # ui-tests:
