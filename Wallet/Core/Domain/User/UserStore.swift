@@ -18,7 +18,11 @@ actor UserStore: AccountIdProvider {
   }
 
   init() throws {
-    let modelContainer = try ModelContainer(for: User.self)
+    let modelContainer = try ModelContainer(
+      for: User.self,
+      migrationPlan: SwiftDataMigrationPlan.self,
+      configurations: ModelConfiguration()
+    )
     self.init(modelContainer: modelContainer)
   }
 
@@ -80,7 +84,6 @@ actor UserStore: AccountIdProvider {
 
   private func snapshot(from model: User) -> UserSnapshot {
     UserSnapshot(
-      deviceId: model.deviceId,
       accountId: model.accountId,
       credentials: model.credentials,
       pid: model.pid

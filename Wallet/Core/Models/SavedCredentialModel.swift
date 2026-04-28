@@ -4,7 +4,7 @@
 
 import Foundation
 
-typealias CredentialType = SchemaV1.CredentialType
-typealias IssuerDisplay = SchemaV1.IssuerDisplay
-typealias SavedCredential = SchemaV1.SavedCredential
-typealias CredentialDisplayData = SchemaV1.CredentialDisplayData
+typealias CredentialType = SchemaV2.CredentialType
+typealias IssuerDisplay = SchemaV2.IssuerDisplay
+typealias SavedCredential = SchemaV2.SavedCredential
+typealias CredentialDisplayData = SchemaV2.CredentialDisplayData
