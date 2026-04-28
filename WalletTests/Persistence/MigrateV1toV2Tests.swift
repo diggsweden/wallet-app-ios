@@ -105,7 +105,7 @@ private extension MigrateV1toV2Tests {
     claimDisplayNames: ["abc": "123"],
     claimsCount: 1,
     issuedAt: .init(timeIntervalSince1970: 1),
-    type: SchemaV1.CredentialType.pid.rawValue,
+    type: CredentialType.pid.rawValue,
     displayData: SchemaV1.CredentialDisplayData(name: "PID")
   )
 
@@ -119,7 +119,7 @@ private extension MigrateV1toV2Tests {
     claimDisplayNames: ["abc": "123"],
     claimsCount: 1,
     issuedAt: .init(timeIntervalSince1970: 1),
-    type: SchemaV2.CredentialType.pid.rawValue,
+    type: CredentialType.pid.rawValue,
     displayData: SchemaV2.CredentialDisplayData(name: "PID")
   )
 }

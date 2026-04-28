@@ -39,10 +39,6 @@ extension SchemaV1 {
 }
 
 extension SchemaV1 {
-  enum CredentialType: String, Codable, Sendable {
-    case pid = "urn:eudi:pid:1"
-  }
-
   struct IssuerDisplay: Codable, Hashable, Sendable {
     let name: String
     let info: String?
