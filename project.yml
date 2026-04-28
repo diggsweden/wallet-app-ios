@@ -44,7 +44,7 @@ packages:
     from: 6.0.0
   swift-openapi-runtime:
     url: https://github.com/apple/swift-openapi-runtime
-    from: 1.8.3
+    from: 1.11.0
   swift-openapi-urlsession:
     url: https://github.com/apple/swift-openapi-urlsession
     from: 1.2.0
