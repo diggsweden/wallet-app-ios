@@ -16,7 +16,7 @@ no_proxy = "{{ get_env(name='no_proxy', default='') }}"
 PIP_INDEX_URL = "{{ get_env(name='PIP_INDEX_URL', default='') }}"
 
 [tools]
-"aqua:yonaskolb/XcodeGen" = { version = "2.44.1", os = ["macos"] }
+"aqua:yonaskolb/XcodeGen" = { version = "2.45.4", os = ["macos"] }
 "aqua:casey/just" = "1.43.0"
 "aqua:rhysd/actionlint" = "v1.7.12"
 "forgejo:itiquette/gommitlint" = "0.9.10"
