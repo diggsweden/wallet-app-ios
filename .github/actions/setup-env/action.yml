@@ -8,7 +8,9 @@ inputs:
 runs:
   using: composite
   steps:
-    - run: sudo xcode-select -s /Applications/Xcode_${{ inputs.xcode-version }}.app
+    - env:
+        XCODE_VERSION: ${{ inputs.xcode-version }}
+      run: sudo xcode-select -s "/Applications/Xcode_${XCODE_VERSION}.app"
       shell: bash
 
     - run: brew install bash
