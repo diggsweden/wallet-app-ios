@@ -4,7 +4,10 @@
 
 import Foundation
 
-typealias CredentialType = SchemaV1.CredentialType
 typealias IssuerDisplay = SchemaV1.IssuerDisplay
 typealias SavedCredential = SchemaV1.SavedCredential
 typealias CredentialDisplayData = SchemaV1.CredentialDisplayData
+
+enum CredentialType: String, Codable, Sendable {
+  case pid = "urn:eudi:pid:1"
+}
