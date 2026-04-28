@@ -1,5 +1,5 @@
 {
-  "originHash" : "71d1da39707083a1c44790ec3bc02db8eedaa73036f9bd9be177bca6268c37d2",
+  "originHash" : "2d3736fc5eacde6d8377268ff5efc8ed52fbe32caf9b57b23f5b10ec89bab651",
   "pins" : [
     {
       "identity" : "blueecc",
@@ -51,8 +51,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/beatt83/jose-swift.git",
       "state" : {
-        "revision" : "4a99bf40b4026778c0df4888b69eaa9df1f7eff7",
-        "version" : "6.0.3"
+        "revision" : "b7d3ef55660fefd045641293bc95d4cdc07a15d8",
+        "version" : "6.0.4"
       }
     },
     {
@@ -159,8 +159,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-openapi-generator",
       "state" : {
-        "revision" : "ecf21fdf08d4cf30ca506bb822f5fe580e090efb",
-        "version" : "1.10.4"
+        "revision" : "83e8301d6d62c423f8e11d6fcb0c8276d4dbb032",
+        "version" : "1.12.0"
       }
     },
     {
@@ -186,8 +186,17 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/swiftlang/swift-syntax.git",
       "state" : {
-        "revision" : "6673b05995983461eef015c4768f1483c245db22",
-        "version" : "603.0.0-prerelease-2025-09-15"
+        "revision" : "9de99a78f099e59caf2b2beec65a4c45d54b2081",
+        "version" : "603.0.1"
+      }
+    },
+    {
+      "identity" : "swift-zlib",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/beatt83/swift-zlib.git",
+      "state" : {
+        "revision" : "8cf51bfdf81c46702dac496d16397d92ac392532",
+        "version" : "1.0.2"
       }
     },
     {
@@ -206,15 +215,6 @@
       "state" : {
         "revision" : "deaf82e867fa2cbd3cd865978b079bfcf384ac28",
         "version" : "6.2.1"
-      }
-    },
-    {
-      "identity" : "zlib",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/DLTAStudio/zlib.git",
-      "state" : {
-        "revision" : "ad7db0fdde74b88b3ac9b20d412c3129e7eade34",
-        "version" : "1.0.1"
       }
     }
   ],
