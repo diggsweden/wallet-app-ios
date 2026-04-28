@@ -23,7 +23,7 @@ PIP_INDEX_URL = "{{ get_env(name='PIP_INDEX_URL', default='') }}"
 "aqua:zricethezav/gitleaks" = "v8.29.1"
 "aqua:rvben/rumdl" = "v0.0.173"
 "aqua:koalaman/shellcheck" = "v0.11.0"
-"aqua:mvdan/sh" = "v3.12.0"
+"aqua:mvdan/sh" = "v3.13.1"
 "aqua:google/yamlfmt" = "v0.20.0"
 "pipx:reuse" = "6.2.0"
 "aqua:realm/SwiftLint" = { version = "0.63.2", os = ["macos"] }
