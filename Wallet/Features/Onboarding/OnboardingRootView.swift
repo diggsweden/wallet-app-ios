@@ -234,7 +234,6 @@ struct OnboardingRootView: View {
   OnboardingRootView(
     gatewayApiClient: GatewayApiMock(),
     userSnapshot: UserSnapshot(
-      deviceId: "",
       accountId: nil,
       credentials: [],
       pid: nil

@@ -5,4 +5,9 @@
 import Foundation
 import SwiftData
 
-typealias User = SchemaV2.User
+enum MigrateV1toV2 {
+  static let stage = MigrationStage.lightweight(
+    fromVersion: SchemaV1.self,
+    toVersion: SchemaV2.self
+  )
+}
