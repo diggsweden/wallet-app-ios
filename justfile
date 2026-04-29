@@ -127,6 +127,14 @@ test-ui:
     xcodebuild -workspace {{xcode_workspace}} -scheme "{{xcode_scheme}}" -destination 'platform=iOS Simulator,name=iPhone 15' -only-testing:WalletUITests test
 
 # ==================================================================================== #
+# SCHEMA - SwiftData schema versions and migrations
+# ==================================================================================== #
+
+# Scaffold the next SwiftData schema version and migration stage
+migrate *ARGS:
+    @swift run --package-path Scripts/swift/SwiftDataMigrate --quiet swiftdata-migrate new {{ARGS}}
+
+# ==================================================================================== #
 # VERIFY - Quality assurance
 # ==================================================================================== #
 
