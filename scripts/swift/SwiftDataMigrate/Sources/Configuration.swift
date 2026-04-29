@@ -10,6 +10,7 @@ enum Config {
   static let schemaDirectory = "Wallet/Core/Persistence/Schema"
   static let migrationDirectory = "Wallet/Core/Persistence/Migration"
   static let testsDirectory = "WalletTests/Persistence"
+  static let currentModelsFile = "Wallet/Core/Persistence/CurrentModels.swift"
 
   static let migrationPlanFilename = "SwiftDataMigrationPlan.swift"
 
