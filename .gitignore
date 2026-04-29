@@ -12,6 +12,7 @@ WalletMacros/Package.resolved
 .build/
 megalinter-reports/
 .DS_Store
+.swiftpm
 
 # Local xcconfig overrides — contain API keys, never commit
 Config-Debug.xcconfig
