@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import Foundation
-import SwiftData
 
-typealias User = SchemaV2.User
+enum CredentialType: String, Codable, Sendable {
+  case pid = "urn:eudi:pid:1"
+}

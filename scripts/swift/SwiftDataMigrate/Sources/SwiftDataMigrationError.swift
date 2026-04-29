@@ -11,6 +11,7 @@ enum SwiftDataMigrationError: Error, CustomStringConvertible {
   case prevVersionWasZero
   case invalidHeader(path: String)
   case xcodegenFailed(exitCode: Int32)
+  case fileMissing(path: String)
 
   var description: String {
     switch self {
@@ -26,6 +27,8 @@ enum SwiftDataMigrationError: Error, CustomStringConvertible {
       "File does not start with the expected header: \(path)"
     case let .xcodegenFailed(exitCode):
       "xcodegen failed with exit code \(exitCode)"
+    case let .fileMissing(path):
+      "Required file does not exist: \(path)"
     }
   }
 }

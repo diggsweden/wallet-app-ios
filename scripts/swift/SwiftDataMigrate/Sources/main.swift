@@ -60,7 +60,7 @@ struct NewCommand: ParsableCommand {
       Created: \(Config.migrationDirectory)/MigrateV\(prev)toV\(nextVersion).swift
       Created: \(Config.testsDirectory)/MigrateV\(prev)toV\(nextVersion)Tests.swift
       Updated: \(Config.migrationDirectory)/\(Config.migrationPlanFilename)
-      Updated: \(scaffold.typealiasFilesUpdated.count) file(s) with bumped typealiases
+      Updated: \(Config.currentModelsFile)
 
     Next steps:
       1. Edit SchemaV\(nextVersion).swift to make your schema changes

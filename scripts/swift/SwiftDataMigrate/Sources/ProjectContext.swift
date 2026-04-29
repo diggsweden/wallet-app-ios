@@ -10,6 +10,7 @@ struct ProjectContext {
   let migrationDir: URL
   let testsDir: URL
   let planFile: URL
+  let currentModelsFile: URL
   let existingVersions: [Int]
 
   var latestVersion: Int { existingVersions.last ?? .zero }
@@ -23,6 +24,7 @@ struct ProjectContext {
     let migrationDir = repoRoot.appendingPathComponent(Config.migrationDirectory)
     let testsDir = repoRoot.appendingPathComponent(Config.testsDirectory)
     let planFile = migrationDir.appendingPathComponent(Config.migrationPlanFilename)
+    let currentModelsFile = repoRoot.appendingPathComponent(Config.currentModelsFile)
 
     for dir in [schemaDir, migrationDir, testsDir] {
       var isDir: ObjCBool = false
@@ -31,12 +33,17 @@ struct ProjectContext {
       }
     }
 
+    guard FileManager.default.fileExists(atPath: currentModelsFile.path) else {
+      throw SwiftDataMigrationError.fileMissing(path: currentModelsFile.path)
+    }
+
     return ProjectContext(
       repoRoot: repoRoot,
       schemaDir: schemaDir,
       migrationDir: migrationDir,
       testsDir: testsDir,
       planFile: planFile,
+      currentModelsFile: currentModelsFile,
       existingVersions: try discoverAllSchemaVersions(in: schemaDir)
     )
   }

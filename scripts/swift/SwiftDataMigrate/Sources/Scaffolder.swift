@@ -9,7 +9,6 @@ final class Scaffolder {
 
   private let nextVersion: Int
   private let stageKind: StageKind
-  private(set) var typealiasFilesUpdated: [URL] = []
 
   init(context: ProjectContext, nextVersion: Int, stageKind: StageKind) {
     self.context = context
@@ -110,10 +109,9 @@ private extension Scaffolder {
     let bumper = TypealiasBumper(
       fromVersion: prevVersion,
       toVersion: nextVersion,
-      repoRoot: context.repoRoot,
-      excludeDirectory: context.schemaDir
+      file: context.currentModelsFile
     )
-    typealiasFilesUpdated = try bumper.run()
+    try bumper.run()
   }
   
   func ensureDoesNotExist(_ url: URL) throws {
