@@ -26,9 +26,15 @@ public final actor SessionManager {
   }
 
   public func getToken() async throws -> String {
+    guard await accountIdProvider.accountId() != nil else {
+      reset()
+      throw SessionError.noAccountId
+    }
+
     if let token {
       return token
     }
+
     return try await initSession()
   }
 
@@ -71,6 +77,10 @@ public final actor SessionManager {
       throw SessionError.failedChallenge
     }
 
-    return try payload.body.json.sessionId
+    guard let sessionId = try? payload.body.json.sessionId else {
+      throw SessionError.failedChallenge
+    }
+
+    return sessionId
   }
 }

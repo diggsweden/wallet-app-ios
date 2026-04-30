@@ -1,0 +1,22 @@
+// SPDX-FileCopyrightText: 2026 Digg - Agency for digital government
+//
+// SPDX-License-Identifier: EUPL-1.2
+
+import Foundation
+
+public enum GatewayError: LocalizedError {
+  case invalidResponse
+  case undecodableResponseBody
+  case missingKeyIdentifier
+
+  public var errorDescription: String? {
+    switch self {
+    case .invalidResponse:
+      "Servern returnerade ett oväntat svar."
+    case .undecodableResponseBody:
+      "Något gick fel. Försök igen senare."
+    case .missingKeyIdentifier:
+      "Nyckelidentifierare saknas."
+    }
+  }
+}

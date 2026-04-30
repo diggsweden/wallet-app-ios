@@ -7,12 +7,9 @@ import OpenAPIRuntime
 import OpenAPIURLSession
 
 public protocol GatewayApi: Sendable {
-  func createAccount(
-    personalIdentityNumber: String,
-    emailAddress: String,
-    telephoneNumber: String?,
-    publicKey: PublicKeyComponents
-  ) async throws -> String
+  func createAccount(publicKey: PublicKeyComponents) async throws -> String
+
+  func addAccountWalletKey(key: PublicKeyComponents) async throws
 
   func getWalletUnitAttestation(nonce: String?) async throws -> String
 }
@@ -24,40 +21,47 @@ public struct GatewayApiClient: GatewayApi {
     client = Client(
       serverURL: baseUrl,
       transport: URLSessionTransport(),
-      middlewares: [AuthenticationMiddleware(sessionManager: sessionManager, apiKey: apiKey)]
+      middlewares: [AuthenticationMiddleware(sessionManager: sessionManager, apiKey: apiKey)],
     )
   }
 
-  public func createAccount(
-    personalIdentityNumber: String,
-    emailAddress: String,
-    telephoneNumber: String?,
-    publicKey: PublicKeyComponents
-  ) async throws -> String {
-    let jwkDto = Components.Schemas.JwkDto(
+  public func createAccount(publicKey: PublicKeyComponents) async throws -> String {
+    let jwkDto = Components.Schemas.KeyRequest(
       kty: publicKey.kty,
       kid: publicKey.kid,
       crv: publicKey.crv,
       x: publicKey.x,
-      y: publicKey.y
+      y: publicKey.y,
     )
-    let bodyDto = Components.Schemas.CreateAccountRequestDto(
-      personalIdentityNumber: personalIdentityNumber,
-      emailAdress: emailAddress,
-      telephoneNumber: telephoneNumber,
-      publicKey: jwkDto
-    )
-    let input = Operations.CreateAccount.Input(body: .json(bodyDto))
-    let response = try await client.createAccount(input)
+    let bodyDto = Components.Schemas.CreateAccountRequest(deviceKey: jwkDto)
+    let input = Operations.CreateAccounts.Input(body: .json(bodyDto))
+    let response = try await client.createAccounts(input)
 
-    guard
-      case let .created(payload) = response,
-      let accountId = try? payload.body.json.accountId
-    else {
+    guard case let .created(payload) = response else {
       throw GatewayError.invalidResponse
     }
 
+    guard let accountId = try? payload.body.json.accountId else {
+      throw GatewayError.undecodableResponseBody
+    }
+
     return accountId
+  }
+
+  public func addAccountWalletKey(key: PublicKeyComponents) async throws {
+    let keyRequest = Components.Schemas.KeyRequest(
+      kty: key.kty,
+      kid: key.kid,
+      crv: key.crv,
+      x: key.x,
+      y: key.y,
+    )
+    let input = Operations.AddAccountWalletKey.Input(body: .json(keyRequest))
+    let response = try await client.addAccountWalletKey(input)
+
+    guard case .created = response else {
+      throw GatewayError.invalidResponse
+    }
   }
 
   public func getWalletUnitAttestation(nonce: String?) async throws -> String {
@@ -69,10 +73,10 @@ public struct GatewayApiClient: GatewayApi {
       throw GatewayError.invalidResponse
     }
 
-    return try payload.body.json.jwt
-  }
-}
+    guard let jwt = try? payload.body.json.jwt else {
+      throw GatewayError.undecodableResponseBody
+    }
 
-public enum GatewayError: Error {
-  case invalidResponse
+    return jwt
+  }
 }

@@ -52,17 +52,8 @@ final class OnboardingViewModel {
     context.pin = pin
   }
 
-  func setPhoneNumber(_ phoneNumber: String) {
-    context.phoneNumber = phoneNumber
-  }
-
-  func skipPhoneNumber() {
-    step = .email
-  }
-
-  func signIn(accountId: String, email: String) async {
+  func signIn(accountId: String) async {
     await signIn(accountId)
-    context.email = email
   }
 
   func setCredentialOfferURI(_ credential: SavedCredential) async {

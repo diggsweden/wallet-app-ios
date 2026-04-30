@@ -8,7 +8,7 @@ import WalletGateway
 import WalletMacros
 
 struct OnboardingRootView: View {
-  private let gatewayApiClient: GatewayApi
+  private let gatewayApiClient: GatewayApiClient
   private let userSnapshot: UserSnapshot
 
   @Environment(\.theme) private var theme
@@ -17,11 +17,11 @@ struct OnboardingRootView: View {
   @State private var viewModel: OnboardingViewModel
 
   init(
-    gatewayApiClient: GatewayApi,
+    gatewayApiClient: GatewayApiClient,
     userSnapshot: UserSnapshot,
     savePidCredential: @escaping (SavedCredential) async -> Void,
     signIn: @escaping (String) async -> Void,
-    onReset: @escaping () async -> Void
+    onReset: @escaping () async -> Void,
   ) {
     self.gatewayApiClient = gatewayApiClient
     self.userSnapshot = userSnapshot
@@ -29,7 +29,7 @@ struct OnboardingRootView: View {
       wrappedValue: .init(
         savePidCredential: savePidCredential,
         signIn: signIn,
-        onReset: onReset
+        onReset: onReset,
       )
     )
   }
@@ -103,29 +103,24 @@ struct OnboardingRootView: View {
         Text("Steg \(currentStepNumber) av \(viewModel.totalSteps)")
         PrimaryProgressView(
           value: CGFloat(currentStepNumber),
-          total: CGFloat(viewModel.totalSteps)
+          total: CGFloat(viewModel.totalSteps),
         )
       }
     }
   }
 
   private var title: some View {
-    let stepCount = viewModel.currentStepNumber.map { "\($0). " }
     let titleText =
       switch viewModel.step {
         case .intro: ""
-        case .terms: "Tillåt behörigheter"
-        case .phoneNumber: "Ditt telefonnummer"
-        case .verifyPhone: "Bekräfta telefonnummer"
-        case .email: "Din e-postadress"
-        case .verifyEmail: "Bekräfta e-postadress"
         case .pin: "Ange pinkod för identifiering"
         case .verifyPin: "Bekräfta pinkod för identifiering"
+        case .walletSetup: "Sätter upp plånbok"
         case .pid: "Hämta personuppgifter"
         case .issueCredential: "Hämta personuppgifter"
       }
 
-    return Text("\(stepCount, default: "")\(titleText)")
+    return Text(titleText)
       .textStyle(.h1)
   }
 
@@ -137,52 +132,32 @@ struct OnboardingRootView: View {
           viewModel.next(from: .intro)
         }
 
-      case .terms:
-        ConsentView {
-          viewModel.next(from: .terms)
-        }
-
-      case .phoneNumber:
-        AddPhoneNumberForm { phoneNumber in
-          viewModel.setPhoneNumber(phoneNumber)
-          viewModel.next(from: .phoneNumber)
-        } onSkip: {
-          viewModel.skipPhoneNumber()
-        }
-
-      case .verifyPhone:
-        ContactInfoOneTimeCode(contactInfoData: viewModel.context.phoneNumber ?? "", type: .phone) {
-          viewModel.next(from: .verifyPhone)
-        }
-
-      case .email:
-        AddEmailForm(
-          gatewayApiClient: gatewayApiClient,
-          phoneNumber: viewModel.context.phoneNumber
-        ) { accountId, email in
-          await viewModel.signIn(accountId: accountId, email: email)
-          viewModel.next(from: .email)
-        }
-
-      case .verifyEmail:
-        ContactInfoOneTimeCode(contactInfoData: viewModel.context.email, type: .email) {
-          viewModel.next(from: .verifyEmail)
-        }
-
       case .pin:
-        OnboardingPinViewWrapper("Pinkod används när du ska identifiera dig") { pin in
+        PinSetupView("Pinkod används när du ska identifiera dig") { pin in
           try viewModel.setPin(pin)
           viewModel.next(from: .pin)
         }
 
       case .verifyPin:
-        OnboardingPinViewWrapper("Pinkod används när du ska identifiera dig") { pin in
+        PinSetupView("Pinkod används när du ska identifiera dig") { pin in
           try viewModel.confirmPin(pin)
           viewModel.next(from: .verifyPin)
         }
 
+      case .walletSetup:
+        WalletSetupView(
+          pin: viewModel.context.pin,
+          gatewayApi: gatewayApiClient,
+          onAccountCreated: { accountId in
+            await viewModel.signIn(accountId: accountId)
+          },
+          onComplete: {
+            viewModel.next(from: .walletSetup)
+          },
+        )
+
       case .pid:
-        OnboardingPidView { credentialOfferUri in
+        PidSetupView { credentialOfferUri in
           viewModel.setCredentialOfferUri(credentialOfferUri)
           viewModel.next(from: .pid)
         }
@@ -191,12 +166,12 @@ struct OnboardingRootView: View {
         if let uri = viewModel.context.credentialOfferUri {
           IssuanceView(
             credentialOfferUri: uri,
-            gatewayApiClient: gatewayApiClient
+            gatewayApiClient: gatewayApiClient,
           ) { credential in
             await viewModel.setCredentialOfferURI(credential)
           }
         } else {
-          OnboardingPidView { credentialOfferUri in
+          PidSetupView { credentialOfferUri in
             viewModel.setCredentialOfferUri(credentialOfferUri)
           }
         }
@@ -231,17 +206,18 @@ struct OnboardingRootView: View {
   }
 }
 
-#Preview {
-  OnboardingRootView(
-    gatewayApiClient: GatewayApiMock(),
-    userSnapshot: UserSnapshot(
-      accountId: nil,
-      credentials: [],
-      pid: nil
-    ),
-    savePidCredential: { _ in },
-    signIn: { _ in },
-    onReset: {}
-  )
-  .themed
-}
+// TODO: Create mockable flow for OnboardingRootview
+// #Preview {
+//   OnboardingRootView(
+//     gatewayApiClient: GatewayApiMock(),
+//     userSnapshot: UserSnapshot(
+//       accountId: nil,
+//       credentials: [],
+//       pid: nil
+//     ),
+//     savePidCredential: { _ in },
+//     signIn: { _ in },
+//     onReset: {}
+//   )
+//   .themed
+// }

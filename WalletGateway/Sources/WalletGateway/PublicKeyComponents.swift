@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
-public struct PublicKeyComponents: Sendable {
+public struct PublicKeyComponents: Equatable, Sendable {
   public let kty: String
   public let kid: String
   public let crv: String

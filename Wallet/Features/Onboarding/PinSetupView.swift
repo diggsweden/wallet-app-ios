@@ -4,7 +4,7 @@
 
 import SwiftUI
 
-struct OnboardingPinViewWrapper: View {
+struct PinSetupView: View {
   let bodyText: String
   let onSubmit: (String) throws -> Void
 
