@@ -5,6 +5,7 @@
 import AuthenticationServices
 import SwiftData
 import SwiftUI
+import WalletGateway
 
 @main
 struct WalletApp: App {
@@ -19,8 +20,16 @@ struct WalletApp: App {
       fatalError("Failed setting up storage")
     }
 
-    self.sessionManager = SessionManager(accountIdProvider: userStore)
-    self.gatewayApiClient = GatewayApiClient(sessionManager: sessionManager)
+    self.sessionManager = SessionManager(
+      signingProvider: WalletSessionSigner(),
+      accountIdProvider: userStore,
+      baseUrl: AppConfig.apiBaseUrl
+    )
+    self.gatewayApiClient = GatewayApiClient(
+      sessionManager: sessionManager,
+      apiKey: AppConfig.apiKey,
+      baseUrl: AppConfig.apiBaseUrl
+    )
   }
 
   var body: some Scene {

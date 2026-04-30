@@ -1,5 +1,5 @@
 {
-  "originHash" : "2d3736fc5eacde6d8377268ff5efc8ed52fbe32caf9b57b23f5b10ec89bab651",
+  "originHash" : "e2c84e2fcd0eecb2b107443a2a57dbac42552211eaad8da7374930f25a2ae852",
   "pins" : [
     {
       "identity" : "blueecc",
@@ -177,8 +177,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-openapi-urlsession",
       "state" : {
-        "revision" : "279aa6b77be6aa842a4bf3c45fa79fa15edf3e07",
-        "version" : "1.2.0"
+        "revision" : "576a65b4ffb8c12ddad4950dc21eea2ef071bec2",
+        "version" : "1.3.0"
       }
     },
     {

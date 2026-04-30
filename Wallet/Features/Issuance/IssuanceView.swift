@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import SwiftUI
+import WalletGateway
 
 struct IssuanceView: View {
   private let onSave: (SavedCredential) async -> Void

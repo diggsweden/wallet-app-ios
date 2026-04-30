@@ -4,6 +4,7 @@
 
 import Foundation
 import SwiftData
+import WalletGateway
 
 enum UserStoreError: Error {
   case notFound

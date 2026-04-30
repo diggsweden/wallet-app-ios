@@ -8,6 +8,7 @@ import OpenAPIRuntime
 
 struct AuthenticationMiddleware: ClientMiddleware {
   let sessionManager: SessionManager
+  let apiKey: String
 
   func intercept(
     _ request: HTTPRequest,
@@ -15,14 +16,11 @@ struct AuthenticationMiddleware: ClientMiddleware {
     baseURL: URL,
     operationID: String,
     next: (HTTPRequest, HTTPBody?, URL) async throws -> (HTTPResponse, HTTPBody?)
-  ) async throws -> (
-    HTTPResponse,
-    HTTPBody?
-  ) {
+  ) async throws -> (HTTPResponse, HTTPBody?) {
     var request = request
 
     if operationID == "createAccount" {
-      request.setHeader("X-API-KEY", AppConfig.apiKey)
+      request.setHeader("X-API-KEY", apiKey)
       return try await next(request, body, baseURL)
     }
 

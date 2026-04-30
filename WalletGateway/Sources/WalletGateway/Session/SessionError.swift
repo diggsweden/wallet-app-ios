@@ -4,10 +4,10 @@
 
 import Foundation
 
-enum SessionError: LocalizedError {
+public enum SessionError: LocalizedError {
   case noAccountId, failedChallenge, noKeyId
 
-  var errorDescription: String? {
+  public var errorDescription: String? {
     switch self {
       case .noAccountId:
         "No account ID available"
