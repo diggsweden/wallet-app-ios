@@ -5,6 +5,7 @@
 import AuthenticationServices
 import Foundation
 import OpenID4VCI
+import WalletGateway
 import WalletMacros
 import eudi_lib_sdjwt_swift
 

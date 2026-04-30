@@ -2,50 +2,44 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
-import CryptoKit
 import Foundation
-import HTTPTypes
-import JSONWebSignature
 import OpenAPIRuntime
 import OpenAPIURLSession
-import WalletMacros
 
-final actor SessionManager {
+public final actor SessionManager {
   private var token: String?
-  private var expirationDate: Date = .now
+  private let signingProvider: any SessionSigningProvider
+  private let accountIdProvider: any AccountIdProvider
   let client: Client
-  let accountIdProvider: AccountIdProvider
 
-  init(accountIdProvider: AccountIdProvider, baseUrl: URL? = nil) {
-    let url = baseUrl ?? AppConfig.apiBaseUrl
-    client = Client(
-      serverURL: url,
-      transport: URLSessionTransport(),
-    )
+  public init(
+    signingProvider: any SessionSigningProvider,
+    accountIdProvider: any AccountIdProvider,
+    baseUrl: URL
+  ) {
+    self.signingProvider = signingProvider
     self.accountIdProvider = accountIdProvider
+    client = Client(
+      serverURL: baseUrl,
+      transport: URLSessionTransport()
+    )
   }
 
-  func getToken() async throws -> String {
+  public func getToken() async throws -> String {
     if let token {
-      token
-    } else {
-      try await initSession()
+      return token
     }
+    return try await initSession()
   }
 
-  func reset() {
+  public func reset() {
     token = nil
   }
 
   private func initSession() async throws -> String {
-    let key = try SigningKeyStore.getOrCreateKey(withTag: .walletKey)
-    guard let keyId = try? key.publicKey.jwk.thumbprint() else {
-      throw SessionError.noKeyId
-    }
-
+    let keyId = try signingProvider.keyId()
     let nonce = try await getChallenge(keyId: keyId)
-    let sessionToken = try await validateChallenge(key: key, keyId: keyId, nonce: nonce)
-
+    let sessionToken = try await validateChallenge(keyId: keyId, nonce: nonce)
     self.token = sessionToken
     return sessionToken
   }
@@ -68,18 +62,8 @@ final actor SessionManager {
     return nonce
   }
 
-  private func validateChallenge(
-    key: SecureEnclave.P256.Signing.PrivateKey,
-    keyId: String,
-    nonce: String
-  ) async throws -> String {
-    struct SessionPayload: Codable {
-      let nonce: String
-    }
-
-    let header = DefaultJWSHeaderImpl(algorithm: .ES256, keyID: keyId)
-    let payload = SessionPayload(nonce: nonce)
-    let jwt = try JwtUtil().signJwt(with: key, payload: payload, header: header)
+  private func validateChallenge(keyId: String, nonce: String) async throws -> String {
+    let jwt = try signingProvider.signSessionJwt(keyId: keyId, nonce: nonce)
     let input = Operations.ValidateChallenge.Input(body: .json(.init(signedJwt: jwt)))
     let response = try await client.validateChallenge(input)
 

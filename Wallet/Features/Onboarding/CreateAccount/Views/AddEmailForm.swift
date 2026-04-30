@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import SwiftUI
+import WalletGateway
 import WalletMacros
 
 struct AddEmailForm: View {

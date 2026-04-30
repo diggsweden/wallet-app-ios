@@ -4,6 +4,28 @@
 
 import CryptoKit
 import Foundation
+import JSONWebKey
+import WalletGateway
+
+extension P256.Signing.PublicKey {
+  func toPublicKeyComponents() throws -> PublicKeyComponents {
+    let jwk = self.jwk
+    guard
+      let curve = jwk.curve?.rawValue,
+      let x = jwk.x?.base64UrlEncodedString(),
+      let y = jwk.y?.base64UrlEncodedString()
+    else {
+      throw AppError(reason: "Invalid key format")
+    }
+    return PublicKeyComponents(
+      kty: jwk.keyType.rawValue,
+      kid: try jwk.thumbprint(),
+      crv: curve,
+      x: x,
+      y: y
+    )
+  }
+}
 
 extension P256.Signing.PublicKey {
   func getXYCoordinates() throws -> (x: Data, y: Data) {

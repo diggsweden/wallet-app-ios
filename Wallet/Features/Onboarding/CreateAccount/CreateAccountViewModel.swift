@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import Foundation
+import WalletGateway
 
 @MainActor
 @Observable
@@ -36,7 +37,7 @@ final class CreateAccountViewModel {
         personalIdentityNumber: random12DigitString(),
         emailAddress: data.email,
         telephoneNumber: data.phoneNumber,
-        jwk: key.publicKey.jwk,
+        publicKey: try key.publicKey.toPublicKeyComponents()
       )
 
       accountIdResult = .success(accountId)

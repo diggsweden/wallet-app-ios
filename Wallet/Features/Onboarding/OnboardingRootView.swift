@@ -4,6 +4,7 @@
 
 import SwiftData
 import SwiftUI
+import WalletGateway
 import WalletMacros
 
 struct OnboardingRootView: View {

@@ -8,7 +8,7 @@ version = 1
 [[annotations]]
 path = [
   "CHANGELOG.md",
-  "README.md",
+  "**/README.md",
   "docs/DEVELOPMENT.md",
   "REUSE.toml",
   ".gitignore",

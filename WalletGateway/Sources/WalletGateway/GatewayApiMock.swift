@@ -2,20 +2,19 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
-import Foundation
-import JSONWebKey
+public struct GatewayApiMock: GatewayApi {
+  public init() {}
 
-struct GatewayApiMock: GatewayApi {
-  func createAccount(
+  public func createAccount(
     personalIdentityNumber: String,
     emailAddress: String,
     telephoneNumber: String?,
-    jwk: JWK,
+    publicKey: PublicKeyComponents
   ) throws -> String {
     ""
   }
 
-  func getWalletUnitAttestation(nonce: String?) throws -> String {
+  public func getWalletUnitAttestation(nonce: String?) throws -> String {
     ""
   }
 }

@@ -5,6 +5,7 @@
 import AuthenticationServices
 import SwiftData
 import SwiftUI
+import WalletGateway
 
 struct AppRootView: View {
   private let gatewayApiClient: GatewayApi
