@@ -7,6 +7,7 @@ import SwiftUI
 struct DashboardView: View {
   let pid: SavedCredential?
   let credentials: [SavedCredential]
+  let vm = RegisterPinViewModel()
   @Environment(\.openURL) private var openURL
   @Environment(Router.self) private var router
   @Environment(\.theme) private var theme
@@ -31,6 +32,13 @@ struct DashboardView: View {
             }
           }
         }
+      }
+    }
+    .task {
+      do {
+        try await vm.createClient()
+      } catch {
+        print(error)
       }
     }
     .toolbar {

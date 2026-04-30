@@ -55,6 +55,8 @@ packages:
     path: WalletMacros
   WalletGateway:
     path: WalletGateway
+  SwiftAccessMechanism:
+    path: ../SwiftAccessMechanism
 
 targets:
   WalletDemo:
