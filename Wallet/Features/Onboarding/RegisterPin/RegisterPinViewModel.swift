@@ -1,31 +1,37 @@
+// SPDX-FileCopyrightText: 2026 Digg - Agency for digital government
+//
+// SPDX-License-Identifier: EUPL-1.2
+
+import Security
 import SwiftAccessMechanism
 import SwiftUI
 
 @MainActor
 @Observable
 final class RegisterPinViewModel {
-  let pin: String = "Confess"
+  private let transport: any BFFTransport
 
-  func createClient() async throws {
-    // Init client
-    let params = try ServerParameters()
-    var (client, _) = try await BFFHttpClient.createClient(
-      baseUrl: "http://localhost:8088",
-      serverParameters: params
+  init(transport: any BFFTransport) {
+    self.transport = transport
+  }
+
+  func register(pin: String) async throws {
+    let privateKey = try BFFIdentity.generateKey(tag: "bff-hsm-key")
+    var client = try await BFFHttpClient.create(
+      transport: transport,
+      privateKey: privateKey,
+      ttl: "PT1H",
     )
 
-    // Register
-    //    let pinStretch = PINStretch()
-    //    let stretched = try pinStretch.stretch(input: pin.utf8Data)
-    let registrationResponse = try await client.registration(password: pin.utf8Data)
+    let stretched = try PINStretch().stretch(input: Data(pin.utf8))
+
+    let registrationResponse = try await client.registration(password: stretched)
     print("DEBUG: Registration Response: \(registrationResponse)")
 
-    // Authenticate
-    let authResult = try await client.authenticate(password: pin.utf8Data)
+    let authResult = try await client.authenticate(password: stretched)
+    print("DEBUG: Auth session key: \(authResult.sessionKey.count) bytes")
 
-    // HSM
     let createdKey = try await client.createHsmKey()
-    let key = createdKey.public_key
-    print("DEBUG: HSM-key: \(key)")
+    print("DEBUG: HSM-key: \(createdKey.public_key)")
   }
 }

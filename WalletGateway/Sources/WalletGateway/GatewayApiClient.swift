@@ -11,7 +11,7 @@ public protocol GatewayApi: Sendable {
     personalIdentityNumber: String,
     emailAddress: String,
     telephoneNumber: String?,
-    publicKey: PublicKeyComponents
+    publicKey: PublicKeyComponents,
   ) async throws -> String
 
   func getWalletUnitAttestation(nonce: String?) async throws -> String
@@ -24,7 +24,7 @@ public struct GatewayApiClient: GatewayApi {
     client = Client(
       serverURL: baseUrl,
       transport: URLSessionTransport(),
-      middlewares: [AuthenticationMiddleware(sessionManager: sessionManager, apiKey: apiKey)]
+      middlewares: [AuthenticationMiddleware(sessionManager: sessionManager, apiKey: apiKey)],
     )
   }
 
@@ -32,32 +32,29 @@ public struct GatewayApiClient: GatewayApi {
     personalIdentityNumber: String,
     emailAddress: String,
     telephoneNumber: String?,
-    publicKey: PublicKeyComponents
+    publicKey: PublicKeyComponents,
   ) async throws -> String {
-    let jwkDto = Components.Schemas.JwkDto(
+    let jwkDto = Components.Schemas.KeyRequest(
       kty: publicKey.kty,
       kid: publicKey.kid,
       crv: publicKey.crv,
       x: publicKey.x,
-      y: publicKey.y
+      y: publicKey.y,
     )
-    let bodyDto = Components.Schemas.CreateAccountRequestDto(
+    let bodyDto = Components.Schemas.CreateAccountRequest(
       personalIdentityNumber: personalIdentityNumber,
       emailAdress: emailAddress,
       telephoneNumber: telephoneNumber,
-      publicKey: jwkDto
+      deviceKey: jwkDto,
     )
-    let input = Operations.CreateAccount.Input(body: .json(bodyDto))
-    let response = try await client.createAccount(input)
+    let input = Operations.CreateAccounts.Input(body: .json(bodyDto))
+    let response = try await client.createAccounts(input)
 
-    guard
-      case let .created(payload) = response,
-      let accountId = try? payload.body.json.accountId
-    else {
+    guard case let .created(payload) = response else {
       throw GatewayError.invalidResponse
     }
 
-    return accountId
+    return try payload.body.json.accountId
   }
 
   public func getWalletUnitAttestation(nonce: String?) async throws -> String {
