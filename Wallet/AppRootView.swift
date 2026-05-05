@@ -3,16 +3,17 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import AuthenticationServices
+import SwiftAccessMechanism
 import SwiftData
 import SwiftUI
 import WalletGateway
 
 struct AppRootView: View {
-  private let gatewayApiClient: GatewayApi
+  private let gatewayApiClient: GatewayApiClient
   @State private var userViewModel: UserViewModel
   @State private var router = Router()
 
-  init(userStore: UserStore, gatewayApiClient: GatewayApi) {
+  init(userStore: UserStore, gatewayApiClient: GatewayApiClient) {
     _userViewModel = State(wrappedValue: .init(userStore: userStore))
     self.gatewayApiClient = gatewayApiClient
   }
@@ -48,7 +49,8 @@ struct AppRootView: View {
         } else {
           DashboardView(
             pid: user.pid,
-            credentials: user.credentials
+            credentials: user.credentials,
+            vm: RegisterPinViewModel(transport: gatewayApiClient)
           )
         }
 

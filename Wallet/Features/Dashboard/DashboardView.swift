@@ -2,12 +2,13 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
+import SwiftAccessMechanism
 import SwiftUI
 
 struct DashboardView: View {
   let pid: SavedCredential?
   let credentials: [SavedCredential]
-  let vm = RegisterPinViewModel()
+  let vm: RegisterPinViewModel
   @Environment(\.openURL) private var openURL
   @Environment(Router.self) private var router
   @Environment(\.theme) private var theme
@@ -36,7 +37,7 @@ struct DashboardView: View {
     }
     .task {
       do {
-        try await vm.createClient()
+        try await vm.register(pin: "123456")
       } catch {
         print(error)
       }
@@ -67,33 +68,55 @@ struct DashboardView: View {
   }
 }
 
-#Preview {
-  NavigationStack {
-    DashboardView(
-      pid: .previewPidCredential,
-      credentials: [],
-    )
-    .environment(Router())
-    .defaultScreenStyle
-    .themed
+#if DEBUG
+  // swiftlint:disable async_without_await
+  private struct PreviewBFFTransport: BFFTransport {
+    func registerState(
+      publicKey: JwkKey,
+      overwrite: Bool,
+      ttl: String?,
+    ) async throws -> RegisterStateResponse {
+      RegisterStateResponse(clientId: "", devAuthorizationCode: nil)
+    }
+    func registerPin(request: BFFRequest) async throws -> Data { Data() }
+    func createSession(request: BFFRequest) async throws -> Data { Data() }
+    func createKey(request: BFFRequest) async throws -> Data { Data() }
+    func listKeys(request: BFFRequest) async throws -> Data { Data() }
+    func sign(request: BFFRequest) async throws -> Data { Data() }
+    func deleteKey(request: BFFRequest) async throws {}
   }
-}
+  // swiftlint:enable async_without_await
 
-#Preview("PID + Flera Dokument") {
-  NavigationStack {
-    DashboardView(
-      pid: .previewPidCredential,
-      credentials: [
-        .previewCredential(named: "Körkort"),
-        .previewCredential(named: "Handlingar"),
-        .previewCredential(named: "Biljetter"),
-      ],
-    )
-    .environment(Router())
-    .defaultScreenStyle
-    .themed
+  #Preview {
+    NavigationStack {
+      DashboardView(
+        pid: .previewPidCredential,
+        credentials: [],
+        vm: RegisterPinViewModel(transport: PreviewBFFTransport()),
+      )
+      .environment(Router())
+      .defaultScreenStyle
+      .themed
+    }
   }
-}
+
+  #Preview("PID + Flera Dokument") {
+    NavigationStack {
+      DashboardView(
+        pid: .previewPidCredential,
+        credentials: [
+          .previewCredential(named: "Körkort"),
+          .previewCredential(named: "Handlingar"),
+          .previewCredential(named: "Biljetter"),
+        ],
+        vm: RegisterPinViewModel(transport: PreviewBFFTransport()),
+      )
+      .environment(Router())
+      .defaultScreenStyle
+      .themed
+    }
+  }
+#endif
 
 private extension SavedCredential {
   static let previewPidCredential = SavedCredential(

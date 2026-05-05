@@ -92,6 +92,8 @@ targets:
         product: WalletMacros
       - package: WalletGateway
         product: WalletGateway
+      - package: SwiftAccessMechanism
+        product: SwiftAccessMechanism
     preBuildScripts:
       - name: SwiftLint
         path: scripts/swiftlint.sh
