@@ -34,42 +34,42 @@ extension GatewayApiClient: BFFTransport {
   }
 
   public func registerPin(request: BFFRequest) async throws -> Data {
-    let input = Operations.RegisterPin.Input(body: .json(.init(jwt: request.outerRequestJws)))
+    let input = Operations.RegisterPin.Input(body: .json(.init(jwt: request.outerRequestJws, clientId: request.clientId)))
     let response = try await client.registerPin(input)
     guard case let .created(payload) = response else { throw GatewayError.invalidResponse }
     return Data((try payload.body.json.jwt).utf8)
   }
 
   public func createSession(request: BFFRequest) async throws -> Data {
-    let input = Operations.CreateHsmSession.Input(body: .json(.init(jwt: request.outerRequestJws)))
+    let input = Operations.CreateHsmSession.Input(body: .json(.init(jwt: request.outerRequestJws, clientId: request.clientId)))
     let response = try await client.createHsmSession(input)
     guard case let .created(payload) = response else { throw GatewayError.invalidResponse }
     return Data((try payload.body.json.jwt).utf8)
   }
 
   public func createKey(request: BFFRequest) async throws -> Data {
-    let input = Operations.CreateKey.Input(body: .json(.init(jwt: request.outerRequestJws)))
+    let input = Operations.CreateKey.Input(body: .json(.init(jwt: request.outerRequestJws, clientId: request.clientId)))
     let response = try await client.createKey(input)
     guard case let .created(payload) = response else { throw GatewayError.invalidResponse }
     return Data((try payload.body.json.jwt).utf8)
   }
 
   public func listKeys(request: BFFRequest) async throws -> Data {
-    let input = Operations.ListKeys.Input(body: .json(.init(jwt: request.outerRequestJws)))
+    let input = Operations.ListKeys.Input(body: .json(.init(jwt: request.outerRequestJws, clientId: request.clientId)))
     let response = try await client.listKeys(input)
     guard case let .ok(payload) = response else { throw GatewayError.invalidResponse }
     return Data((try payload.body.json.jwt).utf8)
   }
 
   public func sign(request: BFFRequest) async throws -> Data {
-    let input = Operations.Sign.Input(body: .json(.init(jwt: request.outerRequestJws)))
+    let input = Operations.Sign.Input(body: .json(.init(jwt: request.outerRequestJws, clientId: request.clientId)))
     let response = try await client.sign(input)
     guard case let .ok(payload) = response else { throw GatewayError.invalidResponse }
     return Data((try payload.body.json.jwt).utf8)
   }
 
   public func deleteKey(request: BFFRequest) async throws {
-    let input = Operations.DeleteKey.Input(body: .json(.init(jwt: request.outerRequestJws)))
+    let input = Operations.DeleteKey.Input(body: .json(.init(jwt: request.outerRequestJws, clientId: request.clientId)))
     let response = try await client.deleteKey(input)
     guard case .noContent = response else { throw GatewayError.invalidResponse }
   }
