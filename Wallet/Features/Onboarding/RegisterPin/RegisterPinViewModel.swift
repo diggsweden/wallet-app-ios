@@ -16,10 +16,12 @@ final class RegisterPinViewModel {
   }
 
   func register(pin: String) async throws {
+    let serverId = Data("dev.cloud-wallet.digg.se".utf8)
     let privateKey = try BFFIdentity.generateKey(tag: "bff-hsm-key")
     var client = try await BFFHttpClient.create(
       transport: transport,
       privateKey: privateKey,
+      serverParameters: ServerParameters(serverIdentifier: serverId),
       ttl: "PT1H",
     )
 
