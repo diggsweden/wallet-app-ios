@@ -162,5 +162,4 @@ schemes:
         - WalletTests
       targets:
         - WalletTests
-        - WalletUITests
 

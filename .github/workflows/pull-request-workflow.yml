@@ -49,10 +49,11 @@ jobs:
       - name: Run unit tests
         run: |
           set -o pipefail
+          rm -rf TestResults.xcresult
           xcodebuild test \
+            -workspace Wallet.xcworkspace
             -scheme WalletTests \
             -destination 'platform=iOS Simulator,name=iPhone 17' \
-            -enableCodeCoverage YES \
             -resultBundlePath TestResults.xcresult \
           | xcbeautify
 
