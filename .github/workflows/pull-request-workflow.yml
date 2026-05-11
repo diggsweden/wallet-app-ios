@@ -43,6 +43,9 @@ jobs:
         with:
           xcode-version: ${{ vars.XCODE_VERSION || '26.4' }}
 
+      - name: Generate Xcode project
+        run: xcodegen generate
+
       - name: Run unit tests
         run: |
           set -o pipefail
