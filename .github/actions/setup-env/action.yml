@@ -19,5 +19,8 @@ runs:
     - run: defaults write com.apple.dt.Xcode IDESkipPackagePluginFingerprintValidatation -bool YES
       shell: bash
 
+    - run: brew install swiftlint
+      shell: bash
+
     - run: brew install xcodegen
       shell: bash
