@@ -20,7 +20,7 @@ final class Scaffolder {
 
   func run() throws {
     guard prevVersion > .zero else { throw SwiftDataMigrationError.prevVersionWasZero }
-    
+
     try createNewSchemaFile()
     try createMigrationStageFile()
     try createTestFile()
@@ -68,7 +68,7 @@ private extension Scaffolder {
     }
     return String(content.dropFirst(header.count))
   }
-  
+
   func createMigrationStageFile() throws {
     let destination = context.migrationDir.appendingPathComponent(
       "MigrateV\(prevVersion)toV\(nextVersion).swift"
@@ -77,15 +77,15 @@ private extension Scaffolder {
 
     let body: String
     switch stageKind {
-    case .lightweight:
-      body = MigrationTemplate.lightweight(prev: prevVersion, next: nextVersion)
-    case .custom:
-      body = MigrationTemplate.custom(prev: prevVersion, next: nextVersion)
+      case .lightweight:
+        body = MigrationTemplate.lightweight(prev: prevVersion, next: nextVersion)
+      case .custom:
+        body = MigrationTemplate.custom(prev: prevVersion, next: nextVersion)
     }
 
     try writeFile(at: destination, body: body)
   }
-  
+
   func createTestFile() throws {
     let destination = context.testsDir.appendingPathComponent(
       "MigrateV\(prevVersion)toV\(nextVersion)Tests.swift"
@@ -95,14 +95,14 @@ private extension Scaffolder {
     let body = TestTemplate.scaffold(prev: prevVersion, next: nextVersion)
     try writeFile(at: destination, body: body)
   }
-  
+
   func updateMigrationPlan() throws {
     let allVersions = (context.existingVersions + [nextVersion]).sorted()
     let body = MigrationPlanTemplate.render(versions: allVersions)
     let fullContent = "\(Config.fileHeader)\n\n\(body)"
     try fullContent.write(to: context.planFile, atomically: true, encoding: .utf8)
   }
-  
+
   func bumpTypealiases() throws {
     guard prevVersion > .zero else { return }
 
@@ -113,7 +113,7 @@ private extension Scaffolder {
     )
     try bumper.run()
   }
-  
+
   func ensureDoesNotExist(_ url: URL) throws {
     if FileManager.default.fileExists(atPath: url.path) {
       throw SwiftDataMigrationError.fileAlreadyExists(path: url.path)

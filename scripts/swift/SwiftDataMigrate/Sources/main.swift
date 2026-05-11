@@ -41,7 +41,7 @@ struct NewCommand: ParsableCommand {
 
     let nextVersion = context.latestVersion + 1
     let scaffold = Scaffolder(context: context, nextVersion: nextVersion, stageKind: stageKind)
-    
+
     print()
     print("\u{1B}[1mScaffolding...\u{1B}[0m")
     print()
@@ -50,7 +50,7 @@ struct NewCommand: ParsableCommand {
 
     let prev = context.latestVersion
     let kindLabel = stageKind == .custom ? "custom" : "lightweight"
-    
+
     print("\u{1B}[1mSuccess ✅ Running xcodegen 🎶\u{1B}[0m")
     print()
 
@@ -58,21 +58,22 @@ struct NewCommand: ParsableCommand {
 
     var output = """
 
-    ✓ Scaffolded V\(nextVersion) (\(kindLabel))
+      ✓ Scaffolded V\(nextVersion) (\(kindLabel))
 
-      Created: \(Config.schemaDirectory)/SchemaV\(nextVersion).swift
-      Created: \(Config.migrationDirectory)/MigrateV\(prev)toV\(nextVersion).swift
-      Created: \(Config.testsDirectory)/MigrateV\(prev)toV\(nextVersion)Tests.swift
-      Updated: \(Config.migrationDirectory)/\(Config.migrationPlanFilename)
-      Updated: \(Config.currentModelsFile)
+        Created: \(Config.schemaDirectory)/SchemaV\(nextVersion).swift
+        Created: \(Config.migrationDirectory)/MigrateV\(prev)toV\(nextVersion).swift
+        Created: \(Config.testsDirectory)/MigrateV\(prev)toV\(nextVersion)Tests.swift
+        Updated: \(Config.migrationDirectory)/\(Config.migrationPlanFilename)
+        Updated: \(Config.currentModelsFile)
 
-    Next steps:
-      1. Edit SchemaV\(nextVersion).swift to make your schema changes
-      2. Fill in the test factories and assertions
-    """
+      Next steps:
+        1. Edit SchemaV\(nextVersion).swift to make your schema changes
+        2. Fill in the test factories and assertions
+      """
 
     if stageKind == .custom {
-      output += "\n  3. Implement willMigrate / didMigrate in MigrateV\(prev)toV\(nextVersion).swift"
+      output +=
+        "\n  3. Implement willMigrate / didMigrate in MigrateV\(prev)toV\(nextVersion).swift"
     }
 
     print(output)

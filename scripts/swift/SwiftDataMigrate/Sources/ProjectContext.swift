@@ -28,7 +28,8 @@ struct ProjectContext {
 
     for dir in [schemaDir, migrationDir, testsDir] {
       var isDir: ObjCBool = false
-      guard FileManager.default.fileExists(atPath: dir.path, isDirectory: &isDir), isDir.boolValue else {
+      guard FileManager.default.fileExists(atPath: dir.path, isDirectory: &isDir), isDir.boolValue
+      else {
         throw SwiftDataMigrationError.directoryMissing(path: dir.path)
       }
     }
@@ -72,8 +73,8 @@ struct ProjectContext {
     for name in files {
       let range = NSRange(name.startIndex..., in: name)
       guard let match = regex.firstMatch(in: name, range: range),
-            let versionRange = Range(match.range(at: 1), in: name),
-            let version = Int(name[versionRange])
+        let versionRange = Range(match.range(at: 1), in: name),
+        let version = Int(name[versionRange])
       else { continue }
       versions.append(version)
     }

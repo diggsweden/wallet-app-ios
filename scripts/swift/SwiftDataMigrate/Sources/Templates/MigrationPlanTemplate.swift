@@ -9,7 +9,8 @@ enum MigrationPlanTemplate {
     precondition(!versions.isEmpty, "Cannot render a plan with zero schemas.")
     precondition(versions == versions.sorted(), "Versions must be sorted ascending.")
 
-    let schemaEntries = versions
+    let schemaEntries =
+      versions
       .map { "SchemaV\($0).self" }
       .joined(separator: ", ")
 
@@ -18,19 +19,19 @@ enum MigrationPlanTemplate {
       .joined(separator: ", ")
 
     return """
-    import Foundation
-    import SwiftData
+      import Foundation
+      import SwiftData
 
-    enum SwiftDataMigrationPlan: SchemaMigrationPlan {
-      static var schemas: [any VersionedSchema.Type] {
-        [\(schemaEntries)]
+      enum SwiftDataMigrationPlan: SchemaMigrationPlan {
+        static var schemas: [any VersionedSchema.Type] {
+          [\(schemaEntries)]
+        }
+
+        static var stages: [MigrationStage] {
+          [\(stageEntries)]
+        }
       }
 
-      static var stages: [MigrationStage] {
-        [\(stageEntries)]
-      }
-    }
-
-    """
+      """
   }
 }
