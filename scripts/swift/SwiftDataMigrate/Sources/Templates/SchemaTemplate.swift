@@ -5,7 +5,8 @@
 import Foundation
 
 enum SchemaTemplate {
-  static func copiedSchema(from previousBody: String, prevVersion: Int, nextVersion: Int) -> String {
+  static func copiedSchema(from previousBody: String, prevVersion: Int, nextVersion: Int) -> String
+  {
     var body = previousBody
 
     body = body.replacingOccurrences(
