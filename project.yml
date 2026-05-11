@@ -151,3 +151,16 @@ schemes:
         - WalletUITests
     analyze:
       config: Debug Localhost
+  
+  WalletTests:
+    build:
+      targets:
+        WalletTests: test
+    test:
+      gatherCoverageData: true
+      coverageTargets:
+        - WalletDemo
+      targets:
+        - WalletTests
+        - WalletUITests
+
