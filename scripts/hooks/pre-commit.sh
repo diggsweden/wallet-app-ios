@@ -43,7 +43,7 @@ echo "${DIM}→ swift-format${RESET}"
 swift-format lint --strict --parallel "${staged[@]}" || failed=1
 
 echo "${DIM}→ swiftlint${RESET}"
-swiftlint lint --strict "${staged[@]}" || failed=1
+swiftlint lint --strict --quiet "${staged[@]}" || failed=1
 
 if [ "$failed" -ne 0 ]; then
     echo
