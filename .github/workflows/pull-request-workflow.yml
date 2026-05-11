@@ -65,7 +65,6 @@ jobs:
             exit 0
           fi
 
-          
           xcrun xccov view --report TestResults.xcresult \
             | grep -E '^[A-Za-z]|^    /' \
           > coverage-files.txt
