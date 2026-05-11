@@ -42,7 +42,7 @@ jobs:
       - uses: ./.github/actions/setup-env
         with:
           xcode-version: ${{ vars.XCODE_VERSION || '26.4' }}
-    
+
       - name: Generate Xcode project
         run: xcodegen generate
 
@@ -78,7 +78,7 @@ jobs:
           path: |
             coverage.txt
             coverage.json
-  
+
   # TODO: Enable when UI tests are implemented
   # ui-tests:
   #   runs-on: ${{ vars.MACOS_VERSION || 'macos-14' }}

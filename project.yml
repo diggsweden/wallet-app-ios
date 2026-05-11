@@ -151,7 +151,7 @@ schemes:
         - WalletUITests
     analyze:
       config: Debug Localhost
-  
+
   WalletTests:
     build:
       targets:
