@@ -43,9 +43,6 @@ jobs:
         with:
           xcode-version: ${{ vars.XCODE_VERSION || '26.4' }}
 
-      - name: Generate Xcode project
-        run: xcodegen generate
-
       - name: Run unit tests
         run: |
           set -o pipefail
@@ -59,25 +56,38 @@ jobs:
 
       - name: Generate coverage report
         if: always()
+        run: 
         run: |
-          xcrun xccov view --report TestResults.xcresult > coverage.txt
+
+          if [ ! -d TestResults.xcresult ]; then
+            echo "⚠️ No TestResults.xcresult - skipping coverage report ⚠️"
+            exit 0
+          fi
+
+          
+          xcrun xccov view --report TestResults.xcresult \
+            | grep -E '^[A-Za-z]|^    /' \
+          > coverage-files.txt
+
           xcrun xccov view --report --json TestResults.xcresult > coverage.json
+
+          grep -E '^[A-Za-z]|^    /' coverage.txt > coverage-files.txt
+
           {
             echo "## 📊 Code Coverage"
             echo ""
             echo '```'
-            head -50 coverage.txt
+            head -60 coverage-files.txt
             echo '```'
-            echo "_Full report available as workflow artifact._"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload coverage report
-        if: always()
+        if: always() && hashFiles('coverage-files.txt') != ''
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: |
-            coverage.txt
+            coverage-files.txt
             coverage.json
 
   # TODO: Enable when UI tests are implemented
