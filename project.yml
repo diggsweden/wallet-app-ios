@@ -152,14 +152,14 @@ schemes:
     analyze:
       config: Debug Localhost
   
-    WalletTests:
+  WalletTests:
     build:
       targets:
         WalletTests: test
     test:
       gatherCoverageData: true
       coverageTargets:
-        - WalletTests
+        - WalletDemo
       targets:
         - WalletTests
         - WalletUITests
