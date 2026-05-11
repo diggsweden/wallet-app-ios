@@ -51,7 +51,7 @@ jobs:
           set -o pipefail
           rm -rf TestResults.xcresult
           xcodebuild test \
-            -workspace Wallet.xcworkspace
+            -workspace Wallet.xcworkspace \
             -scheme WalletTests \
             -destination 'platform=iOS Simulator,name=iPhone 17' \
             -resultBundlePath TestResults.xcresult \
