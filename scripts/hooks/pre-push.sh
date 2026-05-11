@@ -8,6 +8,6 @@ protected_branch="main"
 current_branch=$(git symbolic-ref --short HEAD)
 
 if [ "$current_branch" = "$protected_branch" ]; then
-    echo "❌ Pushing from '$protected_branch' is NOT allowed."
-    exit 1
+  echo "❌ Pushing from '$protected_branch' is NOT allowed."
+  exit 1
 fi
