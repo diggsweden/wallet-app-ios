@@ -42,6 +42,9 @@ jobs:
       - uses: ./.github/actions/setup-env
         with:
           xcode-version: ${{ vars.XCODE_VERSION || '26.4' }}
+    
+      - name: Generate Xcode project
+        run: xcodegen generate
 
       - name: Run unit tests
         run: |
