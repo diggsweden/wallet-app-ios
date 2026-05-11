@@ -33,24 +33,60 @@ jobs:
       linters.swiftformat: true
       linters.swiftlint: true
 
-unit-tests:
-  runs-on: ${{ vars.MACOS_VERSION || 'macos-26' }}
-  needs: pr-checks
-  if: always()
-  steps:
-    - uses: actions/checkout@v4
-    - uses: ./.github/actions/setup-env
-      with:
-        xcode-version: ${{ vars.XCODE_VERSION || '26.4' }}
+  unit-tests:
+    runs-on: ${{ vars.MACOS_VERSION || 'macos-26' }}
+    needs: pr-checks
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-env
+        with:
+          xcode-version: ${{ vars.XCODE_VERSION || '26.4' }}
 
-    - name: Run unit tests
-      run: |
-        set -o pipefail
-        xcodebuild test \
-          -scheme WalletTests \
-          -destination 'platform=iOS Simulator,name=iPhone 17' \
-          -enableCodeCoverage YES \
-        | xcbeautify
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Run unit tests
+        run: |
+          set -o pipefail
+          rm -rf TestResults.xcresult
+          xcodebuild test \
+            -workspace Wallet.xcworkspace \
+            -scheme WalletTests \
+            -destination 'platform=iOS Simulator,name=iPhone 17' \
+            -resultBundlePath TestResults.xcresult \
+          | xcbeautify
+
+      - name: Generate coverage report
+        if: always()
+        run: |
+          if [ ! -d TestResults.xcresult ]; then
+            echo "⚠️ No TestResults.xcresult - skipping coverage report ⚠️"
+            exit 0
+          fi
+
+          xcrun xccov view --report TestResults.xcresult \
+            | grep -E '^[A-Za-z]|^    /' \
+          > coverage-files.txt
+
+          xcrun xccov view --report --json TestResults.xcresult > coverage.json
+
+          {
+            echo "## 📊 Code Coverage"
+            echo ""
+            echo '```'
+            head -60 coverage-files.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload coverage report
+        if: always() && hashFiles('coverage-files.txt') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: |
+            coverage-files.txt
+            coverage.json
 
   # TODO: Enable when UI tests are implemented
   # ui-tests:
