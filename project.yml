@@ -159,7 +159,7 @@ schemes:
     test:
       gatherCoverageData: true
       coverageTargets:
-        - WalletTests
+        - WalletDemo
       targets:
         - WalletTests
 
