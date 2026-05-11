@@ -50,8 +50,32 @@ unit-tests:
           -scheme WalletTests \
           -destination 'platform=iOS Simulator,name=iPhone 17' \
           -enableCodeCoverage YES \
+          -resultBundlePath TestResults.xcresult
         | xcbeautify
 
+    - name: Generate coverage report
+      if: always()
+      run: |
+        xcrun xccov view --report TestResults.xcresult > coverage.txt
+        xcrun xccov view --report --json TestResults.xcresult > coverage.json
+        {
+          echo "## 📊 Code Coverage"
+          echo ""
+          echo '```'
+          head -50 coverage.txt
+          echo '```'
+          echo "_Full report available as workflow artifact._"
+        } >> "$GITHUB_STEP_SUMMARY"
+
+    - name: Upload coverage report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: |
+          coverage.txt
+          coverage.json
+  
   # TODO: Enable when UI tests are implemented
   # ui-tests:
   #   runs-on: ${{ vars.MACOS_VERSION || 'macos-14' }}

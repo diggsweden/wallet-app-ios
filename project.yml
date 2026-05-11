@@ -134,6 +134,9 @@ schemes:
       targets:
         WalletDemo: all
     test:
+      gatherCoverageData: true
+      coverageTargets:
+        - WalletTests
       targets:
         - WalletTests
         - WalletUITests
