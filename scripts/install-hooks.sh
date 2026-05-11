@@ -29,3 +29,4 @@ install_hook() {
 install_hook pre-push
 install_hook post-merge
 install_hook post-checkout
+install_hook pre-commit

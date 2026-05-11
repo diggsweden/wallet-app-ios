@@ -4,12 +4,10 @@
 #
 # SPDX-License-Identifier: EUPL-1.2
 
-failed=0
-./scripts/swift-format-lint.sh || failed=1
-./scripts/swiftlint.sh || failed=1
+protected_branch="main"
+current_branch=$(git symbolic-ref --short HEAD)
 
-if [[ "$failed" -ne 0 ]]; then
-  echo
-  echo "Push blocked: lint issues found. Run: just fix"
+if [ "$current_branch" = "$protected_branch" ]; then
+  echo "❌ Pushing from '$protected_branch' is NOT allowed."
   exit 1
 fi
