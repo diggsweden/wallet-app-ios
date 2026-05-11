@@ -72,8 +72,6 @@ jobs:
 
           xcrun xccov view --report --json TestResults.xcresult > coverage.json
 
-          grep -E '^[A-Za-z]|^    /' coverage.txt > coverage-files.txt
-
           {
             echo "## 📊 Code Coverage"
             echo ""
