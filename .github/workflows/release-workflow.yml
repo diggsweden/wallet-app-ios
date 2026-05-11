@@ -32,7 +32,7 @@ jobs:
     outputs:
       config: ${{ steps.generate.outputs.config }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Generate artifacts config with build number
         id: generate
         env:
