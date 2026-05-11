@@ -56,9 +56,7 @@ jobs:
 
       - name: Generate coverage report
         if: always()
-        run: 
         run: |
-
           if [ ! -d TestResults.xcresult ]; then
             echo "⚠️ No TestResults.xcresult - skipping coverage report ⚠️"
             exit 0
