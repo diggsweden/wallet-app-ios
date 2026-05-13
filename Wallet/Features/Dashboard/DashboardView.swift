@@ -8,7 +8,6 @@ import SwiftUI
 struct DashboardView: View {
   let pid: SavedCredential?
   let credentials: [SavedCredential]
-  let vm: RegisterPinViewModel
   @Environment(\.openURL) private var openURL
   @Environment(Router.self) private var router
   @Environment(\.theme) private var theme
@@ -33,13 +32,6 @@ struct DashboardView: View {
             }
           }
         }
-      }
-    }
-    .task {
-      do {
-        try await vm.register(pin: "123456")
-      } catch {
-        print(error)
       }
     }
     .toolbar {
@@ -78,12 +70,14 @@ struct DashboardView: View {
     ) async throws -> RegisterStateResponse {
       RegisterStateResponse(clientId: "", devAuthorizationCode: nil)
     }
+
     func registerPin(request: BFFRequest) async throws -> Data { Data() }
     func createSession(request: BFFRequest) async throws -> Data { Data() }
     func createKey(request: BFFRequest) async throws -> Data { Data() }
     func listKeys(request: BFFRequest) async throws -> Data { Data() }
     func sign(request: BFFRequest) async throws -> Data { Data() }
     func deleteKey(request: BFFRequest) async throws {}
+    func changePin(request: SwiftAccessMechanism.BFFRequest) async throws -> Data { Data() }
   }
   // swiftlint:enable async_without_await
 
@@ -92,7 +86,6 @@ struct DashboardView: View {
       DashboardView(
         pid: .previewPidCredential,
         credentials: [],
-        vm: RegisterPinViewModel(transport: PreviewBFFTransport()),
       )
       .environment(Router())
       .defaultScreenStyle
@@ -109,7 +102,6 @@ struct DashboardView: View {
           .previewCredential(named: "Handlingar"),
           .previewCredential(named: "Biljetter"),
         ],
-        vm: RegisterPinViewModel(transport: PreviewBFFTransport()),
       )
       .environment(Router())
       .defaultScreenStyle

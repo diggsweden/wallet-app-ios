@@ -6,6 +6,11 @@ import Foundation
 import SwiftAccessMechanism
 
 extension GatewayApiClient: BFFTransport {
+  public func changePin(request: BFFRequest) async throws -> Data {
+    // TODO: Add endpoint in WCGW
+    Data()
+  }
+
   public func registerState(
     publicKey: JwkKey,
     overwrite: Bool,

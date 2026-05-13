@@ -17,7 +17,7 @@ final class CreateAccountViewModel {
   init(
     gatewayApiClient: GatewayApi,
     phoneNumber: String?,
-    onSubmit: @escaping (String, String) async throws -> Void
+    onSubmit: @escaping (String, String) async throws -> Void,
   ) {
     self.data = CreateAccountFormData(phoneNumber: phoneNumber)
     self.gatewayApiClient = gatewayApiClient
@@ -34,9 +34,6 @@ final class CreateAccountViewModel {
     do {
       let key = try SigningKeyStore.getOrCreateKey(withTag: .walletKey)
       let accountId = try await gatewayApiClient.createAccount(
-        personalIdentityNumber: random12DigitString(),
-        emailAddress: data.email,
-        telephoneNumber: data.phoneNumber,
         publicKey: try key.publicKey.toPublicKeyComponents()
       )
 

@@ -5,16 +5,9 @@
 public struct GatewayApiMock: GatewayApi {
   public init() {}
 
-  public func createAccount(
-    personalIdentityNumber: String,
-    emailAddress: String,
-    telephoneNumber: String?,
-    publicKey: PublicKeyComponents
-  ) throws -> String {
-    ""
-  }
+  public func createAccount(publicKey: PublicKeyComponents) throws -> String { "" }
 
-  public func getWalletUnitAttestation(nonce: String?) throws -> String {
-    ""
-  }
+  public func addAccountWalletKey(key: PublicKeyComponents) async throws {}
+
+  public func getWalletUnitAttestation(nonce: String?) throws -> String { "" }
 }
