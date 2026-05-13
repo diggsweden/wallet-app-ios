@@ -20,7 +20,7 @@ jobs:
     outputs:
       value: ${{ steps.compute.outputs.number }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Compute build number from main commit count

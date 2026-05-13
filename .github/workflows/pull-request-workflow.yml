@@ -38,7 +38,7 @@ jobs:
     needs: pr-checks
     if: always()
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-env
         with:
           xcode-version: ${{ vars.XCODE_VERSION || '26.4' }}
