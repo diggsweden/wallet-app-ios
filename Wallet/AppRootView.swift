@@ -50,7 +50,6 @@ struct AppRootView: View {
           DashboardView(
             pid: user.pid,
             credentials: user.credentials,
-            vm: RegisterPinViewModel(transport: gatewayApiClient)
           )
         }
 

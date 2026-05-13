@@ -7,12 +7,9 @@ import OpenAPIRuntime
 import OpenAPIURLSession
 
 public protocol GatewayApi: Sendable {
-  func createAccount(
-    personalIdentityNumber: String,
-    emailAddress: String,
-    telephoneNumber: String?,
-    publicKey: PublicKeyComponents,
-  ) async throws -> String
+  func createAccount(publicKey: PublicKeyComponents) async throws -> String
+
+  func addAccountWalletKey(key: PublicKeyComponents) async throws
 
   func getWalletUnitAttestation(nonce: String?) async throws -> String
 }
@@ -28,12 +25,9 @@ public struct GatewayApiClient: GatewayApi {
     )
   }
 
-  public func createAccount(
-    personalIdentityNumber: String,
-    emailAddress: String,
-    telephoneNumber: String?,
-    publicKey: PublicKeyComponents,
-  ) async throws -> String {
+  public func createAccount(publicKey: PublicKeyComponents) async throws -> String {
+    let pin = (0 ..< 12).map { _ in String(Int.random(in: 0 ... 9)) }.joined()
+    let email = "\((0..<8).map { _ in String(Int.random(in: 0...9)) }.joined())@example.com"
     let jwkDto = Components.Schemas.KeyRequest(
       kty: publicKey.kty,
       kid: publicKey.kid,
@@ -42,9 +36,9 @@ public struct GatewayApiClient: GatewayApi {
       y: publicKey.y,
     )
     let bodyDto = Components.Schemas.CreateAccountRequest(
-      personalIdentityNumber: personalIdentityNumber,
-      emailAdress: emailAddress,
-      telephoneNumber: telephoneNumber,
+      personalIdentityNumber: pin,
+      emailAdress: email,
+      telephoneNumber: nil,
       deviceKey: jwkDto,
     )
     let input = Operations.CreateAccounts.Input(body: .json(bodyDto))
@@ -55,6 +49,21 @@ public struct GatewayApiClient: GatewayApi {
     }
 
     return try payload.body.json.accountId
+  }
+
+  public func addAccountWalletKey(key: PublicKeyComponents) async throws {
+    let keyRequest = Components.Schemas.KeyRequest(
+      kty: key.kty,
+      kid: key.kid,
+      crv: key.crv,
+      x: key.x,
+      y: key.y,
+    )
+    let input = Operations.AddAccountWalletKey.Input(body: .json(keyRequest))
+    let response = try await client.addAccountWalletKey(input)
+    guard case .created = response else {
+      throw GatewayError.invalidResponse
+    }
   }
 
   public func getWalletUnitAttestation(nonce: String?) async throws -> String {
