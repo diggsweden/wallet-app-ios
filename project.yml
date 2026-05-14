@@ -50,7 +50,7 @@ packages:
     exactVersion: 0.33.0
   eudi-lib-sdjwt-swift:
     url: https://github.com/eu-digital-identity-wallet/eudi-lib-sdjwt-swift.git
-    exactVersion: 0.13.1
+    exactVersion: 0.14.3
   WalletMacros:
     path: WalletMacros
   WalletGateway:
