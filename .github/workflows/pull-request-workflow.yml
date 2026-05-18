@@ -89,12 +89,21 @@ jobs:
           echo "Generated sonar-coverage.xml"
           head -20 sonar-coverage.xml
 
+      - name: Set up Java for SonarScanner
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
       - name: Run SonarQube analysis
         if: success() && hashFiles('sonar-coverage.xml') != ''
         uses: SonarSource/sonarqube-scan-action@v6
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          args: >
+            -Dsonar.scanner.skipJreProvisioning=true
 
       - name: Upload coverage report
         if: always()
