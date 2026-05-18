@@ -23,6 +23,7 @@ struct AuthenticationMiddleware: ClientMiddleware {
       request.setHeader("X-API-KEY", apiKey)
       return try await next(request, body, baseURL)
     }
+    request.setHeader("X-API-KEY", apiKey)
 
     let token = try await sessionManager.getToken()
     request.setHeader("session", token)

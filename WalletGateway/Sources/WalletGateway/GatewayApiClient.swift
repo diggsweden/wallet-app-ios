@@ -81,4 +81,5 @@ public struct GatewayApiClient: GatewayApi {
 
 public enum GatewayError: Error {
   case invalidResponse
+  case missingKeyIdentifier
 }

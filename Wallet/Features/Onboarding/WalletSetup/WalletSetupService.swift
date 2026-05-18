@@ -43,7 +43,7 @@ actor BFFWalletSetupService: WalletSetupService {
     let serverId = Data("dev.cloud-wallet.digg.se".utf8)
     let privateKey = try BFFIdentity.generateKey(tag: "bff-hsm-key")
     bffClient = try await BFFHttpClient.create(
-      transport: URLSessionBFFTransport(baseUrl: "http://localhost:8088"),
+      transport: transport,
       privateKey: privateKey,
       serverParameters: ServerParameters(serverIdentifier: serverId),
       ttl: "PT1H",
