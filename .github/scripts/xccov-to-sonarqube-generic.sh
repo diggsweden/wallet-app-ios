@@ -134,23 +134,29 @@ function convert_xccov_to_coverage_xml {
 function is_xcode_version_supported() {
   local major=${1:-0} minor=${2:-0}
   # Return 0 (success) if version is supported, 1 (failure) if not
-  if (( (major >= 14) || (major == 13 && minor >= 3) )); then
-    return 0  # supported
+  if (((major >= 14) || (major == 13 && minor >= 3))); then
+    return 0 # supported
   else
-    return 1  # not supported
+    return 1 # not supported
   fi
 }
 
 # Ensure required tools are available
-command -v xcrun >/dev/null 2>&1 || { echo >&2 "xcrun is required but not installed."; exit 1; }
-command -v xcodebuild >/dev/null 2>&1 || { echo >&2 "xcodebuild is required but not installed."; exit 1; }
+command -v xcrun >/dev/null 2>&1 || {
+  echo >&2 "xcrun is required but not installed."
+  exit 1
+}
+command -v xcodebuild >/dev/null 2>&1 || {
+  echo >&2 "xcodebuild is required but not installed."
+  exit 1
+}
 
 # Get Xcode version
 if ! xcode_version="$(xcodebuild -version | sed -n '1s/^Xcode \([0-9.]*\)$/\1/p')"; then
   echo 'Failed to get Xcode version' 1>&2
   exit 1
 elif ! is_xcode_version_supported ${xcode_version//./ }; then
-  echo "Xcode version '$xcode_version' not supported, version 13.3 or above is required" 1>&2;
+  echo "Xcode version '$xcode_version' not supported, version 13.3 or above is required" 1>&2
   exit 1
 fi
 
@@ -162,10 +168,10 @@ fi
 
 xcresult="$1"
 if [[ ! -d "$xcresult" ]]; then
-  echo "Path not found: $xcresult" 1>&2;
+  echo "Path not found: $xcresult" 1>&2
   exit 1
 elif [[ $xcresult != *".xcresult"* ]]; then
-  echo "Expecting input to match '*.xcresult', got: $xcresult" 1>&2;
+  echo "Expecting input to match '*.xcresult', got: $xcresult" 1>&2
   exit 1
 fi
 
