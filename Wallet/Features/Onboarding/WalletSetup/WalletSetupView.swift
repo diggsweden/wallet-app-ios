@@ -6,6 +6,7 @@ import SwiftUI
 
 struct WalletSetupView: View {
   let viewModel: WalletSetupViewModel
+  let onComplete: () -> Void
 
   var body: some View {
     VStack(spacing: 16) {
