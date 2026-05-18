@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import AuthenticationServices
+import SDWebImageWebPCoder
 import SwiftAccessMechanism
 import SwiftData
 import SwiftUI
@@ -16,6 +17,7 @@ struct AppRootView: View {
   init(userStore: UserStore, gatewayApiClient: GatewayApiClient) {
     _userViewModel = State(wrappedValue: .init(userStore: userStore))
     self.gatewayApiClient = gatewayApiClient
+    SDImageCodersManager.shared.addCoder(SDImageAWebPCoder.shared)
   }
 
   var body: some View {

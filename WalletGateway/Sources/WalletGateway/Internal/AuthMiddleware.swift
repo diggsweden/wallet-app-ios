@@ -18,12 +18,11 @@ struct AuthenticationMiddleware: ClientMiddleware {
     next: (HTTPRequest, HTTPBody?, URL) async throws -> (HTTPResponse, HTTPBody?)
   ) async throws -> (HTTPResponse, HTTPBody?) {
     var request = request
-
+    request.setHeader("X-API-KEY", apiKey)
+    
     if operationID == "createAccounts" {
-      request.setHeader("X-API-KEY", apiKey)
       return try await next(request, body, baseURL)
     }
-    request.setHeader("X-API-KEY", apiKey)
 
     let token = try await sessionManager.getToken()
     request.setHeader("session", token)

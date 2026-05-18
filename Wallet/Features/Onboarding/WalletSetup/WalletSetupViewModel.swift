@@ -10,10 +10,16 @@ final class WalletSetupViewModel {
   private let service: any WalletSetupService
   private let pin: String
   private(set) var state: WalletSetupState = .idle
+  private let onComplete: () -> Void
 
-  init(service: any WalletSetupService, pin: String) {
+  init(
+    service: any WalletSetupService,
+    pin: String,
+    onComplete: @escaping () -> Void
+  ) {
     self.service = service
     self.pin = pin
+    self.onComplete = onComplete
   }
 
   func setup() async {
@@ -38,7 +44,9 @@ final class WalletSetupViewModel {
         return
       }
     }
+    try? await Task.sleep(for: .seconds(3.5))
     state = .complete
+    onComplete()
   }
 
   private func perform(_ step: WalletSetupStep) async throws -> WalletSetupStep? {

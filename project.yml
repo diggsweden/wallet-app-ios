@@ -51,6 +51,12 @@ packages:
   eudi-lib-sdjwt-swift:
     url: https://github.com/eu-digital-identity-wallet/eudi-lib-sdjwt-swift.git
     exactVersion: 0.13.1
+  SDWebImageSwiftUI:
+    url: https://github.com/SDWebImage/SDWebImageSwiftUI.git
+    exactVersion: 3.1.4
+  SDWebImageWebPCoder:
+    url: https://github.com/SDWebImage/SDWebImageWebPCoder.git
+    exactVersion: 0.15.0
   WalletMacros:
     path: WalletMacros
   WalletGateway:
@@ -94,6 +100,10 @@ targets:
         product: WalletGateway
       - package: SwiftAccessMechanism
         product: SwiftAccessMechanism
+      - package: SDWebImageSwiftUI
+        product: SDWebImageSwiftUI
+      - package: SDWebImageWebPCoder
+        product: SDWebImageWebPCoder
     preBuildScripts:
       - name: SwiftLint
         path: scripts/swiftlint.sh

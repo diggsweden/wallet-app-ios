@@ -171,10 +171,10 @@ class IssuanceViewModel {
       }
 
     let payload = JwtProofPayload(aud: issuerId, nonce: nonce)
-    let key = try SigningKeyStore.getOrCreateKey(withTag: .walletKey)
+    let key = try SigningKeyStore.getOrCreateKey(withTag: .deviceKey)
 
     return try jwtUtil.signJwt(
-      with: SigningKeyStore.getOrCreateKey(withTag: .walletKey),
+      with: key,
       payload: payload,
       header: KeyAttestationHeader(
         jwk: keyAttestationRequired ? nil : key.publicKey.jwk,

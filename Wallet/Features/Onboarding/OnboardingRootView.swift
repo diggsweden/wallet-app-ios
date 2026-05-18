@@ -147,19 +147,13 @@ struct OnboardingRootView: View {
 
       case .walletSetup:
         WalletSetupView(
-          viewModel: WalletSetupViewModel(
-            service: BFFWalletSetupService(
-              transport: gatewayApiClient,
-              gatewayApi: gatewayApiClient,
-              onAccountCreated: { accountId in
-                await viewModel.signIn(accountId: accountId)
-              }
-            ),
-            pin: viewModel.context.pin
-          )
-        ) {
-          viewModel.next(from: .walletSetup)
-        }
+          pin: viewModel.context.pin,
+          gatewayApiClient: gatewayApiClient,
+          onAccountCreated: { accountId in
+            await viewModel.signIn(accountId: accountId)
+          },
+          onComplete: { viewModel.next(from: .walletSetup) }
+        )
 
       case .pid:
         OnboardingPidView { credentialOfferUri in
