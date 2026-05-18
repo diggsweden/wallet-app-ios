@@ -6,6 +6,9 @@ name: Pull Request Workflow
 
 on:
   pull_request:
+  push:
+    branches:
+      - main
 
 permissions:
   contents: read
@@ -79,14 +82,30 @@ jobs:
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Convert coverage for SonarQube
+        if: always() && hashFiles('TestResults.xcresult/**') != ''
+        run: |
+          bash .github/scripts/xccov-to-sonarqube-generic.sh TestResults.xcresult > sonar-coverage.xml
+          echo "Generated sonar-coverage.xml"
+          head -20 sonar-coverage.xml
+
+      - name: Run SonarQube analysis
+        if: success() && hashFiles('sonar-coverage.xml') != ''
+        uses: SonarSource/sonarqube-scan-action@v6
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
+
       - name: Upload coverage report
-        if: always() && hashFiles('coverage-files.txt') != ''
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: |
             coverage-files.txt
             coverage.json
+            sonar-coverage.xml
+            TestResults.xcresult
 
   # TODO: Enable when UI tests are implemented
   # ui-tests:
