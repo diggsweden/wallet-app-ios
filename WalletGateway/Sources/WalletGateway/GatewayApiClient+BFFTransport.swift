@@ -7,8 +7,19 @@ import SwiftAccessMechanism
 
 extension GatewayApiClient: BFFTransport {
   public func changePin(request: BFFRequest) async throws -> Data {
-    // TODO: Add endpoint in WCGW
-    Data()
+    let input = Operations.ChangePin.Input(
+      body: .json(.init(jwt: request.outerRequestJws, clientId: request.clientId))
+    )
+    let response = try await client.changePin(input)
+
+    guard case let .ok(payload) = response else {
+      throw GatewayError.invalidResponse
+    }
+
+    guard let jwt = try? payload.body.json.jwt else {
+      throw GatewayError.undecodableResponseBody
+    }
+    return Data(jwt.utf8)
   }
 
   public func registerState(
@@ -33,21 +44,24 @@ extension GatewayApiClient: BFFTransport {
     )
     let input = Operations.RegisterState.Input(body: .json(body))
     let response = try await client.registerState(input)
-    guard case let .created(payload) = response else { throw GatewayError.invalidResponse }
-    let dto = try payload.body.json
-    
-    let jwkKey: JwkKey? =
-      if let jwk = dto.serverJwsPublicKey {
-        JwkKey(kty: jwk.kty, crv: jwk.crv, x: jwk.x, y: jwk.y, kid: jwk.kid)
-      } else {
-        nil
-      }
-    
+
+    guard case let .created(payload) = response else {
+      throw GatewayError.invalidResponse
+    }
+
+    guard let responseBody = try? payload.body.json else {
+      throw GatewayError.undecodableResponseBody
+    }
+
+    let jwkKey = responseBody.serverJwsPublicKey.map {
+      JwkKey(kty: $0.kty, crv: $0.crv, x: $0.x, y: $0.y, kid: $0.kid)
+    }
+
     return RegisterStateResponse(
-      clientId: dto.clientId,
-      devAuthorizationCode: dto.devAuthorizationCode,
+      clientId: responseBody.clientId,
+      devAuthorizationCode: responseBody.devAuthorizationCode,
       serverJwsPublicKey: jwkKey,
-      opaqueServerId: dto.opaqueServerId
+      opaqueServerId: responseBody.opaqueServerId,
     )
   }
 
@@ -56,8 +70,16 @@ extension GatewayApiClient: BFFTransport {
       body: .json(.init(jwt: request.outerRequestJws, clientId: request.clientId))
     )
     let response = try await client.registerPin(input)
-    guard case let .created(payload) = response else { throw GatewayError.invalidResponse }
-    return Data((try payload.body.json.jwt).utf8)
+
+    guard case let .created(payload) = response else {
+      throw GatewayError.invalidResponse
+    }
+
+    guard let jwt = try? payload.body.json.jwt else {
+      throw GatewayError.undecodableResponseBody
+    }
+
+    return Data(jwt.utf8)
   }
 
   public func createSession(request: BFFRequest) async throws -> Data {
@@ -65,8 +87,16 @@ extension GatewayApiClient: BFFTransport {
       body: .json(.init(jwt: request.outerRequestJws, clientId: request.clientId))
     )
     let response = try await client.createHsmSession(input)
-    guard case let .created(payload) = response else { throw GatewayError.invalidResponse }
-    return Data((try payload.body.json.jwt).utf8)
+
+    guard case let .created(payload) = response else {
+      throw GatewayError.invalidResponse
+    }
+
+    guard let jwt = try? payload.body.json.jwt else {
+      throw GatewayError.undecodableResponseBody
+    }
+
+    return Data(jwt.utf8)
   }
 
   public func createKey(request: BFFRequest) async throws -> Data {
@@ -74,8 +104,16 @@ extension GatewayApiClient: BFFTransport {
       body: .json(.init(jwt: request.outerRequestJws, clientId: request.clientId))
     )
     let response = try await client.createKey(input)
-    guard case let .created(payload) = response else { throw GatewayError.invalidResponse }
-    return Data((try payload.body.json.jwt).utf8)
+
+    guard case let .created(payload) = response else {
+      throw GatewayError.invalidResponse
+    }
+
+    guard let jwt = try? payload.body.json.jwt else {
+      throw GatewayError.undecodableResponseBody
+    }
+
+    return Data(jwt.utf8)
   }
 
   public func listKeys(request: BFFRequest) async throws -> Data {
@@ -83,8 +121,16 @@ extension GatewayApiClient: BFFTransport {
       body: .json(.init(jwt: request.outerRequestJws, clientId: request.clientId))
     )
     let response = try await client.listKeys(input)
-    guard case let .ok(payload) = response else { throw GatewayError.invalidResponse }
-    return Data((try payload.body.json.jwt).utf8)
+
+    guard case let .ok(payload) = response else {
+      throw GatewayError.invalidResponse
+    }
+
+    guard let jwt = try? payload.body.json.jwt else {
+      throw GatewayError.undecodableResponseBody
+    }
+
+    return Data(jwt.utf8)
   }
 
   public func sign(request: BFFRequest) async throws -> Data {
@@ -92,8 +138,16 @@ extension GatewayApiClient: BFFTransport {
       body: .json(.init(jwt: request.outerRequestJws, clientId: request.clientId))
     )
     let response = try await client.sign(input)
-    guard case let .ok(payload) = response else { throw GatewayError.invalidResponse }
-    return Data((try payload.body.json.jwt).utf8)
+
+    guard case let .ok(payload) = response else {
+      throw GatewayError.invalidResponse
+    }
+
+    guard let jwt = try? payload.body.json.jwt else {
+      throw GatewayError.undecodableResponseBody
+    }
+
+    return Data(jwt.utf8)
   }
 
   public func deleteKey(request: BFFRequest) async throws {
@@ -101,6 +155,9 @@ extension GatewayApiClient: BFFTransport {
       body: .json(.init(jwt: request.outerRequestJws, clientId: request.clientId))
     )
     let response = try await client.deleteKey(input)
-    guard case .noContent = response else { throw GatewayError.invalidResponse }
+
+    guard case .noContent = response else {
+      throw GatewayError.invalidResponse
+    }
   }
 }

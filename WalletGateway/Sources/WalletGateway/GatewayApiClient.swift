@@ -41,7 +41,11 @@ public struct GatewayApiClient: GatewayApi {
       throw GatewayError.invalidResponse
     }
 
-    return try payload.body.json.accountId
+    guard let accountId = try? payload.body.json.accountId else {
+      throw GatewayError.undecodableResponseBody
+    }
+
+    return accountId
   }
 
   public func addAccountWalletKey(key: PublicKeyComponents) async throws {
@@ -54,6 +58,7 @@ public struct GatewayApiClient: GatewayApi {
     )
     let input = Operations.AddAccountWalletKey.Input(body: .json(keyRequest))
     let response = try await client.addAccountWalletKey(input)
+
     guard case .created = response else {
       throw GatewayError.invalidResponse
     }
@@ -68,11 +73,10 @@ public struct GatewayApiClient: GatewayApi {
       throw GatewayError.invalidResponse
     }
 
-    return try payload.body.json.jwt
-  }
-}
+    guard let jwt = try? payload.body.json.jwt else {
+      throw GatewayError.undecodableResponseBody
+    }
 
-public enum GatewayError: Error {
-  case invalidResponse
-  case missingKeyIdentifier
+    return jwt
+  }
 }

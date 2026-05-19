@@ -5,13 +5,13 @@
 import SwiftUI
 import WalletMacros
 
-struct OnboardingPidView: View {
-  private var viewModel: OnboardingPidViewModel
+struct PidSetupView: View {
+  private var viewModel: PidSetupViewModel
   @Environment(ToastViewModel.self) private var toastViewModel
   @Environment(\.authPresentationAnchor) private var anchor
 
   init(onSubmit: @escaping (String) throws -> Void) {
-    viewModel = OnboardingPidViewModel(onSubmit: onSubmit)
+    viewModel = PidSetupViewModel(onSubmit: onSubmit)
   }
 
   var body: some View {
@@ -56,5 +56,5 @@ struct OnboardingPidView: View {
 }
 
 #Preview {
-  OnboardingPidView { _ in }.themed.withToast
+  PidSetupView { _ in }.themed.withToast
 }

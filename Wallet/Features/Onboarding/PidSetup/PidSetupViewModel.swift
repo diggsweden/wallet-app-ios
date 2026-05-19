@@ -8,7 +8,7 @@ import WalletMacros
 
 @MainActor
 @Observable
-final class OnboardingPidViewModel {
+final class PidSetupViewModel {
   private let onSubmit: (String) throws -> Void
   private let oAuthCoordinator = OauthCoordinator()
 

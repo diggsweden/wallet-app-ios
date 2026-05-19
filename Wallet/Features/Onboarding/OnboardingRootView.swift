@@ -110,18 +110,17 @@ struct OnboardingRootView: View {
   }
 
   private var title: some View {
-    let stepCount = viewModel.currentStepNumber.map { "\($0). " }
     let titleText =
       switch viewModel.step {
         case .intro: ""
         case .pin: "Ange pinkod för identifiering"
         case .verifyPin: "Bekräfta pinkod för identifiering"
-        case .walletSetup: "Sätt upp din plånbok"
+        case .walletSetup: "Sätter upp plånbok"
         case .pid: "Hämta personuppgifter"
         case .issueCredential: "Hämta personuppgifter"
       }
 
-    return Text("\(stepCount, default: "")\(titleText)")
+    return Text(titleText)
       .textStyle(.h1)
   }
 
@@ -134,13 +133,13 @@ struct OnboardingRootView: View {
         }
 
       case .pin:
-        OnboardingPinViewWrapper("Pinkod används när du ska identifiera dig") { pin in
+        PinSetupView("Pinkod används när du ska identifiera dig") { pin in
           try viewModel.setPin(pin)
           viewModel.next(from: .pin)
         }
 
       case .verifyPin:
-        OnboardingPinViewWrapper("Pinkod används när du ska identifiera dig") { pin in
+        PinSetupView("Pinkod används när du ska identifiera dig") { pin in
           try viewModel.confirmPin(pin)
           viewModel.next(from: .verifyPin)
         }
@@ -158,7 +157,7 @@ struct OnboardingRootView: View {
         )
 
       case .pid:
-        OnboardingPidView { credentialOfferUri in
+        PidSetupView { credentialOfferUri in
           viewModel.setCredentialOfferUri(credentialOfferUri)
           viewModel.next(from: .pid)
         }
@@ -172,7 +171,7 @@ struct OnboardingRootView: View {
             await viewModel.setCredentialOfferURI(credential)
           }
         } else {
-          OnboardingPidView { credentialOfferUri in
+          PidSetupView { credentialOfferUri in
             viewModel.setCredentialOfferUri(credentialOfferUri)
           }
         }

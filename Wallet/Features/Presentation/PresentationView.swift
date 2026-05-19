@@ -66,15 +66,11 @@ struct PresentationView: View {
           }
 
       case .error:
-        PresentationErrorView(
-          onRetry: {
-            Task {
-              await viewModel.resolveAndMatchClaims()
-            }
-          },
-          onDismiss: {
-            router.pop()
-          }
+        WalletErrorView(
+          title: "Något gick fel!",
+          message: "Försök igen eller avbryt.",
+          onRetry: { Task { await viewModel.resolveAndMatchClaims() } },
+          onAbort: { router.pop() }
         )
 
       case .ready:

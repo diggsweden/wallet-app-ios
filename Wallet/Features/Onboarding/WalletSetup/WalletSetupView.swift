@@ -35,37 +35,48 @@ struct WalletSetupView: View {
           EmptyView()
 
         case let .working(step):
-          AnimatedImage(
-            name: "wallet-loading-transparent.webp",
-            bundle: .main,
-            isAnimating: .constant(true),
-          )
-          .resizable()
-          .indicator(.activity)
-          .scaledToFit()
-          .frame(width: 230)
-          .transition(.fade)
+          loadingIndicator(label: step.label)
 
-          HStack(spacing: .zero) {
-            Text(step.label)
-              .textStyle(.bodyLarge)
-
-            DotsLoadingView()
-          }
-
-        case .failed(let step, let error):
-          Text("Något gick fel vid \(step.label.lowercased())")
-          Text(error.localizedDescription)
-            .font(.caption)
-            .foregroundStyle(.secondary)
-          Button("Försök igen") {
+        case .failed(_, let error):
+          WalletErrorView(
+            title: "Något gick fel!",
+            message: error.localizedDescription,
+          ) {
             Task { await viewModel.retry() }
           }
 
         case .complete:
-          Text("Klart!")
+          VStack(spacing: 24) {
+            Image(systemName: "checkmark.circle.fill")
+              .font(.system(size: 80))
+              .foregroundStyle(.green)
+              .accessibilityHidden(true)
+            Text("Klart!")
+              .textStyle(.h2)
+          }
       }
     }
     .task { await viewModel.setup() }
+  }
+
+  private func loadingIndicator(label: String) -> some View {
+    VStack {
+      AnimatedImage(
+        name: "wallet-loading-transparent.webp",
+        bundle: .main,
+        isAnimating: .constant(true),
+      )
+      .resizable()
+      .indicator(.activity)
+      .scaledToFit()
+      .frame(width: 230)
+      .transition(.fade)
+
+      HStack(spacing: .zero) {
+        Text(label)
+          .textStyle(.bodyLarge)
+        DotsLoadingView()
+      }
+    }
   }
 }

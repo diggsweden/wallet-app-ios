@@ -71,6 +71,10 @@ public final actor SessionManager {
       throw SessionError.failedChallenge
     }
 
-    return try payload.body.json.sessionId
+    guard let sessionId = try? payload.body.json.sessionId else {
+      throw SessionError.failedChallenge
+    }
+
+    return sessionId
   }
 }
