@@ -21,7 +21,7 @@ struct OnboardingRootView: View {
     userSnapshot: UserSnapshot,
     savePidCredential: @escaping (SavedCredential) async -> Void,
     signIn: @escaping (String) async -> Void,
-    onReset: @escaping () async -> Void
+    onReset: @escaping () async -> Void,
   ) {
     self.gatewayApiClient = gatewayApiClient
     self.userSnapshot = userSnapshot
@@ -29,7 +29,7 @@ struct OnboardingRootView: View {
       wrappedValue: .init(
         savePidCredential: savePidCredential,
         signIn: signIn,
-        onReset: onReset
+        onReset: onReset,
       )
     )
   }
@@ -103,7 +103,7 @@ struct OnboardingRootView: View {
         Text("Steg \(currentStepNumber) av \(viewModel.totalSteps)")
         PrimaryProgressView(
           value: CGFloat(currentStepNumber),
-          total: CGFloat(viewModel.totalSteps)
+          total: CGFloat(viewModel.totalSteps),
         )
       }
     }
@@ -148,11 +148,13 @@ struct OnboardingRootView: View {
       case .walletSetup:
         WalletSetupView(
           pin: viewModel.context.pin,
-          gatewayApiClient: gatewayApiClient,
+          gatewayApi: gatewayApiClient,
           onAccountCreated: { accountId in
             await viewModel.signIn(accountId: accountId)
           },
-          onComplete: { viewModel.next(from: .walletSetup) }
+          onComplete: {
+            viewModel.next(from: .walletSetup)
+          },
         )
 
       case .pid:
@@ -165,7 +167,7 @@ struct OnboardingRootView: View {
         if let uri = viewModel.context.credentialOfferUri {
           IssuanceView(
             credentialOfferUri: uri,
-            gatewayApiClient: gatewayApiClient
+            gatewayApiClient: gatewayApiClient,
           ) { credential in
             await viewModel.setCredentialOfferURI(credential)
           }

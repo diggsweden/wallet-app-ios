@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import SDWebImageSwiftUI
+import SwiftAccessMechanism
 import SwiftUI
 import WalletGateway
 
@@ -11,19 +12,18 @@ struct WalletSetupView: View {
 
   init(
     pin: String,
-    gatewayApiClient: GatewayApiClient,
+    gatewayApi: GatewayApi & BFFTransport,
     onAccountCreated: @escaping @Sendable (String) async -> Void,
-    onComplete: @escaping () -> Void
+    onComplete: @escaping () -> Void,
   ) {
-    self._viewModel = State(
+    _viewModel = State(
       wrappedValue: WalletSetupViewModel(
         service: BFFWalletSetupService(
-          transport: gatewayApiClient,
-          gatewayApi: gatewayApiClient,
-          onAccountCreated: onAccountCreated
+          gatewayApi: gatewayApi,
+          onAccountCreated: onAccountCreated,
         ),
         pin: pin,
-        onComplete: onComplete
+        onComplete: onComplete,
       )
     )
   }
@@ -38,7 +38,7 @@ struct WalletSetupView: View {
           AnimatedImage(
             name: "wallet-loading-transparent.webp",
             bundle: .main,
-            isAnimating: .constant(true)
+            isAnimating: .constant(true),
           )
           .resizable()
           .indicator(.activity)

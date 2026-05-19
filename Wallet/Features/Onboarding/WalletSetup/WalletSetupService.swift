@@ -16,17 +16,14 @@ protocol WalletSetupService: Sendable {
 }
 
 actor BFFWalletSetupService: WalletSetupService {
-  private let transport: any BFFTransport
-  private let gatewayApi: any GatewayApi
+  private let gatewayApi: any GatewayApi & BFFTransport
   private let onAccountCreated: @Sendable (String) async throws -> Void
   private var bffClient: BFFHttpClient?
 
   init(
-    transport: any BFFTransport,
-    gatewayApi: any GatewayApi,
+    gatewayApi: any GatewayApi & BFFTransport,
     onAccountCreated: @Sendable @escaping (String) async throws -> Void,
   ) {
-    self.transport = transport
     self.gatewayApi = gatewayApi
     self.onAccountCreated = onAccountCreated
   }
@@ -43,7 +40,7 @@ actor BFFWalletSetupService: WalletSetupService {
     let serverId = Data("dev.cloud-wallet.digg.se".utf8)
     let privateKey = try BFFIdentity.generateKey(tag: "bff-hsm-key")
     bffClient = try await BFFHttpClient.create(
-      transport: URLSessionBFFTransport(baseUrl: "http://localhost:8088"),
+      transport: gatewayApi,
       privateKey: privateKey,
       serverParameters: ServerParameters(serverIdentifier: serverId),
       ttl: "PT1H",
