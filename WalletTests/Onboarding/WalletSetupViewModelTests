@@ -5,6 +5,7 @@
 import Foundation
 import SwiftAccessMechanism
 import Testing
+import WalletGateway
 
 @testable import WalletDemo
 
@@ -62,14 +63,16 @@ enum MockError: Error {
 
 @MainActor
 struct WalletSetupViewModelTests {
-  @Test func completesSuccessfully() async {
+  @Test
+  func `completes successfully`() async {
     let service = MockWalletSetupService()
     let vm = WalletSetupViewModel(service: service, pin: "1234")
     await vm.setup()
     #expect(vm.state == .complete)
   }
 
-  @Test func setsCorrectStateOnFailure() async throws {
+  @Test
+  func `sets correct state on failure`() async throws {
     let service = MockWalletSetupService()
     let stretched = try PINStretch().stretch(input: Data("1234".utf8))
     service.failAt = .authenticate(stretched)
@@ -78,7 +81,8 @@ struct WalletSetupViewModelTests {
     #expect(vm.state == .failed(at: .authenticate(stretched), error: MockError.intentional))
   }
 
-  @Test func retryResumesFromFailedStep() async throws {
+  @Test
+  func `retry resumes from failed step`() async throws {
     let service = MockWalletSetupService()
     let stretched = try PINStretch().stretch(input: Data("1234".utf8))
     service.failAt = .authenticate(stretched)
@@ -95,7 +99,8 @@ struct WalletSetupViewModelTests {
     #expect(service.authenticateCallCount == 2)
   }
 
-  @Test func retryDoesNothingIfNotFailed() async {
+  @Test
+  func `retry does nothing if not failed`() async {
     let service = MockWalletSetupService()
     let vm = WalletSetupViewModel(service: service, pin: "1234")
     await vm.setup()

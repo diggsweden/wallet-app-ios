@@ -19,7 +19,6 @@ extension GatewayApiClient: BFFTransport {
     guard let kid = publicKey.kid else {
       throw GatewayError.missingKeyIdentifier
     }
-
     let jwkDto = Components.Schemas.KeyRequest(
       kty: publicKey.kty,
       kid: kid,

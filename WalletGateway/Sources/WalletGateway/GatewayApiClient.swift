@@ -26,8 +26,6 @@ public struct GatewayApiClient: GatewayApi {
   }
 
   public func createAccount(publicKey: PublicKeyComponents) async throws -> String {
-    let pin = (0 ..< 12).map { _ in String(Int.random(in: 0 ... 9)) }.joined()
-    let email = "\((0..<8).map { _ in String(Int.random(in: 0...9)) }.joined())@example.com"
     let jwkDto = Components.Schemas.KeyRequest(
       kty: publicKey.kty,
       kid: publicKey.kid,
@@ -35,12 +33,7 @@ public struct GatewayApiClient: GatewayApi {
       x: publicKey.x,
       y: publicKey.y,
     )
-    let bodyDto = Components.Schemas.CreateAccountRequest(
-      personalIdentityNumber: pin,
-      emailAdress: email,
-      telephoneNumber: nil,
-      deviceKey: jwkDto,
-    )
+    let bodyDto = Components.Schemas.CreateAccountRequest(deviceKey: jwkDto)
     let input = Operations.CreateAccounts.Input(body: .json(bodyDto))
     let response = try await client.createAccounts(input)
 
