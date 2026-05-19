@@ -26,9 +26,15 @@ public final actor SessionManager {
   }
 
   public func getToken() async throws -> String {
+    guard await accountIdProvider.accountId() != nil else {
+      reset()
+      throw SessionError.noAccountId
+    }
+
     if let token {
       return token
     }
+
     return try await initSession()
   }
 
