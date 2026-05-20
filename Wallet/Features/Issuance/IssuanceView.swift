@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import SwiftUI
+import SwiftAccessMechanism
 import WalletGateway
 
 struct IssuanceView: View {
@@ -14,7 +15,7 @@ struct IssuanceView: View {
 
   init(
     credentialOfferUri: String,
-    gatewayApiClient: GatewayApi,
+    gatewayApiClient: any GatewayApi & BFFTransport,
     onSave: @escaping (SavedCredential) async -> Void
   ) {
     self.onSave = onSave
@@ -49,8 +50,14 @@ struct IssuanceView: View {
       }
       toastViewModel.showError(error.message)
     }
+//    .fullScreenCover(isPresented: viewModel.showEnterPinOverlay) {
+//      PinView { <#String#> in
+//        <#code#>
+//      }
+//    }
   }
 
+  @ViewBuilder
   private var button: some View {
     switch viewModel.state {
       case .initial:
@@ -86,6 +93,8 @@ struct IssuanceView: View {
             await onSave(savedCredential)
           }
         }
+
+      default: EmptyView()
     }
   }
 }
