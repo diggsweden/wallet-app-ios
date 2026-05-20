@@ -3,23 +3,26 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import AuthenticationServices
-import eudi_lib_sdjwt_swift
 import Foundation
 import OpenID4VCI
 import SwiftAccessMechanism
 import WalletGateway
 import WalletMacros
+import eudi_lib_sdjwt_swift
 
-enum IssuanceState {
-  case initial
-  case issuerFetched(offer: CredentialOffer)
-  case authorized(request: AuthorizedRequest)
-  case signed(String)
-  case credentialFetched(credential: (SavedCredential, [ClaimUiModel]))
+enum IssuancePhase {
+  case fetchingIssuer
+  case readyToAuthorize(CredentialOffer)
+  case authorizing
+  case readyToSign(AuthorizedRequest)
+  case readyToFetch(AuthorizedRequest, proof: String)
+  case fetchingCredential
+  case done(SavedCredential, [ClaimUiModel])
 }
 
 @MainActor
 @Observable
+// swiftlint:disable:next type_body_length
 class IssuanceViewModel {
   private let credentialOfferUri: String
   private(set) var claimsMetadata: [String: String] = [:]
@@ -30,46 +33,49 @@ class IssuanceViewModel {
   private let jwtUtil = JwtUtil()
   private let gatewayApiClient: GatewayApi & BFFTransport
   var issuerDisplayData: IssuerDisplay?
-  var state: IssuanceState = .initial
+  var phase: IssuancePhase = .fetchingIssuer
   var error: ErrorEvent?
 
   init(
     credentialOfferUri: String,
-    gatewayApiClient: any GatewayApi & BFFTransport
+    gatewayApiClient: any GatewayApi & BFFTransport,
   ) {
     self.credentialOfferUri = credentialOfferUri
     self.gatewayApiClient = gatewayApiClient
   }
 
-  func fetchIssuer() async {
+  func start() async {
+    phase = .fetchingIssuer
     do {
       let credentialOffer = try await fetchCredentialOffer(with: credentialOfferUri)
       self.credentialOffer = credentialOffer
       claimsMetadata = getClaimsMetadata(from: credentialOffer)
       issuer = try await createIssuer(from: credentialOffer)
-      state = .issuerFetched(offer: credentialOffer)
+      phase = .readyToAuthorize(credentialOffer)
     } catch {
       self.error = error.toErrorEvent()
     }
   }
 
-  func authorize(
-    credentialOffer: CredentialOffer,
-    authPresentationAnchor: ASPresentationAnchor,
-  ) async {
+  func beginAuthorization(anchor: ASPresentationAnchor) async {
+    guard case .readyToAuthorize(let offer) = phase else {
+      return
+    }
+
+    phase = .authorizing
     do {
       guard let issuer else {
         throw IssuanceError.issuerNotFound
       }
 
       let preparedRequest = try await issuer.prepareAuthorizationRequest(
-        credentialOffer: credentialOffer
+        credentialOffer: offer
       )
 
       let oAuthCallback = try await oauth.start(
         url: preparedRequest.authorizationCodeURL.url,
         callbackScheme: "wallet-app",
-        anchor: authPresentationAnchor,
+        anchor: anchor,
       )
 
       guard let code = oAuthCallback.queryItemValue(for: "code") else {
@@ -97,14 +103,20 @@ class IssuanceViewModel {
           ),
         )
 
-      state = .authorized(request: authResponse)
-      await fetchCredential(authResponse)
+      phase = .readyToSign(authResponse)
     } catch {
       self.error = error.toErrorEvent()
+      if let credentialOffer {
+        phase = .readyToAuthorize(credentialOffer)
+      }
     }
   }
 
-  func fetchCredential(_ authRequest: AuthorizedRequest) async {
+  func createProof(with pin: String) async {
+    guard case .readyToSign(let authRequest) = phase else {
+      return
+    }
+
     do {
       guard let issuer else {
         throw IssuanceError.issuerNotFound
@@ -127,39 +139,70 @@ class IssuanceViewModel {
           default: false
         }
 
-      let jwtProof = try await createProof(
+      let proof = try await createJwtProof(
         issuerId: metadata.credentialIssuerIdentifier.url.absoluteString,
         keyAttestationRequired: keyAttestationRequired,
         nonceUrl: metadata.nonceEndpoint?.url,
+        pin: pin,
       )
+
+      phase = .readyToFetch(authRequest, proof: proof)
+      await fetchCredential()
+    } catch {
+      self.error = error.toErrorEvent()
+    }
+  }
+
+  func fetchCredential() async {
+    guard case .readyToFetch(let authRequest, let proof) = phase else {
+      return
+    }
+
+    phase = .fetchingCredential
+    do {
+      guard let issuer else {
+        throw IssuanceError.issuerNotFound
+      }
+
+      let metadata = await issuer.issuerMetadata
+
+      guard
+        let configId = credentialOffer?.credentialConfigurationIdentifiers.first,
+        let supportedCredential = metadata.credentialsSupported[configId],
+        case let .sdJwtVc(credentialConfig) = supportedCredential
+      else {
+        throw IssuanceError.credentialNotSupported
+      }
 
       let credential = try await openId4VciUtil.fetchCredential(
         url: metadata.credentialEndpoint.url,
         token: authRequest.accessToken.accessToken,
         credentialRequest: CredentialRequest(
           credentialConfigurationId: configId.value,
-          proofs: JwtProofType(jwt: [jwtProof]),
+          proofs: JwtProofType(jwt: [proof]),
         ),
         requestEncryption: metadata.credentialRequestEncryption.toCryptoSpec(),
       )
 
       let display = metadata.display.first
-      let parsedCredential = try parseCredential(
+      let (parsedCredential, credentialUiModels) = try parseCredential(
         credential,
         credentialConfiguration: credentialConfig,
         issuer: display,
       )
 
-      state = .credentialFetched(credential: parsedCredential)
+      phase = .done(parsedCredential, credentialUiModels)
     } catch {
       self.error = error.toErrorEvent()
+      phase = .readyToFetch(authRequest, proof: proof)
     }
   }
 
-  private func createProof(
+  private func createJwtProof(
     issuerId: String,
     keyAttestationRequired: Bool,
     nonceUrl: URL?,
+    pin: String,
   ) async throws -> String {
     let nonce: String? =
       if let nonceUrl {
@@ -176,11 +219,17 @@ class IssuanceViewModel {
       }
 
     let hsmClient = try await getHSMClient()
+    _ = try await hsmClient.authenticate(
+      password: PINStretch().stretch(input: Data(pin.utf8))
+    )
     let keys = try await hsmClient.listKeys()
 
-    guard let key = keys.keyInfo.first,
-          let keyId = key.kid
-    else { throw IssuanceError.noHSMKey }
+    guard
+      let key = keys.keyInfo.first,
+      let keyId = key.kid
+    else {
+      throw IssuanceError.noHSMKey
+    }
 
     let payload = JwtProofPayload(aud: issuerId, nonce: nonce)
     let signingInput = try jwtUtil.createSigningInput(
@@ -188,7 +237,7 @@ class IssuanceViewModel {
       header: KeyAttestationHeader(
         jwk: keyAttestationRequired ? nil : key.publicKey.toSecKey().jwk,
         keyAttestation: keyAttestation,
-      )
+      ),
     )
     let response = try await hsmClient.sign(hsmKeyId: keyId, digest: signingInput.data)
 
@@ -286,6 +335,4 @@ class IssuanceViewModel {
         result[claimPath] = displayName
       }
   }
-  
-
 }
