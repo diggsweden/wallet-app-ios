@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
-import SwiftUI
 import SwiftAccessMechanism
+import SwiftUI
 import WalletGateway
 
 struct IssuanceView: View {
@@ -16,85 +16,93 @@ struct IssuanceView: View {
   init(
     credentialOfferUri: String,
     gatewayApiClient: any GatewayApi & BFFTransport,
-    onSave: @escaping (SavedCredential) async -> Void
+    onSave: @escaping (SavedCredential) async -> Void,
   ) {
     self.onSave = onSave
     _viewModel = State(
       wrappedValue: .init(
         credentialOfferUri: credentialOfferUri,
-        gatewayApiClient: gatewayApiClient
+        gatewayApiClient: gatewayApiClient,
       )
     )
   }
 
   var body: some View {
-    VStack(spacing: 30) {
-      if let display = viewModel.issuerDisplayData {
-        IssuerDisplayView(issuerDisplayData: display)
+    Group {
+      if case .readyToSign = viewModel.phase {
+        ConfirmPinView { pin in
+          Task { await viewModel.createProof(with: pin) }
+        }
+      } else {
+        VStack(spacing: 30) {
+          if let display = viewModel.issuerDisplayData {
+            IssuerDisplayView(issuerDisplayData: display)
+          }
+
+          if case let .done(_, displayClaims) = viewModel.phase {
+            CredentialView(claims: displayClaims)
+          }
+
+          Spacer()
+
+          button
+        }
       }
-
-      if case let .credentialFetched(credential: (_, displayClaims)) = viewModel.state {
-        CredentialView(claims: displayClaims)
-      }
-
-      Spacer()
-
-      button
     }
     .task {
-      await viewModel.fetchIssuer()
+      await viewModel.start()
     }
     .onChange(of: viewModel.error) { _, error in
       guard let error else {
         return
       }
+
       toastViewModel.showError(error.message)
     }
-//    .fullScreenCover(isPresented: viewModel.showEnterPinOverlay) {
-//      PinView { <#String#> in
-//        <#code#>
-//      }
-//    }
   }
 
   @ViewBuilder
   private var button: some View {
-    switch viewModel.state {
-      case .initial:
-        PrimaryButton("Hämta metadata") {
-          Task {
-            await viewModel.fetchIssuer()
-          }
-        }
+    switch viewModel.phase {
+      case .fetchingIssuer, .authorizing, .fetchingCredential:
+        ProgressView()
 
-      case .issuerFetched(let offer):
+      case .readyToAuthorize:
         PrimaryButton("Logga in", icon: "arrow.right.circle.fill") {
           Task {
             guard let anchor else {
               return
             }
-            await viewModel.authorize(
-              credentialOffer: offer,
-              authPresentationAnchor: anchor
-            )
+
+            await viewModel.beginAuthorization(anchor: anchor)
           }
         }
 
-      case .authorized(let request):
-        PrimaryButton("Hämta ID-handling") {
-          Task {
-            await viewModel.fetchCredential(request)
-          }
+      case .readyToFetch:
+        PrimaryButton("Försök igen") {
+          Task { await viewModel.fetchCredential() }
         }
 
-      case .credentialFetched(credential: (let savedCredential, _)):
+      case .done(let savedCredential, _):
         PrimaryButton("Godkänn", icon: "checkmark.circle") {
-          Task {
-            await onSave(savedCredential)
-          }
+          Task { await onSave(savedCredential) }
         }
 
-      default: EmptyView()
+      case .readyToSign:
+        EmptyView()
+    }
+  }
+}
+
+private struct ConfirmPinView: View {
+  let onComplete: (String) -> Void
+
+  var body: some View {
+    VStack(spacing: 24) {
+      Text("Bekräfta pinkod")
+        .textStyle(.h2)
+
+      PinView(onComplete: onComplete)
     }
   }
 }
