@@ -3,16 +3,18 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import AuthenticationServices
+import eudi_lib_sdjwt_swift
 import Foundation
 import OpenID4VCI
+import SwiftAccessMechanism
 import WalletGateway
 import WalletMacros
-import eudi_lib_sdjwt_swift
 
 enum IssuanceState {
   case initial
   case issuerFetched(offer: CredentialOffer)
   case authorized(request: AuthorizedRequest)
+  case signed(String)
   case credentialFetched(credential: (SavedCredential, [ClaimUiModel]))
 }
 
@@ -26,12 +28,15 @@ class IssuanceViewModel {
   private let openId4VciUtil = OpenId4VciUtil()
   private var oauth = OauthCoordinator()
   private let jwtUtil = JwtUtil()
-  private let gatewayApiClient: GatewayApi
+  private let gatewayApiClient: GatewayApi & BFFTransport
   var issuerDisplayData: IssuerDisplay?
   var state: IssuanceState = .initial
   var error: ErrorEvent?
 
-  init(credentialOfferUri: String, gatewayApiClient: GatewayApi) {
+  init(
+    credentialOfferUri: String,
+    gatewayApiClient: any GatewayApi & BFFTransport
+  ) {
     self.credentialOfferUri = credentialOfferUri
     self.gatewayApiClient = gatewayApiClient
   }
@@ -170,16 +175,34 @@ class IssuanceViewModel {
         nil
       }
 
-    let payload = JwtProofPayload(aud: issuerId, nonce: nonce)
-    let key = try SigningKeyStore.getOrCreateKey(withTag: .deviceKey)
+    let hsmClient = try await getHSMClient()
+    let keys = try await hsmClient.listKeys()
 
-    return try jwtUtil.signJwt(
-      with: key,
+    guard let key = keys.keyInfo.first,
+          let keyId = key.kid
+    else { throw IssuanceError.noHSMKey }
+
+    let payload = JwtProofPayload(aud: issuerId, nonce: nonce)
+    let signingInput = try jwtUtil.createSigningInput(
       payload: payload,
       header: KeyAttestationHeader(
-        jwk: keyAttestationRequired ? nil : key.publicKey.jwk,
+        jwk: keyAttestationRequired ? nil : key.publicKey.toSecKey().jwk,
         keyAttestation: keyAttestation,
-      ),
+      )
+    )
+    let response = try await hsmClient.sign(hsmKeyId: keyId, digest: signingInput.data)
+
+    return "\(signingInput.base64String).\(response.signature)"
+  }
+
+  private func getHSMClient() async throws -> BFFHttpClient {
+    let serverId = Data("dev.cloud-wallet.digg.se".utf8)
+    let privateKey = try BFFIdentity.generateKey(tag: "bff-hsm-key")
+    return try await BFFHttpClient.create(
+      transport: gatewayApiClient,
+      privateKey: privateKey,
+      serverParameters: ServerParameters(serverIdentifier: serverId),
+      ttl: "PT1H",
     )
   }
 
@@ -263,4 +286,6 @@ class IssuanceViewModel {
         result[claimPath] = displayName
       }
   }
+  
+
 }
