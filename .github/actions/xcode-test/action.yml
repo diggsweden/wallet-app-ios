@@ -9,12 +9,14 @@ runs:
   using: composite
   steps:
     - name: Restore Xcode cache
-    - uses: ./.github/actions/xcode-cache-restore
+      uses: ./.github/actions/xcode-cache-restore
 
     - name: Generate Xcode project
+      shell: bash
       run: xcodegen generate
 
     - name: Run unit tests
+      shell: bash
       run: |
         set -o pipefail
         rm -rf TestResults.xcresult

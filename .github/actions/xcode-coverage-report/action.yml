@@ -19,9 +19,9 @@ runs:
   steps:
     - name: Generate coverage report
       shell: bash
+      env:
+        XCRESULT_PATH: ${{ inputs.xcresult-path }}
       run: |
-        XCRESULT_PATH="${{ inputs.xcresult-path }}"
-
         if [ ! -d "$XCRESULT_PATH" ]; then
           echo "⚠️ No $XCRESULT_PATH - skipping coverage report ⚠️"
           exit 0
