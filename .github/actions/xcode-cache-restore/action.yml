@@ -23,6 +23,6 @@ runs:
       shell: bash
       run: |
         git ls-files -z | while IFS= read -r -d '' f; do
-          ts=$(git log -1 --format=%cI -- "$f")
-          [ -n "$ts" ] && touch -t "$(date -r "$ts" +%Y%m%d%H%M.%S)" "$f"
+          ts=$(git log -1 --format=%cd --date=format-local:%Y%m%d%H%M.%S -- "$f")
+          [ -n "$ts" ] && touch -t "$ts" "$f"
         done
