@@ -25,7 +25,7 @@ jobs:
 
       - name: Run Xcode tests
         uses: ./.github/actions/xcode-test
-      
+
       - name: Refresh or save Xcode cache
         if: success()
         uses: ./github/actions/xcode-cache-save
