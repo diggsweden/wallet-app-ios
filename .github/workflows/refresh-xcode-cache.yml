@@ -1,0 +1,31 @@
+# SPDX-FileCopyrightText: 2025 Digg - Agency for Digital Government
+#
+# SPDX-License-Identifier: CC0-1.0
+
+name: Refresh Xcode Cache
+
+permissions:
+  contents: read
+  actions: write
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  refresh-xcode-cache:
+    runs-on: macos-26-arm64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Run Xcode tests
+        uses: ./.github/actions/xcode-test
+      
+      - name: Refresh or save Xcode cache
+        if: success()
+        uses: ./github/actions/xcode-cache-save

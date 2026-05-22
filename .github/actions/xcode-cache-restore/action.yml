@@ -1,0 +1,28 @@
+# SPDX-FileCopyrightText: 2025 Digg - Agency for Digital Government
+#
+# SPDX-License-Identifier: CC0-1.0
+
+name: Xcode Cache (restore)
+description: Restore DerivedData cache and set up file mtimes for incremental builds
+
+runs:
+  using: composite
+  steps:
+    - name: Restore Xcode DerivedData cache
+      uses: actions/cache/restore@v4
+      with:
+        path: |
+          ~/Library/Developer/Xcode/DerivedData
+          ~/Library/Caches/org.swift.swiftpm
+          ~/Library/org.swift.swiftpm
+        key: xcode-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}
+        restore-keys: |
+          xcode-${{ runner.os }}-${{ runner.arch }}-
+
+    - name: Restore mtimes from git history
+      shell: bash
+      run: |
+        git ls-files -z | while IFS= read -r -d '' f; do
+          ts=$(git log -1 --format=%cI -- "$f")
+          [ -n "$ts" ] && touch -d "$ts" "$f"
+        done
