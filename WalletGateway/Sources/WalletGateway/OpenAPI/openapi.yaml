@@ -133,6 +133,24 @@ paths:
           $ref: '#/components/responses/default'
 
   /v0/accounts/security-envelopes:
+    get:
+      tags:
+        - Account
+      summary: Get security envelopes
+      description: Returns the security envelopes associated with the authenticated account.
+      operationId: getAccountSecurityEnvelopes
+      responses:
+        '200':
+          description: Security envelopes retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityEnvelopesResponseDto'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        'default':
+          $ref: '#/components/responses/default'
+
     post:
       tags:
         - Account
@@ -151,10 +169,6 @@ paths:
       responses:
         '201':
           description: The account security envelope being added
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SecurityEnvelopeResponse'
         'default':
           $ref: '#/components/responses/default'
 
@@ -871,6 +885,14 @@ components:
         - x
         - y
 
+    SecurityEnvelopesResponseDto:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/SecurityEnvelopeResponse'
+
     SecurityEnvelopeRequest:
       properties:
         type:
@@ -884,8 +906,14 @@ components:
         - content
 
     SecurityEnvelopeResponse:
-      allOf:
-        - $ref: '#/components/schemas/SecurityEnvelopeRequest'
+      type: object
+      properties:
+        content:
+          type: string
+          description: The security envelope content. Typically encrypted opaque materials.
+          minLength: 1
+      required:
+        - content
 
     SecurityEnvelopeType:
       type: string
@@ -915,6 +943,9 @@ components:
         clientId:
           type: string
           description: Client identifier
+        stateJws:
+          type: string
+          description: Optional encoded device-state token. When present the BFF skips the Valkey lookup.
       required:
         - jwt
         - clientId
@@ -945,6 +976,9 @@ components:
           description: Gateway URL where the asynchronous operation result can be polled
         error:
           $ref: '#/components/schemas/AsyncHsmErrorDto'
+        stateJws:
+          type: string
+          description: Updated device-state token. Present when status=complete. Persist and send as stateJws on the next request.
       required:
         - correlationId
         - status
@@ -990,6 +1024,9 @@ components:
           $ref: '#/components/schemas/EcPublicJwkDto'
         opaqueServerId:
           type: string
+        stateJws:
+          type: string
+          description: JWS-encoded device state. Store alongside clientId and send as stateJws on subsequent requests.
       required:
         - status
         - clientId

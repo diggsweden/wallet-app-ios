@@ -11,4 +11,5 @@ enum IssuanceError: LocalizedError {
   case authRequestFailed
   case credentialNotSupported
   case noHSMKey
+  case missingHSMConfig
 }

@@ -12,6 +12,8 @@ public protocol GatewayApi: Sendable {
   func addAccountWalletKey(key: PublicKeyComponents) async throws
 
   func getWalletUnitAttestation(nonce: String?) async throws -> String
+
+  func getAccountSecurityEnvelopes() async throws -> SecurityEnvelope
 }
 
 public struct GatewayApiClient: GatewayApi {
@@ -62,6 +64,19 @@ public struct GatewayApiClient: GatewayApi {
     guard case .created = response else {
       throw GatewayError.invalidResponse
     }
+  }
+
+  public func getAccountSecurityEnvelopes() async throws -> SecurityEnvelope {
+    let response = try await client.getAccountSecurityEnvelopes()
+
+    guard
+      case let .ok(payload) = response,
+      let item = try? payload.body.json.items?.first
+    else {
+      throw GatewayError.invalidResponse
+    }
+
+    return SecurityEnvelope(content: item.content)
   }
 
   public func getWalletUnitAttestation(nonce: String?) async throws -> String {
