@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import AuthenticationServices
+import CryptoKit
 import Foundation
 import OpenID4VCI
 import SwiftAccessMechanism
@@ -218,11 +219,12 @@ class IssuanceViewModel {
         nil
       }
 
-    let hsmClient = try await getHSMClient()
+    let (hsmClient, stateJws) = try await getHSMClient()
     _ = try await hsmClient.authenticate(
-      password: PINStretch().stretch(input: Data(pin.utf8))
+      password: PINStretch().stretch(input: Data(pin.utf8)),
+      stateJws: stateJws,
     )
-    let keys = try await hsmClient.listKeys()
+    let keys = try await hsmClient.listKeys(stateJws: stateJws)
 
     guard
       let key = keys.keyInfo.first,
@@ -239,20 +241,26 @@ class IssuanceViewModel {
         keyAttestation: keyAttestation,
       ),
     )
-    let response = try await hsmClient.sign(hsmKeyId: keyId, digest: signingInput.data)
+    let response = try await hsmClient.sign(hsmKeyId: keyId, data: signingInput.data)
 
     return "\(signingInput.base64String).\(response.signature)"
   }
 
-  private func getHSMClient() async throws -> BFFHttpClient {
-    let serverId = Data("dev.cloud-wallet.digg.se".utf8)
-    let privateKey = try BFFIdentity.generateKey(tag: "bff-hsm-key")
-    return try await BFFHttpClient.create(
+  private func getHSMClient() async throws -> (client: BFFHttpClient, stateJws: String?) {
+    let stateJws = try await gatewayApiClient.getAccountSecurityEnvelopes().content
+
+    guard let config = HSMClientStore.load() else {
+      throw IssuanceError.missingHSMConfig
+    }
+
+    let client = try BFFHttpClient.resume(
       transport: gatewayApiClient,
-      privateKey: privateKey,
-      serverParameters: ServerParameters(serverIdentifier: serverId),
-      ttl: "PT1H",
+      clientId: config.clientId,
+      privateKey: SecKeyStore.getOrCreateKey(withTag: .walletKey),
+      serverParameters: config.serverParameters,
     )
+
+    return (client, stateJws)
   }
 
   private func parseCredential(

@@ -38,12 +38,19 @@ actor BFFWalletSetupService: WalletSetupService {
 
   func initHSMState() async throws {
     let serverId = Data("dev.cloud-wallet.digg.se".utf8)
-    let privateKey = try BFFIdentity.generateKey(tag: "bff-hsm-key")
-    bffClient = try await BFFHttpClient.create(
+    let privateKey = try SecKeyStore.getOrCreateKey(withTag: .walletKey)
+    let client = try await BFFHttpClient.create(
       transport: gatewayApi,
       privateKey: privateKey,
       serverParameters: ServerParameters(serverIdentifier: serverId),
       ttl: "PT1H",
+    )
+    bffClient = client
+    try HSMClientStore.save(
+      HSMClientStore.Config(
+        clientId: client.clientId,
+        serverParameters: client.serverParameters,
+      )
     )
   }
 
@@ -72,12 +79,16 @@ actor BFFWalletSetupService: WalletSetupService {
       throw WalletSetupError.missingBFFClient
     }
 
-    let key = try await client.createHsmKey()
-    let jwk = key.public_key
+    let keys = try await client.listKeys()
 
-    guard let kid = jwk.kid else {
+    guard
+      let key = keys.keyInfo.first,
+      let kid = key.kid
+    else {
       throw WalletSetupError.missingKeyId
     }
+
+    let jwk = key.publicKey
 
     return PublicKeyComponents(kty: jwk.kty, kid: kid, crv: jwk.crv, x: jwk.x, y: jwk.y)
   }

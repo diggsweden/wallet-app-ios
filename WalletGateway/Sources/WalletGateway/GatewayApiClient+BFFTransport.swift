@@ -7,19 +7,11 @@ import SwiftAccessMechanism
 
 extension GatewayApiClient: BFFTransport {
   public func changePin(request: BFFRequest) async throws -> Data {
-    let input = Operations.ChangePin.Input(
-      body: .json(.init(jwt: request.outerRequestJws, clientId: request.clientId))
-    )
-    let response = try await client.changePin(input)
-
-    guard case let .ok(payload) = response else {
-      throw GatewayError.invalidResponse
+    switch try await client.changePinAsync(.init(body: .json(hsmBody(request)))) {
+      case let .ok(p): try await resolveAsync(ok: try? p.body.json)
+      case let .accepted(p): try await resolveAsync(pending: try? p.body.json)
+      default: throw GatewayError.invalidResponse
     }
-
-    guard let jwt = try? payload.body.json.jwt else {
-      throw GatewayError.undecodableResponseBody
-    }
-    return Data(jwt.utf8)
   }
 
   public func registerState(
@@ -30,6 +22,7 @@ extension GatewayApiClient: BFFTransport {
     guard let kid = publicKey.kid else {
       throw GatewayError.missingKeyIdentifier
     }
+
     let jwkDto = Components.Schemas.KeyRequest(
       kty: publicKey.kty,
       kid: kid,
@@ -66,98 +59,128 @@ extension GatewayApiClient: BFFTransport {
   }
 
   public func registerPin(request: BFFRequest) async throws -> Data {
-    let input = Operations.RegisterPin.Input(
-      body: .json(.init(jwt: request.outerRequestJws, clientId: request.clientId))
-    )
-    let response = try await client.registerPin(input)
-
-    guard case let .created(payload) = response else {
-      throw GatewayError.invalidResponse
+    switch try await client.registerPinAsync(.init(body: .json(hsmBody(request)))) {
+      case let .ok(p): try await resolveAsync(ok: try? p.body.json)
+      case let .accepted(p): try await resolveAsync(pending: try? p.body.json)
+      default: throw GatewayError.invalidResponse
     }
-
-    guard let jwt = try? payload.body.json.jwt else {
-      throw GatewayError.undecodableResponseBody
-    }
-
-    return Data(jwt.utf8)
   }
 
   public func createSession(request: BFFRequest) async throws -> Data {
-    let input = Operations.CreateHsmSession.Input(
-      body: .json(.init(jwt: request.outerRequestJws, clientId: request.clientId))
-    )
-    let response = try await client.createHsmSession(input)
-
-    guard case let .created(payload) = response else {
-      throw GatewayError.invalidResponse
+    switch try await client.createHsmSessionAsync(.init(body: .json(hsmBody(request)))) {
+      case let .ok(p): try await resolveAsync(ok: try? p.body.json)
+      case let .accepted(p): try await resolveAsync(pending: try? p.body.json)
+      default: throw GatewayError.invalidResponse
     }
-
-    guard let jwt = try? payload.body.json.jwt else {
-      throw GatewayError.undecodableResponseBody
-    }
-
-    return Data(jwt.utf8)
   }
 
   public func createKey(request: BFFRequest) async throws -> Data {
-    let input = Operations.CreateKey.Input(
-      body: .json(.init(jwt: request.outerRequestJws, clientId: request.clientId))
-    )
-    let response = try await client.createKey(input)
-
-    guard case let .created(payload) = response else {
-      throw GatewayError.invalidResponse
+    switch try await client.createKeyAsync(.init(body: .json(hsmBody(request)))) {
+      case let .ok(p): try await resolveAsync(ok: try? p.body.json)
+      case let .accepted(p): try await resolveAsync(pending: try? p.body.json)
+      default: throw GatewayError.invalidResponse
     }
-
-    guard let jwt = try? payload.body.json.jwt else {
-      throw GatewayError.undecodableResponseBody
-    }
-
-    return Data(jwt.utf8)
   }
 
   public func listKeys(request: BFFRequest) async throws -> Data {
-    let input = Operations.ListKeys.Input(
-      body: .json(.init(jwt: request.outerRequestJws, clientId: request.clientId))
-    )
-    let response = try await client.listKeys(input)
-
-    guard case let .ok(payload) = response else {
-      throw GatewayError.invalidResponse
+    switch try await client.listKeysAsync(.init(body: .json(hsmBody(request)))) {
+      case let .ok(p): try await resolveAsync(ok: try? p.body.json)
+      case let .accepted(p): try await resolveAsync(pending: try? p.body.json)
+      default: throw GatewayError.invalidResponse
     }
-
-    guard let jwt = try? payload.body.json.jwt else {
-      throw GatewayError.undecodableResponseBody
-    }
-
-    return Data(jwt.utf8)
   }
 
   public func sign(request: BFFRequest) async throws -> Data {
-    let input = Operations.Sign.Input(
-      body: .json(.init(jwt: request.outerRequestJws, clientId: request.clientId))
-    )
-    let response = try await client.sign(input)
-
-    guard case let .ok(payload) = response else {
-      throw GatewayError.invalidResponse
+    switch try await client.signAsync(.init(body: .json(hsmBody(request)))) {
+      case let .ok(p): try await resolveAsync(ok: try? p.body.json)
+      case let .accepted(p): try await resolveAsync(pending: try? p.body.json)
+      default: throw GatewayError.invalidResponse
     }
-
-    guard let jwt = try? payload.body.json.jwt else {
-      throw GatewayError.undecodableResponseBody
-    }
-
-    return Data(jwt.utf8)
   }
 
   public func deleteKey(request: BFFRequest) async throws {
-    let input = Operations.DeleteKey.Input(
-      body: .json(.init(jwt: request.outerRequestJws, clientId: request.clientId))
-    )
-    let response = try await client.deleteKey(input)
-
-    guard case .noContent = response else {
-      throw GatewayError.invalidResponse
+    switch try await client.deleteKeyAsync(.init(body: .json(hsmBody(request)))) {
+      case let .ok(p): _ = try await resolveAsync(ok: try? p.body.json)
+      case let .accepted(p): _ = try await resolveAsync(pending: try? p.body.json)
+      default: throw GatewayError.invalidResponse
     }
+  }
+
+  // MARK: - Private
+
+  private func hsmBody(_ request: BFFRequest) -> Components.Schemas.HsmRequestDto {
+    .init(jwt: request.outerRequestJws, clientId: request.clientId, stateJws: request.stateJws)
+  }
+
+  private func resolveAsync(ok dto: Components.Schemas.AsyncHsmResponseDto?) async throws -> Data {
+    guard let dto else {
+      throw GatewayError.undecodableResponseBody
+    }
+
+    return try await extractResult(from: dto)
+  }
+
+  private func resolveAsync(
+    pending dto: Components.Schemas.AsyncHsmResponseDto?
+  ) async throws -> Data {
+    guard let dto else {
+      throw GatewayError.undecodableResponseBody
+    }
+
+    return try await pollUntilComplete(correlationId: dto.correlationId)
+  }
+
+  private func extractResult(from dto: Components.Schemas.AsyncHsmResponseDto) async throws -> Data
+  {
+    if let error = dto.error {
+      throw GatewayError.asyncOperationFailed(message: error.message)
+    }
+
+    if let stateJws = dto.stateJws {
+      do {
+        let response = try await client.addAccountSecurityEnvelope(
+          .init(body: .json(.init(_type: .sign, content: stateJws)))
+        )
+        
+        guard case .created = response else {
+          throw GatewayError.asyncOperationFailed(message: "Failed to add account security envelope")
+        }
+      } catch {
+        print(error)
+      }
+    }
+
+    guard let result = dto.result else {
+      throw GatewayError.undecodableResponseBody
+    }
+
+    return Data(result.utf8)
+  }
+
+  private func pollUntilComplete(correlationId: String) async throws -> Data {
+    let maxAttempts = 30
+    let pollInterval: Duration = .seconds(1)
+
+    for _ in 0 ..< maxAttempts {
+      try await Task.sleep(for: pollInterval)
+
+      let input = Operations.GetHsmRequest.Input(path: .init(correlationId: correlationId))
+      let response = try await client.getHsmRequest(input)
+
+      switch response {
+        case let .ok(payload):
+          guard let dto = try? payload.body.json else {
+            throw GatewayError.undecodableResponseBody
+          }
+
+          return try await extractResult(from: dto)
+        case .accepted:
+          continue
+        default:
+          throw GatewayError.invalidResponse
+      }
+    }
+
+    throw GatewayError.asyncOperationTimeout
   }
 }
