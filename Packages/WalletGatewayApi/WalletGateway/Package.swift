@@ -22,6 +22,7 @@ let package = Package(
     .package(url: "https://github.com/apple/swift-openapi-urlsession", from: "1.3.0"),
     .package(url: "https://github.com/apple/swift-openapi-generator", from: "1.12.0"),
     .package(name: "SwiftAccessMechanism", path: "../../SwiftAccessMechanism"),
+    .package(name: "WalletGatewayInterface", path: "./WalletGatewayInterface"),
   ],
   targets: [
     .target(
@@ -30,6 +31,7 @@ let package = Package(
         .product(name: "OpenAPIRuntime", package: "swift-openapi-runtime"),
         .product(name: "OpenAPIURLSession", package: "swift-openapi-urlsession"),
         .product(name: "SwiftAccessMechanism", package: "SwiftAccessMechanism"),
+        .product(name: "WalletGatewayInterface", package: "WalletGatewayInterface"),
       ],
       plugins: [
         .plugin(name: "OpenAPIGenerator", package: "swift-openapi-generator")

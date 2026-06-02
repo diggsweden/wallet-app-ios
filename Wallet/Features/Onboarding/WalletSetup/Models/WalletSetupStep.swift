@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import SwiftAccessMechanism
-import WalletGateway
+import WalletGatewayInterface
 
 enum WalletSetupStep: Equatable {
   case createAccount

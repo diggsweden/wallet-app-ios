@@ -46,8 +46,14 @@ extension GatewayApiClient: BFFTransport {
       throw GatewayError.undecodableResponseBody
     }
 
-    let jwkKey = responseBody.serverJwsPublicKey.map {
-      JwkKey(kty: $0.kty, crv: $0.crv, x: $0.x, y: $0.y, kid: $0.kid)
+    let jwkKey = responseBody.serverJwsPublicKey.map { jwk in
+      JwkKey(
+        kty: jwk.kty,
+        crv: jwk.crv,
+        x: jwk.x,
+        y: jwk.y,
+        kid: jwk.kid
+      )
     }
 
     return RegisterStateResponse(
@@ -141,9 +147,11 @@ extension GatewayApiClient: BFFTransport {
         let response = try await client.addAccountSecurityEnvelope(
           .init(body: .json(.init(_type: .sign, content: stateJws)))
         )
-        
+
         guard case .created = response else {
-          throw GatewayError.asyncOperationFailed(message: "Failed to add account security envelope")
+          throw GatewayError.asyncOperationFailed(
+            message: "Failed to add account security envelope"
+          )
         }
       } catch {
         print(error)
@@ -174,8 +182,10 @@ extension GatewayApiClient: BFFTransport {
           }
 
           return try await extractResult(from: dto)
+
         case .accepted:
           continue
+
         default:
           throw GatewayError.invalidResponse
       }

@@ -58,9 +58,13 @@ packages:
     url: https://github.com/SDWebImage/SDWebImageWebPCoder.git
     exactVersion: 0.15.0
   WalletMacros:
-    path: WalletMacros
+    path: Packages/WalletMacros
   WalletGateway:
-    path: WalletGateway
+    path: Packages/WalletGatewayApi/WalletGateway
+    group: Packages/WalletGatewayApi
+  WalletGatewayInterface:
+    path: Packages/WalletGatewayApi/WalletGatewayInterface
+    group: Packages/WalletGatewayApi
   SwiftAccessMechanism:
     path: ../SwiftAccessMechanism
 
@@ -98,6 +102,8 @@ targets:
         product: WalletMacros
       - package: WalletGateway
         product: WalletGateway
+      - package: WalletGatewayInterface
+        product: WalletGatewayInterface
       - package: SwiftAccessMechanism
         product: SwiftAccessMechanism
       - package: SDWebImageSwiftUI
