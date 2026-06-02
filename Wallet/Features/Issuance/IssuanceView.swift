@@ -4,7 +4,7 @@
 
 import SwiftAccessMechanism
 import SwiftUI
-import WalletGateway
+import WalletGatewayInterface
 
 struct IssuanceView: View {
   private let onSave: (SavedCredential) async -> Void

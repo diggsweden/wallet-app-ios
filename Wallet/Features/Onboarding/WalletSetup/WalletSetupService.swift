@@ -4,7 +4,7 @@
 
 import Foundation
 import SwiftAccessMechanism
-import WalletGateway
+import WalletGatewayInterface
 
 protocol WalletSetupService: Sendable {
   func createAccount() async throws

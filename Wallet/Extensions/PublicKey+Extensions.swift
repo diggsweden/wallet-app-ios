@@ -5,7 +5,7 @@
 import CryptoKit
 import Foundation
 import JSONWebKey
-import WalletGateway
+import WalletGatewayInterface
 
 extension P256.Signing.PublicKey {
   func toPublicKeyComponents() throws -> PublicKeyComponents {

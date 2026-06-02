@@ -5,7 +5,7 @@
 import SDWebImageSwiftUI
 import SwiftAccessMechanism
 import SwiftUI
-import WalletGateway
+import WalletGatewayInterface
 
 struct WalletSetupView: View {
   @State private var viewModel: WalletSetupViewModel

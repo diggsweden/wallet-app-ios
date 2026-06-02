@@ -4,6 +4,10 @@
 
 import SwiftUI
 
+protocol CheckBoxViewProtocol {
+  var isOn: Binding<Bool> { get }
+}
+
 struct Checkbox: View {
   @Binding var isOn: Bool
   @Environment(\.theme) private var theme

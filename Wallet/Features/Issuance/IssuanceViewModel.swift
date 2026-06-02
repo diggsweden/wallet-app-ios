@@ -7,7 +7,7 @@ import CryptoKit
 import Foundation
 import OpenID4VCI
 import SwiftAccessMechanism
-import WalletGateway
+import WalletGatewayInterface
 import WalletMacros
 import eudi_lib_sdjwt_swift
 
@@ -247,7 +247,7 @@ class IssuanceViewModel {
   }
 
   private func getHSMClient() async throws -> (client: BFFHttpClient, stateJws: String?) {
-    let stateJws = try await gatewayApiClient.getAccountSecurityEnvelopes().content
+    let stateJws = try await gatewayApiClient.getAccountSecurityEnvelopes()
 
     guard let config = HSMClientStore.load() else {
       throw IssuanceError.missingHSMConfig

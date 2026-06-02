@@ -5,16 +5,7 @@
 import Foundation
 import OpenAPIRuntime
 import OpenAPIURLSession
-
-public protocol GatewayApi: Sendable {
-  func createAccount(publicKey: PublicKeyComponents) async throws -> String
-
-  func addAccountWalletKey(key: PublicKeyComponents) async throws
-
-  func getWalletUnitAttestation(nonce: String?) async throws -> String
-
-  func getAccountSecurityEnvelopes() async throws -> SecurityEnvelope
-}
+import WalletGatewayInterface
 
 public struct GatewayApiClient: GatewayApi {
   let client: Client
@@ -66,7 +57,7 @@ public struct GatewayApiClient: GatewayApi {
     }
   }
 
-  public func getAccountSecurityEnvelopes() async throws -> SecurityEnvelope {
+  public func getAccountSecurityEnvelopes() async throws -> String {
     let response = try await client.getAccountSecurityEnvelopes()
 
     guard
@@ -76,7 +67,7 @@ public struct GatewayApiClient: GatewayApi {
       throw GatewayError.invalidResponse
     }
 
-    return SecurityEnvelope(content: item.content)
+    return item.content
   }
 
   public func getWalletUnitAttestation(nonce: String?) async throws -> String {

@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
-import SwiftUI
 import SwiftAccessMechanism
-import WalletGateway
+import SwiftUI
+import WalletGatewayInterface
 
 struct IssuanceViewWrapper: View {
   let credentialOfferUri: String

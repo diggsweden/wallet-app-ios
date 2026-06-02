@@ -8,5 +8,5 @@ public protocol AccountIdProvider: Sendable {
 
 public struct NilAccountIdProvider: AccountIdProvider {
   public init() {}
-  public func accountId() async -> String? { nil }
+  public func accountId() -> String? { nil }
 }
