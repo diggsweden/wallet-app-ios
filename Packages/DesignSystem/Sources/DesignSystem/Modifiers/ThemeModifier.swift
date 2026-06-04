@@ -21,5 +21,5 @@ struct ThemeModifier: ViewModifier {
 }
 
 extension View {
-  var themed: some View { modifier(ThemeModifier()) }
+  public var themed: some View { modifier(ThemeModifier()) }
 }

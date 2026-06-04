@@ -4,51 +4,51 @@
 
 import SwiftUI
 
-struct Theme {
-  struct Colors {
-    let background: Color
-    let backgroundDisabled: Color
-    let surface: Color
-    let onSurface: Color
-    let textPrimary: Color
-    let textPlaceholder: Color
-    let textInformation: Color
-    let linkPrimary: Color
-    let button: Color
-    let buttonSecondaryHover: Color
-    let primary: Color
-    let primaryAccent: Color
-    let onPrimary: Color
-    let primaryVariant: Color
-    let secondary: Color
-    let secondaryAccent: Color
-    let tertiary: Color
-    let error = Color.rgba(248, 229, 229)
-    let errorInverse: Color
-    let warning = Color.rgba(254, 247, 231)
-    let warningInverse = Color.rgba(244, 176, 19)
-    let success = Color.rgba(234, 245, 236)
-    let successInverse = Color.rgba(43, 155, 68)
-    let info = Color.rgba(232, 240, 249)
-    let infoInverse = Color.rgba(24, 108, 198)
-    let iconDisabled: Color
-    let stroke: Color
-    let strokeDisabled: Color
-    let textError: Color
-    let backgroundPage: Color
-    let layerAccent: Color
-    let borderInteractive: Color
-    let pidBackground: Color
+public struct Theme: Sendable {
+  public struct Colors: Sendable {
+    public let background: Color
+    public let backgroundDisabled: Color
+    public let surface: Color
+    public let onSurface: Color
+    public let textPrimary: Color
+    public let textPlaceholder: Color
+    public let textInformation: Color
+    public let linkPrimary: Color
+    public let button: Color
+    public let buttonSecondaryHover: Color
+    public let primary: Color
+    public let primaryAccent: Color
+    public let onPrimary: Color
+    public let primaryVariant: Color
+    public let secondary: Color
+    public let secondaryAccent: Color
+    public let tertiary: Color
+    public let error = Color.rgba(248, 229, 229)
+    public let errorInverse: Color
+    public let warning = Color.rgba(254, 247, 231)
+    public let warningInverse = Color.rgba(244, 176, 19)
+    public let success = Color.rgba(234, 245, 236)
+    public let successInverse = Color.rgba(43, 155, 68)
+    public let info = Color.rgba(232, 240, 249)
+    public let infoInverse = Color.rgba(24, 108, 198)
+    public let iconDisabled: Color
+    public let stroke: Color
+    public let strokeDisabled: Color
+    public let textError: Color
+    public let backgroundPage: Color
+    public let layerAccent: Color
+    public let borderInteractive: Color
+    public let pidBackground: Color
   }
 
-  let colors: Colors
-  let cornerRadius: CGFloat = 10
-  let spacing: CGFloat = 12
-  let horizontalPadding: CGFloat = 30
+  public let colors: Colors
+  public let cornerRadius: CGFloat = 10
+  public let spacing: CGFloat = 12
+  public let horizontalPadding: CGFloat = 30
 }
 
 extension Theme {
-  static let light: Theme = .init(
+  public static let light: Theme = .init(
     colors: .init(
       background: Color.white,
       backgroundDisabled: BrandColors.neutral.10,
@@ -79,7 +79,7 @@ extension Theme {
     ),
   )
 
-  static let dark: Theme = .init(
+  public static let dark: Theme = .init(
     colors: .init(
       background: Color.rgba(43, 42, 41),
       backgroundDisabled: BrandColors.neutral.50,

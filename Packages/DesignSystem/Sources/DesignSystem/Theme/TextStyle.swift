@@ -9,7 +9,7 @@ struct TextMetrics {
   let lineHeightFactor: CGFloat?
 }
 
-enum TextStyle {
+public enum TextStyle: Sendable {
   case h1,
     h2,
     h3,
