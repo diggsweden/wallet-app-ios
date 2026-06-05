@@ -32,14 +32,14 @@ class IssuanceViewModel {
   private let openId4VciUtil = OpenId4VciUtil()
   private var oauth = OauthCoordinator()
   private let jwtUtil = JwtUtil()
-  private let gatewayApiClient: GatewayApi & BFFTransport
+  private let gatewayApiClient: GatewayApi & HSMTransport
   var issuerDisplayData: IssuerDisplay?
   var phase: IssuancePhase = .fetchingIssuer
   var error: ErrorEvent?
 
   init(
     credentialOfferUri: String,
-    gatewayApiClient: any GatewayApi & BFFTransport,
+    gatewayApiClient: any GatewayApi & HSMTransport,
   ) {
     self.credentialOfferUri = credentialOfferUri
     self.gatewayApiClient = gatewayApiClient
