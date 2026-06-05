@@ -8,7 +8,7 @@ import WalletGatewayInterface
 
 struct IssuanceViewWrapper: View {
   let credentialOfferUri: String
-  let gatewayApiClient: any GatewayApi & BFFTransport
+  let gatewayApiClient: any GatewayApi & HSMTransport
   let onSave: (SavedCredential) async -> Void
 
   var body: some View {
