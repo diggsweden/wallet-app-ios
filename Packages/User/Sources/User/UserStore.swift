@@ -2,23 +2,24 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
+import CredentialInterfaces
 import Foundation
 import SwiftData
-import WalletGateway
+import WalletGatewayInterface
 
-enum UserStoreError: Error {
+public enum UserStoreError: Error {
   case notFound
   case persistence(Error)
   case invalidPidCredential
 }
 
 @ModelActor
-actor UserStore: AccountIdProvider {
-  func accountId() -> String? {
+public actor UserStore: AccountIdProvider {
+  public func accountId() -> String? {
     try? getOrCreate().accountId
   }
 
-  init() throws {
+  public init() throws {
     let modelContainer = try ModelContainer(
       for: User.self,
       migrationPlan: SwiftDataMigrationPlan.self,
@@ -27,36 +28,36 @@ actor UserStore: AccountIdProvider {
     self.init(modelContainer: modelContainer)
   }
 
-  func getOrCreate() throws -> UserSnapshot {
+  public func getOrCreate() throws -> UserSnapshot {
     let session = try getOrCreateModel()
     return snapshot(from: session)
   }
 
-  func addAccountId(_ accountId: String) throws -> UserSnapshot {
+  public func addAccountId(_ accountId: String) throws -> UserSnapshot {
     let session = try getOrCreateModel()
     session.accountId = accountId
     try save()
     return snapshot(from: session)
   }
 
-  func savePid(_ credential: SavedCredential) throws -> UserSnapshot {
+  public func savePid(_ credential: SavedCredential) throws -> UserSnapshot {
     guard credential.type == CredentialType.pid.rawValue else {
       throw UserStoreError.invalidPidCredential
     }
     let user = try getOrCreateModel()
-    user.pid = credential
+    user.pid = CurrentSchema.SavedCredential(credential)
     try save()
     return snapshot(from: user)
   }
 
-  func addCredential(_ credential: SavedCredential) throws -> UserSnapshot {
+  public func addCredential(_ credential: SavedCredential) throws -> UserSnapshot {
     let user = try getOrCreateModel()
-    user.credentials.append(credential)
+    user.credentials.append(CurrentSchema.SavedCredential(credential))
     try save()
     return snapshot(from: user)
   }
 
-  func deleteAll() throws {
+  public func deleteAll() throws {
     try modelContext.delete(model: User.self)
     try save()
   }
@@ -86,8 +87,8 @@ actor UserStore: AccountIdProvider {
   private func snapshot(from model: User) -> UserSnapshot {
     UserSnapshot(
       accountId: model.accountId,
-      credentials: model.credentials,
-      pid: model.pid
+      credentials: model.credentials.map { $0.toDomain() },
+      pid: model.pid?.toDomain()
     )
   }
 

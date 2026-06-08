@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
+import CredentialInterfaces
 import DesignSystem
 import SwiftAccessMechanism
 import SwiftUI

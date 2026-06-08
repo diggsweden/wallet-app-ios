@@ -5,6 +5,7 @@
 import Foundation
 import OpenAPIRuntime
 import OpenAPIURLSession
+import WalletGatewayInterface
 
 public final actor SessionManager {
   private var token: String?

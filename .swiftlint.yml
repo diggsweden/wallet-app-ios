@@ -13,6 +13,7 @@ excluded:
   - .build
   - DerivedData
   - WalletMacros/.build
+  - "Packages/**/.build"
 
 opt_in_rules:
   - identical_operands
