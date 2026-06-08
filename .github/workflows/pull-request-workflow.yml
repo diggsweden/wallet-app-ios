@@ -39,54 +39,37 @@ jobs:
     if: always()
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
       - uses: ./.github/actions/setup-env
         with:
           xcode-version: ${{ vars.XCODE_VERSION || '26.4' }}
 
-      - name: Generate Xcode project
-        run: xcodegen generate
-
-      - name: Run unit tests
+      - name: Check PR branch is up to date
+        shell: bash
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          set -o pipefail
-          rm -rf TestResults.xcresult
-          xcodebuild test \
-            -workspace Wallet.xcworkspace \
-            -scheme WalletTests \
-            -destination 'platform=iOS Simulator,name=iPhone 17' \
-            -resultBundlePath TestResults.xcresult \
-          | xcbeautify
+          git fetch origin "$BASE_REF" --depth=1
 
-      - name: Generate coverage report
-        if: always()
-        run: |
-          if [ ! -d TestResults.xcresult ]; then
-            echo "⚠️ No TestResults.xcresult - skipping coverage report ⚠️"
-            exit 0
+          BASE="origin/$BASE_REF"
+          HEAD="$HEAD_SHA"
+
+          if ! git merge-base --is-ancestor "$BASE" "$HEAD"; then
+            echo "::error:: This PR branch is stale. Rebase or merge $BASE_REF before running build and tests."
+            exit 1
           fi
 
-          xcrun xccov view --report TestResults.xcresult \
-            | grep -E '^[A-Za-z]|^    /' \
-          > coverage-files.txt
+      - name: Run Xcode tests
+        uses: ./.github/actions/xcode-test
 
-          xcrun xccov view --report --json TestResults.xcresult > coverage.json
-
-          {
-            echo "## 📊 Code Coverage"
-            echo ""
-            echo '```'
-            head -60 coverage-files.txt
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Upload coverage report
-        if: always() && hashFiles('coverage-files.txt') != ''
-        uses: actions/upload-artifact@v4
+      - name: Generate and upload coverage report
+        if: always()
+        uses: ./.github/actions/xcode-coverage-report
         with:
-          name: coverage-report
-          path: |
-            coverage-files.txt
-            coverage.json
+          xcresult-path: TestResults.xcresult
+          artifact-name: coverage-report
 
   # TODO: Enable when UI tests are implemented
   # ui-tests:
