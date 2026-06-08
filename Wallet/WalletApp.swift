@@ -6,6 +6,7 @@ import AuthenticationServices
 import DesignSystem
 import SwiftData
 import SwiftUI
+import User
 import WalletGateway
 
 @main
