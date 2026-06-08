@@ -67,6 +67,8 @@ packages:
     group: Packages/WalletGatewayApi
   SwiftAccessMechanism:
     path: ../SwiftAccessMechanism
+  DesignSystem:
+    path: Packages/DesignSystem
 
 targets:
   WalletDemo:
@@ -110,6 +112,8 @@ targets:
         product: SDWebImageSwiftUI
       - package: SDWebImageWebPCoder
         product: SDWebImageWebPCoder
+      - package: DesignSystem
+        product: DesignSystem
     preBuildScripts:
       - name: SwiftLint
         path: scripts/swiftlint.sh

@@ -17,7 +17,7 @@ struct TextStyleModifier: ViewModifier {
 }
 
 extension View {
-  func textStyle(_ textStyle: TextStyle) -> some View {
+  public func textStyle(_ textStyle: TextStyle) -> some View {
     modifier(TextStyleModifier(textStyle: textStyle))
   }
 }
