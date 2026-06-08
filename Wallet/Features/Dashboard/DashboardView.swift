@@ -63,7 +63,7 @@ struct DashboardView: View {
 
 #if DEBUG
   // swiftlint:disable async_without_await
-  private struct PreviewBFFTransport: BFFTransport {
+  private struct PreviewHSMTransport: HSMTransport {
     func registerState(
       publicKey: JwkKey,
       overwrite: Bool,
@@ -72,13 +72,7 @@ struct DashboardView: View {
       RegisterStateResponse(clientId: "", devAuthorizationCode: nil)
     }
 
-    func registerPin(request: BFFRequest) async throws -> Data { Data() }
-    func createSession(request: BFFRequest) async throws -> Data { Data() }
-    func createKey(request: BFFRequest) async throws -> Data { Data() }
-    func listKeys(request: BFFRequest) async throws -> Data { Data() }
-    func sign(request: BFFRequest) async throws -> Data { Data() }
-    func deleteKey(request: BFFRequest) async throws {}
-    func changePin(request: SwiftAccessMechanism.BFFRequest) async throws -> Data { Data() }
+    func perform(_ request: HSMRequest, operation: HSMOperation) async throws -> Data { Data() }
   }
   // swiftlint:enable async_without_await
 

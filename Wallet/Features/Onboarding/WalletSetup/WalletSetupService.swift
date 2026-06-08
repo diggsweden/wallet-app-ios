@@ -16,12 +16,12 @@ protocol WalletSetupService: Sendable {
 }
 
 actor BFFWalletSetupService: WalletSetupService {
-  private let gatewayApi: any GatewayApi & BFFTransport
+  private let gatewayApi: any GatewayApi & HSMTransport
   private let onAccountCreated: @Sendable (String) async throws -> Void
   private var bffClient: BFFHttpClient?
 
   init(
-    gatewayApi: any GatewayApi & BFFTransport,
+    gatewayApi: any GatewayApi & HSMTransport,
     onAccountCreated: @Sendable @escaping (String) async throws -> Void,
   ) {
     self.gatewayApi = gatewayApi
