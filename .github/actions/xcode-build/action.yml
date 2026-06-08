@@ -1,0 +1,26 @@
+# SPDX-FileCopyrightText: 2025 Digg - Agency for Digital Government
+#
+# SPDX-License-Identifier: CC0-1.0
+
+name: Xcode Build
+description: Restore Xcode cache, generate project, and build the Xcode project
+
+runs:
+  using: composite
+  steps:
+    - name: Restore Xcode cache
+      uses: ./.github/actions/xcode-cache-restore
+
+    - name: Generate Xcode project
+      shell: bash
+      run: xcodegen generate
+
+    - name: Build
+      shell: bash
+      run: |
+        set -o pipefail
+        xcodebuild build \
+          -workspace Wallet.xcworkspace \
+          -scheme Wallet \
+          -destination 'platform=iOS Simulator,name=iPhone 17' \
+        | xcbeautify
