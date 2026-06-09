@@ -22,9 +22,9 @@ jobs:
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
-
-      - name: Setup Environment
-        uses: ./.github/actions/setup-env
+      - uses: ./.github/actions/setup-env
+        with:
+          xcode-version: ${{ vars.XCODE_VERSION || '26.4' }}
 
       - name: Build Xcode
         uses: ./.github/actions/xcode-build
