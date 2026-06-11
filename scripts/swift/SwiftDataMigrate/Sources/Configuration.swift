@@ -7,10 +7,10 @@ import Foundation
 enum Config {
   static let repoRootMarker = "Wallet"
 
-  static let schemaDirectory = "Wallet/Core/Persistence/Schema"
-  static let migrationDirectory = "Wallet/Core/Persistence/Migration"
-  static let testsDirectory = "WalletTests/Persistence"
-  static let currentModelsFile = "Wallet/Core/Persistence/CurrentModels.swift"
+  static let schemaDirectory = "Packages/User/Sources/User/Schema"
+  static let migrationDirectory = "Packages/User/Sources/User/Migration"
+  static let testsDirectory = "Packages/User/Tests/UserTests"
+  static let currentModelsFile = "Packages/User/Sources/User/CurrentSchema.swift"
 
   static let migrationPlanFilename = "SwiftDataMigrationPlan.swift"
 
