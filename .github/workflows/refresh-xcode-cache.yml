@@ -31,4 +31,4 @@ jobs:
 
       - name: Refresh or save Xcode cache
         if: success()
-        uses: ./github/actions/xcode-cache-save
+        uses: ./.github/actions/xcode-cache-save

@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: CC0-1.0
 
 name: Xcode Build
-description: Restore Xcode cache, generate project, and build the Xcode project
+description: Restore Xcode cache, generate project, and build for testing to warm the cache
 
 runs:
   using: composite
@@ -19,8 +19,8 @@ runs:
       shell: bash
       run: |
         set -o pipefail
-        xcodebuild build \
+        xcodebuild build-for-testing \
           -workspace Wallet.xcworkspace \
-          -scheme Wallet \
+          -scheme WalletTests \
           -destination 'platform=iOS Simulator,name=iPhone 17' \
         | xcbeautify
