@@ -43,7 +43,7 @@ jobs:
     secrets: inherit
     with:
       reusable-ci-ref: d31c989acd139c3e8754e116496c826af8dbbca0
-      xcode-version: "26.2"
+      xcode-version: ${{ vars.XCODE_VERSION }}
       scheme: "Wallet Demo"
       workspace: "Wallet.xcworkspace"
       configuration: Release
