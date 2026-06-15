@@ -7,6 +7,7 @@ import SDWebImageWebPCoder
 import SwiftAccessMechanism
 import SwiftData
 import SwiftUI
+import User
 import WalletGateway
 
 struct AppRootView: View {

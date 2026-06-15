@@ -10,23 +10,25 @@ enum SwiftDataMigrationError: Error, CustomStringConvertible {
   case fileAlreadyExists(path: String)
   case prevVersionWasZero
   case invalidHeader(path: String)
-  case xcodegenFailed(exitCode: Int32)
   case fileMissing(path: String)
 
   var description: String {
     switch self {
       case let .repoRootNotFound(marker):
         "Could not find repo root (no `\(marker)/` directory found walking upward from cwd)."
+
       case let .directoryMissing(path):
         "Required directory does not exist: \(path)"
+
       case let .fileAlreadyExists(path):
         "File already exists, refusing to overwrite: \(path)"
+
       case .prevVersionWasZero:
         "No previous version exists, this should never happen, refusing to continue"
+
       case let .invalidHeader(path):
         "File does not start with the expected header: \(path)"
-      case let .xcodegenFailed(exitCode):
-        "xcodegen failed with exit code \(exitCode)"
+
       case let .fileMissing(path):
         "Required file does not exist: \(path)"
     }
