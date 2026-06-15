@@ -18,12 +18,6 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
-	<key>UIAppFonts</key>
-	<array>
-		<string>Ubuntu-Regular.ttf</string>
-		<string>Ubuntu-Bold.ttf</string>
-		<string>Ubuntu-Medium.ttf</string>
-	</array>
 	<key>API_KEY</key>
 	<string>$(API_KEY)</string>
 	<key>CFBundleURLTypes</key>

@@ -3,21 +3,26 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 // swift-tools-version: 6.3
-// The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
 
 let package = Package(
-  name: "WalletGatewayInterface",
+  name: "DesignSystem",
+  platforms: [
+    .iOS(.v17)
+  ],
   products: [
     .library(
-      name: "WalletGatewayInterface",
-      targets: ["WalletGatewayInterface"]
+      name: "DesignSystem",
+      targets: ["DesignSystem"]
     )
   ],
   targets: [
     .target(
-      name: "WalletGatewayInterface"
+      name: "DesignSystem",
+      resources: [
+        .process("Resources/Fonts")
+      ]
     )
   ],
   swiftLanguageModes: [.v6]
