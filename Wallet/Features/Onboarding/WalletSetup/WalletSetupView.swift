@@ -13,7 +13,7 @@ struct WalletSetupView: View {
 
   init(
     pin: String,
-    gatewayApi: GatewayApi & BFFTransport,
+    gatewayApi: GatewayApi & HSMTransport,
     onAccountCreated: @escaping @Sendable (String) async -> Void,
     onComplete: @escaping () -> Void,
   ) {

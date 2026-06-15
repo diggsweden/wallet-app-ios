@@ -17,7 +17,7 @@ struct IssuanceView: View {
 
   init(
     credentialOfferUri: String,
-    gatewayApiClient: any GatewayApi & BFFTransport,
+    gatewayApiClient: any GatewayApi & HSMTransport,
     onSave: @escaping (SavedCredential) async -> Void,
   ) {
     self.onSave = onSave
