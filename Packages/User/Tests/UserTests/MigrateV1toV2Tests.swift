@@ -2,11 +2,12 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
+import CredentialInterfaces
 import Foundation
 import SwiftData
 import Testing
 
-@testable import WalletDemo
+@testable import User
 
 @Suite("V1 to V2 migration")
 struct MigrateV1toV2Tests {

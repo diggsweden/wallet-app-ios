@@ -69,6 +69,10 @@ packages:
     path: ../SwiftAccessMechanism
   DesignSystem:
     path: Packages/DesignSystem
+  CredentialInterfaces:
+    path: Packages/CredentialInterfaces
+  User:
+    path: Packages/User
 
 targets:
   WalletDemo:
@@ -114,6 +118,10 @@ targets:
         product: SDWebImageWebPCoder
       - package: DesignSystem
         product: DesignSystem
+      - package: CredentialInterfaces
+        product: CredentialInterfaces
+      - package: User
+        product: User
     preBuildScripts:
       - name: SwiftLint
         path: scripts/swiftlint.sh

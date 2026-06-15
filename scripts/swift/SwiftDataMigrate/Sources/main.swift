@@ -27,7 +27,7 @@ struct NewCommand: ParsableCommand {
   var custom: Bool = false
 
   func validate() throws {
-    if lightweight && custom {
+    if lightweight, custom {
       throw ValidationError("Pass either --lightweight or --custom, not both.")
     }
   }
@@ -51,10 +51,7 @@ struct NewCommand: ParsableCommand {
     let prev = context.latestVersion
     let kindLabel = stageKind == .custom ? "custom" : "lightweight"
 
-    print("\u{1B}[1mSuccess ✅ Running xcodegen 🎶\u{1B}[0m")
-    print()
-
-    try scaffold.runXcodegen(at: context.repoRoot)
+    print("\u{1B}[1mSuccess ✅\u{1B}[0m")
 
     var output = """
 

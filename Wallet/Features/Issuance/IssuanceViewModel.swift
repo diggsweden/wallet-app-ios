@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import AuthenticationServices
+import CredentialInterfaces
 import CryptoKit
 import Foundation
 import OpenID4VCI
@@ -284,6 +285,7 @@ class IssuanceViewModel {
         compactSerialized: credential,
         claimDisplayNames: claimsMetadata,
         claimsCount: claims.count,
+        issuedAt: .now,
         type: credentialConfiguration.vct ?? "",
         displayData: CredentialDisplayData(name: displayName),
       ), claims,
