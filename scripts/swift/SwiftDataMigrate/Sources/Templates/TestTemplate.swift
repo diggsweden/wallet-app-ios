@@ -5,9 +5,12 @@
 enum TestTemplate {
   static func scaffold(prev: Int, next: Int) -> String {
     """
+    import CredentialInterfaces
     import Foundation
     import SwiftData
     import Testing
+
+    @testable import User
 
     @Suite("V\(prev) to V\(next) migration")
     struct MigrateV\(prev)toV\(next)Tests {
