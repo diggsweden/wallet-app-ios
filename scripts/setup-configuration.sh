@@ -13,6 +13,7 @@ for example in Configurations/*.example; do
   dest="${example%.example}"
   if [[ ! -f "$dest" ]]; then
     cp "$example" "$dest"
+    touch -r "$example" "$dest"
     printf "Created %s\n" "$(basename "$dest")"
   fi
 done
