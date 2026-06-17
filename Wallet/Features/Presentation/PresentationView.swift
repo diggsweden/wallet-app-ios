@@ -66,15 +66,18 @@ struct PresentationView: View {
           }
 
       case .error:
-        PresentationErrorView(
-          onRetry: {
-            Task {
-              await viewModel.resolveAndMatchClaims()
-            }
-          },
-          onDismiss: {
-            router.pop()
-          }
+        ErrorView(
+          model: .init(
+            primaryButton: .init(
+              label: "Försök igen",
+              accessibilityHint: "Använd knappen för att försöka igen",
+              action: {
+                Task {
+                  await viewModel.resolveAndMatchClaims()
+                }
+              }
+            )
+          )
         )
 
       case .ready:
