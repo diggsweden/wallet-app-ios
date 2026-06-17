@@ -60,7 +60,6 @@ opt_in_rules:
   - accessibility_trait_for_button
   - private_subject
   - discouraged_optional_boolean
-  - function_default_parameter_at_end
   - convenience_type
   - multiline_function_chains
   - modifier_order
@@ -85,6 +84,7 @@ disabled_rules:
   - trailing_comma
   - opening_brace
   - closure_parameter_position
+  - todo
 
 # Line length is kept consistent with swift-format's lineLength setting.
 line_length:
