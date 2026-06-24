@@ -9,7 +9,7 @@ import SwiftUI
 import WalletGatewayInterface
 
 struct IssuanceView: View {
-  private let onSave: (SavedCredential) async -> Void
+  private let onSaveCredential: (SavedCredential) async throws -> Void
   @State private var viewModel: IssuanceViewModel
   @Environment(\.theme) private var theme
   @Environment(\.authPresentationAnchor) private var anchor
@@ -18,9 +18,9 @@ struct IssuanceView: View {
   init(
     credentialOfferUri: String,
     gatewayApiClient: any GatewayApi & HSMTransport,
-    onSave: @escaping (SavedCredential) async -> Void,
+    onSaveCredential: @escaping (SavedCredential) async throws -> Void,
   ) {
-    self.onSave = onSave
+    self.onSaveCredential = onSaveCredential
     _viewModel = State(
       wrappedValue: .init(
         credentialOfferUri: credentialOfferUri,
@@ -87,7 +87,8 @@ struct IssuanceView: View {
 
       case .done(let savedCredential, _):
         PrimaryButton("Godkänn", icon: "checkmark.circle") {
-          Task { await onSave(savedCredential) }
+          // TODO: [DM] Handle error in VM
+          Task { try? await onSaveCredential(savedCredential) }
         }
 
       case .readyToSign:

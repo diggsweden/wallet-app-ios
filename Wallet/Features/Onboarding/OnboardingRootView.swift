@@ -22,17 +22,15 @@ struct OnboardingRootView: View {
   init(
     gatewayApiClient: GatewayApiClient,
     userSnapshot: UserSnapshot,
-    savePidCredential: @escaping (SavedCredential) async -> Void,
-    signIn: @escaping (String) async -> Void,
-    onReset: @escaping () async -> Void,
+    actions: OnboardingActions
   ) {
     self.gatewayApiClient = gatewayApiClient
     self.userSnapshot = userSnapshot
     _viewModel = State(
       wrappedValue: .init(
-        savePidCredential: savePidCredential,
-        signIn: signIn,
-        onReset: onReset,
+        savePidCredential: actions.savePidCredential,
+        signIn: actions.signIn,
+        onReset: actions.resetSession,
       )
     )
   }
@@ -152,7 +150,7 @@ struct OnboardingRootView: View {
           pin: viewModel.context.pin,
           gatewayApi: gatewayApiClient,
           onAccountCreated: { accountId in
-            await viewModel.signIn(accountId: accountId)
+            try await viewModel.signIn(accountId: accountId)
           },
           onComplete: {
             viewModel.next(from: .walletSetup)

@@ -4,7 +4,7 @@
 
 import CredentialInterfaces
 
-public struct UserSnapshot: Sendable {
+public struct UserSnapshot: Equatable, Sendable {
   public let accountId: String?
   public let credentials: [SavedCredential]
   public let pid: SavedCredential?

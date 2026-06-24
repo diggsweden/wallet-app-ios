@@ -129,14 +129,14 @@ private extension ErrorView {
   .themed
 }
 
-struct ErrorViewModel {
+struct ErrorViewModel: Sendable {
   let imageReference: String
   let title: String
   let subtitle: String
   let primaryButton: ButtonModel
   let secondaryButton: ButtonModel?
   let linkButton: ButtonModel?
-  let onDismiss: (() -> Void)?
+  let onDismiss: (@Sendable () -> Void)?
 
   init(
     imageReference: String = "phoneError",
@@ -145,7 +145,7 @@ struct ErrorViewModel {
     primaryButton: ButtonModel,
     secondaryButton: ButtonModel? = nil,
     linkButton: ButtonModel? = nil,
-    onDismiss: (() -> Void)? = nil
+    onDismiss: (@Sendable () -> Void)? = nil
   ) {
     self.imageReference = imageReference
     self.title = title
@@ -156,10 +156,10 @@ struct ErrorViewModel {
     self.onDismiss = onDismiss
   }
 
-  struct ButtonModel {
+  struct ButtonModel: Sendable {
     let label: String
     let accessibilityHint: String
-    let action: () -> Void
+    let action: @Sendable () -> Void
   }
 
   fileprivate static var defaultPreview: Self {
@@ -178,6 +178,64 @@ struct ErrorViewModel {
         action: {}
       ),
       onDismiss: {}
+    )
+  }
+}
+
+extension ErrorViewModel.ButtonModel {
+  init(
+    label: String,
+    accessibilityHint: String,
+    asyncAction: (@Sendable () async -> Void)?
+  ) {
+    self.init(
+      label: label,
+      accessibilityHint: accessibilityHint,
+      action: {
+        Task {
+          await asyncAction?()
+        }
+      }
+    )
+  }
+
+  init(
+    label: String,
+    accessibilityHint: String,
+    asyncThrowingAction: (@Sendable () async throws -> Void)?,
+    onError: @escaping @Sendable () -> Void
+  ) {
+    self.init(
+      label: label,
+      accessibilityHint: accessibilityHint,
+      action: {
+        Task {
+          do {
+            try await asyncThrowingAction?()
+          } catch {
+            onError()
+          }
+        }
+      }
+    )
+  }
+
+  init(
+    label: String,
+    accessibilityHint: String,
+    throwingAction: (@Sendable () throws -> Void)?,
+    onError: @escaping @Sendable (Error) -> Void
+  ) {
+    self.init(
+      label: label,
+      accessibilityHint: accessibilityHint,
+      action: {
+        do {
+          try throwingAction?()
+        } catch {
+          onError(error)
+        }
+      }
     )
   }
 }

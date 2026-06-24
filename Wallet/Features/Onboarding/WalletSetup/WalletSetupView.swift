@@ -14,7 +14,7 @@ struct WalletSetupView: View {
   init(
     pin: String,
     gatewayApi: GatewayApi & HSMTransport,
-    onAccountCreated: @escaping @Sendable (String) async -> Void,
+    onAccountCreated: @escaping @Sendable (String) async throws -> Void,
     onComplete: @escaping () -> Void,
   ) {
     _viewModel = State(
