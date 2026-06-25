@@ -18,6 +18,7 @@ struct OnboardingRootView: View {
   @Environment(\.orientation) private var orientation
   @Environment(\.openURL) private var openURL
   @State private var viewModel: OnboardingViewModel
+  @State private var isResetErrorAlertPresented = false
 
   init(
     gatewayApiClient: GatewayApiClient,
@@ -55,6 +56,10 @@ struct OnboardingRootView: View {
     }
     .backGesture(isEnabled: viewModel.canGoBack()) {
       viewModel.back()
+    }
+    .alert("Kunde inte avbryta registreringen", isPresented: $isResetErrorAlertPresented) {
+      Button("Försök igen") { resetOnboarding() }
+      Button("Stäng", role: .cancel) {}
     }
   }
 
@@ -169,7 +174,7 @@ struct OnboardingRootView: View {
             credentialOfferUri: uri,
             gatewayApiClient: gatewayApiClient,
           ) { credential in
-            await viewModel.setCredentialOfferURI(credential)
+            try await viewModel.savePidCredential(credential)
           }
         } else {
           PidSetupView { credentialOfferUri in
@@ -195,15 +200,17 @@ struct OnboardingRootView: View {
     if viewModel.step != .intro {
       ToolbarItem(placement: .destructiveAction) {
         Button {
-          Task {
-            await viewModel.reset()
-          }
+          resetOnboarding()
         } label: {
           Image(systemName: "xmark")
             .accessibilityLabel("Stäng")
         }
       }
     }
+  }
+
+  private func resetOnboarding() {
+    Task { await viewModel.reset() }
   }
 }
 

@@ -9,7 +9,6 @@ import SwiftUI
 import WalletGatewayInterface
 
 struct IssuanceView: View {
-  private let onSaveCredential: (SavedCredential) async throws -> Void
   @State private var viewModel: IssuanceViewModel
   @Environment(\.theme) private var theme
   @Environment(\.authPresentationAnchor) private var anchor
@@ -20,24 +19,27 @@ struct IssuanceView: View {
     gatewayApiClient: any GatewayApi & HSMTransport,
     onSaveCredential: @escaping (SavedCredential) async throws -> Void,
   ) {
-    self.onSaveCredential = onSaveCredential
     _viewModel = State(
       wrappedValue: .init(
         credentialOfferUri: credentialOfferUri,
         gatewayApiClient: gatewayApiClient,
-      )
+        onSaveCredential: onSaveCredential
+      ),
     )
   }
 
   var body: some View {
-    Group {
+    ZStack {
       if case .readyToSign = viewModel.phase {
         ConfirmPinView { pin in
           Task { await viewModel.createProof(with: pin) }
         }
+        .transition(.opacity)
       } else {
         VStack(spacing: 30) {
-          if let display = viewModel.issuerDisplayData {
+          if let display = viewModel.issuerDisplayData,
+            !viewModel.phase.isError
+          {
             IssuerDisplayView(issuerDisplayData: display)
           }
 
@@ -45,24 +47,26 @@ struct IssuanceView: View {
             CredentialView(claims: displayClaims)
           }
 
+          if case .error = viewModel.phase {
+            errorPhaseView
+          }
+
           Spacer()
 
           button
         }
+        .transition(.opacity)
       }
     }
+    .animation(.easeInOut(duration: 0.2), value: viewModel.phase.animationKey)
     .task {
       await viewModel.start()
     }
-    .onChange(of: viewModel.error) { _, error in
-      guard let error else {
-        return
-      }
-
-      toastViewModel.showError(error.message)
-    }
   }
+}
 
+// MARK: - Child Views
+private extension IssuanceView {
   @ViewBuilder
   private var button: some View {
     switch viewModel.phase {
@@ -72,10 +76,7 @@ struct IssuanceView: View {
       case .readyToAuthorize:
         PrimaryButton("Logga in", icon: "arrow.right.circle.fill") {
           Task {
-            guard let anchor else {
-              return
-            }
-
+            guard let anchor else { return }
             await viewModel.beginAuthorization(anchor: anchor)
           }
         }
@@ -87,13 +88,28 @@ struct IssuanceView: View {
 
       case .done(let savedCredential, _):
         PrimaryButton("Godkänn", icon: "checkmark.circle") {
-          // TODO: [DM] Handle error in VM
-          Task { try? await onSaveCredential(savedCredential) }
+          Task { await viewModel.saveCredential(savedCredential) }
         }
 
-      case .readyToSign:
+      case .readyToSign, .error:
         EmptyView()
     }
+  }
+
+  private var errorPhaseView: some View {
+    ErrorView(
+      model: .init(
+        primaryButton: .init(
+          label: "Försök igen",
+          accessibilityHint: "Använd knapen för att försöka igen",
+          action: {
+            Task { @MainActor in
+              viewModel.retry(anchor: anchor)
+            }
+          }
+        )
+      )
+    )
   }
 }
 

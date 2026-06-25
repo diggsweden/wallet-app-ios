@@ -12,38 +12,33 @@ import WalletGatewayInterface
 import WalletMacros
 import eudi_lib_sdjwt_swift
 
-enum IssuancePhase {
-  case fetchingIssuer
-  case readyToAuthorize(CredentialOffer)
-  case authorizing
-  case readyToSign(AuthorizedRequest)
-  case readyToFetch(AuthorizedRequest, proof: String)
-  case fetchingCredential
-  case done(SavedCredential, [ClaimUiModel])
-}
-
 @MainActor
 @Observable
 // swiftlint:disable:next type_body_length
 class IssuanceViewModel {
   private let credentialOfferUri: String
-  private(set) var claimsMetadata: [String: String] = [:]
-  private var issuer: Issuer?
-  private var credentialOffer: CredentialOffer?
-  private let openId4VciUtil = OpenId4VciUtil()
-  private var oauth = OauthCoordinator()
-  private let jwtUtil = JwtUtil()
   private let gatewayApiClient: GatewayApi & HSMTransport
-  var issuerDisplayData: IssuerDisplay?
-  var phase: IssuancePhase = .fetchingIssuer
-  var error: ErrorEvent?
+  private let jwtUtil = JwtUtil()
+  private let openId4VciUtil = OpenId4VciUtil()
+  private let onSaveCredential: (SavedCredential) async throws -> Void
+
+  private(set) var claimsMetadata: [String: String] = [:]
+  private(set) var error: ErrorEvent?
+  private(set) var issuerDisplayData: IssuerDisplay?
+  private(set) var phase: IssuancePhase = .fetchingIssuer
+
+  private var credentialOffer: CredentialOffer?
+  private var issuer: Issuer?
+  private var oauth = OauthCoordinator()
 
   init(
     credentialOfferUri: String,
     gatewayApiClient: any GatewayApi & HSMTransport,
+    onSaveCredential: @escaping (SavedCredential) async throws -> Void
   ) {
     self.credentialOfferUri = credentialOfferUri
     self.gatewayApiClient = gatewayApiClient
+    self.onSaveCredential = onSaveCredential
   }
 
   func start() async {
@@ -55,7 +50,7 @@ class IssuanceViewModel {
       issuer = try await createIssuer(from: credentialOffer)
       phase = .readyToAuthorize(credentialOffer)
     } catch {
-      self.error = error.toErrorEvent()
+      phase = .error(.start)
     }
   }
 
@@ -107,10 +102,7 @@ class IssuanceViewModel {
 
       phase = .readyToSign(authResponse)
     } catch {
-      self.error = error.toErrorEvent()
-      if let credentialOffer {
-        phase = .readyToAuthorize(credentialOffer)
-      }
+      phase = .error(.authorize(offer))
     }
   }
 
@@ -151,7 +143,7 @@ class IssuanceViewModel {
       phase = .readyToFetch(authRequest, proof: proof)
       await fetchCredential()
     } catch {
-      self.error = error.toErrorEvent()
+      phase = .error(.enterPin(authRequest))
     }
   }
 
@@ -195,8 +187,7 @@ class IssuanceViewModel {
 
       phase = .done(parsedCredential, credentialUiModels)
     } catch {
-      self.error = error.toErrorEvent()
-      phase = .readyToFetch(authRequest, proof: proof)
+      phase = .error(.fetchCredential(authRequest, proof: proof))
     }
   }
 
@@ -344,5 +335,41 @@ class IssuanceViewModel {
 
         result[claimPath] = displayName
       }
+  }
+
+  func saveCredential(_ credential: SavedCredential) async {
+    do {
+      try await onSaveCredential(credential)
+    } catch {
+      phase = .error(.saveCredential(credential))
+    }
+  }
+
+  func retry(anchor: ASPresentationAnchor?) {
+    guard case .error(let recovery) = phase else {
+      return
+    }
+
+    Task {
+      switch recovery {
+        case .start:
+          await start()
+
+        case .authorize(let offer):
+          guard let anchor else { return }
+          phase = .readyToAuthorize(offer)
+          await beginAuthorization(anchor: anchor)
+
+        case .enterPin(let authRequest):
+          phase = .readyToSign(authRequest)
+
+        case .fetchCredential(let authRequest, let proof):
+          phase = .readyToFetch(authRequest, proof: proof)
+          await fetchCredential()
+
+        case .saveCredential(let credential):
+          await saveCredential(credential)
+      }
+    }
   }
 }

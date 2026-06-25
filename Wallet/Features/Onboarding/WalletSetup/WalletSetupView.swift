@@ -40,6 +40,7 @@ struct WalletSetupView: View {
             .staticAnimation(setTo: nil)
 
         case .failed(_, let error):
+          // TODO: [DM] Swap with new Error view
           WalletErrorView(
             title: "Något gick fel!",
             message: error.localizedDescription,

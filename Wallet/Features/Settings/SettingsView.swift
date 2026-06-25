@@ -43,9 +43,7 @@ private extension SettingsView {
     Task {
       let didLogout = await settingsViewModel.logout()
 
-      if didLogout {
-        router.reset()
-      }
+      if didLogout { router.reset() }
     }
   }
 }
