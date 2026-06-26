@@ -9,22 +9,29 @@ import WalletMacros
 @MainActor
 @Observable
 final class PidSetupViewModel {
-  private let onSubmit: (String) throws -> Void
+  private let onSubmit: (String) -> Void
   private let oAuthCoordinator = OauthCoordinator()
 
-  init(onSubmit: @escaping (String) throws -> Void) {
+  private(set) var hasError = false
+
+  init(onSubmit: @escaping (String) -> Void) {
     self.onSubmit = onSubmit
   }
 
-  func fetchPid(_ authAnchor: ASPresentationAnchor?) async throws {
-    let credentialOffer =
-      if let offer = await generateCredentialOffer() {
-        offer
-      } else {
-        try await generateOfferInBrowser(authAnchor)
-      }
+  func fetchPid(_ authAnchor: ASPresentationAnchor?) async {
+    hasError = false
+    do {
+      let credentialOffer =
+        if let offer = await generateCredentialOffer() {
+          offer
+        } else {
+          try await generateOfferInBrowser(authAnchor)
+        }
 
-    try onSubmit(credentialOffer)
+      onSubmit(credentialOffer)
+    } catch {
+      hasError = !error.isWebAuthCancellation
+    }
   }
 
   private func generateOfferInBrowser(_ authAnchor: ASPresentationAnchor?) async throws -> String {
