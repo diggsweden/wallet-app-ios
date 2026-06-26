@@ -23,13 +23,16 @@ class IssuanceViewModel {
   private let onSaveCredential: (SavedCredential) async throws -> Void
 
   private(set) var claimsMetadata: [String: String] = [:]
-  private(set) var error: ErrorEvent?
   private(set) var issuerDisplayData: IssuerDisplay?
   private(set) var phase: IssuancePhase = .fetchingIssuer
+  private(set) var pinAttempt = 0
 
   private var credentialOffer: CredentialOffer?
   private var issuer: Issuer?
   private var oauth = OauthCoordinator()
+
+  var pinError = false
+  var saveError = false
 
   init(
     credentialOfferUri: String,
@@ -143,7 +146,9 @@ class IssuanceViewModel {
       phase = .readyToFetch(authRequest, proof: proof)
       await fetchCredential()
     } catch {
-      phase = .error(.enterPin(authRequest))
+      isFirstTimeError = false
+      pinError = true
+      pinAttempt += 1
     }
   }
 
@@ -341,8 +346,16 @@ class IssuanceViewModel {
     do {
       try await onSaveCredential(credential)
     } catch {
-      phase = .error(.saveCredential(credential))
+      saveError = true
     }
+  }
+
+  func retrySave() async {
+    guard case .done(let credential, _) = phase else {
+      return
+    }
+
+    await saveCredential(credential)
   }
 
   func retry(anchor: ASPresentationAnchor?) {
@@ -360,15 +373,9 @@ class IssuanceViewModel {
           phase = .readyToAuthorize(offer)
           await beginAuthorization(anchor: anchor)
 
-        case .enterPin(let authRequest):
-          phase = .readyToSign(authRequest)
-
         case .fetchCredential(let authRequest, let proof):
           phase = .readyToFetch(authRequest, proof: proof)
           await fetchCredential()
-
-        case .saveCredential(let credential):
-          await saveCredential(credential)
       }
     }
   }

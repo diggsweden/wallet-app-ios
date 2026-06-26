@@ -35,6 +35,9 @@ struct IssuanceView: View {
           Task { await viewModel.createProof(with: pin) }
         }
         .transition(.opacity)
+        // Remount to clear the entered digits after a failed attempt: the alert
+        // keeps the PIN screen mounted, so PinView's state would otherwise persist.
+        .id(viewModel.pinAttempt)
       } else {
         VStack(spacing: 30) {
           if let display = viewModel.issuerDisplayData,
@@ -61,6 +64,15 @@ struct IssuanceView: View {
     .animation(.easeInOut(duration: 0.2), value: viewModel.phase.animationKey)
     .task {
       await viewModel.start()
+    }
+    .alert("Kunde inte verifiera pinkoden", isPresented: $viewModel.pinError) {
+      Button("Försök igen") {}
+    }
+    .alert("Kunde inte spara attributsintyget", isPresented: $viewModel.saveError) {
+      Button("Försök igen") {
+        Task { await viewModel.retrySave() }
+      }
+      Button("Avbryt", role: .cancel) {}
     }
   }
 }
