@@ -20,7 +20,7 @@ final class OnboardingViewModel {
   private(set) var step: OnboardingStep = .intro
   private(set) var stepTransition: StepTransition = .start
 
-  var hadReseterror: Bool = false
+  private var hadResetError: Bool = false
 
   init(
     savePidCredential: @escaping (SavedCredential) async throws -> Void,
@@ -96,7 +96,7 @@ final class OnboardingViewModel {
   }
 
   func reset() async {
-    hadReseterror = false
+    hadResetError = false
 
     do {
       try await resetSessionAction()
@@ -104,7 +104,7 @@ final class OnboardingViewModel {
       stepTransition = .start
       step = .intro
     } catch {
-      hadReseterror = true
+      hadResetError = true
     }
   }
 }
