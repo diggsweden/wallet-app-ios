@@ -7,15 +7,27 @@ import SwiftUI
 import WalletMacros
 
 struct PidSetupView: View {
-  private var viewModel: PidSetupViewModel
-  @Environment(ToastViewModel.self) private var toastViewModel
+  @State private var viewModel: PidSetupViewModel
   @Environment(\.authPresentationAnchor) private var anchor
 
-  init(onSubmit: @escaping (String) throws -> Void) {
-    viewModel = PidSetupViewModel(onSubmit: onSubmit)
+  init(onSubmit: @escaping (String) -> Void) {
+    _viewModel = State(wrappedValue: PidSetupViewModel(onSubmit: onSubmit))
   }
 
   var body: some View {
+    ZStack {
+      if viewModel.hasError {
+        errorView
+          .transition(.opacity)
+      } else {
+        content
+          .transition(.opacity)
+      }
+    }
+    .animation(.default, value: viewModel.hasError)
+  }
+
+  private var content: some View {
     VStack(spacing: 0) {
       Image(.penPaper)
         .resizable()
@@ -42,20 +54,28 @@ struct PidSetupView: View {
     }
   }
 
+  private var errorView: some View {
+    ErrorView(
+      model: .init(
+        primaryButton: .init(
+          label: "Försök igen",
+          accessibilityHint: "Använd knappen för att försöka igen",
+          action: {
+            Task { await viewModel.fetchPid(anchor) }
+          }
+        )
+      )
+    )
+  }
+
   @ViewBuilder
   private var button: some View {
     PrimaryButton("Hämta personuppgifter", icon: "arrow.up.forward.app") {
-      Task {
-        do {
-          try await viewModel.fetchPid(anchor)
-        } catch {
-          toastViewModel.showError("Något gick fel, försök igen!")
-        }
-      }
+      Task { await viewModel.fetchPid(anchor) }
     }
   }
 }
 
 #Preview {
-  PidSetupView { _ in }.themed.withToast
+  PidSetupView { _ in }.themed
 }

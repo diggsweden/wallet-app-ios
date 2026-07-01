@@ -46,7 +46,7 @@ actor BFFWalletSetupService: WalletSetupService {
       ttl: "PT1H",
     )
     bffClient = client
-    try HSMClientStore.save(
+    try await HSMClientStore.save(
       HSMClientStore.Config(
         clientId: client.clientId,
         serverParameters: client.serverParameters,

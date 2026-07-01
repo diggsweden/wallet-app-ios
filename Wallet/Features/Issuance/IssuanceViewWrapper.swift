@@ -10,7 +10,7 @@ import WalletGatewayInterface
 struct IssuanceViewWrapper: View {
   let credentialOfferUri: String
   let gatewayApiClient: any GatewayApi & HSMTransport
-  let onSave: (SavedCredential) async -> Void
+  let onSave: (SavedCredential) async throws -> Void
 
   var body: some View {
     GeometryReader { proxy in
@@ -18,7 +18,7 @@ struct IssuanceViewWrapper: View {
         IssuanceView(
           credentialOfferUri: credentialOfferUri,
           gatewayApiClient: gatewayApiClient,
-          onSave: onSave
+          onSaveCredential: onSave
         )
         .frame(
           maxWidth: .infinity,

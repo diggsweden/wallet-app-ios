@@ -6,8 +6,14 @@ import DesignSystem
 import SwiftUI
 
 struct SettingsView: View {
-  let onLogout: () async -> Void
   @Environment(Router.self) private var router
+  @State private var settingsViewModel: SettingsViewModel
+
+  init(onLogout: @escaping () async throws -> Void) {
+    self._settingsViewModel = State(
+      wrappedValue: SettingsViewModel(onLogout: onLogout)
+    )
+  }
 
   var body: some View {
     VStack(spacing: 24) {
@@ -22,15 +28,27 @@ struct SettingsView: View {
         .textStyle(.bodyLarge)
       Spacer()
       PrimaryButton("Logga ut") {
-        Task {
-          await onLogout()
-          router.reset()
-        }
+        onLogoutTap()
       }
+    }
+    .alert("Kunde inte logga ut", isPresented: $settingsViewModel.hadLogoutError) {
+      Button("Försök igen") { onLogoutTap() }
+      Button("Avbryt", role: .cancel) {}
+    }
+  }
+}
+
+private extension SettingsView {
+  func onLogoutTap() {
+    Task {
+      let didLogout = await settingsViewModel.logout()
+
+      if didLogout { router.reset() }
     }
   }
 }
 
 #Preview {
   SettingsView {}
+    .environment(Router())
 }

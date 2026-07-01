@@ -18,21 +18,20 @@ struct OnboardingRootView: View {
   @Environment(\.orientation) private var orientation
   @Environment(\.openURL) private var openURL
   @State private var viewModel: OnboardingViewModel
+  @State private var isResetErrorAlertPresented = false
 
   init(
     gatewayApiClient: GatewayApiClient,
     userSnapshot: UserSnapshot,
-    savePidCredential: @escaping (SavedCredential) async -> Void,
-    signIn: @escaping (String) async -> Void,
-    onReset: @escaping () async -> Void,
+    actions: OnboardingActions
   ) {
     self.gatewayApiClient = gatewayApiClient
     self.userSnapshot = userSnapshot
     _viewModel = State(
       wrappedValue: .init(
-        savePidCredential: savePidCredential,
-        signIn: signIn,
-        onReset: onReset,
+        savePidCredential: actions.savePidCredential,
+        signIn: actions.signIn,
+        onReset: actions.resetSession,
       )
     )
   }
@@ -57,6 +56,10 @@ struct OnboardingRootView: View {
     }
     .backGesture(isEnabled: viewModel.canGoBack()) {
       viewModel.back()
+    }
+    .alert("Kunde inte avbryta registreringen", isPresented: $isResetErrorAlertPresented) {
+      Button("Försök igen") { resetOnboarding() }
+      Button("Stäng", role: .cancel) {}
     }
   }
 
@@ -152,7 +155,7 @@ struct OnboardingRootView: View {
           pin: viewModel.context.pin,
           gatewayApi: gatewayApiClient,
           onAccountCreated: { accountId in
-            await viewModel.signIn(accountId: accountId)
+            try await viewModel.signIn(accountId: accountId)
           },
           onComplete: {
             viewModel.next(from: .walletSetup)
@@ -171,7 +174,7 @@ struct OnboardingRootView: View {
             credentialOfferUri: uri,
             gatewayApiClient: gatewayApiClient,
           ) { credential in
-            await viewModel.setCredentialOfferURI(credential)
+            try await viewModel.savePidCredential(credential)
           }
         } else {
           PidSetupView { credentialOfferUri in
@@ -197,15 +200,17 @@ struct OnboardingRootView: View {
     if viewModel.step != .intro {
       ToolbarItem(placement: .destructiveAction) {
         Button {
-          Task {
-            await viewModel.reset()
-          }
+          resetOnboarding()
         } label: {
           Image(systemName: "xmark")
             .accessibilityLabel("Stäng")
         }
       }
     }
+  }
+
+  private func resetOnboarding() {
+    Task { await viewModel.reset() }
   }
 }
 

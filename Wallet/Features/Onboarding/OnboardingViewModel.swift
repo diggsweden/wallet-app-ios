@@ -12,22 +12,24 @@ final class OnboardingViewModel {
     case start, forward, back
   }
 
-  private let savePidCredential: (SavedCredential) async -> Void
-  private let signIn: (String) async -> Void
-  private let onReset: () async -> Void
+  private let savePidCredentialAction: (SavedCredential) async throws -> Void
+  private let signInAction: (String) async throws -> Void
+  private let resetSessionAction: () async throws -> Void
 
   private(set) var context = OnboardingContext()
   private(set) var step: OnboardingStep = .intro
   private(set) var stepTransition: StepTransition = .start
 
+  private var hadResetError: Bool = false
+
   init(
-    savePidCredential: @escaping (SavedCredential) async -> Void,
-    signIn: @escaping (String) async -> Void,
-    onReset: @escaping () async -> Void
+    savePidCredential: @escaping (SavedCredential) async throws -> Void,
+    signIn: @escaping (String) async throws -> Void,
+    onReset: @escaping () async throws -> Void
   ) {
-    self.savePidCredential = savePidCredential
-    self.signIn = signIn
-    self.onReset = onReset
+    self.savePidCredentialAction = savePidCredential
+    self.signInAction = signIn
+    self.resetSessionAction = onReset
   }
 
   var currentStepNumber: Int? {
@@ -53,12 +55,12 @@ final class OnboardingViewModel {
     context.pin = pin
   }
 
-  func signIn(accountId: String) async {
-    await signIn(accountId)
+  func signIn(accountId: String) async throws {
+    try await signInAction(accountId)
   }
 
-  func setCredentialOfferURI(_ credential: SavedCredential) async {
-    await savePidCredential(credential)
+  func savePidCredential(_ credential: SavedCredential) async throws {
+    try await savePidCredentialAction(credential)
   }
 
   func confirmPin(_ pin: String) throws {
@@ -94,9 +96,15 @@ final class OnboardingViewModel {
   }
 
   func reset() async {
-    await onReset()
-    context = OnboardingContext()
-    stepTransition = .start
-    step = .intro
+    hadResetError = false
+
+    do {
+      try await resetSessionAction()
+      context = OnboardingContext()
+      stepTransition = .start
+      step = .intro
+    } catch {
+      hadResetError = true
+    }
   }
 }

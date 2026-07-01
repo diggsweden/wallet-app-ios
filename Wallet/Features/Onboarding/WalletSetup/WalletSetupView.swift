@@ -14,7 +14,7 @@ struct WalletSetupView: View {
   init(
     pin: String,
     gatewayApi: GatewayApi & HSMTransport,
-    onAccountCreated: @escaping @Sendable (String) async -> Void,
+    onAccountCreated: @escaping @Sendable (String) async throws -> Void,
     onComplete: @escaping () -> Void,
   ) {
     _viewModel = State(
@@ -39,13 +39,18 @@ struct WalletSetupView: View {
           loadingIndicator(label: step.label)
             .staticAnimation(setTo: nil)
 
-        case .failed(_, let error):
-          WalletErrorView(
-            title: "Något gick fel!",
-            message: error.localizedDescription,
-          ) {
-            Task { await viewModel.retry() }
-          }
+        case .failed:
+          ErrorView(
+            model: .init(
+              primaryButton: .init(
+                label: "Försök igen",
+                accessibilityHint: "Använd knappen för att försöka igen",
+                action: {
+                  Task { await viewModel.retry() }
+                }
+              )
+            )
+          )
           .transition(.blurReplace)
 
         case .complete:
