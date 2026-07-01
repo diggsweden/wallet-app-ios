@@ -105,7 +105,7 @@ class IssuanceViewModel {
 
       phase = .readyToSign(authResponse)
     } catch {
-      phase = .error(.authorize(offer))
+      phase = error.isWebAuthCancellation ? .readyToAuthorize(offer) : .error(.authorize(offer))
     }
   }
 
@@ -146,7 +146,6 @@ class IssuanceViewModel {
       phase = .readyToFetch(authRequest, proof: proof)
       await fetchCredential()
     } catch {
-      isFirstTimeError = false
       pinError = true
       pinAttempt += 1
     }

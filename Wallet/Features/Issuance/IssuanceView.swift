@@ -12,7 +12,6 @@ struct IssuanceView: View {
   @State private var viewModel: IssuanceViewModel
   @Environment(\.theme) private var theme
   @Environment(\.authPresentationAnchor) private var anchor
-  @Environment(ToastViewModel.self) private var toastViewModel
 
   init(
     credentialOfferUri: String,
