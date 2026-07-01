@@ -8,7 +8,6 @@ import SwiftUI
 struct PresentationView: View {
   @State private var viewModel: PresentationViewModel
   @Environment(Router.self) private var router
-  @Environment(ToastViewModel.self) private var toastViewModel
   @Environment(\.openURL) private var openURL
 
   init(url: URL, credential: SavedCredential?) {
@@ -23,10 +22,25 @@ struct PresentationView: View {
         destination(for: route)
           .defaultScreenStyle
       }
-      .onChange(of: viewModel.error) { _, error in
-        guard let error else { return }
-        toastViewModel.showError(error.message)
+      .alert("Kunde inte dela uppgifterna", isPresented: $viewModel.sendError) {
+        Button("Försök igen") { submitPresentation() }
+        Button("Avbryt", role: .cancel) {}
       }
+  }
+
+  private func submitPresentation() {
+    Task {
+      guard let result = await viewModel.sendPresentation() else {
+        return
+      }
+
+      if let redirectUrl = result.redirectUrl {
+        router.popToRoot()
+        openURL(redirectUrl)
+      } else {
+        router.navigationPath.append(PresentationRoute.success)
+      }
+    }
   }
 
   @ViewBuilder
@@ -36,18 +50,7 @@ struct PresentationView: View {
         PresentationPinView(
           isLoading: viewModel.isSending
         ) { _ in
-          Task {
-            guard let result = await viewModel.sendPresentation() else {
-              return
-            }
-
-            if let redirectUrl = result.redirectUrl {
-              router.popToRoot()
-              openURL(redirectUrl)
-            } else {
-              router.navigationPath.append(PresentationRoute.success)
-            }
-          }
+          submitPresentation()
         }
 
       case .success:
