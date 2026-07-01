@@ -19,20 +19,42 @@ struct JwtUtil {
   private let jsonEncoder = JSONEncoder()
   private let jsonDecoder = JSONDecoder()
 
+  /// Builds the JWT signing input from the payload and header, delegates the
+  /// actual signing to `sign`, and returns the complete compact-serialized JWT.
+  ///
+  /// - Parameters sign: Receives the signing-input bytes and returns the
+  ///   base64url-encoded signature. This lets the caller sign with any backend
+  ///   (Secure Enclave, remote HSM, ...) without `JwtUtil` knowing about keys.
+  func signJwt<T: Codable>(
+    payload: T,
+    header: JWSRegisteredFieldsHeader = DefaultJWSHeaderImpl(algorithm: .ES256),
+    sign: sending (Data) async throws -> String,
+  ) async throws -> String {
+    let now = Int(Date().timeIntervalSince1970)
+    let defaults = DefaultJwtClaims(iat: now, nbf: now, exp: now + ttlSeconds)
+    let claims = JwtClaims(defaults: defaults, payload: payload)
+
+    let headerB64 = try jsonEncoder.encode(header).base64UrlEncodedString()
+    let payloadB64 = try jsonEncoder.encode(claims).base64UrlEncodedString()
+
+    let signingInput = "\(headerB64).\(payloadB64)"
+    guard let signingInputData = signingInput.data(using: .ascii) else {
+      throw JwtSigningError.encodingFailed
+    }
+
+    let signature = try await sign(signingInputData)
+    return "\(signingInput).\(signature)"
+  }
+
+  /// Signs a JWT with a Secure Enclave key.
   func signJwt<T: Codable>(
     with key: SecureEnclave.P256.Signing.PrivateKey,
     payload: T,
-    header: JWSRegisteredFieldsHeader = DefaultJWSHeaderImpl(algorithm: .ES256)
-  ) throws -> String {
-    let signingInputModel = try createSigningInput(
-      payload: payload,
-      header: header
-    )
-
-    let signature = try key.signature(for: signingInputModel.data)
-    let signatureB64 = signature.rawRepresentation.base64UrlEncodedString()
-
-    return "\(signingInputModel.base64String).\(signatureB64)"
+    header: JWSRegisteredFieldsHeader = DefaultJWSHeaderImpl(algorithm: .ES256),
+  ) async throws -> String {
+    try await signJwt(payload: payload, header: header) { signingInput in
+      try key.signature(for: signingInput).rawRepresentation.base64UrlEncodedString()
+    }
   }
 
   func encryptJwe<T: Codable>(
@@ -48,7 +70,7 @@ struct JwtUtil {
         payload: data,
         keyManagementAlg: alg,
         encryptionAlgorithm: enc,
-        recipientKey: recipientKey
+        recipientKey: recipientKey,
       )
       .jwtString
   }
@@ -60,31 +82,6 @@ struct JwtUtil {
     let jwe = try JWE(compactString: compactString)
     let payload = try jwe.decrypt(recipientKey: decryptionKey)
     return try jsonDecoder.decode(T.self, from: payload)
-  }
-
-  func createSigningInput<T: Codable>(
-    payload: T,
-    header: JWSRegisteredFieldsHeader = DefaultJWSHeaderImpl(algorithm: .ES256)
-  ) throws -> SigningInput {
-    let now = Int(Date().timeIntervalSince1970)
-    let defaults = DefaultJwtClaims(iat: now, nbf: now, exp: now + ttlSeconds)
-    let claims = JwtClaims(defaults: defaults, payload: payload)
-
-    let headerData = try jsonEncoder.encode(header)
-    let payloadData = try jsonEncoder.encode(claims)
-
-    let headerB64 = headerData.base64UrlEncodedString()
-    let payloadB64 = payloadData.base64UrlEncodedString()
-
-    let signingInput = "\(headerB64).\(payloadB64)"
-    guard let signingInputData = signingInput.data(using: .ascii) else {
-      throw JwtSigningError.encodingFailed
-    }
-
-    return SigningInput(
-      data: signingInputData,
-      base64String: signingInput
-    )
   }
 
   static func base64UrlDecode(_ base64url: String) -> Data? {
