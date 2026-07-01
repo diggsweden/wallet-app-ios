@@ -6,6 +6,8 @@ import CredentialInterfaces
 import CryptoKit
 import Foundation
 import JSONWebSignature
+import SwiftAccessMechanism
+import WalletGatewayInterface
 import eudi_lib_sdjwt_swift
 
 @MainActor
@@ -14,6 +16,7 @@ final class PresentationViewModel {
   let url: URL
   let credential: SavedCredential?
   private let jwtUtil = JwtUtil()
+  private let gatewayApiClient: GatewayApi & HSMTransport
   private(set) var phase: PresentationPhase = .loading
   private(set) var requestData: PresentationRequestData?
   private(set) var requiredItems: [PresentationItem] = []
@@ -21,9 +24,14 @@ final class PresentationViewModel {
   var optionalItems: [PresentationItem] = []
   var sendError = false
 
-  init(url: URL, credential: SavedCredential?) {
+  init(
+    url: URL,
+    credential: SavedCredential?,
+    gatewayApiClient: any GatewayApi & HSMTransport,
+  ) {
     self.url = url
     self.credential = credential
+    self.gatewayApiClient = gatewayApiClient
   }
 
   func resolveAndMatchClaims() async {
@@ -46,7 +54,7 @@ final class PresentationViewModel {
           required: query.required,
           claims: claims,
           disclosedSdJwt: disclosed,
-          isSelected: query.required
+          isSelected: query.required,
         )
       }
 
@@ -62,11 +70,11 @@ final class PresentationViewModel {
     }
   }
 
-  func sendPresentation() async -> PresentationResult? {
+  func sendPresentation(_ pin: String) async -> PresentationResult? {
     isSending = true
     defer { isSending = false }
     do {
-      let redirectUrl = try await send()
+      let redirectUrl = try await send(pin)
       return PresentationResult(redirectUrl: redirectUrl)
     } catch {
       sendError = true
@@ -74,7 +82,7 @@ final class PresentationViewModel {
     }
   }
 
-  private func send() async throws -> URL? {
+  private func send(_ pin: String) async throws -> URL? {
     guard let data = requestData else {
       throw PresentationError.noRequestData
     }
@@ -89,7 +97,8 @@ final class PresentationViewModel {
         with: key,
         disclosedSdJwt: item.disclosedSdJwt,
         clientId: data.clientId,
-        nonce: data.nonce
+        nonce: data.nonce,
+        pin: pin,
       )
       vpTokenEntries[item.id] = [serialized]
     }
@@ -97,7 +106,7 @@ final class PresentationViewModel {
     let vpToken = VerifiablePresentationToken(
       state: data.state,
       nonce: data.nonce,
-      vpToken: vpTokenEntries
+      vpToken: vpTokenEntries,
     )
 
     let body = try createRequestBody(with: vpToken)
@@ -106,7 +115,7 @@ final class PresentationViewModel {
       data.responseUrl,
       method: .post,
       contentType: "application/x-www-form-urlencoded",
-      body: body.utf8Data
+      body: body.utf8Data,
     )
 
     return response.redirectUri.flatMap { URL(string: $0) }
@@ -146,14 +155,16 @@ final class PresentationViewModel {
     with key: SecureEnclave.P256.Signing.PrivateKey,
     disclosedSdJwt: SignedSDJWT,
     clientId: String,
-    nonce: String
+    nonce: String,
+    pin: String,
   ) async throws -> String {
     let sdJwtSerialized = disclosedSdJwt.serialisation
     let keyBindingJwt = try await createKeyBinding(
       for: sdJwtSerialized,
       with: key,
       aud: clientId,
-      nonce: nonce
+      nonce: nonce,
+      pin: pin,
     )
 
     return sdJwtSerialized + keyBindingJwt
@@ -163,20 +174,54 @@ final class PresentationViewModel {
     for sdJwt: String,
     with key: SecureEnclave.P256.Signing.PrivateKey,
     aud: String,
-    nonce: String
+    nonce: String,
+    pin: String,
   ) async throws -> String {
     guard let sdJwtData = sdJwt.data(using: .ascii) else {
       throw PresentationError.keyBindingEncodingFailed
     }
+
+    let hsmClient = try getHSMClient()
+    _ = try await hsmClient.authenticate(
+      password: PINStretch().stretch(input: Data(pin.utf8))
+    )
+    let keys = try await hsmClient.listKeys()
+
+    guard
+      let key = keys.keyInfo.first,
+      let keyId = key.kid
+    else {
+      throw IssuanceError.noHSMKey
+    }
+
     let hash = SHA256.hash(data: sdJwtData)
     let sdHash = Data(hash).base64UrlEncodedString()
     let header = DefaultJWSHeaderImpl(algorithm: .ES256, type: "kb+jwt")
     let payload = KeyBindingPayload(
       aud: aud,
       nonce: nonce,
-      sdHash: sdHash
+      sdHash: sdHash,
     )
 
-    return try await jwtUtil.signJwt(with: key, payload: payload, header: header)
+    return try await jwtUtil.signJwt(
+      payload: payload,
+      header: header,
+    ) { signingInput in
+      try await hsmClient.sign(hsmKeyId: keyId, data: signingInput).signature
+    }
+  }
+}
+
+private extension PresentationViewModel {
+  func getHSMClient() throws -> BFFHttpClient {
+    guard let config = HSMClientStore.load() else {
+      throw IssuanceError.missingHSMConfig
+    }
+
+    return try BFFHttpClient.resume(
+      transport: gatewayApiClient,
+      privateKey: SecKeyStore.getOrCreateKey(withTag: .walletKey),
+      serverParameters: config.serverParameters,
+    )
   }
 }

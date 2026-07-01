@@ -3,16 +3,26 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import CredentialInterfaces
+import SwiftAccessMechanism
 import SwiftUI
+import WalletGatewayInterface
 
 struct PresentationView: View {
   @State private var viewModel: PresentationViewModel
   @Environment(Router.self) private var router
   @Environment(\.openURL) private var openURL
 
-  init(url: URL, credential: SavedCredential?) {
+  init(
+    url: URL,
+    credential: SavedCredential?,
+    gatewayApiClient: any GatewayApi & HSMTransport,
+  ) {
     _viewModel = State(
-      wrappedValue: .init(url: url, credential: credential)
+      wrappedValue: .init(
+        url: url,
+        credential: credential,
+        gatewayApiClient: gatewayApiClient
+      )
     )
   }
 
@@ -21,16 +31,15 @@ struct PresentationView: View {
       .navigationDestination(for: PresentationRoute.self) { route in
         destination(for: route)
           .defaultScreenStyle
-      }
-      .alert("Kunde inte dela uppgifterna", isPresented: $viewModel.sendError) {
-        Button("Försök igen") { submitPresentation() }
-        Button("Avbryt", role: .cancel) {}
+          .alert("Kunde inte dela uppgifterna", isPresented: $viewModel.sendError) {
+            Button("Försök igen") {}
+          }
       }
   }
 
-  private func submitPresentation() {
+  private func submitPresentation(_ pin: String) {
     Task {
-      guard let result = await viewModel.sendPresentation() else {
+      guard let result = await viewModel.sendPresentation(pin) else {
         return
       }
 
@@ -49,8 +58,8 @@ struct PresentationView: View {
       case .pin:
         PresentationPinView(
           isLoading: viewModel.isSending
-        ) { _ in
-          submitPresentation()
+        ) { pin in
+          submitPresentation(pin)
         }
 
       case .success:
