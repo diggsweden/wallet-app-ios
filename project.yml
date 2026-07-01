@@ -66,7 +66,8 @@ packages:
     path: Packages/WalletGatewayApi/WalletGatewayInterface
     group: Packages/WalletGatewayApi
   SwiftAccessMechanism:
-    path: ../SwiftAccessMechanism
+    url: https://github.com/diggsweden/SwiftAccessMechanism.git
+    branch: chore/spm-vendored-xcframework
   DesignSystem:
     path: Packages/DesignSystem
   CredentialInterfaces:
