@@ -19,7 +19,7 @@ final class PresentationViewModel {
   private(set) var requiredItems: [PresentationItem] = []
   private(set) var isSending = false
   var optionalItems: [PresentationItem] = []
-  var error: ErrorEvent?
+  var sendError = false
 
   init(url: URL, credential: SavedCredential?) {
     self.url = url
@@ -58,7 +58,6 @@ final class PresentationViewModel {
       optionalItems = allItems.filter { !$0.required }
       phase = .ready
     } catch {
-      self.error = error.toErrorEvent()
       phase = .error
     }
   }
@@ -70,7 +69,7 @@ final class PresentationViewModel {
       let redirectUrl = try await send()
       return PresentationResult(redirectUrl: redirectUrl)
     } catch {
-      self.error = error.toErrorEvent()
+      sendError = true
       return nil
     }
   }
