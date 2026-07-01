@@ -215,12 +215,11 @@ class IssuanceViewModel {
         nil
       }
 
-    let (hsmClient, stateJws) = try await getHSMClient()
+    let hsmClient = try getHSMClient()
     _ = try await hsmClient.authenticate(
       password: PINStretch().stretch(input: Data(pin.utf8)),
-      stateJws: stateJws,
     )
-    let keys = try await hsmClient.listKeys(stateJws: stateJws)
+    let keys = try await hsmClient.listKeys()
 
     guard
       let key = keys.keyInfo.first,
@@ -242,21 +241,16 @@ class IssuanceViewModel {
     return "\(signingInput.base64String).\(response.signature)"
   }
 
-  private func getHSMClient() async throws -> (client: BFFHttpClient, stateJws: String?) {
-    let stateJws = try await gatewayApiClient.getAccountSecurityEnvelopes()
-
+  private func getHSMClient() throws -> BFFHttpClient {
     guard let config = HSMClientStore.load() else {
       throw IssuanceError.missingHSMConfig
     }
 
-    let client = try BFFHttpClient.resume(
+    return try BFFHttpClient.resume(
       transport: gatewayApiClient,
-      clientId: config.clientId,
       privateKey: SecKeyStore.getOrCreateKey(withTag: .walletKey),
       serverParameters: config.serverParameters,
     )
-
-    return (client, stateJws)
   }
 
   private func parseCredential(

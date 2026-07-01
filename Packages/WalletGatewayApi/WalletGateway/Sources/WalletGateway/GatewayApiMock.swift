@@ -12,6 +12,4 @@ public struct GatewayApiMock: GatewayApi {
   public func addAccountWalletKey(key: PublicKeyComponents) throws {}
 
   public func getWalletUnitAttestation(nonce: String?) throws -> String { "" }
-
-  public func getAccountSecurityEnvelopes() throws -> String { "" }
 }

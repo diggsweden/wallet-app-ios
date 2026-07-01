@@ -7,7 +7,6 @@ import SwiftAccessMechanism
 
 enum HSMClientStore {
   struct Config: Codable {
-    let clientId: String
     let serverParameters: ServerParameters
   }
 

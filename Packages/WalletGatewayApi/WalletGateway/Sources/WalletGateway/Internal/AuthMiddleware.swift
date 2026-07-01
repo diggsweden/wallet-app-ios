@@ -20,7 +20,7 @@ struct AuthenticationMiddleware: ClientMiddleware {
     var request = request
     request.setHeader("X-API-KEY", apiKey)
 
-    if operationID == "createAccounts" {
+    if operationID == "createAccount" {
       return try await next(request, body, baseURL)
     }
 
