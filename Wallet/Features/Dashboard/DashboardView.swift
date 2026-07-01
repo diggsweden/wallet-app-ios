@@ -70,7 +70,7 @@ struct DashboardView: View {
       overwrite: Bool,
       ttl: String?,
     ) async throws -> RegisterStateResponse {
-      RegisterStateResponse(clientId: "", devAuthorizationCode: nil)
+      RegisterStateResponse(devAuthorizationCode: nil)
     }
 
     func perform(_ request: HSMRequest, operation: HSMOperation) async throws -> Data { Data() }

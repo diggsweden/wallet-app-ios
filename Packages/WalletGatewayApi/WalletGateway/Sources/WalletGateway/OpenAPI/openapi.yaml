@@ -58,39 +58,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiInfoResponse'
 
-  /accounts:
-    post:
-      tags:
-        - Account
-      summary: Create account
-      deprecated: true
-      description: Creates a new account
-      operationId: createAccount
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateAccountRequestDto'
-        required: true
-      responses:
-        '201':
-          description: Account created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CreateAccountResponse'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        'default':
-          $ref: '#/components/responses/default'
-
   /v0/accounts:
     post:
       tags:
         - Account
       summary: Create account
       description: Creates a new account
-      operationId: createAccounts
+      operationId: createAccount
       requestBody:
         content:
           application/json:
@@ -122,55 +96,11 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/KeyRequest'
+              $ref: '#/components/schemas/EcJwkRequest'
         required: true
       responses:
         '201':
           description: Public wallet key added to account
-        'default':
-          $ref: '#/components/responses/default'
-
-  /v0/accounts/security-envelopes:
-    get:
-      tags:
-        - Account
-      summary: Get security envelopes
-      description: Returns the security envelopes associated with the authenticated account.
-      operationId: getAccountSecurityEnvelopes
-      responses:
-        '200':
-          description: Security envelopes retrieved
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SecurityEnvelopesResponse'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        'default':
-          $ref: '#/components/responses/default'
-
-    post:
-      tags:
-        - Account
-      summary: Add a security envelope to an account
-      description: |
-        This operation will add a security envelope (typically used with the HSM) to the associated account.
-        An account can only have one security envelope for each type. Any existing envelope with the requested
-        type will be replaced.
-      operationId: addAccountSecurityEnvelope
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SecurityEnvelopeRequest'
-        required: true
-      responses:
-        '201':
-          description: The account security envelope being added
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SecurityEnvelopeResponse'
         'default':
           $ref: '#/components/responses/default'
 
@@ -315,6 +245,9 @@ paths:
           description: The HSM request id.
           schema:
             type: string
+            format: uuid
+            description: HSM operation identity.
+            example: b66dca70-0908-4b07-a1af-29d0c18b89b6
       responses:
         '200':
           description: Request completed.
@@ -491,24 +424,6 @@ components:
       required:
         - sessionId
 
-    CreateAccountRequestDto:
-      type: object
-      properties:
-        personalIdentityNumber:
-          type: string
-          example: '191010101010'
-        emailAdress:
-          type: string
-          example: first.last@example.xx
-          minLength: 1
-        telephoneNumber:
-          type: string
-          example: '0701234567'
-        publicKey:
-          $ref: '#/components/schemas/KeyRequest'
-      required:
-        - publicKey
-
     CreateAccountRequest:
       type: object
       properties:
@@ -532,7 +447,7 @@ components:
           description: Optional. Contact phone number.
           example: '0701234567'
         deviceKey:
-          $ref: '#/components/schemas/KeyRequest'
+          $ref: '#/components/schemas/EcJwkRequest'
       required:
         - deviceKey
 
@@ -547,8 +462,9 @@ components:
       required:
         - accountId
 
-    KeyRequest:
+    EcJwkRequest:
       type: object
+      description: Elliptic Curve JSON Web Key
       properties:
         kty:
           type: string
@@ -580,46 +496,9 @@ components:
         - x
         - y
 
-    KeyResponse:
+    EcJwkResponse:
       allOf:
-        - $ref: '#/components/schemas/KeyRequest'
-
-    SecurityEnvelopeType:
-      type: string
-      description: 'Security envelope type enum constants.'
-      enum:
-        - SIGN
-        - OTHER
-
-    SecurityEnvelopeRequest:
-      properties:
-        type:
-          $ref: '#/components/schemas/SecurityEnvelopeType'
-        content:
-          type: string
-          description: The security envelope content. Typically encrypted opaque materials.
-          minLength: 1
-      required:
-        - type
-        - content
-
-    SecurityEnvelopeResponse:
-      type: object
-      properties:
-        content:
-          type: string
-          description: The security envelope content. Typically encrypted opaque materials.
-          minLength: 1
-      required:
-        - content
-
-    SecurityEnvelopesResponse:
-      type: object
-      properties:
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/SecurityEnvelopeResponse'
+        - $ref: '#/components/schemas/EcJwkRequest'
 
     HsmRequestType:
       type: string
@@ -641,20 +520,13 @@ components:
           type: string
           minLength: 1
           description: Outer request JWS payload for the HSM operation.
-        clientId:
-          type: string
-          minLength: 1
-          description: Client identifier
-        stateJws:
-          type: string
-          description: Optional. Encoded device-state token. When present the BFF skips the Valkey lookup.
       required:
         - outerRequestJws
-        - clientId
 
-    HsmRequestStatus:
+    HsmAsyncStatus:
       type: string
-      description: HSM Request operation status.
+      description: |
+        Asynchronous workflow status of the HSM Request.
       enum:
         - COMPLETE
         - PENDING
@@ -666,29 +538,26 @@ components:
       properties:
         id:
           type: string
+          format: uuid
           description: Identification of the asynchronous HSM-operation.
+          example: b66dca70-0908-4b07-a1af-29d0c18b89b6
         status:
-          $ref: '#/components/schemas/HsmRequestStatus'
+          $ref: '#/components/schemas/HsmAsyncStatus'
         result:
           type: string
           description: The JWT result from the HSM if completed, else empty.
         resultUrl:
           type: string
           description: Gateway URL where the asynchronous operation result can be polled.
-        stateJws:
-          type: string
-          description: Updated device-state token. Present when status=complete. Persist and send as stateJws on the next request.
       required:
-        - correlationId
+        - id
         - status
 
     RegisterStateRequest:
       type: object
       properties:
         deviceKey:
-          allOf:
-            - $ref: '#/components/schemas/KeyRequest'
-          description: Device public key
+          $ref: '#/components/schemas/EcJwkRequest'
         ttl:
           type: string
           description: Optional. Time-to-live for the state. Use ISO 8601 duration format.
@@ -702,22 +571,14 @@ components:
       properties:
         status:
           type: string
-        clientId:
-          type: string
         devAuthorizationCode:
           type: string
         serverJwsPublicKey:
-          allOf:
-            - $ref: '#/components/schemas/KeyResponse'
-          description: The server JWS public key.
+          $ref: '#/components/schemas/EcJwkResponse'
         opaqueServerId:
           type: string
-        stateJws:
-          type: string
-          description: JWS-encoded device state. Store alongside clientId and send as stateJws on subsequent requests.
       required:
         - status
-        - clientId
 
     AuthChallengeDto:
       type: object

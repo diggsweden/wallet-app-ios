@@ -37,21 +37,14 @@ actor BFFWalletSetupService: WalletSetupService {
   }
 
   func initHSMState() async throws {
-    let serverId = Data("dev.cloud-wallet.digg.se".utf8)
     let privateKey = try SecKeyStore.getOrCreateKey(withTag: .walletKey)
     let client = try await BFFHttpClient.create(
       transport: gatewayApi,
       privateKey: privateKey,
-      serverParameters: ServerParameters(serverIdentifier: serverId),
       ttl: "PT1H",
     )
     bffClient = client
-    try await HSMClientStore.save(
-      HSMClientStore.Config(
-        clientId: client.clientId,
-        serverParameters: client.serverParameters,
-      )
-    )
+    try HSMClientStore.save(HSMClientStore.Config(serverParameters: await client.serverParameters))
   }
 
   func registerPin(pin: String) async throws -> StretchedPIN {

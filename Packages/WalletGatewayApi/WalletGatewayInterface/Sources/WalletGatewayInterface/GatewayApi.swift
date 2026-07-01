@@ -8,6 +8,4 @@ public protocol GatewayApi: Sendable {
   func addAccountWalletKey(key: PublicKeyComponents) async throws
 
   func getWalletUnitAttestation(nonce: String?) async throws -> String
-
-  func getAccountSecurityEnvelopes() async throws -> String
 }

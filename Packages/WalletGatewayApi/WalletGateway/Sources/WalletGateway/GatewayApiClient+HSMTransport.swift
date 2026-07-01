@@ -15,7 +15,7 @@ extension GatewayApiClient: HSMTransport {
       throw GatewayError.missingKeyIdentifier
     }
 
-    let jwkDto = Components.Schemas.KeyRequest(
+    let ecKey = Components.Schemas.EcJwkRequest(
       kty: publicKey.kty,
       kid: kid,
       crv: publicKey.crv,
@@ -23,7 +23,7 @@ extension GatewayApiClient: HSMTransport {
       y: publicKey.y,
     )
     let body = Components.Schemas.RegisterStateRequest(
-      deviceKey: .init(value1: jwkDto),
+      deviceKey: ecKey,
       ttl: ttl,
     )
     let input = Operations.SaveState.Input(body: .json(body))
@@ -35,12 +35,8 @@ extension GatewayApiClient: HSMTransport {
 
     let responseBody = try payload.body.json
 
-    if let stateJws = responseBody.stateJws {
-      await persistStateEnvelope(stateJws)
-    }
-
     let jwkKey = responseBody.serverJwsPublicKey.map { jwk in
-      let key = jwk.value1.value1
+      let key = jwk.value1
       return JwkKey(
         kty: key.kty,
         crv: key.crv,
@@ -51,7 +47,6 @@ extension GatewayApiClient: HSMTransport {
     }
 
     return RegisterStateResponse(
-      clientId: responseBody.clientId,
       devAuthorizationCode: responseBody.devAuthorizationCode,
       serverJwsPublicKey: jwkKey,
       opaqueServerId: responseBody.opaqueServerId,
@@ -60,24 +55,21 @@ extension GatewayApiClient: HSMTransport {
 
   @discardableResult
   public func perform(_ request: HSMRequest, operation: HSMOperation) async throws -> Data {
-    let body = Components.Schemas.HsmRequest(
-      outerRequestJws: request.outerRequestJws,
-      clientId: request.clientId,
-      stateJws: request.stateJws,
-    )
+    let body = Components.Schemas.HsmRequest(outerRequestJws: request.outerRequestJws)
     let query = Operations.CreateRequest.Input.Query(_type: hsmRequestType(for: operation))
     let input = Operations.CreateRequest.Input(query: query, body: .json(body))
 
     switch try await client.createRequest(input) {
       case let .ok(p):
-        guard let dto = try? p.body.json else { throw GatewayError.undecodableResponseBody }
-        return try await extractResult(from: dto)
+        guard let dto = try? p.body.json else { throw GatewayError.undecodableResponseBody
+        }
+        return try extractResult(from: dto)
 
       case let .accepted(p):
-        guard let dto = try? p.body.json, let id = dto.id else {
+        guard let dto = try? p.body.json else {
           throw GatewayError.undecodableResponseBody
         }
-        return try await pollUntilComplete(id: id)
+        return try await pollUntilComplete(id: dto.id)
 
       default:
         throw GatewayError.invalidResponse
@@ -98,13 +90,9 @@ extension GatewayApiClient: HSMTransport {
     }
   }
 
-  private func extractResult(from dto: Components.Schemas.HsmResponse) async throws -> Data {
+  private func extractResult(from dto: Components.Schemas.HsmResponse) throws -> Data {
     if dto.status == .error {
       throw GatewayError.asyncOperationFailed(message: "HSM operation failed")
-    }
-
-    if let stateJws = dto.stateJws {
-      await persistStateEnvelope(stateJws)
     }
 
     guard let result = dto.result else {
@@ -112,21 +100,6 @@ extension GatewayApiClient: HSMTransport {
     }
 
     return Data(result.utf8)
-  }
-
-  private func persistStateEnvelope(_ stateJws: String) async {
-    do {
-      let response = try await client.addAccountSecurityEnvelope(
-        .init(body: .json(.init(_type: .sign, content: stateJws)))
-      )
-
-      guard case .created = response else {
-        print("GatewayApiClient: failed to persist state envelope — unexpected response")
-        return
-      }
-    } catch {
-      print("GatewayApiClient: failed to persist state envelope — \(error)")
-    }
   }
 
   private func pollUntilComplete(id: String) async throws -> Data {
@@ -145,7 +118,7 @@ extension GatewayApiClient: HSMTransport {
             throw GatewayError.undecodableResponseBody
           }
 
-          return try await extractResult(from: dto)
+          return try extractResult(from: dto)
 
         case .accepted:
           continue

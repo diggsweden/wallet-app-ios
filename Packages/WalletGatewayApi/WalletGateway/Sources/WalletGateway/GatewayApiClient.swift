@@ -19,7 +19,7 @@ public struct GatewayApiClient: GatewayApi {
   }
 
   public func createAccount(publicKey: PublicKeyComponents) async throws -> String {
-    let jwkDto = Components.Schemas.KeyRequest(
+    let jwkDto = Components.Schemas.EcJwkRequest(
       kty: publicKey.kty,
       kid: publicKey.kid,
       crv: publicKey.crv,
@@ -27,8 +27,8 @@ public struct GatewayApiClient: GatewayApi {
       y: publicKey.y,
     )
     let bodyDto = Components.Schemas.CreateAccountRequest(deviceKey: jwkDto)
-    let input = Operations.CreateAccounts.Input(body: .json(bodyDto))
-    let response = try await client.createAccounts(input)
+    let input = Operations.CreateAccount.Input(body: .json(bodyDto))
+    let response = try await client.createAccount(input)
 
     guard case let .created(payload) = response else {
       throw GatewayError.invalidResponse
@@ -42,7 +42,7 @@ public struct GatewayApiClient: GatewayApi {
   }
 
   public func addAccountWalletKey(key: PublicKeyComponents) async throws {
-    let keyRequest = Components.Schemas.KeyRequest(
+    let keyRequest = Components.Schemas.EcJwkRequest(
       kty: key.kty,
       kid: key.kid,
       crv: key.crv,
@@ -55,19 +55,6 @@ public struct GatewayApiClient: GatewayApi {
     guard case .created = response else {
       throw GatewayError.invalidResponse
     }
-  }
-
-  public func getAccountSecurityEnvelopes() async throws -> String {
-    let response = try await client.getAccountSecurityEnvelopes()
-
-    guard
-      case let .ok(payload) = response,
-      let item = try? payload.body.json.items?.first
-    else {
-      throw GatewayError.invalidResponse
-    }
-
-    return item.content
   }
 
   public func getWalletUnitAttestation(nonce: String?) async throws -> String {

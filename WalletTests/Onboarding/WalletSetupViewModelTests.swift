@@ -6,6 +6,7 @@ import Foundation
 import SwiftAccessMechanism
 import Testing
 import WalletGateway
+import WalletGatewayInterface
 
 @testable import WalletDemo
 
