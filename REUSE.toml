@@ -30,6 +30,7 @@ path = [
   "**/*.xcodeproj/**",
   "**/*.xcworkspace/**",
   "**/*.xcscheme",
+  "**/__Snapshots__/**",
 ]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 Digg - Agency for digital government"

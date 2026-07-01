@@ -5,6 +5,7 @@
 included:
   - Wallet
   - WalletTests
+  - WalletSnapshotTests
   - WalletUITests
   - WalletMacros
 
