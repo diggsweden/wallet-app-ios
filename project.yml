@@ -51,6 +51,9 @@ packages:
   eudi-lib-sdjwt-swift:
     url: https://github.com/eu-digital-identity-wallet/eudi-lib-sdjwt-swift.git
     exactVersion: 0.13.1
+  swift-snapshot-testing:
+    url: https://github.com/pointfreeco/swift-snapshot-testing.git
+    from: 1.19.2
   WalletMacros:
     path: WalletMacros
   WalletGateway:
@@ -112,6 +115,28 @@ targets:
     dependencies:
       - target: WalletDemo
 
+  WalletSnapshotTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: "18.4"
+    sources:
+      - path: WalletSnapshotTests
+        excludes:
+          - "**/__Snapshots__/**"
+    settings:
+      base:
+        BUNDLE_LOADER: "$(TEST_HOST)"
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: R5MUUW7M24
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: se.digg.walletSnapshotTests
+        SWIFT_VERSION: "6.0"
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/WalletDemo.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/WalletDemo"
+    dependencies:
+      - target: WalletDemo
+      - package: swift-snapshot-testing
+        product: SnapshotTesting
+
   WalletUITests:
     type: bundle.ui-testing
     platform: iOS
@@ -162,4 +187,12 @@ schemes:
         - WalletDemo
       targets:
         - WalletTests
+
+  WalletSnapshotTests:
+    build:
+      targets:
+        WalletSnapshotTests: test
+    test:
+      targets:
+        - WalletSnapshotTests
 
