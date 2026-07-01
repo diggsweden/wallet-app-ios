@@ -85,7 +85,7 @@ final class PresentationViewModel {
 
     var vpTokenEntries: [String: [String]] = [:]
     for item in selectedItems {
-      let serialized = try createPresentationSdJwt(
+      let serialized = try await createPresentationSdJwt(
         with: key,
         disclosedSdJwt: item.disclosedSdJwt,
         clientId: data.clientId,
@@ -147,9 +147,9 @@ final class PresentationViewModel {
     disclosedSdJwt: SignedSDJWT,
     clientId: String,
     nonce: String
-  ) throws -> String {
+  ) async throws -> String {
     let sdJwtSerialized = disclosedSdJwt.serialisation
-    let keyBindingJwt = try createKeyBinding(
+    let keyBindingJwt = try await createKeyBinding(
       for: sdJwtSerialized,
       with: key,
       aud: clientId,
@@ -164,7 +164,7 @@ final class PresentationViewModel {
     with key: SecureEnclave.P256.Signing.PrivateKey,
     aud: String,
     nonce: String
-  ) throws -> String {
+  ) async throws -> String {
     guard let sdJwtData = sdJwt.data(using: .ascii) else {
       throw PresentationError.keyBindingEncodingFailed
     }
@@ -177,6 +177,6 @@ final class PresentationViewModel {
       sdHash: sdHash
     )
 
-    return try jwtUtil.signJwt(with: key, payload: payload, header: header)
+    return try await jwtUtil.signJwt(with: key, payload: payload, header: header)
   }
 }

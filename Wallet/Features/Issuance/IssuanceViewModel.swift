@@ -229,16 +229,15 @@ class IssuanceViewModel {
     }
 
     let payload = JwtProofPayload(aud: issuerId, nonce: nonce)
-    let signingInput = try jwtUtil.createSigningInput(
+    return try await jwtUtil.signJwt(
       payload: payload,
       header: KeyAttestationHeader(
         jwk: keyAttestationRequired ? nil : key.publicKey.toSecKey().jwk,
         keyAttestation: keyAttestation,
       ),
-    )
-    let response = try await hsmClient.sign(hsmKeyId: keyId, data: signingInput.data)
-
-    return "\(signingInput.base64String).\(response.signature)"
+    ) { signingInput in
+      try await hsmClient.sign(hsmKeyId: keyId, data: signingInput).signature
+    }
   }
 
   private func getHSMClient() throws -> BFFHttpClient {

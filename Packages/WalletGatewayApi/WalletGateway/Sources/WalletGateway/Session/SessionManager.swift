@@ -70,7 +70,7 @@ public final actor SessionManager {
   }
 
   private func validateChallenge(keyId: String, nonce: String) async throws -> String {
-    let jwt = try signingProvider.signSessionJwt(keyId: keyId, nonce: nonce)
+    let jwt = try await signingProvider.signSessionJwt(keyId: keyId, nonce: nonce)
     let input = Operations.ValidateChallenge.Input(body: .json(.init(signedJwt: jwt)))
     let response = try await client.validateChallenge(input)
 

@@ -61,7 +61,8 @@ extension GatewayApiClient: HSMTransport {
 
     switch try await client.createRequest(input) {
       case let .ok(p):
-        guard let dto = try? p.body.json else { throw GatewayError.undecodableResponseBody
+        guard let dto = try? p.body.json else {
+          throw GatewayError.undecodableResponseBody
         }
         return try extractResult(from: dto)
 

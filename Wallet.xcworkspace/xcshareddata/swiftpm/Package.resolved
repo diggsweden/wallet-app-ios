@@ -1,5 +1,5 @@
 {
-  "originHash" : "cab29b2acb75227557472d4f759c06a910d1a86e397d63728edfbfc958680c1b",
+  "originHash" : "63a16963c8c2c8c141479b45bcb26ff772fa29ab89410557ca1a1b769c269ed9",
   "pins" : [
     {
       "identity" : "blueecc",
@@ -233,6 +233,15 @@
       "state" : {
         "revision" : "8cf51bfdf81c46702dac496d16397d92ac392532",
         "version" : "1.0.2"
+      }
+    },
+    {
+      "identity" : "swiftaccessmechanism",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/diggsweden/SwiftAccessMechanism.git",
+      "state" : {
+        "branch" : "chore/spm-vendored-xcframework",
+        "revision" : "911a429d2d051a0bc97d9a58669052672fb4afd1"
       }
     },
     {

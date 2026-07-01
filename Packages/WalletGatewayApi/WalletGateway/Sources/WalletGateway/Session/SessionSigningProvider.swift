@@ -4,5 +4,5 @@
 
 public protocol SessionSigningProvider: Sendable {
   func keyId() throws -> String
-  func signSessionJwt(keyId: String, nonce: String) throws -> String
+  func signSessionJwt(keyId: String, nonce: String) async throws -> String
 }
