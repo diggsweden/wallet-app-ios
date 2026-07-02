@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import CredentialInterfaces
+import SwiftAccessMechanism
 import SwiftUI
 
 @MainActor
@@ -15,6 +16,7 @@ final class OnboardingViewModel {
   private let savePidCredentialAction: (SavedCredential) async throws -> Void
   private let signInAction: (String) async throws -> Void
   private let resetSessionAction: () async throws -> Void
+  private let saveHsmServerParametersAction: (ServerParameters) async throws -> Void
 
   private(set) var context = OnboardingContext()
   private(set) var step: OnboardingStep = .intro
@@ -25,11 +27,13 @@ final class OnboardingViewModel {
   init(
     savePidCredential: @escaping (SavedCredential) async throws -> Void,
     signIn: @escaping (String) async throws -> Void,
-    onReset: @escaping () async throws -> Void
+    onReset: @escaping () async throws -> Void,
+    saveHsmServerParameters: @escaping (ServerParameters) async throws -> Void
   ) {
     self.savePidCredentialAction = savePidCredential
     self.signInAction = signIn
     self.resetSessionAction = onReset
+    self.saveHsmServerParametersAction = saveHsmServerParameters
   }
 
   var currentStepNumber: Int? {
@@ -61,6 +65,10 @@ final class OnboardingViewModel {
 
   func savePidCredential(_ credential: SavedCredential) async throws {
     try await savePidCredentialAction(credential)
+  }
+
+  func saveHsmServerParameters(_ parameters: ServerParameters) async throws {
+    try await saveHsmServerParametersAction(parameters)
   }
 
   func confirmPin(_ pin: String) throws {

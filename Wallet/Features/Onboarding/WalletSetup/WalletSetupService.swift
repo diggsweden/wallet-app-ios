@@ -18,14 +18,17 @@ protocol WalletSetupService: Sendable {
 actor BFFWalletSetupService: WalletSetupService {
   private let gatewayApi: any GatewayApi & HSMTransport
   private let onAccountCreated: @Sendable (String) async throws -> Void
+  private let onServerParameters: @Sendable (ServerParameters) async throws -> Void
   private var bffClient: BFFHttpClient?
 
   init(
     gatewayApi: any GatewayApi & HSMTransport,
     onAccountCreated: @Sendable @escaping (String) async throws -> Void,
+    onServerParameters: @Sendable @escaping (ServerParameters) async throws -> Void,
   ) {
     self.gatewayApi = gatewayApi
     self.onAccountCreated = onAccountCreated
+    self.onServerParameters = onServerParameters
   }
 
   func createAccount() async throws {
@@ -44,7 +47,7 @@ actor BFFWalletSetupService: WalletSetupService {
       ttl: "PT1H",
     )
     bffClient = client
-    try HSMClientStore.save(HSMClientStore.Config(serverParameters: await client.serverParameters))
+    try await onServerParameters(client.serverParameters)
   }
 
   func registerPin(pin: String) async throws -> StretchedPIN {

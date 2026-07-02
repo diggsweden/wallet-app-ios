@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import CredentialInterfaces
+import SwiftAccessMechanism
 import SwiftUI
 import User
 
@@ -75,6 +76,11 @@ final class UserSessionViewModel {
 
   func saveCredential(_ credential: SavedCredential) async throws {
     let updated = try await userStore.addCredential(credential)
+    user = .ready(updated)
+  }
+
+  func saveHsmServerParameters(_ parameters: ServerParameters) async throws {
+    let updated = try await userStore.saveHsmServerParameters(HsmServerParameters(parameters))
     user = .ready(updated)
   }
 }

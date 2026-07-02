@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
-typealias User = SchemaV2.User
+typealias User = SchemaV3.User
 
 enum CurrentSchema {
-  typealias SavedCredential = SchemaV2.SavedCredential
-  typealias IssuerDisplay = SchemaV2.IssuerDisplay
-  typealias CredentialDisplayData = SchemaV2.CredentialDisplayData
+  typealias SavedCredential = SchemaV3.SavedCredential
+  typealias IssuerDisplay = SchemaV3.IssuerDisplay
+  typealias CredentialDisplayData = SchemaV3.CredentialDisplayData
+  typealias HsmServerParameters = SchemaV3.HsmServerParameters
 }

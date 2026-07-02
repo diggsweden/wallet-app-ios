@@ -50,3 +50,33 @@ extension CurrentSchema.CredentialDisplayData {
     CredentialInterfaces.CredentialDisplayData(name: name)
   }
 }
+
+extension CurrentSchema.HsmServerParameters {
+  init(_ parameters: HsmServerParameters) {
+    self.init(
+      serverJwsPublicKey: SchemaV3.HsmServerJwk(
+        kty: parameters.serverJwsPublicKey.kty,
+        crv: parameters.serverJwsPublicKey.crv,
+        x: parameters.serverJwsPublicKey.x,
+        y: parameters.serverJwsPublicKey.y,
+        kid: parameters.serverJwsPublicKey.kid
+      ),
+      opaqueContext: parameters.opaqueContext,
+      opaqueServerIdentifier: parameters.opaqueServerIdentifier
+    )
+  }
+
+  func toDomain() -> HsmServerParameters {
+    HsmServerParameters(
+      serverJwsPublicKey: HsmServerParameters.Jwk(
+        kty: serverJwsPublicKey.kty,
+        crv: serverJwsPublicKey.crv,
+        x: serverJwsPublicKey.x,
+        y: serverJwsPublicKey.y,
+        kid: serverJwsPublicKey.kid
+      ),
+      opaqueContext: opaqueContext,
+      opaqueServerIdentifier: opaqueServerIdentifier
+    )
+  }
+}

@@ -7,6 +7,7 @@ import CryptoKit
 import Foundation
 import JSONWebSignature
 import SwiftAccessMechanism
+import User
 import WalletGatewayInterface
 import eudi_lib_sdjwt_swift
 
@@ -17,6 +18,7 @@ final class PresentationViewModel {
   let credential: SavedCredential?
   private let jwtUtil = JwtUtil()
   private let gatewayApiClient: GatewayApi & HSMTransport
+  private let hsmServerParameters: HsmServerParameters?
   private(set) var phase: PresentationPhase = .loading
   private(set) var requestData: PresentationRequestData?
   private(set) var requiredItems: [PresentationItem] = []
@@ -28,10 +30,12 @@ final class PresentationViewModel {
     url: URL,
     credential: SavedCredential?,
     gatewayApiClient: any GatewayApi & HSMTransport,
+    hsmServerParameters: HsmServerParameters?,
   ) {
     self.url = url
     self.credential = credential
     self.gatewayApiClient = gatewayApiClient
+    self.hsmServerParameters = hsmServerParameters
   }
 
   func resolveAndMatchClaims() async {
@@ -214,14 +218,14 @@ final class PresentationViewModel {
 
 private extension PresentationViewModel {
   func getHSMClient() throws -> BFFHttpClient {
-    guard let config = HSMClientStore.load() else {
+    guard let hsmServerParameters else {
       throw IssuanceError.missingHSMConfig
     }
 
     return try BFFHttpClient.resume(
       transport: gatewayApiClient,
       privateKey: SecKeyStore.getOrCreateKey(withTag: .walletKey),
-      serverParameters: config.serverParameters,
+      serverParameters: hsmServerParameters.toServerParameters(),
     )
   }
 }

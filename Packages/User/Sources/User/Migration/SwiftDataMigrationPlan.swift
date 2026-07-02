@@ -7,10 +7,10 @@ import SwiftData
 
 enum SwiftDataMigrationPlan: SchemaMigrationPlan {
   static var schemas: [any VersionedSchema.Type] {
-    [SchemaV1.self, SchemaV2.self]
+    [SchemaV1.self, SchemaV2.self, SchemaV3.self]
   }
 
   static var stages: [MigrationStage] {
-    [MigrateV1toV2.stage]
+    [MigrateV1toV2.stage, MigrateV2toV3.stage]
   }
 }

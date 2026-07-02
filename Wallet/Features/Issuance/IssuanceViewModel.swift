@@ -8,6 +8,7 @@ import CryptoKit
 import Foundation
 import OpenID4VCI
 import SwiftAccessMechanism
+import User
 import WalletGatewayInterface
 import WalletMacros
 import eudi_lib_sdjwt_swift
@@ -20,6 +21,7 @@ class IssuanceViewModel {
   private let gatewayApiClient: GatewayApi & HSMTransport
   private let jwtUtil = JwtUtil()
   private let openId4VciUtil = OpenId4VciUtil()
+  private let hsmServerParameters: HsmServerParameters?
   private let onSaveCredential: (SavedCredential) async throws -> Void
 
   private(set) var claimsMetadata: [String: String] = [:]
@@ -37,10 +39,12 @@ class IssuanceViewModel {
   init(
     credentialOfferUri: String,
     gatewayApiClient: any GatewayApi & HSMTransport,
+    hsmServerParameters: HsmServerParameters?,
     onSaveCredential: @escaping (SavedCredential) async throws -> Void
   ) {
     self.credentialOfferUri = credentialOfferUri
     self.gatewayApiClient = gatewayApiClient
+    self.hsmServerParameters = hsmServerParameters
     self.onSaveCredential = onSaveCredential
   }
 
@@ -241,14 +245,14 @@ class IssuanceViewModel {
   }
 
   private func getHSMClient() throws -> BFFHttpClient {
-    guard let config = HSMClientStore.load() else {
+    guard let hsmServerParameters else {
       throw IssuanceError.missingHSMConfig
     }
 
     return try BFFHttpClient.resume(
       transport: gatewayApiClient,
       privateKey: SecKeyStore.getOrCreateKey(withTag: .walletKey),
-      serverParameters: config.serverParameters,
+      serverParameters: hsmServerParameters.toServerParameters(),
     )
   }
 

@@ -5,6 +5,7 @@
 import CredentialInterfaces
 import SwiftAccessMechanism
 import SwiftUI
+import User
 import WalletGatewayInterface
 
 struct PresentationView: View {
@@ -16,12 +17,14 @@ struct PresentationView: View {
     url: URL,
     credential: SavedCredential?,
     gatewayApiClient: any GatewayApi & HSMTransport,
+    hsmServerParameters: HsmServerParameters?,
   ) {
     _viewModel = State(
       wrappedValue: .init(
         url: url,
         credential: credential,
-        gatewayApiClient: gatewayApiClient
+        gatewayApiClient: gatewayApiClient,
+        hsmServerParameters: hsmServerParameters
       )
     )
   }

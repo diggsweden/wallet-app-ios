@@ -57,6 +57,13 @@ public actor UserStore: AccountIdProvider {
     return snapshot(from: user)
   }
 
+  public func saveHsmServerParameters(_ parameters: HsmServerParameters) throws -> UserSnapshot {
+    let user = try getOrCreateModel()
+    user.hsmServerParameters = CurrentSchema.HsmServerParameters(parameters)
+    try save()
+    return snapshot(from: user)
+  }
+
   public func deleteAll() throws {
     try modelContext.delete(model: User.self)
     try save()
@@ -88,7 +95,8 @@ public actor UserStore: AccountIdProvider {
     UserSnapshot(
       accountId: model.accountId,
       credentials: model.credentials.map { $0.toDomain() },
-      pid: model.pid?.toDomain()
+      pid: model.pid?.toDomain(),
+      hsmServerParameters: model.hsmServerParameters?.toDomain()
     )
   }
 
