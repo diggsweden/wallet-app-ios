@@ -96,7 +96,8 @@ private extension AppRootView {
         actions: OnboardingActions(
           signIn: userSessionViewModel.signIn,
           savePidCredential: userSessionViewModel.savePid,
-          resetSession: userSessionViewModel.signOut
+          resetSession: userSessionViewModel.signOut,
+          saveHsmServerParameters: userSessionViewModel.saveHsmServerParameters
         )
       )
     } else {
@@ -130,13 +131,15 @@ private extension AppRootView {
         PresentationView(
           url: url,
           credential: userSessionViewModel.userSnapshot?.pid,
-          gatewayApiClient: gatewayApiClient
+          gatewayApiClient: gatewayApiClient,
+          hsmServerParameters: userSessionViewModel.userSnapshot?.hsmServerParameters
         )
 
       case .issuance(let url):
         IssuanceViewWrapper(
           credentialOfferUri: url,
-          gatewayApiClient: gatewayApiClient
+          gatewayApiClient: gatewayApiClient,
+          hsmServerParameters: userSessionViewModel.userSnapshot?.hsmServerParameters
         ) { credential in
           try await userSessionViewModel.saveCredential(credential)
           router.pop()

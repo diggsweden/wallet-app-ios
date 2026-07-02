@@ -32,6 +32,7 @@ struct OnboardingRootView: View {
         savePidCredential: actions.savePidCredential,
         signIn: actions.signIn,
         onReset: actions.resetSession,
+        saveHsmServerParameters: actions.saveHsmServerParameters,
       )
     )
   }
@@ -157,6 +158,9 @@ struct OnboardingRootView: View {
           onAccountCreated: { accountId in
             try await viewModel.signIn(accountId: accountId)
           },
+          onServerParameters: { parameters in
+            try await viewModel.saveHsmServerParameters(parameters)
+          },
           onComplete: {
             viewModel.next(from: .walletSetup)
           },
@@ -173,6 +177,7 @@ struct OnboardingRootView: View {
           IssuanceView(
             credentialOfferUri: uri,
             gatewayApiClient: gatewayApiClient,
+            hsmServerParameters: userSnapshot.hsmServerParameters,
           ) { credential in
             try await viewModel.savePidCredential(credential)
           }

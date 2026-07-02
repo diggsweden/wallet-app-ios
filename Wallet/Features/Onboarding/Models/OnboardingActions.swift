@@ -4,9 +4,11 @@
 
 import CredentialInterfaces
 import Foundation
+import SwiftAccessMechanism
 
 struct OnboardingActions {
   let signIn: (String) async throws -> Void
   let savePidCredential: (SavedCredential) async throws -> Void
   let resetSession: () async throws -> Void
+  let saveHsmServerParameters: (ServerParameters) async throws -> Void
 }

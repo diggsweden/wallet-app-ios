@@ -15,6 +15,7 @@ struct WalletSetupView: View {
     pin: String,
     gatewayApi: GatewayApi & HSMTransport,
     onAccountCreated: @escaping @Sendable (String) async throws -> Void,
+    onServerParameters: @escaping @Sendable (ServerParameters) async throws -> Void,
     onComplete: @escaping () -> Void,
   ) {
     _viewModel = State(
@@ -22,6 +23,7 @@ struct WalletSetupView: View {
         service: BFFWalletSetupService(
           gatewayApi: gatewayApi,
           onAccountCreated: onAccountCreated,
+          onServerParameters: onServerParameters,
         ),
         pin: pin,
         onComplete: onComplete,

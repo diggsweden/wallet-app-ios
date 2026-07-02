@@ -5,11 +5,13 @@
 import CredentialInterfaces
 import SwiftAccessMechanism
 import SwiftUI
+import User
 import WalletGatewayInterface
 
 struct IssuanceViewWrapper: View {
   let credentialOfferUri: String
   let gatewayApiClient: any GatewayApi & HSMTransport
+  let hsmServerParameters: HsmServerParameters?
   let onSave: (SavedCredential) async throws -> Void
 
   var body: some View {
@@ -18,6 +20,7 @@ struct IssuanceViewWrapper: View {
         IssuanceView(
           credentialOfferUri: credentialOfferUri,
           gatewayApiClient: gatewayApiClient,
+          hsmServerParameters: hsmServerParameters,
           onSaveCredential: onSave
         )
         .frame(
