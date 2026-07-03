@@ -2,7 +2,12 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
+import DesignSystem
 import SwiftUI
+
+protocol CheckBoxViewProtocol {
+  var isOn: Binding<Bool> { get }
+}
 
 struct Checkbox: View {
   @Binding var isOn: Bool
