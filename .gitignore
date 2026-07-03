@@ -19,6 +19,9 @@ megalinter-reports/
 Config-Debug.xcconfig
 Config-Localhost.xcconfig
 
+# Snapshot test output
+**/__Snapshots__/
+
 # Claude
 CLAUDE.md
 PROJECT_INDEX.md

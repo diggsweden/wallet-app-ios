@@ -6,6 +6,7 @@ included:
   - Packages
   - Wallet
   - WalletTests
+  - WalletSnapshotTests
   - WalletUITests
   - WalletMacros
 
