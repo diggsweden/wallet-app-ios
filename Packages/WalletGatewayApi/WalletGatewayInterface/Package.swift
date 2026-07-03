@@ -9,6 +9,9 @@ import PackageDescription
 
 let package = Package(
   name: "WalletGatewayInterface",
+  platforms: [
+    .iOS(.v17)
+  ],
   products: [
     .library(
       name: "WalletGatewayInterface",
