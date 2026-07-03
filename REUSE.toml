@@ -30,7 +30,7 @@ path = [
   "**/*.xcodeproj/**",
   "**/*.xcworkspace/**",
   "**/*.xcscheme",
-  "**/*.webp"
+  "**/*.webp",
   "**/__Snapshots__/**",
 ]
 precedence = "aggregate"
