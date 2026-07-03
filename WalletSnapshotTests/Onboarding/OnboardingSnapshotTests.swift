@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import Testing
+import WalletGateway
 
 @testable import WalletDemo
-import WalletGateway
 
 @MainActor
 @Suite("Onboarding snapshots", .snapshots(record: .missing))
