@@ -5,16 +5,32 @@
 import SwiftUI
 
 struct ErrorView: View {
-  let model: ErrorViewModel
+  @Environment(\.theme) private var theme
+  let model: ViewModel
+  @State private var onErrorExpand: Bool = false
 
   var body: some View {
     VStack(spacing: .zero) {
+      Spacer()
+
       Image(model.imageReference)
         .accessibilityHidden(true)
         .padding(.bottom, Constants.imageBottomPadding)
 
       titleSubtitleStackView
         .padding(.bottom, Constants.titleSubtitleStackViewBottomPadding)
+
+      Spacer()
+
+      Button {
+        onErrorExpand = true
+      } label: {
+        ExpandErrorView(
+          code: model.errorInfo.code ?? "",
+          time: model.errorInfo.timestamp ?? ""
+        )
+        .padding(.bottom, Constants.expandButtonBottomPadding)
+      }
 
       buttonStackView
     }
@@ -31,6 +47,9 @@ struct ErrorView: View {
         }
       }
     }
+    .sheet(isPresented: $onErrorExpand) {
+      ErrorReportView(info: model.errorInfo)
+    }
   }
 }
 
@@ -41,6 +60,8 @@ private extension ErrorView {
     static let titleSubtitleStackViewOuterSpacing: CGFloat = 7
     static let titleSubtitleStackViewInnerSpacing: CGFloat = 16
     static let buttonStackViewSpacing: CGFloat = 20
+    static let horizontalPadding: CGFloat = 15
+    static let expandButtonBottomPadding: CGFloat = 16
   }
 }
 
@@ -85,6 +106,7 @@ private extension ErrorView {
         .accessibilityHint(secondaryButton.accessibilityHint)
       }
     }
+    .padding(.horizontal, Constants.horizontalPadding)
   }
 }
 
@@ -127,115 +149,4 @@ private extension ErrorView {
   )
   .defaultScreenStyle
   .themed
-}
-
-struct ErrorViewModel: Sendable {
-  let imageReference: String
-  let title: String
-  let subtitle: String
-  let primaryButton: ButtonModel
-  let secondaryButton: ButtonModel?
-  let linkButton: ButtonModel?
-  let onDismiss: (@Sendable () -> Void)?
-
-  init(
-    imageReference: String = "phoneError",
-    title: String = "Hoppsan! Nånting gick fel",
-    subtitle: String = "Vi kunde inte visa innehållet just nu, försök gärna igen senare.",
-    primaryButton: ButtonModel,
-    secondaryButton: ButtonModel? = nil,
-    linkButton: ButtonModel? = nil,
-    onDismiss: (@Sendable () -> Void)? = nil
-  ) {
-    self.imageReference = imageReference
-    self.title = title
-    self.subtitle = subtitle
-    self.primaryButton = primaryButton
-    self.secondaryButton = secondaryButton
-    self.linkButton = linkButton
-    self.onDismiss = onDismiss
-  }
-
-  struct ButtonModel: Sendable {
-    let label: String
-    let accessibilityHint: String
-    let action: @Sendable () -> Void
-  }
-
-  fileprivate static var defaultPreview: Self {
-    Self(
-      imageReference: "phoneError",
-      title: "Hoppsan! Nånting gick fel",
-      subtitle: "Vi kunde inte visa innehållet just nu, försök gärna igen senare.",
-      primaryButton: .init(
-        label: "Försök igen",
-        accessibilityHint: "Använd knappen för att försöka igen",
-        action: {}
-      ),
-      linkButton: .init(
-        label: "Få hjälp",
-        accessibilityHint: "Använd knappen för att få mer hjälp",
-        action: {}
-      ),
-      onDismiss: {}
-    )
-  }
-}
-
-extension ErrorViewModel.ButtonModel {
-  init(
-    label: String,
-    accessibilityHint: String,
-    asyncAction: (@Sendable () async -> Void)?
-  ) {
-    self.init(
-      label: label,
-      accessibilityHint: accessibilityHint,
-      action: {
-        Task {
-          await asyncAction?()
-        }
-      }
-    )
-  }
-
-  init(
-    label: String,
-    accessibilityHint: String,
-    asyncThrowingAction: (@Sendable () async throws -> Void)?,
-    onError: @escaping @Sendable () -> Void
-  ) {
-    self.init(
-      label: label,
-      accessibilityHint: accessibilityHint,
-      action: {
-        Task {
-          do {
-            try await asyncThrowingAction?()
-          } catch {
-            onError()
-          }
-        }
-      }
-    )
-  }
-
-  init(
-    label: String,
-    accessibilityHint: String,
-    throwingAction: (@Sendable () throws -> Void)?,
-    onError: @escaping @Sendable (Error) -> Void
-  ) {
-    self.init(
-      label: label,
-      accessibilityHint: accessibilityHint,
-      action: {
-        do {
-          try throwingAction?()
-        } catch {
-          onError(error)
-        }
-      }
-    )
-  }
 }

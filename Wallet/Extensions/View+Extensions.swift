@@ -6,6 +6,22 @@ import SwiftUI
 
 extension View {
   @ViewBuilder
+  func glassEffectIfPossible() -> some View {
+    if #available(iOS 26.0, *) {
+      self.glassEffect(
+        .regular.interactive(),
+        in: RoundedRectangle(cornerRadius: 12)
+      )
+    } else {
+      self
+        .background(
+          .ultraThinMaterial,
+          in: RoundedRectangle(cornerRadius: 12)
+        )
+    }
+  }
+
+  @ViewBuilder
   func lineHeightIfAvailable(multiple factor: CGFloat?) -> some View {
     if #available(iOS 26.0, *) {
       if let factor {
