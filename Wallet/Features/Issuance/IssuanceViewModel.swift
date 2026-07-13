@@ -51,7 +51,6 @@ class IssuanceViewModel {
   func start() async {
     phase = .fetchingIssuer
     do {
-      throw URLError(.badURL)
       let credentialOffer = try await fetchCredentialOffer(with: credentialOfferUri)
       self.credentialOffer = credentialOffer
       claimsMetadata = getClaimsMetadata(from: credentialOffer)
