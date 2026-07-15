@@ -5,18 +5,28 @@
 import Foundation
 
 public enum SessionError: LocalizedError {
-  case noAccountId, failedChallenge, noKeyId
+  case noAccountId
+  case noKeyId
+  case problem(ProblemDetails)
+  case unauthorized
+  case undecodableResponseBody(SourceLocation)
 
   public var errorDescription: String? {
     switch self {
       case .noAccountId:
         "No account ID available"
 
-      case .failedChallenge:
-        "Failed to complete challenge"
-
       case .noKeyId:
         "No key ID available"
+
+      case .problem(let details):
+        details.title ?? details.detail ?? "Servern returnerade ett fel (\(details.status))."
+
+      case .unauthorized:
+        "Sessionen är ogiltig eller har gått ut."
+
+      case .undecodableResponseBody:
+        "Något gick fel. Försök igen senare."
     }
   }
 }
