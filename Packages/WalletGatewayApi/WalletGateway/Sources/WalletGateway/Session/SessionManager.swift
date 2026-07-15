@@ -61,7 +61,7 @@ public final actor SessionManager {
     switch try await client.initChallenge(query: query) {
       case .ok(let payload):
         guard let nonce = try? payload.body.json.nonce else {
-          throw SessionError.undecodableResponseBody(SourceLocation())
+          throw SessionError.undecodableResponseBody
         }
         return nonce
 
@@ -80,7 +80,7 @@ public final actor SessionManager {
     switch try await client.validateChallenge(input) {
       case .ok(let payload):
         guard let sessionId = try? payload.body.json.sessionId else {
-          throw SessionError.undecodableResponseBody(SourceLocation())
+          throw SessionError.undecodableResponseBody
         }
         return sessionId
 

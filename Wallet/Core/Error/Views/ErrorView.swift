@@ -26,7 +26,7 @@ struct ErrorView: View {
         onErrorExpand = true
       } label: {
         ExpandErrorView(
-          code: model.errorInfo.code ?? "",
+          code: model.errorInfo.code ?? "Fel",
           time: model.errorInfo.timestamp ?? ""
         )
         .padding(.bottom, Constants.expandButtonBottomPadding)

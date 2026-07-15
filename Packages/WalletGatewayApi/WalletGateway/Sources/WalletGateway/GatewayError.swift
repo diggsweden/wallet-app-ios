@@ -5,11 +5,11 @@
 import Foundation
 
 public enum GatewayError: LocalizedError {
-  case invalidResponse(SourceLocation)
-  case undecodableResponseBody(SourceLocation)
-  case missingKeyIdentifier(SourceLocation)
-  case asyncOperationFailed(message: String, SourceLocation)
-  case asyncOperationTimeout(SourceLocation)
+  case invalidResponse
+  case undecodableResponseBody
+  case missingKeyIdentifier
+  case asyncOperationFailed(message: String)
+  case asyncOperationTimeout
   case problem(ProblemDetails)
   case unauthorized
   case notFound
@@ -25,7 +25,7 @@ public enum GatewayError: LocalizedError {
       case .missingKeyIdentifier:
         "Nyckelidentifierare saknas."
 
-      case .asyncOperationFailed(let message, _):
+      case .asyncOperationFailed(let message):
         "HSM-operationen misslyckades: \(message)"
 
       case .asyncOperationTimeout:

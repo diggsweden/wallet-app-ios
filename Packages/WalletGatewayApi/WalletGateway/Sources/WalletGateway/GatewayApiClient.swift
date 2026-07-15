@@ -32,7 +32,7 @@ public struct GatewayApiClient: GatewayApi {
     switch try await client.createAccount(input) {
       case .created(let payload):
         guard let accountId = try? payload.body.json.accountId else {
-          throw GatewayError.undecodableResponseBody(SourceLocation())
+          throw GatewayError.undecodableResponseBody
         }
         return accountId
 
@@ -70,7 +70,7 @@ public struct GatewayApiClient: GatewayApi {
     switch try await client.createWua(input) {
       case .created(let payload):
         guard let jwt = try? payload.body.json.jwt else {
-          throw GatewayError.undecodableResponseBody(SourceLocation())
+          throw GatewayError.undecodableResponseBody
         }
         return jwt
 

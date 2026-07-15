@@ -41,7 +41,7 @@ final class WalletSetupViewModel {
         try? await Task.sleep(for: .seconds(.random(in: 0.5 ... 0.8)))
         current = try await perform(step)
       } catch {
-        state = .failed(at: step, error: error)
+        state = .failed(at: step, CaughtError(error))
         return
       }
     }
@@ -53,6 +53,7 @@ final class WalletSetupViewModel {
   private func perform(_ step: WalletSetupStep) async throws -> WalletSetupStep? {
     switch step {
       case .createAccount:
+        throw URLError(.badURL)
         try await service.createAccount()
         return .initHSMState
 
