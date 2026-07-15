@@ -53,7 +53,6 @@ final class WalletSetupViewModel {
   private func perform(_ step: WalletSetupStep) async throws -> WalletSetupStep? {
     switch step {
       case .createAccount:
-        throw URLError(.badURL)
         try await service.createAccount()
         return .initHSMState
 
