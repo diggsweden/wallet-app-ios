@@ -32,8 +32,20 @@ struct WalletSetupView: View {
   }
 
   var body: some View {
+    WalletSetupContent(state: viewModel.state) {
+      Task { await viewModel.retry() }
+    }
+    .task { await viewModel.setup() }
+  }
+}
+
+struct WalletSetupContent: View {
+  let state: WalletSetupState
+  var onRetry: @Sendable () -> Void = {}
+
+  var body: some View {
     VStack(spacing: 16) {
-      switch viewModel.state {
+      switch state {
         case .idle:
           EmptyView()
 
@@ -47,9 +59,7 @@ struct WalletSetupView: View {
               primaryButton: .init(
                 label: "Försök igen",
                 accessibilityHint: "Använd knappen för att försöka igen",
-                action: {
-                  Task { await viewModel.retry() }
-                }
+                action: onRetry
               )
             )
           )
@@ -67,8 +77,7 @@ struct WalletSetupView: View {
           .transition(.blurReplace)
       }
     }
-    .animation(.default, value: viewModel.state)
-    .task { await viewModel.setup() }
+    .animation(.default, value: state)
   }
 
   private func loadingIndicator(label: String) -> some View {

@@ -2,36 +2,81 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
+import Foundation
+import SwiftAccessMechanism
 import Testing
-import WalletGateway
+import WalletGatewayInterface
 
+@testable import User
 @testable import WalletDemo
 
 @MainActor
 @Suite("Onboarding snapshots", .snapshots(record: .missing))
 struct OnboardingSnapshotTests {
-  @Test("Onboarding root — intro")
-  func onboardingRoot() {
-    assertThemedDeviceSnapshots(of: onboardingRootView)
+  @Test("Onboarding step", arguments: [OnboardingStep.intro, .pin, .verifyPin, .pid])
+  func onboardingStep(_ step: OnboardingStep) {
+    assertThemedDeviceSnapshots(
+      of: onboardingRootView(step: step).withToast,
+      testName: String(describing: step)
+    )
   }
 
   @Test("PID")
   func pid() {
     assertThemedSnapshots(
-      of: OnboardingPidView { _ in }.withToast,
+      of: PidSetupView { _ in }.withToast,
       width: 360
     )
+  }
+
+  @Test func walletSetupWorking() {
+    assertThemedDeviceSnapshots(of: WalletSetupContent(state: .working(.createAccount)))
+  }
+
+  @Test func walletSetupFailed() {
+    assertThemedDeviceSnapshots(
+      of: WalletSetupContent(state: .failed(at: .createAccount, error: CancellationError()))
+    )
+  }
+
+  @Test func walletSetupComplete() {
+    assertThemedDeviceSnapshots(of: WalletSetupContent(state: .complete))
   }
 }
 
 private extension OnboardingSnapshotTests {
-  var onboardingRootView: OnboardingRootView {
+  func onboardingRootView(step: OnboardingStep) -> OnboardingRootView {
     OnboardingRootView(
-      gatewayApiClient: GatewayApiMock(),
-      userSnapshot: UserSnapshot(accountId: nil, credentials: [], pid: nil),
-      savePidCredential: { _ in },
-      signIn: { _ in },
-      onReset: {}
+      gatewayApiClient: SnapshotGateway(),
+      userSnapshot: UserSnapshot(
+        accountId: nil,
+        credentials: [],
+        pid: nil,
+        hsmServerParameters: nil
+      ),
+      initialStep: step,
+      actions: OnboardingActions(
+        signIn: { _ in },
+        savePidCredential: { _ in },
+        resetSession: {},
+        saveHsmServerParameters: { _ in }
+      )
     )
   }
+}
+
+private struct SnapshotGateway: GatewayApi, HSMTransport {
+  func createAccount(publicKey: PublicKeyComponents) throws -> String { "" }
+  func addAccountWalletKey(key: PublicKeyComponents) throws {}
+  func getWalletUnitAttestation(nonce: String?) throws -> String { "" }
+
+  func registerState(
+    publicKey: JwkKey,
+    overwrite: Bool,
+    ttl: String?
+  ) throws -> RegisterStateResponse {
+    RegisterStateResponse(devAuthorizationCode: nil)
+  }
+
+  func perform(_ request: HSMRequest, operation: HSMOperation) throws -> Data { Data() }
 }
