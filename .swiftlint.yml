@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: EUPL-1.2
 
 included:
+  - Packages
   - Wallet
   - WalletTests
   - WalletSnapshotTests
@@ -13,6 +14,7 @@ excluded:
   - .build
   - DerivedData
   - WalletMacros/.build
+  - "Packages/**/.build"
 
 opt_in_rules:
   - identical_operands

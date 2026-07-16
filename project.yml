@@ -51,13 +51,32 @@ packages:
   eudi-lib-sdjwt-swift:
     url: https://github.com/eu-digital-identity-wallet/eudi-lib-sdjwt-swift.git
     exactVersion: 0.13.1
+  SDWebImageSwiftUI:
+    url: https://github.com/SDWebImage/SDWebImageSwiftUI.git
+    exactVersion: 3.1.4
+  SDWebImageWebPCoder:
+    url: https://github.com/SDWebImage/SDWebImageWebPCoder.git
+    exactVersion: 0.15.0
   swift-snapshot-testing:
     url: https://github.com/pointfreeco/swift-snapshot-testing.git
     from: 1.19.2
   WalletMacros:
-    path: WalletMacros
+    path: Packages/WalletMacros
   WalletGateway:
-    path: WalletGateway
+    path: Packages/WalletGatewayApi/WalletGateway
+    group: Packages/WalletGatewayApi
+  WalletGatewayInterface:
+    path: Packages/WalletGatewayApi/WalletGatewayInterface
+    group: Packages/WalletGatewayApi
+  SwiftAccessMechanism:
+    url: https://github.com/diggsweden/SwiftAccessMechanism.git
+    branch: chore/spm-vendored-xcframework
+  DesignSystem:
+    path: Packages/DesignSystem
+  CredentialInterfaces:
+    path: Packages/CredentialInterfaces
+  User:
+    path: Packages/User
 
 targets:
   WalletDemo:
@@ -93,6 +112,20 @@ targets:
         product: WalletMacros
       - package: WalletGateway
         product: WalletGateway
+      - package: WalletGatewayInterface
+        product: WalletGatewayInterface
+      - package: SwiftAccessMechanism
+        product: SwiftAccessMechanism
+      - package: SDWebImageSwiftUI
+        product: SDWebImageSwiftUI
+      - package: SDWebImageWebPCoder
+        product: SDWebImageWebPCoder
+      - package: DesignSystem
+        product: DesignSystem
+      - package: CredentialInterfaces
+        product: CredentialInterfaces
+      - package: User
+        product: User
     preBuildScripts:
       - name: SwiftLint
         path: scripts/swiftlint.sh

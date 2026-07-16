@@ -2,34 +2,37 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
+import CredentialInterfaces
+import DesignSystem
 import SwiftData
 import SwiftUI
+import User
 import WalletGateway
 import WalletMacros
 
 struct OnboardingRootView: View {
-  private let gatewayApiClient: GatewayApi
+  private let gatewayApiClient: GatewayApiClient
   private let userSnapshot: UserSnapshot
 
   @Environment(\.theme) private var theme
   @Environment(\.orientation) private var orientation
   @Environment(\.openURL) private var openURL
   @State private var viewModel: OnboardingViewModel
+  @State private var isResetErrorAlertPresented = false
 
   init(
-    gatewayApiClient: GatewayApi,
+    gatewayApiClient: GatewayApiClient,
     userSnapshot: UserSnapshot,
-    savePidCredential: @escaping (SavedCredential) async -> Void,
-    signIn: @escaping (String) async -> Void,
-    onReset: @escaping () async -> Void
+    actions: OnboardingActions
   ) {
     self.gatewayApiClient = gatewayApiClient
     self.userSnapshot = userSnapshot
     _viewModel = State(
       wrappedValue: .init(
-        savePidCredential: savePidCredential,
-        signIn: signIn,
-        onReset: onReset
+        savePidCredential: actions.savePidCredential,
+        signIn: actions.signIn,
+        onReset: actions.resetSession,
+        saveHsmServerParameters: actions.saveHsmServerParameters,
       )
     )
   }
@@ -54,6 +57,10 @@ struct OnboardingRootView: View {
     }
     .backGesture(isEnabled: viewModel.canGoBack()) {
       viewModel.back()
+    }
+    .alert("Kunde inte avbryta registreringen", isPresented: $isResetErrorAlertPresented) {
+      Button("Försök igen") { resetOnboarding() }
+      Button("Stäng", role: .cancel) {}
     }
   }
 
@@ -103,29 +110,24 @@ struct OnboardingRootView: View {
         Text("Steg \(currentStepNumber) av \(viewModel.totalSteps)")
         PrimaryProgressView(
           value: CGFloat(currentStepNumber),
-          total: CGFloat(viewModel.totalSteps)
+          total: CGFloat(viewModel.totalSteps),
         )
       }
     }
   }
 
   private var title: some View {
-    let stepCount = viewModel.currentStepNumber.map { "\($0). " }
     let titleText =
       switch viewModel.step {
         case .intro: ""
-        case .terms: "Tillåt behörigheter"
-        case .phoneNumber: "Ditt telefonnummer"
-        case .verifyPhone: "Bekräfta telefonnummer"
-        case .email: "Din e-postadress"
-        case .verifyEmail: "Bekräfta e-postadress"
         case .pin: "Ange pinkod för identifiering"
         case .verifyPin: "Bekräfta pinkod för identifiering"
+        case .walletSetup: "Sätter upp plånbok"
         case .pid: "Hämta personuppgifter"
         case .issueCredential: "Hämta personuppgifter"
       }
 
-    return Text("\(stepCount, default: "")\(titleText)")
+    return Text(titleText)
       .textStyle(.h1)
   }
 
@@ -137,52 +139,35 @@ struct OnboardingRootView: View {
           viewModel.next(from: .intro)
         }
 
-      case .terms:
-        ConsentView {
-          viewModel.next(from: .terms)
-        }
-
-      case .phoneNumber:
-        AddPhoneNumberForm { phoneNumber in
-          viewModel.setPhoneNumber(phoneNumber)
-          viewModel.next(from: .phoneNumber)
-        } onSkip: {
-          viewModel.skipPhoneNumber()
-        }
-
-      case .verifyPhone:
-        ContactInfoOneTimeCode(contactInfoData: viewModel.context.phoneNumber ?? "", type: .phone) {
-          viewModel.next(from: .verifyPhone)
-        }
-
-      case .email:
-        AddEmailForm(
-          gatewayApiClient: gatewayApiClient,
-          phoneNumber: viewModel.context.phoneNumber
-        ) { accountId, email in
-          await viewModel.signIn(accountId: accountId, email: email)
-          viewModel.next(from: .email)
-        }
-
-      case .verifyEmail:
-        ContactInfoOneTimeCode(contactInfoData: viewModel.context.email, type: .email) {
-          viewModel.next(from: .verifyEmail)
-        }
-
       case .pin:
-        OnboardingPinViewWrapper("Pinkod används när du ska identifiera dig") { pin in
+        PinSetupView("Pinkod används när du ska identifiera dig") { pin in
           try viewModel.setPin(pin)
           viewModel.next(from: .pin)
         }
 
       case .verifyPin:
-        OnboardingPinViewWrapper("Pinkod används när du ska identifiera dig") { pin in
+        PinSetupView("Pinkod används när du ska identifiera dig") { pin in
           try viewModel.confirmPin(pin)
           viewModel.next(from: .verifyPin)
         }
 
+      case .walletSetup:
+        WalletSetupView(
+          pin: viewModel.context.pin,
+          gatewayApi: gatewayApiClient,
+          onAccountCreated: { accountId in
+            try await viewModel.signIn(accountId: accountId)
+          },
+          onServerParameters: { parameters in
+            try await viewModel.saveHsmServerParameters(parameters)
+          },
+          onComplete: {
+            viewModel.next(from: .walletSetup)
+          },
+        )
+
       case .pid:
-        OnboardingPidView { credentialOfferUri in
+        PidSetupView { credentialOfferUri in
           viewModel.setCredentialOfferUri(credentialOfferUri)
           viewModel.next(from: .pid)
         }
@@ -191,12 +176,13 @@ struct OnboardingRootView: View {
         if let uri = viewModel.context.credentialOfferUri {
           IssuanceView(
             credentialOfferUri: uri,
-            gatewayApiClient: gatewayApiClient
+            gatewayApiClient: gatewayApiClient,
+            hsmServerParameters: userSnapshot.hsmServerParameters,
           ) { credential in
-            await viewModel.setCredentialOfferURI(credential)
+            try await viewModel.savePidCredential(credential)
           }
         } else {
-          OnboardingPidView { credentialOfferUri in
+          PidSetupView { credentialOfferUri in
             viewModel.setCredentialOfferUri(credentialOfferUri)
           }
         }
@@ -219,9 +205,7 @@ struct OnboardingRootView: View {
     if viewModel.step != .intro {
       ToolbarItem(placement: .destructiveAction) {
         Button {
-          Task {
-            await viewModel.reset()
-          }
+          resetOnboarding()
         } label: {
           Image(systemName: "xmark")
             .accessibilityLabel("Stäng")
@@ -229,19 +213,24 @@ struct OnboardingRootView: View {
       }
     }
   }
+
+  private func resetOnboarding() {
+    Task { await viewModel.reset() }
+  }
 }
 
-#Preview {
-  OnboardingRootView(
-    gatewayApiClient: GatewayApiMock(),
-    userSnapshot: UserSnapshot(
-      accountId: nil,
-      credentials: [],
-      pid: nil
-    ),
-    savePidCredential: { _ in },
-    signIn: { _ in },
-    onReset: {}
-  )
-  .themed
-}
+// TODO: Create mockable flow for OnboardingRootview
+// #Preview {
+//   OnboardingRootView(
+//     gatewayApiClient: GatewayApiMock(),
+//     userSnapshot: UserSnapshot(
+//       accountId: nil,
+//       credentials: [],
+//       pid: nil
+//     ),
+//     savePidCredential: { _ in },
+//     signIn: { _ in },
+//     onReset: {}
+//   )
+//   .themed
+// }

@@ -17,4 +17,11 @@ extension View {
       self
     }
   }
+
+  func staticAnimation(setTo animation: Animation?) -> some View {
+    self
+      .transaction { t in
+        t.animation = animation
+      }
+  }
 }

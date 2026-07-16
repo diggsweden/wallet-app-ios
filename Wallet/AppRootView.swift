@@ -3,18 +3,24 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import AuthenticationServices
+import SDWebImageWebPCoder
+import SwiftAccessMechanism
 import SwiftData
 import SwiftUI
+import User
 import WalletGateway
 
 struct AppRootView: View {
-  private let gatewayApiClient: GatewayApi
-  @State private var userViewModel: UserViewModel
+  private let gatewayApiClient: GatewayApiClient
+  @State private var userSessionViewModel: UserSessionViewModel
   @State private var router = Router()
+  @State private var isLogoutErrorAlertPresented = false
+  @State private var isFirstError: Bool = true
 
-  init(userStore: UserStore, gatewayApiClient: GatewayApi) {
-    _userViewModel = State(wrappedValue: .init(userStore: userStore))
+  init(userStore: UserStore, gatewayApiClient: GatewayApiClient) {
+    _userSessionViewModel = State(wrappedValue: .init(userStore: userStore))
     self.gatewayApiClient = gatewayApiClient
+    SDImageCodersManager.shared.addCoder(SDImageAWebPCoder.shared)
   }
 
   var body: some View {
@@ -29,49 +35,113 @@ struct AppRootView: View {
     .environment(router)
     .onOpenURL(perform: handleOpenURL)
     .task {
-      await userViewModel.initUser()
+      await userSessionViewModel.initUser()
     }
+    .alert("Kunde inte logga ut", isPresented: $isLogoutErrorAlertPresented) {
+      Button("Försök igen") { signOutFromErrorState() }
+      Button("Avbryt", role: .cancel) {}
+    }
+  }
+}
+
+// MARK: - Child views
+private extension AppRootView {
+  @ViewBuilder
+  var rootView: some View {
+    ZStack {
+      switch userSessionViewModel.user {
+        case .ready(let user):
+          userStateReadyView(user)
+            .transition(.blurReplace)
+
+        case .loading:
+          ProgressView()
+            .transition(.blurReplace)
+
+        case .error:
+          errorView
+            .transition(.blurReplace)
+      }
+    }
+    .animation(.default, value: userSessionViewModel.user)
+  }
+
+  var errorView: some View {
+    ErrorView(
+      model: .init(
+        primaryButton: .init(
+          label: "Försök igen",
+          accessibilityHint: "Använd knappen för att försöka igen",
+          asyncAction: userSessionViewModel.retryInitUser
+        ),
+        secondaryButton: .init(
+          label: "Logga ut",
+          accessibilityHint: "Använd knappen för att logga ut",
+          action: {
+            Task { @MainActor in
+              signOutFromErrorState()
+            }
+          }
+        )
+      )
+    )
   }
 
   @ViewBuilder
-  private var rootView: some View {
-    switch userViewModel.user {
-      case .ready(let user):
-        if !userViewModel.isEnrolled {
-          OnboardingRootView(
-            gatewayApiClient: gatewayApiClient,
-            userSnapshot: user,
-            savePidCredential: userViewModel.savePid,
-            signIn: userViewModel.signIn,
-            onReset: userViewModel.signOut,
-          )
-        } else {
-          DashboardView(
-            pid: user.pid,
-            credentials: user.credentials
-          )
-        }
-
-      case .loading, .error:
-        ProgressView()
+  func userStateReadyView(_ user: UserSnapshot) -> some View {
+    if !userSessionViewModel.isEnrolled {
+      OnboardingRootView(
+        gatewayApiClient: gatewayApiClient,
+        userSnapshot: user,
+        actions: OnboardingActions(
+          signIn: userSessionViewModel.signIn,
+          savePidCredential: userSessionViewModel.savePid,
+          resetSession: userSessionViewModel.signOut,
+          saveHsmServerParameters: userSessionViewModel.saveHsmServerParameters
+        )
+      )
+    } else {
+      DashboardView(
+        pid: user.pid,
+        credentials: user.credentials,
+      )
     }
   }
+}
 
+// MARK: - Actions
+private extension AppRootView {
+  func signOutFromErrorState() {
+    Task {
+      do {
+        try await userSessionViewModel.signOut()
+      } catch {
+        isLogoutErrorAlertPresented = true
+      }
+    }
+  }
+}
+
+// MARK: - Deeplink
+private extension AppRootView {
   @ViewBuilder
-  private func destination(for route: Route) -> some View {
+  func destination(for route: Route) -> some View {
     switch route {
       case .presentation(let url):
         PresentationView(
           url: url,
-          credential: userViewModel.userSnapshot?.pid
+          credential: userSessionViewModel.userSnapshot?.pid,
+          gatewayApiClient: gatewayApiClient,
+          hsmServerParameters: userSessionViewModel.userSnapshot?.hsmServerParameters
         )
 
       case .issuance(let url):
         IssuanceViewWrapper(
           credentialOfferUri: url,
-          gatewayApiClient: gatewayApiClient
+          gatewayApiClient: gatewayApiClient,
+          hsmServerParameters: userSessionViewModel.userSnapshot?.hsmServerParameters
         ) { credential in
-          await userViewModel.saveCredential(credential)
+          try await userSessionViewModel.saveCredential(credential)
           router.pop()
         }
 
@@ -79,11 +149,11 @@ struct AppRootView: View {
         CredentialDetailsView(credential: credential)
 
       case .settings:
-        SettingsView(onLogout: userViewModel.signOut)
+        SettingsView(onLogout: userSessionViewModel.signOut)
     }
   }
 
-  private func handleOpenURL(_ url: URL) {
+  func handleOpenURL(_ url: URL) {
     Task {
       do {
         let deeplink = try Deeplink(from: url)
