@@ -39,6 +39,10 @@ let package = Package(
       plugins: [
         .plugin(name: "OpenAPIGenerator", package: "swift-openapi-generator")
       ],
-    )
+    ),
+    .testTarget(
+      name: "WalletGatewayTests",
+      dependencies: ["WalletGateway"],
+    ),
   ],
 )

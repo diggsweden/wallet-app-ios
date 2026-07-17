@@ -58,31 +58,15 @@ enum NetworkClient {
     do {
       (data, response) = try await URLSession.shared.data(for: request)
     } catch {
-      throw HTTPError.networkError(error)
+      throw HTTPError.transport(underlying: error, url: url)
     }
 
     guard let httpResponse = response as? HTTPURLResponse else {
-      throw HTTPError.invalidResponse
+      throw HTTPError.invalidResponse(url: url)
     }
 
-    switch httpResponse.statusCode {
-      case 200 ... 299:
-        break
-
-      case 401:
-        throw HTTPError.unauthorized
-
-      case 403:
-        throw HTTPError.forbidden
-
-      case 404:
-        throw HTTPError.notFound
-
-      case 500 ... 599:
-        throw HTTPError.serverError(httpResponse.statusCode)
-
-      default:
-        throw HTTPError.serverError(httpResponse.statusCode)
+    guard 200 ... 299 ~= httpResponse.statusCode else {
+      throw HTTPError.http(status: httpResponse.statusCode, url: url, body: data)
     }
 
     return data
@@ -108,7 +92,7 @@ enum NetworkClient {
     do {
       return try decoder.decode(T.self, from: data)
     } catch {
-      throw HTTPError.decodingError(error)
+      throw HTTPError.decoding(underlying: error, url: url)
     }
   }
 
@@ -130,7 +114,7 @@ enum NetworkClient {
     )
 
     guard let string = String(bytes: data, encoding: .utf8) else {
-      throw HTTPError.decodingError(URLError(.badServerResponse))
+      throw HTTPError.decoding(underlying: URLError(.badServerResponse), url: url)
     }
     return string
   }
