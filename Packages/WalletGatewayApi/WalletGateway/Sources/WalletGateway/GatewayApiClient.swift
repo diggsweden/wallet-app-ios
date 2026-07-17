@@ -28,17 +28,20 @@ public struct GatewayApiClient: GatewayApi {
     )
     let bodyDto = Components.Schemas.CreateAccountRequest(deviceKey: jwkDto)
     let input = Operations.CreateAccount.Input(body: .json(bodyDto))
-    let response = try await client.createAccount(input)
 
-    guard case let .created(payload) = response else {
-      throw GatewayError.invalidResponse
+    switch try await client.createAccount(input) {
+      case .created(let payload):
+        guard let accountId = try? payload.body.json.accountId else {
+          throw GatewayError.undecodableResponseBody
+        }
+        return accountId
+
+      case .unauthorized:
+        throw GatewayError.unauthorized
+
+      case .`default`(let status, let response):
+        throw GatewayError.problem(ProblemDetails(status: status, response: response))
     }
-
-    guard let accountId = try? payload.body.json.accountId else {
-      throw GatewayError.undecodableResponseBody
-    }
-
-    return accountId
   }
 
   public func addAccountWalletKey(key: PublicKeyComponents) async throws {
@@ -50,26 +53,32 @@ public struct GatewayApiClient: GatewayApi {
       y: key.y,
     )
     let input = Operations.AddAccountWalletKey.Input(body: .json(keyRequest))
-    let response = try await client.addAccountWalletKey(input)
 
-    guard case .created = response else {
-      throw GatewayError.invalidResponse
+    switch try await client.addAccountWalletKey(input) {
+      case .created:
+        break
+
+      case .`default`(let status, let response):
+        throw GatewayError.problem(ProblemDetails(status: status, response: response))
     }
   }
 
   public func getWalletUnitAttestation(nonce: String?) async throws -> String {
     let nonceQuery = Operations.CreateWua.Input.Query(nonce: nonce)
     let input = Operations.CreateWua.Input(query: nonceQuery)
-    let response = try await client.createWua(input)
 
-    guard case let .created(payload) = response else {
-      throw GatewayError.invalidResponse
+    switch try await client.createWua(input) {
+      case .created(let payload):
+        guard let jwt = try? payload.body.json.jwt else {
+          throw GatewayError.undecodableResponseBody
+        }
+        return jwt
+
+      case .unauthorized:
+        throw GatewayError.unauthorized
+
+      case .`default`(let status, let response):
+        throw GatewayError.problem(ProblemDetails(status: status, response: response))
     }
-
-    guard let jwt = try? payload.body.json.jwt else {
-      throw GatewayError.undecodableResponseBody
-    }
-
-    return jwt
   }
 }

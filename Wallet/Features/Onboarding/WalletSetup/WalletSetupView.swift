@@ -45,39 +45,56 @@ struct WalletSetupContent: View {
 
   var body: some View {
     VStack(spacing: 16) {
-      switch state {
-        case .idle:
-          EmptyView()
-
-        case let .working(step):
-          loadingIndicator(label: step.label)
-            .staticAnimation(setTo: nil)
-
-        case .failed:
-          ErrorView(
-            model: .init(
-              primaryButton: .init(
-                label: "Försök igen",
-                accessibilityHint: "Använd knappen för att försöka igen",
-                action: onRetry
-              )
-            )
-          )
-          .transition(.blurReplace)
-
-        case .complete:
-          VStack(spacing: 24) {
-            Image(systemName: "checkmark.circle.fill")
-              .font(.system(size: 80))
-              .foregroundStyle(.green)
-              .accessibilityHidden(true)
-            Text("Klart!")
-              .textStyle(.h2)
-          }
-          .transition(.blurReplace)
-      }
+      content
     }
-    .animation(.default, value: state)
+    .animation(.default, value: viewModel.state)
+    .task { await viewModel.setup() }
+  }
+
+  @ViewBuilder
+  private var content: some View {
+    switch viewModel.state {
+      case .idle:
+        EmptyView()
+
+      case let .working(step):
+        loadingIndicator(label: step.label)
+          .staticAnimation(setTo: nil)
+
+      case let .failed(_, caught):
+        errorView(caught: caught)
+          .transition(.blurReplace)
+
+      case .complete:
+        completeView
+          .transition(.blurReplace)
+    }
+  }
+
+  private func errorView(caught: CaughtError) -> some View {
+    ErrorView(
+      model: .init(
+        caughtError: caught,
+        primaryButton: .init(
+          label: "Försök igen",
+          accessibilityHint: "Använd knappen för att försöka igen",
+          action: {
+            Task { await viewModel.retry() }
+          }
+        )
+      )
+    )
+  }
+
+  private var completeView: some View {
+    VStack(spacing: 24) {
+      Image(systemName: "checkmark.circle.fill")
+        .font(.system(size: 80))
+        .foregroundStyle(.green)
+        .accessibilityHidden(true)
+      Text("Klart!")
+        .textStyle(.h2)
+    }
   }
 
   private func loadingIndicator(label: String) -> some View {

@@ -10,6 +10,9 @@ public enum GatewayError: LocalizedError {
   case missingKeyIdentifier
   case asyncOperationFailed(message: String)
   case asyncOperationTimeout
+  case problem(ProblemDetails)
+  case unauthorized
+  case notFound
 
   public var errorDescription: String? {
     switch self {
@@ -22,11 +25,20 @@ public enum GatewayError: LocalizedError {
       case .missingKeyIdentifier:
         "Nyckelidentifierare saknas."
 
-      case .asyncOperationFailed(let message):
+      case .asyncOperationFailed(let message, _):
         "HSM-operationen misslyckades: \(message)"
 
       case .asyncOperationTimeout:
         "Tidsgränsen för HSM-operationen överskreds."
+
+      case .problem(let details):
+        details.title ?? details.detail ?? "Servern returnerade ett fel (\(details.status))."
+
+      case .unauthorized:
+        "Sessionen är ogiltig eller har gått ut."
+
+      case .notFound:
+        "Resursen kunde inte hittas."
     }
   }
 }

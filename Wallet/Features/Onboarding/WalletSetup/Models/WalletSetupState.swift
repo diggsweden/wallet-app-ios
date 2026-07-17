@@ -5,7 +5,7 @@
 enum WalletSetupState {
   case idle
   case working(WalletSetupStep)
-  case failed(at: WalletSetupStep, error: Error)
+  case failed(at: WalletSetupStep, CaughtError)
   case complete
 }
 
