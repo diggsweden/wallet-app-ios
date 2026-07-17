@@ -13,7 +13,7 @@ final class UserSessionViewModel {
   enum UserStatus: Equatable {
     case loading
     case ready(UserSnapshot)
-    case error
+    case error(CaughtError)
   }
 
   private(set) var user: UserStatus = .loading
@@ -47,7 +47,7 @@ final class UserSessionViewModel {
       let value = try await userStore.getOrCreate()
       user = .ready(value)
     } catch {
-      user = .error
+      user = .error(CaughtError(error))
     }
   }
 

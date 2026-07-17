@@ -63,13 +63,13 @@ extension GatewayApiClient: HSMTransport {
     switch try await client.createRequest(input) {
       case .ok(let payload):
         guard let dto = try? payload.body.json else {
-          throw GatewayError.undecodableResponseBody(SourceLocation())
+          throw GatewayError.undecodableResponseBody
         }
         return try extractResult(from: dto)
 
       case .accepted(let payload):
         guard let dto = try? payload.body.json else {
-          throw GatewayError.undecodableResponseBody(SourceLocation())
+          throw GatewayError.undecodableResponseBody
         }
         return try await pollUntilComplete(id: dto.id)
 
@@ -94,10 +94,7 @@ extension GatewayApiClient: HSMTransport {
 
   private func extractResult(from dto: Components.Schemas.HsmResponse) throws -> Data {
     if dto.status == .error {
-      throw GatewayError.asyncOperationFailed(
-        message: dto.result ?? "HSM operation failed",
-        SourceLocation()
-      )
+      throw GatewayError.asyncOperationFailed(message: dto.result ?? "HSM operation failed")
     }
 
     guard let result = dto.result else {

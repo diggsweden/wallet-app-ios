@@ -9,7 +9,7 @@ public enum SessionError: LocalizedError {
   case noKeyId
   case problem(ProblemDetails)
   case unauthorized
-  case undecodableResponseBody(SourceLocation)
+  case undecodableResponseBody
 
   public var errorDescription: String? {
     switch self {
