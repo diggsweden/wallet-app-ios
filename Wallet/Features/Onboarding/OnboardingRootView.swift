@@ -4,14 +4,15 @@
 
 import CredentialInterfaces
 import DesignSystem
+import SwiftAccessMechanism
 import SwiftData
 import SwiftUI
 import User
-import WalletGateway
+import WalletGatewayInterface
 import WalletMacros
 
 struct OnboardingRootView: View {
-  private let gatewayApiClient: GatewayApiClient
+  private let gatewayApiClient: any GatewayApi & HSMTransport
   private let userSnapshot: UserSnapshot
 
   @Environment(\.theme) private var theme
@@ -21,14 +22,16 @@ struct OnboardingRootView: View {
   @State private var isResetErrorAlertPresented = false
 
   init(
-    gatewayApiClient: GatewayApiClient,
+    gatewayApiClient: any GatewayApi & HSMTransport,
     userSnapshot: UserSnapshot,
+    initialStep: OnboardingStep = .intro,
     actions: OnboardingActions
   ) {
     self.gatewayApiClient = gatewayApiClient
     self.userSnapshot = userSnapshot
     _viewModel = State(
       wrappedValue: .init(
+        step: initialStep,
         savePidCredential: actions.savePidCredential,
         signIn: actions.signIn,
         onReset: actions.resetSession,
