@@ -11,7 +11,7 @@ import Testing
 struct ErrorViewSnapshotTests {
   @Test("Error — primary + link")
   func primaryAndLink() {
-    let model = ErrorViewModel(
+    let model = ErrorView.ViewModel(
       primaryButton: .init(label: "Försök igen", accessibilityHint: "Försök igen", action: {}),
       linkButton: .init(label: "Få hjälp", accessibilityHint: "Få hjälp", action: {})
     )
@@ -20,7 +20,7 @@ struct ErrorViewSnapshotTests {
 
   @Test("Error — two buttons + link")
   func twoButtonsAndLink() {
-    let model = ErrorViewModel(
+    let model = ErrorView.ViewModel(
       primaryButton: .init(label: "Försök igen", accessibilityHint: "Försök igen", action: {}),
       secondaryButton: .init(label: "Avbryt", accessibilityHint: "Avbryt", action: {}),
       linkButton: .init(label: "Få hjälp", accessibilityHint: "Få hjälp", action: {})
