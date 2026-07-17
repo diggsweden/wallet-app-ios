@@ -32,6 +32,18 @@ struct WalletSetupView: View {
   }
 
   var body: some View {
+    WalletSetupContent(state: viewModel.state) {
+      Task { await viewModel.retry() }
+    }
+    .task { await viewModel.setup() }
+  }
+}
+
+struct WalletSetupContent: View {
+  let state: WalletSetupState
+  var onRetry: @Sendable () -> Void = {}
+
+  var body: some View {
     VStack(spacing: 16) {
       content
     }
