@@ -81,9 +81,10 @@ struct PresentationView: View {
             await viewModel.resolveAndMatchClaims()
           }
 
-      case .error:
+      case let .error(caught):
         ErrorView(
           model: .init(
+            caughtError: caught,
             primaryButton: .init(
               label: "Försök igen",
               accessibilityHint: "Använd knappen för att försöka igen",

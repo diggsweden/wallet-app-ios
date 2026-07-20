@@ -27,3 +27,14 @@ runs:
           -resultBundlePath TestResults.xcresult \
           COMPILER_INDEX_STORE_ENABLE=NO \
         | xcbeautify
+
+    - name: Run package unit tests
+      shell: bash
+      run: |
+        set -o pipefail
+        xcodebuild test \
+          -workspace Wallet.xcworkspace \
+          -scheme WalletGateway \
+          -destination 'platform=iOS Simulator,name=iPhone 17' \
+          COMPILER_INDEX_STORE_ENABLE=NO \
+        | xcbeautify
