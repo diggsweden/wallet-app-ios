@@ -1,0 +1,51 @@
+# SPDX-FileCopyrightText: 2025 Digg - Agency for Digital Government
+#
+# SPDX-License-Identifier: CC0-1.0
+
+name: Xcode Coverage Report
+description: Generate and upload an Xcode coverage report from an xcresult bundle
+
+inputs:
+  xcresult-path:
+    description: Path to the xcresult bundle
+    required: true
+
+  artifact-name:
+    description: Name of the uploaded coverage artifact
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Generate coverage report
+      shell: bash
+      env:
+        XCRESULT_PATH: ${{ inputs.xcresult-path }}
+      run: |
+        if [ ! -d "$XCRESULT_PATH" ]; then
+          echo "⚠️ No $XCRESULT_PATH - skipping coverage report ⚠️"
+          exit 0
+        fi
+
+        xcrun xccov view --report "$XCRESULT_PATH" \
+          | grep -E '^[A-Za-z]|^    /' \
+          > coverage-files.txt
+
+        xcrun xccov view --report --json "$XCRESULT_PATH" > coverage.json
+
+        {
+          echo "## 📊 Code Coverage"
+          echo ""
+          echo '```'
+          head -60 coverage-files.txt
+          echo '```'
+        } >> "$GITHUB_STEP_SUMMARY"
+
+    - name: Upload coverage report
+      if: hashFiles('coverage-files.txt') != ''
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: |
+          coverage-files.txt
+          coverage.json

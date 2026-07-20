@@ -8,20 +8,20 @@ import WalletGateway
 
 struct WalletSessionSigner: SessionSigningProvider {
   func keyId() throws -> String {
-    let key = try SigningKeyStore.getOrCreateKey(withTag: .walletKey)
+    let key = try SigningKeyStore.getOrCreateKey(withTag: .deviceKey)
     guard let keyId = try? key.publicKey.jwk.thumbprint() else {
       throw SessionError.noKeyId
     }
     return keyId
   }
 
-  func signSessionJwt(keyId: String, nonce: String) throws -> String {
+  func signSessionJwt(keyId: String, nonce: String) async throws -> String {
     struct SessionPayload: Codable {
       let nonce: String
     }
-    let key = try SigningKeyStore.getOrCreateKey(withTag: .walletKey)
+    let key = try SigningKeyStore.getOrCreateKey(withTag: .deviceKey)
     let header = DefaultJWSHeaderImpl(algorithm: .ES256, keyID: keyId)
     let payload = SessionPayload(nonce: nonce)
-    return try JwtUtil().signJwt(with: key, payload: payload, header: header)
+    return try await JwtUtil().signJwt(with: key, payload: payload, header: header)
   }
 }

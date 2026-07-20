@@ -3,68 +3,83 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import AuthenticationServices
+import CredentialInterfaces
+import CryptoKit
 import Foundation
 import OpenID4VCI
-import WalletGateway
+import SwiftAccessMechanism
+import User
+import WalletGatewayInterface
 import WalletMacros
 import eudi_lib_sdjwt_swift
 
-enum IssuanceState {
-  case initial
-  case issuerFetched(offer: CredentialOffer)
-  case authorized(request: AuthorizedRequest)
-  case credentialFetched(credential: (SavedCredential, [ClaimUiModel]))
-}
-
 @MainActor
 @Observable
+// swiftlint:disable:next type_body_length
 class IssuanceViewModel {
   private let credentialOfferUri: String
-  private(set) var claimsMetadata: [String: String] = [:]
-  private var issuer: Issuer?
-  private var credentialOffer: CredentialOffer?
-  private let openId4VciUtil = OpenId4VciUtil()
-  private var oauth = OauthCoordinator()
+  private let gatewayApiClient: GatewayApi & HSMTransport
   private let jwtUtil = JwtUtil()
-  private let gatewayApiClient: GatewayApi
-  var issuerDisplayData: IssuerDisplay?
-  var state: IssuanceState = .initial
-  var error: ErrorEvent?
+  private let openId4VciUtil = OpenId4VciUtil()
+  private let hsmServerParameters: HsmServerParameters?
+  private let onSaveCredential: (SavedCredential) async throws -> Void
 
-  init(credentialOfferUri: String, gatewayApiClient: GatewayApi) {
+  private(set) var claimsMetadata: [String: String] = [:]
+  private(set) var issuerDisplayData: IssuerDisplay?
+  private(set) var phase: IssuancePhase = .fetchingIssuer
+  private(set) var pinAttempt = 0
+
+  private var credentialOffer: CredentialOffer?
+  private var issuer: Issuer?
+  private var oauth = OauthCoordinator()
+
+  var pinError = false
+  var saveError = false
+
+  init(
+    credentialOfferUri: String,
+    gatewayApiClient: any GatewayApi & HSMTransport,
+    hsmServerParameters: HsmServerParameters?,
+    onSaveCredential: @escaping (SavedCredential) async throws -> Void
+  ) {
     self.credentialOfferUri = credentialOfferUri
     self.gatewayApiClient = gatewayApiClient
+    self.hsmServerParameters = hsmServerParameters
+    self.onSaveCredential = onSaveCredential
   }
 
-  func fetchIssuer() async {
+  func start() async {
+    phase = .fetchingIssuer
     do {
       let credentialOffer = try await fetchCredentialOffer(with: credentialOfferUri)
       self.credentialOffer = credentialOffer
       claimsMetadata = getClaimsMetadata(from: credentialOffer)
       issuer = try await createIssuer(from: credentialOffer)
-      state = .issuerFetched(offer: credentialOffer)
+      phase = .readyToAuthorize(credentialOffer)
     } catch {
-      self.error = error.toErrorEvent()
+      phase = .error(.start, CaughtError(error))
     }
   }
 
-  func authorize(
-    credentialOffer: CredentialOffer,
-    authPresentationAnchor: ASPresentationAnchor,
-  ) async {
+  func beginAuthorization(anchor: ASPresentationAnchor) async {
+    guard case .readyToAuthorize(let offer) = phase else {
+      return
+    }
+
+    phase = .authorizing
     do {
       guard let issuer else {
         throw IssuanceError.issuerNotFound
       }
 
       let preparedRequest = try await issuer.prepareAuthorizationRequest(
-        credentialOffer: credentialOffer
+        credentialOffer: offer
       )
 
       let oAuthCallback = try await oauth.start(
         url: preparedRequest.authorizationCodeURL.url,
         callbackScheme: "wallet-app",
-        anchor: authPresentationAnchor,
+        anchor: anchor,
       )
 
       guard let code = oAuthCallback.queryItemValue(for: "code") else {
@@ -92,14 +107,21 @@ class IssuanceViewModel {
           ),
         )
 
-      state = .authorized(request: authResponse)
-      await fetchCredential(authResponse)
+      phase = .readyToSign(authResponse)
     } catch {
-      self.error = error.toErrorEvent()
+      if error.isWebAuthCancellation {
+        phase = .readyToAuthorize(offer)
+      } else {
+        phase = .error(.authorize(offer), CaughtError(error))
+      }
     }
   }
 
-  func fetchCredential(_ authRequest: AuthorizedRequest) async {
+  func createProof(with pin: String) async {
+    guard case .readyToSign(let authRequest) = phase else {
+      return
+    }
+
     do {
       guard let issuer else {
         throw IssuanceError.issuerNotFound
@@ -122,39 +144,70 @@ class IssuanceViewModel {
           default: false
         }
 
-      let jwtProof = try await createProof(
+      let proof = try await createJwtProof(
         issuerId: metadata.credentialIssuerIdentifier.url.absoluteString,
         keyAttestationRequired: keyAttestationRequired,
         nonceUrl: metadata.nonceEndpoint?.url,
+        pin: pin,
       )
+
+      phase = .readyToFetch(authRequest, proof: proof)
+      await fetchCredential()
+    } catch {
+      pinError = true
+      pinAttempt += 1
+    }
+  }
+
+  func fetchCredential() async {
+    guard case .readyToFetch(let authRequest, let proof) = phase else {
+      return
+    }
+
+    phase = .fetchingCredential
+    do {
+      guard let issuer else {
+        throw IssuanceError.issuerNotFound
+      }
+
+      let metadata = await issuer.issuerMetadata
+
+      guard
+        let configId = credentialOffer?.credentialConfigurationIdentifiers.first,
+        let supportedCredential = metadata.credentialsSupported[configId],
+        case let .sdJwtVc(credentialConfig) = supportedCredential
+      else {
+        throw IssuanceError.credentialNotSupported
+      }
 
       let credential = try await openId4VciUtil.fetchCredential(
         url: metadata.credentialEndpoint.url,
         token: authRequest.accessToken.accessToken,
         credentialRequest: CredentialRequest(
           credentialConfigurationId: configId.value,
-          proofs: JwtProofType(jwt: [jwtProof]),
+          proofs: JwtProofType(jwt: [proof]),
         ),
         requestEncryption: metadata.credentialRequestEncryption.toCryptoSpec(),
       )
 
       let display = metadata.display.first
-      let parsedCredential = try parseCredential(
+      let (parsedCredential, credentialUiModels) = try parseCredential(
         credential,
         credentialConfiguration: credentialConfig,
         issuer: display,
       )
 
-      state = .credentialFetched(credential: parsedCredential)
+      phase = .done(parsedCredential, credentialUiModels)
     } catch {
-      self.error = error.toErrorEvent()
+      phase = .error(.fetchCredential(authRequest, proof: proof), CaughtError(error))
     }
   }
 
-  private func createProof(
+  private func createJwtProof(
     issuerId: String,
     keyAttestationRequired: Bool,
     nonceUrl: URL?,
+    pin: String,
   ) async throws -> String {
     let nonce: String? =
       if let nonceUrl {
@@ -170,16 +223,40 @@ class IssuanceViewModel {
         nil
       }
 
-    let payload = JwtProofPayload(aud: issuerId, nonce: nonce)
-    let key = try SigningKeyStore.getOrCreateKey(withTag: .walletKey)
+    let hsmClient = try getHSMClient()
+    _ = try await hsmClient.authenticate(
+      password: PINStretch().stretch(input: Data(pin.utf8)),
+    )
+    let keys = try await hsmClient.listKeys()
 
-    return try jwtUtil.signJwt(
-      with: SigningKeyStore.getOrCreateKey(withTag: .walletKey),
+    guard
+      let key = keys.keyInfo.first,
+      let keyId = key.kid
+    else {
+      throw IssuanceError.noHSMKey
+    }
+
+    let payload = JwtProofPayload(aud: issuerId, nonce: nonce)
+    return try await jwtUtil.signJwt(
       payload: payload,
       header: KeyAttestationHeader(
-        jwk: keyAttestationRequired ? nil : key.publicKey.jwk,
+        jwk: keyAttestationRequired ? nil : key.publicKey.toSecKey().jwk,
         keyAttestation: keyAttestation,
       ),
+    ) { signingInput in
+      try await hsmClient.sign(hsmKeyId: keyId, data: signingInput).signature
+    }
+  }
+
+  private func getHSMClient() throws -> BFFHttpClient {
+    guard let hsmServerParameters else {
+      throw IssuanceError.missingHSMConfig
+    }
+
+    return try BFFHttpClient.resume(
+      transport: gatewayApiClient,
+      privateKey: SecKeyStore.getOrCreateKey(withTag: .walletKey),
+      serverParameters: hsmServerParameters.toServerParameters(),
     )
   }
 
@@ -204,6 +281,7 @@ class IssuanceViewModel {
         compactSerialized: credential,
         claimDisplayNames: claimsMetadata,
         claimsCount: claims.count,
+        issuedAt: .now,
         type: credentialConfiguration.vct ?? "",
         displayData: CredentialDisplayData(name: displayName),
       ), claims,
@@ -262,5 +340,43 @@ class IssuanceViewModel {
 
         result[claimPath] = displayName
       }
+  }
+
+  func saveCredential(_ credential: SavedCredential) async {
+    do {
+      try await onSaveCredential(credential)
+    } catch {
+      saveError = true
+    }
+  }
+
+  func retrySave() async {
+    guard case .done(let credential, _) = phase else {
+      return
+    }
+
+    await saveCredential(credential)
+  }
+
+  func retry(anchor: ASPresentationAnchor?) {
+    guard case .error(let recovery, _) = phase else {
+      return
+    }
+
+    Task {
+      switch recovery {
+        case .start:
+          await start()
+
+        case .authorize(let offer):
+          guard let anchor else { return }
+          phase = .readyToAuthorize(offer)
+          await beginAuthorization(anchor: anchor)
+
+        case .fetchCredential(let authRequest, let proof):
+          phase = .readyToFetch(authRequest, proof: proof)
+          await fetchCredential()
+      }
+    }
   }
 }

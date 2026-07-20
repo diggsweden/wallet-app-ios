@@ -1,0 +1,33 @@
+# SPDX-FileCopyrightText: 2025 Digg - Agency for Digital Government
+#
+# SPDX-License-Identifier: CC0-1.0
+
+name: Xcode Cache (save)
+description: |
+  Save Xcode build cache and delete any previous caches matching the prefix.
+  Call only on main, after a successful build. Maintains single-cache semantics.
+
+runs:
+  using: composite
+  steps:
+    - name: Save Xcode DerivedData cache
+      uses: actions/cache/save@v4
+      with:
+        path: |
+          Wallet.xcodeproj
+          .xcodegen/cache
+          ~/Library/Developer/Xcode/DerivedData
+          ~/Library/Caches/org.swift.swiftpm
+          ~/Library/org.swift.swiftpm
+        key: xcode-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}
+
+    - name: Delete previous caches
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        CURRENT_KEY: xcode-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}
+        PREFIX: xcode-${{ runner.os }}-${{ runner.arch }}-
+      run: |
+        gh cache list --key "$PREFIX" --limit 100 --json id,key \
+          --jq ".[] | select(.key != \"$CURRENT_KEY\") | .id" \
+          | xargs -r -I {} gh cache delete {}

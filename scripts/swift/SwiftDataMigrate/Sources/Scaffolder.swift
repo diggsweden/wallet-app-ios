@@ -27,20 +27,6 @@ final class Scaffolder {
     try updateMigrationPlan()
     try bumpTypealiases()
   }
-
-  func runXcodegen(at repoRoot: URL) throws {
-    let process = Process()
-    process.executableURL = URL(fileURLWithPath: "/usr/bin/env")
-    process.arguments = ["xcodegen"]
-    process.currentDirectoryURL = repoRoot
-
-    try process.run()
-    process.waitUntilExit()
-
-    guard process.terminationStatus == .zero else {
-      throw SwiftDataMigrationError.xcodegenFailed(exitCode: process.terminationStatus)
-    }
-  }
 }
 
 private extension Scaffolder {
@@ -79,6 +65,7 @@ private extension Scaffolder {
     switch stageKind {
       case .lightweight:
         body = MigrationTemplate.lightweight(prev: prevVersion, next: nextVersion)
+
       case .custom:
         body = MigrationTemplate.custom(prev: prevVersion, next: nextVersion)
     }

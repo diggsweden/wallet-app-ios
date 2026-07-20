@@ -2,13 +2,17 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
+import CredentialInterfaces
+import SwiftAccessMechanism
 import SwiftUI
-import WalletGateway
+import User
+import WalletGatewayInterface
 
 struct IssuanceViewWrapper: View {
   let credentialOfferUri: String
-  let gatewayApiClient: GatewayApi
-  let onSave: (SavedCredential) async -> Void
+  let gatewayApiClient: any GatewayApi & HSMTransport
+  let hsmServerParameters: HsmServerParameters?
+  let onSave: (SavedCredential) async throws -> Void
 
   var body: some View {
     GeometryReader { proxy in
@@ -16,7 +20,8 @@ struct IssuanceViewWrapper: View {
         IssuanceView(
           credentialOfferUri: credentialOfferUri,
           gatewayApiClient: gatewayApiClient,
-          onSave: onSave
+          hsmServerParameters: hsmServerParameters,
+          onSaveCredential: onSave
         )
         .frame(
           maxWidth: .infinity,

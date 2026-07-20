@@ -1,0 +1,40 @@
+# SPDX-FileCopyrightText: 2025 Digg - Agency for Digital Government
+#
+# SPDX-License-Identifier: CC0-1.0
+
+name: Xcode Test
+description: Restore Xcode cache, generate project, run unit tests and upload test coverage
+
+runs:
+  using: composite
+  steps:
+    - name: Restore Xcode cache
+      uses: ./.github/actions/xcode-cache-restore
+
+    - name: Generate Xcode project
+      shell: bash
+      run: xcodegen generate --use-cache --cache-path .xcodegen/cache
+
+    - name: Run unit tests
+      shell: bash
+      run: |
+        set -o pipefail
+        rm -rf TestResults.xcresult
+        xcodebuild test \
+          -workspace Wallet.xcworkspace \
+          -scheme WalletTests \
+          -destination 'platform=iOS Simulator,name=iPhone 17' \
+          -resultBundlePath TestResults.xcresult \
+          COMPILER_INDEX_STORE_ENABLE=NO \
+        | xcbeautify
+
+    - name: Run package unit tests
+      shell: bash
+      run: |
+        set -o pipefail
+        xcodebuild test \
+          -workspace Wallet.xcworkspace \
+          -scheme WalletGateway \
+          -destination 'platform=iOS Simulator,name=iPhone 17' \
+          COMPILER_INDEX_STORE_ENABLE=NO \
+        | xcbeautify

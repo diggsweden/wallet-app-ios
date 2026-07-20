@@ -31,8 +31,8 @@ extension SignedSDJWT {
           displayName: displayName,
           value: json.toClaimValue(
             path: name,
-            displayNames: displayNames
-          )
+            displayNames: displayNames,
+          ),
         )
       }
   }
@@ -41,13 +41,18 @@ extension SignedSDJWT {
 private extension JSON {
   func toClaimValue(
     path: String,
-    displayNames: [String: String]
+    displayNames: [String: String],
   ) -> ClaimValue {
     switch type {
       case .string:
         if let date = try? Date(stringValue, strategy: .iso8601.year().month().day()) {
           return .date(date)
         }
+
+        if stringValue.starts(with: "data:image") {
+          return .string("TODO: Image")
+        }
+
         return .string(stringValue)
 
       case .number:
@@ -66,8 +71,8 @@ private extension JSON {
                 displayName: nil,
                 value: item.toClaimValue(
                   path: path,
-                  displayNames: displayNames
-                )
+                  displayNames: displayNames,
+                ),
               )
             }
         )
@@ -86,8 +91,8 @@ private extension JSON {
                 displayName: displayName,
                 value: value.toClaimValue(
                   path: childPath,
-                  displayNames: displayNames
-                )
+                  displayNames: displayNames,
+                ),
               )
             }
         )

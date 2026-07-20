@@ -2,17 +2,30 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
+import CredentialInterfaces
+import SwiftAccessMechanism
 import SwiftUI
+import User
+import WalletGatewayInterface
 
 struct PresentationView: View {
   @State private var viewModel: PresentationViewModel
   @Environment(Router.self) private var router
-  @Environment(ToastViewModel.self) private var toastViewModel
   @Environment(\.openURL) private var openURL
 
-  init(url: URL, credential: SavedCredential?) {
+  init(
+    url: URL,
+    credential: SavedCredential?,
+    gatewayApiClient: any GatewayApi & HSMTransport,
+    hsmServerParameters: HsmServerParameters?,
+  ) {
     _viewModel = State(
-      wrappedValue: .init(url: url, credential: credential)
+      wrappedValue: .init(
+        url: url,
+        credential: credential,
+        gatewayApiClient: gatewayApiClient,
+        hsmServerParameters: hsmServerParameters
+      )
     )
   }
 
@@ -21,11 +34,25 @@ struct PresentationView: View {
       .navigationDestination(for: PresentationRoute.self) { route in
         destination(for: route)
           .defaultScreenStyle
+          .alert("Kunde inte dela uppgifterna", isPresented: $viewModel.sendError) {
+            Button("Försök igen") {}
+          }
       }
-      .onChange(of: viewModel.error) { _, error in
-        guard let error else { return }
-        toastViewModel.showError(error.message)
+  }
+
+  private func submitPresentation(_ pin: String) {
+    Task {
+      guard let result = await viewModel.sendPresentation(pin) else {
+        return
       }
+
+      if let redirectUrl = result.redirectUrl {
+        router.popToRoot()
+        openURL(redirectUrl)
+      } else {
+        router.navigationPath.append(PresentationRoute.success)
+      }
+    }
   }
 
   @ViewBuilder
@@ -34,19 +61,8 @@ struct PresentationView: View {
       case .pin:
         PresentationPinView(
           isLoading: viewModel.isSending
-        ) { _ in
-          Task {
-            guard let result = await viewModel.sendPresentation() else {
-              return
-            }
-
-            if let redirectUrl = result.redirectUrl {
-              router.popToRoot()
-              openURL(redirectUrl)
-            } else {
-              router.navigationPath.append(PresentationRoute.success)
-            }
-          }
+        ) { pin in
+          submitPresentation(pin)
         }
 
       case .success:
@@ -65,16 +81,20 @@ struct PresentationView: View {
             await viewModel.resolveAndMatchClaims()
           }
 
-      case .error:
-        PresentationErrorView(
-          onRetry: {
-            Task {
-              await viewModel.resolveAndMatchClaims()
-            }
-          },
-          onDismiss: {
-            router.pop()
-          }
+      case let .error(caught):
+        ErrorView(
+          model: .init(
+            caughtError: caught,
+            primaryButton: .init(
+              label: "Försök igen",
+              accessibilityHint: "Använd knappen för att försöka igen",
+              action: {
+                Task {
+                  await viewModel.resolveAndMatchClaims()
+                }
+              }
+            )
+          )
         )
 
       case .ready:
