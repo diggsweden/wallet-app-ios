@@ -57,7 +57,7 @@ class IssuanceViewModel {
       issuer = try await createIssuer(from: credentialOffer)
       phase = .readyToAuthorize(credentialOffer)
     } catch {
-      phase = .error(.start)
+      phase = .error(.start, CaughtError(error))
     }
   }
 
@@ -109,7 +109,11 @@ class IssuanceViewModel {
 
       phase = .readyToSign(authResponse)
     } catch {
-      phase = error.isWebAuthCancellation ? .readyToAuthorize(offer) : .error(.authorize(offer))
+      if error.isWebAuthCancellation {
+        phase = .readyToAuthorize(offer)
+      } else {
+        phase = .error(.authorize(offer), CaughtError(error))
+      }
     }
   }
 
@@ -195,7 +199,7 @@ class IssuanceViewModel {
 
       phase = .done(parsedCredential, credentialUiModels)
     } catch {
-      phase = .error(.fetchCredential(authRequest, proof: proof))
+      phase = .error(.fetchCredential(authRequest, proof: proof), CaughtError(error))
     }
   }
 
@@ -355,7 +359,7 @@ class IssuanceViewModel {
   }
 
   func retry(anchor: ASPresentationAnchor?) {
-    guard case .error(let recovery) = phase else {
+    guard case .error(let recovery, _) = phase else {
       return
     }
 

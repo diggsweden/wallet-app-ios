@@ -16,8 +16,8 @@ struct PidSetupView: View {
 
   var body: some View {
     ZStack {
-      if viewModel.hasError {
-        errorView
+      if let caught = viewModel.caughtError {
+        errorView(caught: caught)
           .transition(.opacity)
       } else {
         content
@@ -54,9 +54,10 @@ struct PidSetupView: View {
     }
   }
 
-  private var errorView: some View {
+  private func errorView(caught: CaughtError) -> some View {
     ErrorView(
       model: .init(
+        caughtError: caught,
         primaryButton: .init(
           label: "Försök igen",
           accessibilityHint: "Använd knappen för att försöka igen",
