@@ -12,7 +12,7 @@ extension ErrorInfo {
       endpoint: caught.endpoint,
       traceId: caught.traceId,
       appVersion: system.appVersion,
-      timestamp: ErrorInfo.timeFormatter.string(from: caught.occurredAt),
+      timestamp: Self.timeFormatter.string(from: caught.occurredAt),
       iosVersion: system.iosVersion,
       deviceModel: system.deviceModel,
       network: system.network
