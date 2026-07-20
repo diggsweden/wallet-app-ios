@@ -52,8 +52,8 @@ struct IssuanceView: View {
             CredentialView(claims: displayClaims)
           }
 
-          if case .error = viewModel.phase {
-            errorPhaseView
+          if case let .error(_, caught) = viewModel.phase {
+            errorPhaseView(caught: caught)
           }
 
           Spacer()
@@ -110,9 +110,10 @@ private extension IssuanceView {
     }
   }
 
-  private var errorPhaseView: some View {
+  private func errorPhaseView(caught: CaughtError) -> some View {
     ErrorView(
       model: .init(
+        caughtError: caught,
         primaryButton: .init(
           label: "Försök igen",
           accessibilityHint: "Använd knapen för att försöka igen",

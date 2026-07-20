@@ -27,30 +27,31 @@ extension GatewayApiClient: HSMTransport {
       ttl: ttl,
     )
     let input = Operations.SaveState.Input(body: .json(body))
-    let response = try await client.saveState(input)
 
-    guard case let .created(payload) = response else {
-      throw GatewayError.invalidResponse
+    switch try await client.saveState(input) {
+      case .created(let payload):
+        let responseBody = try payload.body.json
+
+        let jwkKey = responseBody.serverJwsPublicKey.map { jwk in
+          let key = jwk.value1
+          return JwkKey(
+            kty: key.kty,
+            crv: key.crv,
+            x: key.x,
+            y: key.y,
+            kid: key.kid,
+          )
+        }
+
+        return RegisterStateResponse(
+          devAuthorizationCode: responseBody.devAuthorizationCode,
+          serverJwsPublicKey: jwkKey,
+          opaqueServerId: responseBody.opaqueServerId,
+        )
+
+      case .`default`(let status, let response):
+        throw GatewayError.problem(ProblemDetails(status: status, response: response))
     }
-
-    let responseBody = try payload.body.json
-
-    let jwkKey = responseBody.serverJwsPublicKey.map { jwk in
-      let key = jwk.value1
-      return JwkKey(
-        kty: key.kty,
-        crv: key.crv,
-        x: key.x,
-        y: key.y,
-        kid: key.kid,
-      )
-    }
-
-    return RegisterStateResponse(
-      devAuthorizationCode: responseBody.devAuthorizationCode,
-      serverJwsPublicKey: jwkKey,
-      opaqueServerId: responseBody.opaqueServerId,
-    )
   }
 
   @discardableResult
@@ -60,20 +61,20 @@ extension GatewayApiClient: HSMTransport {
     let input = Operations.CreateRequest.Input(query: query, body: .json(body))
 
     switch try await client.createRequest(input) {
-      case let .ok(p):
-        guard let dto = try? p.body.json else {
+      case .ok(let payload):
+        guard let dto = try? payload.body.json else {
           throw GatewayError.undecodableResponseBody
         }
         return try extractResult(from: dto)
 
-      case let .accepted(p):
-        guard let dto = try? p.body.json else {
+      case .accepted(let payload):
+        guard let dto = try? payload.body.json else {
           throw GatewayError.undecodableResponseBody
         }
         return try await pollUntilComplete(id: dto.id)
 
-      default:
-        throw GatewayError.invalidResponse
+      case .`default`(let status, let response):
+        throw GatewayError.problem(ProblemDetails(status: status, response: response))
     }
   }
 
@@ -93,7 +94,7 @@ extension GatewayApiClient: HSMTransport {
 
   private func extractResult(from dto: Components.Schemas.HsmResponse) throws -> Data {
     if dto.status == .error {
-      throw GatewayError.asyncOperationFailed(message: "HSM operation failed")
+      throw GatewayError.asyncOperationFailed(message: dto.result ?? "HSM operation failed")
     }
 
     guard let result = dto.result else {
@@ -111,10 +112,9 @@ extension GatewayApiClient: HSMTransport {
       try await Task.sleep(for: pollInterval)
 
       let input = Operations.GetResult.Input(path: .init(id: id))
-      let response = try await client.getResult(input)
 
-      switch response {
-        case let .ok(payload):
+      switch try await client.getResult(input) {
+        case .ok(let payload):
           guard let dto = try? payload.body.json else {
             throw GatewayError.undecodableResponseBody
           }
@@ -124,8 +124,11 @@ extension GatewayApiClient: HSMTransport {
         case .accepted:
           continue
 
-        default:
-          throw GatewayError.invalidResponse
+        case .notFound:
+          throw GatewayError.notFound
+
+        case .`default`(let status, let response):
+          throw GatewayError.problem(ProblemDetails(status: status, response: response))
       }
     }
 
