@@ -12,7 +12,7 @@ extension GatewayApiClient: HSMTransport {
     ttl: String?,
   ) async throws -> RegisterStateResponse {
     guard let kid = publicKey.kid else {
-      throw GatewayError.missingKeyIdentifier(SourceLocation())
+      throw GatewayError.missingKeyIdentifier
     }
 
     let ecKey = Components.Schemas.EcJwkRequest(
@@ -98,7 +98,7 @@ extension GatewayApiClient: HSMTransport {
     }
 
     guard let result = dto.result else {
-      throw GatewayError.undecodableResponseBody(SourceLocation())
+      throw GatewayError.undecodableResponseBody
     }
 
     return Data(result.utf8)
@@ -116,7 +116,7 @@ extension GatewayApiClient: HSMTransport {
       switch try await client.getResult(input) {
         case .ok(let payload):
           guard let dto = try? payload.body.json else {
-            throw GatewayError.undecodableResponseBody(SourceLocation())
+            throw GatewayError.undecodableResponseBody
           }
 
           return try extractResult(from: dto)
@@ -132,6 +132,6 @@ extension GatewayApiClient: HSMTransport {
       }
     }
 
-    throw GatewayError.asyncOperationTimeout(SourceLocation())
+    throw GatewayError.asyncOperationTimeout
   }
 }

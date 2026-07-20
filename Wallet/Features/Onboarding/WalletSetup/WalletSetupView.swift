@@ -47,13 +47,12 @@ struct WalletSetupContent: View {
     VStack(spacing: 16) {
       content
     }
-    .animation(.default, value: viewModel.state)
-    .task { await viewModel.setup() }
+    .animation(.default, value: state)
   }
 
   @ViewBuilder
   private var content: some View {
-    switch viewModel.state {
+    switch state {
       case .idle:
         EmptyView()
 
@@ -78,9 +77,7 @@ struct WalletSetupContent: View {
         primaryButton: .init(
           label: "Försök igen",
           accessibilityHint: "Använd knappen för att försöka igen",
-          action: {
-            Task { await viewModel.retry() }
-          }
+          action: onRetry
         )
       )
     )
