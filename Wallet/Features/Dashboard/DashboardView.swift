@@ -2,6 +2,9 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
+import CredentialInterfaces
+import DesignSystem
+import SwiftAccessMechanism
 import SwiftUI
 
 struct DashboardView: View {
@@ -59,33 +62,49 @@ struct DashboardView: View {
   }
 }
 
-#Preview {
-  NavigationStack {
-    DashboardView(
-      pid: .previewPidCredential,
-      credentials: [],
-    )
-    .environment(Router())
-    .defaultScreenStyle
-    .themed
-  }
-}
+#if DEBUG
+  // swiftlint:disable async_without_await
+  private struct PreviewHSMTransport: HSMTransport {
+    func registerState(
+      publicKey: JwkKey,
+      overwrite: Bool,
+      ttl: String?,
+    ) async throws -> RegisterStateResponse {
+      RegisterStateResponse(devAuthorizationCode: nil)
+    }
 
-#Preview("PID + Flera Dokument") {
-  NavigationStack {
-    DashboardView(
-      pid: .previewPidCredential,
-      credentials: [
-        .previewCredential(named: "Körkort"),
-        .previewCredential(named: "Handlingar"),
-        .previewCredential(named: "Biljetter"),
-      ],
-    )
-    .environment(Router())
-    .defaultScreenStyle
-    .themed
+    func perform(_ request: HSMRequest, operation: HSMOperation) async throws -> Data { Data() }
   }
-}
+  // swiftlint:enable async_without_await
+
+  #Preview {
+    NavigationStack {
+      DashboardView(
+        pid: .previewPidCredential,
+        credentials: [],
+      )
+      .environment(Router())
+      .defaultScreenStyle
+      .themed
+    }
+  }
+
+  #Preview("PID + Flera Dokument") {
+    NavigationStack {
+      DashboardView(
+        pid: .previewPidCredential,
+        credentials: [
+          .previewCredential(named: "Körkort"),
+          .previewCredential(named: "Handlingar"),
+          .previewCredential(named: "Biljetter"),
+        ],
+      )
+      .environment(Router())
+      .defaultScreenStyle
+      .themed
+    }
+  }
+#endif
 
 private extension SavedCredential {
   static let previewPidCredential = SavedCredential(

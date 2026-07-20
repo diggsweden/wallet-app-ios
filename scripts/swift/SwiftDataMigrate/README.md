@@ -6,11 +6,11 @@ A scaffolding tool for SwiftData schema versions and migrations.
 
 Each invocation:
 
-1. **Creates `SchemaV{N+1}.swift`** by copying `SchemaV{N}.swift` and rewriting the enum name and `versionIdentifier`. You then edit it to reflect whatever changed in this version.
-2. **Creates `MigrateV{N}toV{N+1}.swift`** containing the migration stage. Lightweight by default. Pass `--custom` to get `willMigrate` / `didMigrate` stubs instead.
-3. **Creates `MigrateV{N}toV{N+1}Tests.swift`** with a `@Suite` and an empty extension for fixture factories.
-4. **Regenerates `SwiftDataMigrationPlan.swift`** from scratch based on the schemas now present in the repo. Always overwrites.
-5. **Bumps typealiases** across the repo, rewriting `typealias X = SchemaV{N}.X` to point at `SchemaV{N+1}.X`. Only lines prefixed with `typealias` are touched.
+1. **Creates `SchemaV{N+1}.swift`** in `Packages/User/Sources/User/Schema` by copying `SchemaV{N}.swift` and rewriting the enum name and `versionIdentifier`. You then edit it to reflect whatever changed in this version.
+2. **Creates `MigrateV{N}toV{N+1}.swift`** in `Packages/User/Sources/User/Migration` containing the migration stage. Lightweight by default. Pass `--custom` to get `willMigrate` / `didMigrate` stubs instead.
+3. **Creates `MigrateV{N}toV{N+1}Tests.swift`** in `Packages/User/Tests/UserTests` with a `@Suite` and an empty extension for fixture factories.
+4. **Regenerates `SwiftDataMigrationPlan.swift`** from scratch based on the schemas now present in the package. Always overwrites.
+5. **Bumps `CurrentSchema.swift`**, rewriting every `SchemaV{N}.` reference to `SchemaV{N+1}.`. Since the mapping extensions target the `CurrentSchema` aliases, they retarget to the new version automatically.
 
 ## Usage
 
@@ -22,7 +22,7 @@ just migrate --custom     # custom migration with willMigrate/didMigrate stubs
 just migrate --lightweight # explicit lightweight, same as default
 ```
 
-The `just` recipe forwards to `swift run swiftdata-migrate new`. After a successful run, `xcodegen` runs automatically to refresh the Xcode project with the new files.
+The `just` recipe forwards to `swift run swiftdata-migrate new`. All generated files live inside the `User` package, where SPM discovers sources automatically — no project regeneration needed.
 
 ## Choosing lightweight vs. custom
 
@@ -55,4 +55,4 @@ The script gets you to a compilable starting point, but each generated file has 
 
 ## Typealiases
 
-Typealiases can live anywhere in the project as the bumper finds them by line content (`typealias` prefix).
+The bumper only touches `Packages/User/Sources/User/CurrentSchema.swift`. Keep all version-pinned typealiases (`User`, the `CurrentSchema` members) in that file so a version bump retargets everything in one place.

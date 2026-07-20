@@ -3,8 +3,10 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import AuthenticationServices
+import DesignSystem
 import SwiftData
 import SwiftUI
+import User
 import WalletGateway
 
 @main
@@ -14,6 +16,9 @@ struct WalletApp: App {
   private let gatewayApiClient: GatewayApiClient
 
   init() {
+    DesignSystem.registerFonts()
+    _ = SystemInfoProvider.shared
+
     do {
       userStore = try UserStore()
     } catch {

@@ -29,6 +29,10 @@ enum SigningKeyStore {
     }
   }
 
+  static func hasKey(withTag tag: KeyTag) -> Bool {
+    (try? fetchKeyData(forTag: tag)) != nil
+  }
+
   private static func generateKey(
     withTag tag: KeyTag
   ) throws -> SecureEnclave.P256.Signing.PrivateKey {

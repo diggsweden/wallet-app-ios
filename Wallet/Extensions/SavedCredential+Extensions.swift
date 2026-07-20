@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
+import CredentialInterfaces
 import Foundation
 import eudi_lib_sdjwt_swift
 

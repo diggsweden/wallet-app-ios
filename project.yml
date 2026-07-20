@@ -51,10 +51,32 @@ packages:
   eudi-lib-sdjwt-swift:
     url: https://github.com/eu-digital-identity-wallet/eudi-lib-sdjwt-swift.git
     exactVersion: 0.13.1
+  SDWebImageSwiftUI:
+    url: https://github.com/SDWebImage/SDWebImageSwiftUI.git
+    exactVersion: 3.1.4
+  SDWebImageWebPCoder:
+    url: https://github.com/SDWebImage/SDWebImageWebPCoder.git
+    exactVersion: 0.15.0
+  swift-snapshot-testing:
+    url: https://github.com/pointfreeco/swift-snapshot-testing.git
+    from: 1.19.2
   WalletMacros:
-    path: WalletMacros
+    path: Packages/WalletMacros
   WalletGateway:
-    path: WalletGateway
+    path: Packages/WalletGatewayApi/WalletGateway
+    group: Packages/WalletGatewayApi
+  WalletGatewayInterface:
+    path: Packages/WalletGatewayApi/WalletGatewayInterface
+    group: Packages/WalletGatewayApi
+  SwiftAccessMechanism:
+    url: https://github.com/diggsweden/SwiftAccessMechanism.git
+    branch: chore/spm-vendored-xcframework
+  DesignSystem:
+    path: Packages/DesignSystem
+  CredentialInterfaces:
+    path: Packages/CredentialInterfaces
+  User:
+    path: Packages/User
 
 targets:
   WalletDemo:
@@ -90,6 +112,20 @@ targets:
         product: WalletMacros
       - package: WalletGateway
         product: WalletGateway
+      - package: WalletGatewayInterface
+        product: WalletGatewayInterface
+      - package: SwiftAccessMechanism
+        product: SwiftAccessMechanism
+      - package: SDWebImageSwiftUI
+        product: SDWebImageSwiftUI
+      - package: SDWebImageWebPCoder
+        product: SDWebImageWebPCoder
+      - package: DesignSystem
+        product: DesignSystem
+      - package: CredentialInterfaces
+        product: CredentialInterfaces
+      - package: User
+        product: User
     preBuildScripts:
       - name: SwiftLint
         path: scripts/swiftlint.sh
@@ -111,6 +147,28 @@ targets:
         TEST_HOST: "$(BUILT_PRODUCTS_DIR)/WalletDemo.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/WalletDemo"
     dependencies:
       - target: WalletDemo
+
+  WalletSnapshotTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: "18.4"
+    sources:
+      - path: WalletSnapshotTests
+        excludes:
+          - "**/__Snapshots__/**"
+    settings:
+      base:
+        BUNDLE_LOADER: "$(TEST_HOST)"
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: R5MUUW7M24
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: se.digg.walletSnapshotTests
+        SWIFT_VERSION: "6.0"
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/WalletDemo.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/WalletDemo"
+    dependencies:
+      - target: WalletDemo
+      - package: swift-snapshot-testing
+        product: SnapshotTesting
 
   WalletUITests:
     type: bundle.ui-testing
@@ -162,4 +220,12 @@ schemes:
         - WalletDemo
       targets:
         - WalletTests
+
+  WalletSnapshotTests:
+    build:
+      targets:
+        WalletSnapshotTests: test
+    test:
+      targets:
+        - WalletSnapshotTests
 

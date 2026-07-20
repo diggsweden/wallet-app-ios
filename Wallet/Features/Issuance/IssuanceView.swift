@@ -2,90 +2,141 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
+import CredentialInterfaces
+import DesignSystem
+import SwiftAccessMechanism
 import SwiftUI
-import WalletGateway
+import User
+import WalletGatewayInterface
 
 struct IssuanceView: View {
-  private let onSave: (SavedCredential) async -> Void
   @State private var viewModel: IssuanceViewModel
   @Environment(\.theme) private var theme
   @Environment(\.authPresentationAnchor) private var anchor
-  @Environment(ToastViewModel.self) private var toastViewModel
 
   init(
     credentialOfferUri: String,
-    gatewayApiClient: GatewayApi,
-    onSave: @escaping (SavedCredential) async -> Void
+    gatewayApiClient: any GatewayApi & HSMTransport,
+    hsmServerParameters: HsmServerParameters?,
+    onSaveCredential: @escaping (SavedCredential) async throws -> Void,
   ) {
-    self.onSave = onSave
     _viewModel = State(
       wrappedValue: .init(
         credentialOfferUri: credentialOfferUri,
-        gatewayApiClient: gatewayApiClient
-      )
+        gatewayApiClient: gatewayApiClient,
+        hsmServerParameters: hsmServerParameters,
+        onSaveCredential: onSaveCredential
+      ),
     )
   }
 
   var body: some View {
-    VStack(spacing: 30) {
-      if let display = viewModel.issuerDisplayData {
-        IssuerDisplayView(issuerDisplayData: display)
+    ZStack {
+      if case .readyToSign = viewModel.phase {
+        ConfirmPinView { pin in
+          Task { await viewModel.createProof(with: pin) }
+        }
+        .transition(.opacity)
+        // Remount to clear the entered digits after a failed attempt: the alert
+        // keeps the PIN screen mounted, so PinView's state would otherwise persist.
+        .id(viewModel.pinAttempt)
+      } else {
+        VStack(spacing: 30) {
+          if let display = viewModel.issuerDisplayData,
+            !viewModel.phase.isError
+          {
+            IssuerDisplayView(issuerDisplayData: display)
+          }
+
+          if case let .done(_, displayClaims) = viewModel.phase {
+            CredentialView(claims: displayClaims)
+          }
+
+          if case let .error(_, caught) = viewModel.phase {
+            errorPhaseView(caught: caught)
+          }
+
+          Spacer()
+
+          button
+        }
+        .transition(.opacity)
       }
-
-      if case let .credentialFetched(credential: (_, displayClaims)) = viewModel.state {
-        CredentialView(claims: displayClaims)
-      }
-
-      Spacer()
-
-      button
     }
+    .animation(.easeInOut(duration: 0.2), value: viewModel.phase.animationKey)
     .task {
-      await viewModel.fetchIssuer()
+      await viewModel.start()
     }
-    .onChange(of: viewModel.error) { _, error in
-      guard let error else {
-        return
+    .alert("Kunde inte verifiera pinkoden", isPresented: $viewModel.pinError) {
+      Button("Försök igen") {}
+    }
+    .alert("Kunde inte spara attributsintyget", isPresented: $viewModel.saveError) {
+      Button("Försök igen") {
+        Task { await viewModel.retrySave() }
       }
-      toastViewModel.showError(error.message)
+      Button("Avbryt", role: .cancel) {}
+    }
+  }
+}
+
+// MARK: - Child Views
+private extension IssuanceView {
+  @ViewBuilder
+  private var button: some View {
+    switch viewModel.phase {
+      case .fetchingIssuer, .authorizing, .fetchingCredential:
+        ProgressView()
+
+      case .readyToAuthorize:
+        PrimaryButton("Logga in", icon: "arrow.right.circle.fill") {
+          Task {
+            guard let anchor else { return }
+            await viewModel.beginAuthorization(anchor: anchor)
+          }
+        }
+
+      case .readyToFetch:
+        PrimaryButton("Försök igen") {
+          Task { await viewModel.fetchCredential() }
+        }
+
+      case .done(let savedCredential, _):
+        PrimaryButton("Godkänn", icon: "checkmark.circle") {
+          Task { await viewModel.saveCredential(savedCredential) }
+        }
+
+      case .readyToSign, .error:
+        EmptyView()
     }
   }
 
-  private var button: some View {
-    switch viewModel.state {
-      case .initial:
-        PrimaryButton("Hämta metadata") {
-          Task {
-            await viewModel.fetchIssuer()
-          }
-        }
-
-      case .issuerFetched(let offer):
-        PrimaryButton("Logga in", icon: "arrow.right.circle.fill") {
-          Task {
-            guard let anchor else {
-              return
+  private func errorPhaseView(caught: CaughtError) -> some View {
+    ErrorView(
+      model: .init(
+        caughtError: caught,
+        primaryButton: .init(
+          label: "Försök igen",
+          accessibilityHint: "Använd knapen för att försöka igen",
+          action: {
+            Task { @MainActor in
+              viewModel.retry(anchor: anchor)
             }
-            await viewModel.authorize(
-              credentialOffer: offer,
-              authPresentationAnchor: anchor
-            )
           }
-        }
+        )
+      )
+    )
+  }
+}
 
-      case .authorized(let request):
-        PrimaryButton("Hämta ID-handling") {
-          Task {
-            await viewModel.fetchCredential(request)
-          }
-        }
+private struct ConfirmPinView: View {
+  let onComplete: (String) -> Void
 
-      case .credentialFetched(credential: (let savedCredential, _)):
-        PrimaryButton("Godkänn", icon: "checkmark.circle") {
-          Task {
-            await onSave(savedCredential)
-          }
-        }
+  var body: some View {
+    VStack(spacing: 24) {
+      Text("Bekräfta pinkod")
+        .textStyle(.h2)
+
+      PinView(onComplete: onComplete)
     }
   }
 }

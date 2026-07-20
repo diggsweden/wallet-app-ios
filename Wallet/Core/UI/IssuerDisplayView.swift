@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
+import CredentialInterfaces
+import DesignSystem
 import OpenID4VCI
 import SwiftUI
 import WalletMacros

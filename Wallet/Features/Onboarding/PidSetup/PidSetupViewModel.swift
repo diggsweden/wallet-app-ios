@@ -1,0 +1,87 @@
+// SPDX-FileCopyrightText: 2026 Digg - Agency for digital government
+//
+// SPDX-License-Identifier: EUPL-1.2
+
+import AuthenticationServices
+import Foundation
+import WalletMacros
+
+@MainActor
+@Observable
+final class PidSetupViewModel {
+  private let onSubmit: (String) -> Void
+  private let oAuthCoordinator = OauthCoordinator()
+
+  private(set) var caughtError: CaughtError?
+
+  var hasError: Bool {
+    caughtError != nil
+  }
+
+  init(onSubmit: @escaping (String) -> Void) {
+    self.onSubmit = onSubmit
+  }
+
+  func fetchPid(_ authAnchor: ASPresentationAnchor?) async {
+    caughtError = nil
+    do {
+      let credentialOffer =
+        if let offer = await generateCredentialOffer() {
+          offer
+        } else {
+          try await generateOfferInBrowser(authAnchor)
+        }
+
+      onSubmit(credentialOffer)
+    } catch {
+      if !error.isWebAuthCancellation {
+        caughtError = CaughtError(error)
+      }
+    }
+  }
+
+  private func generateOfferInBrowser(_ authAnchor: ASPresentationAnchor?) async throws -> String {
+    let credentialOfferUri = try await oAuthCoordinator.start(
+      url: AppConfig.pidIssuerUrl,
+      callbackScheme: "openid-credential-offer",
+      anchor: authAnchor,
+    )
+
+    guard credentialOfferUri.queryItemValue(for: "credential_offer") != nil
+    else {
+      throw OnboardingError.pidFailure
+    }
+
+    return credentialOfferUri.absoluteString
+  }
+
+  private func generateCredentialOffer() async -> String? {
+    let url = AppConfig.pidIssuerUrl.appending(path: "issuer/credentialsOffer/generate")
+    let body =  // swiftlint:disable:next line_length
+      "credentialIds=eu.europa.ec.eudi.pid_vc_sd_jwt&credentialsOfferUri=openid-credential-offer%3A%2F%2F"
+
+    guard
+      let response = try? await NetworkClient.fetchJwt(
+        url,
+        method: .post,
+        contentType: "application/x-www-form-urlencoded",
+        accept: "text/html",
+        body: body.utf8Data
+      )
+    else {
+      return nil
+    }
+
+    return extractCredentialOfferURL(from: response)
+  }
+
+  private func extractCredentialOfferURL(from html: String) -> String? {
+    let regex = /openid-credential-offer:\/\/[^\s"'<>]+/
+
+    guard let match = html.firstMatch(of: regex) else {
+      return nil
+    }
+
+    return String(match.output)
+  }
+}
