@@ -25,7 +25,7 @@ public enum GatewayError: LocalizedError {
       case .missingKeyIdentifier:
         "Nyckelidentifierare saknas."
 
-      case .asyncOperationFailed(let message, _):
+      case .asyncOperationFailed(let message):
         "HSM-operationen misslyckades: \(message)"
 
       case .asyncOperationTimeout:
