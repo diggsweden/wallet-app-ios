@@ -12,14 +12,18 @@ final class PidSetupViewModel {
   private let onSubmit: (String) -> Void
   private let oAuthCoordinator = OauthCoordinator()
 
-  private(set) var hasError = false
+  private(set) var caughtError: CaughtError?
+
+  var hasError: Bool {
+    caughtError != nil
+  }
 
   init(onSubmit: @escaping (String) -> Void) {
     self.onSubmit = onSubmit
   }
 
   func fetchPid(_ authAnchor: ASPresentationAnchor?) async {
-    hasError = false
+    caughtError = nil
     do {
       let credentialOffer =
         if let offer = await generateCredentialOffer() {
@@ -30,7 +34,9 @@ final class PidSetupViewModel {
 
       onSubmit(credentialOffer)
     } catch {
-      hasError = !error.isWebAuthCancellation
+      if !error.isWebAuthCancellation {
+        caughtError = CaughtError(error)
+      }
     }
   }
 

@@ -13,5 +13,5 @@ enum IssuancePhase {
   case readyToFetch(AuthorizedRequest, proof: String)
   case fetchingCredential
   case done(SavedCredential, [ClaimUiModel])
-  case error(IssuanceRecovery)
+  case error(IssuanceRecovery, CaughtError)
 }

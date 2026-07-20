@@ -13,7 +13,7 @@ final class UserSessionViewModel {
   enum UserStatus: Equatable {
     case loading
     case ready(UserSnapshot)
-    case error
+    case error(CaughtError)
   }
 
   private(set) var user: UserStatus = .loading
@@ -45,10 +45,20 @@ final class UserSessionViewModel {
 
     do {
       let value = try await userStore.getOrCreate()
-      user = .ready(value)
+
+      if hasStaleDeviceKey(value) {
+        try await signOut()
+      } else {
+        user = .ready(value)
+      }
     } catch {
-      user = .error
+      user = .error(CaughtError(error))
     }
+  }
+
+  private func hasStaleDeviceKey(_ snapshot: UserSnapshot) -> Bool {
+    let enrolled = snapshot.accountId != nil && snapshot.pid != nil
+    return !enrolled && SigningKeyStore.hasKey(withTag: .deviceKey)
   }
 
   func retryInitUser() async {
