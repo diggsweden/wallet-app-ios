@@ -17,6 +17,7 @@ struct WalletApp: App {
 
   init() {
     DesignSystem.registerFonts()
+    _ = SystemInfoProvider.shared
 
     do {
       userStore = try UserStore()
