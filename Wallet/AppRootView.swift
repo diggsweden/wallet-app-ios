@@ -58,17 +58,18 @@ private extension AppRootView {
           ProgressView()
             .transition(.blurReplace)
 
-        case .error:
-          errorView
+        case let .error(caught):
+          errorView(caught: caught)
             .transition(.blurReplace)
       }
     }
     .animation(.default, value: userSessionViewModel.user)
   }
 
-  var errorView: some View {
+  func errorView(caught: CaughtError) -> some View {
     ErrorView(
       model: .init(
+        caughtError: caught,
         primaryButton: .init(
           label: "Försök igen",
           accessibilityHint: "Använd knappen för att försöka igen",
