@@ -9,7 +9,7 @@ inputs:
   should-restore-xcode-cache:
   description: "Conditional for restoring xcode cache"
   required: false
-  default: "true"
+  default: "false"
 
 runs:
   using: composite
