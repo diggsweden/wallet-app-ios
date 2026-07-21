@@ -32,7 +32,7 @@ jobs:
     outputs:
       config: ${{ steps.generate.outputs.config }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
       - name: Generate artifacts config with build number
         id: generate
         env:
@@ -54,7 +54,7 @@ jobs:
       attestations: write
       security-events: write
       actions: read
-    secrets: inherit
+    secrets: inherit # nosemgrep: yaml.github-actions.security.secrets-inherit.secrets-inherit
     with:
       reusable-ci-ref: d31c989acd139c3e8754e116496c826af8dbbca0
       artifacts-config: ${{ needs.generate-artifacts-config.outputs.config }}

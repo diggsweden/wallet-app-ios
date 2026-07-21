@@ -40,7 +40,7 @@ jobs:
     uses: diggsweden/reusable-ci/.github/workflows/build-xcode-ios.yml@d31c989acd139c3e8754e116496c826af8dbbca0 # v2.8.2
     permissions:
       contents: read
-    secrets: inherit
+    secrets: inherit # nosemgrep: yaml.github-actions.security.secrets-inherit.secrets-inherit
     with:
       reusable-ci-ref: d31c989acd139c3e8754e116496c826af8dbbca0
       xcode-version: ${{ vars.XCODE_VERSION }}
@@ -60,7 +60,7 @@ jobs:
 
     permissions:
       contents: read
-    secrets: inherit
+    secrets: inherit # nosemgrep: yaml.github-actions.security.secrets-inherit.secrets-inherit
     with:
       reusable-ci-ref: d31c989acd139c3e8754e116496c826af8dbbca0
       ipa-artifact-name: wallet-ios-demo-dev
