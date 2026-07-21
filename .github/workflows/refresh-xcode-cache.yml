@@ -29,7 +29,7 @@ jobs:
       - name: Build Xcode
         uses: ./.github/actions/xcode-build
         with:
-          restore-xcode-cache: "true"
+          should-restore-xcode-cache: "true"
 
       - name: Refresh or save Xcode cache
         if: success()
