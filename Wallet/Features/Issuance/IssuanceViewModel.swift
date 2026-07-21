@@ -40,7 +40,7 @@ class IssuanceViewModel {
     credentialOfferUri: String,
     gatewayApiClient: any GatewayApi & HSMTransport,
     hsmServerParameters: HsmServerParameters?,
-    onSaveCredential: @escaping (SavedCredential) async throws -> Void
+    onSaveCredential: @escaping (SavedCredential) async throws -> Void,
   ) {
     self.credentialOfferUri = credentialOfferUri
     self.gatewayApiClient = gatewayApiClient
@@ -225,7 +225,7 @@ class IssuanceViewModel {
 
     let hsmClient = try getHSMClient()
     _ = try await hsmClient.authenticate(
-      password: PINStretch().stretch(input: Data(pin.utf8)),
+      password: PINStretch().stretch(input: Data(pin.utf8))
     )
     let keys = try await hsmClient.listKeys()
 

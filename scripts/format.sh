@@ -11,7 +11,7 @@ if ! command -v swift-format &>/dev/null; then
   exit 2
 fi
 
-swift-format format --in-place --recursive --parallel Wallet WalletTests WalletSnapshotTests WalletUITests WalletMacros
+swift-format format --in-place --recursive --parallel Wallet WalletTests WalletSnapshotTests WalletUITests WalletMacros Packages scripts
 
 if ! output=$(./scripts/swift-format-lint.sh 2>&1); then
   echo "Could not auto-format the following files:"

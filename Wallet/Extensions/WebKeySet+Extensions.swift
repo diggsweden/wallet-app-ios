@@ -29,7 +29,7 @@ extension WebKeySet.Key {
       keyID: kid,
       curve: .p256,
       x: xData,
-      y: yData
+      y: yData,
     )
   }
 }

@@ -38,7 +38,7 @@ struct IssuerDisplayView: View {
     issuerDisplayData: IssuerDisplay(
       name: "Test",
       info: nil,
-      imageUrl: #URL("https://dela.digg.se/img/sr-logo-color.png")
+      imageUrl: #URL("https://dela.digg.se/img/sr-logo-color.png"),
     )
   )
 }

@@ -27,7 +27,7 @@ extension SchemaV1 {
       deviceId: String = UUID().uuidString,
       accountId: String? = nil,
       credentials: [SavedCredential] = [],
-      pid: SavedCredential? = nil
+      pid: SavedCredential? = nil,
     ) {
       self.id = id
       self.deviceId = deviceId

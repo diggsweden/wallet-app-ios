@@ -11,14 +11,14 @@ enum SchemaTemplate {
 
     body = body.replacingOccurrences(
       of: "SchemaV\(prevVersion)",
-      with: "SchemaV\(nextVersion)"
+      with: "SchemaV\(nextVersion)",
     )
 
     let pattern = #"Schema\.Version\(\s*\d+"#
     body = body.replacingOccurrences(
       of: pattern,
       with: "Schema.Version(\(nextVersion)",
-      options: .regularExpression
+      options: .regularExpression,
     )
 
     return body.trimmingCharacters(in: .whitespacesAndNewlines) + "\n"

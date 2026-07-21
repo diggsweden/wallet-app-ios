@@ -14,7 +14,7 @@ public struct DeviceInfo: Sendable {
     os: String,
     osVersion: String,
     model: String,
-    appVersion: String
+    appVersion: String,
   ) {
     self.os = os
     self.osVersion = osVersion

@@ -14,7 +14,7 @@ let package = Package(
   products: [
     .library(
       name: "DesignSystem",
-      targets: ["DesignSystem"]
+      targets: ["DesignSystem"],
     )
   ],
   targets: [
@@ -22,8 +22,8 @@ let package = Package(
       name: "DesignSystem",
       resources: [
         .process("Resources/Fonts")
-      ]
+      ],
     )
   ],
-  swiftLanguageModes: [.v6]
+  swiftLanguageModes: [.v6],
 )
