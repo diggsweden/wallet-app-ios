@@ -16,13 +16,15 @@ public final actor SessionManager {
   public init(
     signingProvider: any SessionSigningProvider,
     accountIdProvider: any AccountIdProvider,
-    baseUrl: URL
+    baseUrl: URL,
+    deviceInfo: DeviceInfo
   ) {
     self.signingProvider = signingProvider
     self.accountIdProvider = accountIdProvider
     client = Client(
       serverURL: baseUrl,
-      transport: URLSessionTransport()
+      transport: URLSessionTransport(),
+      middlewares: [DeviceInfoMiddleware(deviceInfo: deviceInfo)]
     )
   }
 

@@ -10,11 +10,19 @@ import WalletGatewayInterface
 public struct GatewayApiClient: GatewayApi {
   let client: Client
 
-  public init(sessionManager: SessionManager, apiKey: String, baseUrl: URL) {
+  public init(
+    sessionManager: SessionManager,
+    apiKey: String,
+    baseUrl: URL,
+    deviceInfo: DeviceInfo
+  ) {
     client = Client(
       serverURL: baseUrl,
       transport: URLSessionTransport(),
-      middlewares: [AuthenticationMiddleware(sessionManager: sessionManager, apiKey: apiKey)],
+      middlewares: [
+        AuthenticationMiddleware(sessionManager: sessionManager, apiKey: apiKey),
+        DeviceInfoMiddleware(deviceInfo: deviceInfo),
+      ],
     )
   }
 
