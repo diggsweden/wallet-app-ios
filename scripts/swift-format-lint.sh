@@ -11,4 +11,4 @@ if ! command -v swift-format &>/dev/null; then
   exit 2
 fi
 
-swift-format lint --strict --recursive --parallel Wallet WalletTests WalletSnapshotTests WalletUITests WalletMacros
+swift-format lint --strict --recursive --parallel Wallet WalletTests WalletSnapshotTests WalletUITests WalletMacros Packages

@@ -24,7 +24,7 @@ struct PresentationView: View {
         url: url,
         credential: credential,
         gatewayApiClient: gatewayApiClient,
-        hsmServerParameters: hsmServerParameters
+        hsmServerParameters: hsmServerParameters,
       )
     )
   }
@@ -92,8 +92,8 @@ struct PresentationView: View {
                 Task {
                   await viewModel.resolveAndMatchClaims()
                 }
-              }
-            )
+              },
+            ),
           )
         )
 
@@ -103,7 +103,7 @@ struct PresentationView: View {
           optionalItems: $viewModel.optionalItems,
           onConfirm: {
             router.navigationPath.append(PresentationRoute.pin)
-          }
+          },
         )
     }
   }

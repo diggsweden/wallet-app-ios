@@ -14,7 +14,7 @@ final class OauthCoordinator: NSObject,
   func start(
     url: URL,
     callbackScheme: String,
-    anchor: ASPresentationAnchor?
+    anchor: ASPresentationAnchor?,
   ) async throws -> URL {
     guard session == nil else {
       throw OauthError.sessionAlreadyRunning
@@ -25,7 +25,7 @@ final class OauthCoordinator: NSObject,
     return try await withCheckedThrowingContinuation { cont in
       let session = ASWebAuthenticationSession(
         url: url,
-        callbackURLScheme: callbackScheme
+        callbackURLScheme: callbackScheme,
       ) { [weak self] url, error in
         defer {
           self?.session = nil

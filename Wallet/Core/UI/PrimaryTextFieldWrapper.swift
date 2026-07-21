@@ -16,7 +16,7 @@ struct PrimaryTextFieldWrapper<Content: View>: View {
     title: String,
     error: String? = nil,
     infoCaption: String? = nil,
-    @ViewBuilder content: @escaping () -> Content
+    @ViewBuilder content: @escaping () -> Content,
   ) {
     self.title = title
     self.error = error
@@ -75,7 +75,7 @@ struct PrimaryTextFieldWrapper<Content: View>: View {
     PrimaryTextFieldWrapper(
       title: "Test med info och fel",
       error: "Något gick fel",
-      infoCaption: "Info"
+      infoCaption: "Info",
     ) {
       TextField("Test", text: $text)
     }
