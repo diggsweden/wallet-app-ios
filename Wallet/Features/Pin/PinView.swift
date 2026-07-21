@@ -35,13 +35,13 @@ struct PinView: View {
       T9KeypadView(
         onTapDigit: { updatePin(with: $0) },
         clearButtonDisabled: pin.count < 1,
-        onClear: { pin.removeLast() }
+        onClear: { pin.removeLast() },
       )
       .background(
         GeometryReader { proxy in
           Color.clear.preference(
             key: GridWidthKey.self,
-            value: proxy.size.width
+            value: proxy.size.width,
           )
         }
       )
@@ -61,7 +61,7 @@ struct PinView: View {
         PinDot(
           filled: index < pin.count,
           color: theme.colors.buttonSecondaryHover,
-          size: 20
+          size: 20,
         )
       }
     }

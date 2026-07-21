@@ -23,7 +23,7 @@ struct WalletApp: App {
       os: "iOS",
       osVersion: system.iosVersion,
       model: system.deviceModel,
-      appVersion: system.appVersion
+      appVersion: system.appVersion,
     )
 
     do {
@@ -36,13 +36,13 @@ struct WalletApp: App {
       signingProvider: WalletSessionSigner(),
       accountIdProvider: userStore,
       baseUrl: AppConfig.apiBaseUrl,
-      deviceInfo: deviceInfo
+      deviceInfo: deviceInfo,
     )
     self.gatewayApiClient = GatewayApiClient(
       sessionManager: sessionManager,
       apiKey: AppConfig.apiKey,
       baseUrl: AppConfig.apiBaseUrl,
-      deviceInfo: deviceInfo
+      deviceInfo: deviceInfo,
     )
   }
 

@@ -14,7 +14,7 @@ public struct GatewayApiClient: GatewayApi {
     sessionManager: SessionManager,
     apiKey: String,
     baseUrl: URL,
-    deviceInfo: DeviceInfo
+    deviceInfo: DeviceInfo,
   ) {
     client = Client(
       serverURL: baseUrl,

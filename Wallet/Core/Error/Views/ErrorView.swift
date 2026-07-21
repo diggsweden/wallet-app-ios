@@ -27,7 +27,7 @@ struct ErrorView: View {
       } label: {
         ExpandErrorView(
           code: model.errorInfo.code ?? "Fel",
-          time: model.errorInfo.timestamp ?? ""
+          time: model.errorInfo.timestamp ?? "",
         )
         .padding(.bottom, Constants.expandButtonBottomPadding)
       }
@@ -133,18 +133,18 @@ private extension ErrorView {
       primaryButton: .init(
         label: "Försök igen",
         accessibilityHint: "Använd knappen för att försöka igen",
-        action: {}
+        action: {},
       ),
       secondaryButton: .init(
         label: "Avbryt",
         accessibilityHint: "Använd knappen för att avbryta",
-        action: {}
+        action: {},
       ),
       linkButton: .init(
         label: "Få hjälp",
         accessibilityHint: "Använd knappen för att få mer hjälp",
-        action: {}
-      )
+        action: {},
+      ),
     )
   )
   .defaultScreenStyle

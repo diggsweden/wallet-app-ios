@@ -15,7 +15,7 @@ final class WalletSetupViewModel {
   init(
     service: any WalletSetupService,
     pin: String,
-    onComplete: @escaping () -> Void
+    onComplete: @escaping () -> Void,
   ) {
     self.service = service
     self.pin = pin

@@ -13,7 +13,7 @@ extension ErrorView.ViewModel {
     primaryButton: ErrorView.ButtonModel,
     secondaryButton: ErrorView.ButtonModel? = nil,
     linkButton: ErrorView.ButtonModel? = nil,
-    onDismiss: (@Sendable () -> Void)? = nil
+    onDismiss: (@Sendable () -> Void)? = nil,
   ) {
     self.init(
       imageReference: imageReference,
@@ -23,7 +23,7 @@ extension ErrorView.ViewModel {
       secondaryButton: secondaryButton,
       linkButton: linkButton,
       onDismiss: onDismiss,
-      errorInfo: ErrorInfo(from: caughtError, system: SystemInfoProvider.shared.snapshot())
+      errorInfo: ErrorInfo(from: caughtError, system: SystemInfoProvider.shared.snapshot()),
     )
   }
 }

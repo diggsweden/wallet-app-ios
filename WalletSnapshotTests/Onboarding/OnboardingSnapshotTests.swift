@@ -17,7 +17,7 @@ struct OnboardingSnapshotTests {
   func onboardingStep(_ step: OnboardingStep) {
     assertThemedDeviceSnapshots(
       of: onboardingRootView(step: step).withToast,
-      testName: String(describing: step)
+      testName: String(describing: step),
     )
   }
 
@@ -25,7 +25,7 @@ struct OnboardingSnapshotTests {
   func pid() {
     assertThemedSnapshots(
       of: PidSetupView { _ in }.withToast,
-      width: 360
+      width: 360,
     )
   }
 
@@ -52,15 +52,15 @@ private extension OnboardingSnapshotTests {
         accountId: nil,
         credentials: [],
         pid: nil,
-        hsmServerParameters: nil
+        hsmServerParameters: nil,
       ),
       initialStep: step,
       actions: OnboardingActions(
         signIn: { _ in },
         savePidCredential: { _ in },
         resetSession: {},
-        saveHsmServerParameters: { _ in }
-      )
+        saveHsmServerParameters: { _ in },
+      ),
     )
   }
 }
@@ -73,7 +73,7 @@ private struct SnapshotGateway: GatewayApi, HSMTransport {
   func registerState(
     publicKey: JwkKey,
     overwrite: Bool,
-    ttl: String?
+    ttl: String?,
   ) throws -> RegisterStateResponse {
     RegisterStateResponse(devAuthorizationCode: nil)
   }

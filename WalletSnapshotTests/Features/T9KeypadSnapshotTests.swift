@@ -13,7 +13,7 @@ struct T9KeypadSnapshotTests {
   func clearEnabled() {
     assertThemedSnapshots(
       of: T9KeypadView(onTapDigit: { _ in }, clearButtonDisabled: false, onClear: {}),
-      width: 320
+      width: 320,
     )
   }
 
@@ -21,7 +21,7 @@ struct T9KeypadSnapshotTests {
   func clearDisabled() {
     assertThemedSnapshots(
       of: T9KeypadView(onTapDigit: { _ in }, clearButtonDisabled: true, onClear: {}),
-      width: 320
+      width: 320,
     )
   }
 }

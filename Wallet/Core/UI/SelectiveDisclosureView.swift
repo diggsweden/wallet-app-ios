@@ -36,7 +36,7 @@ struct SelectiveDisclosureView: View {
     claims: [
       ClaimUiModel(id: "birth_date", displayName: "Födelsedatum", value: .string("1955-04-12")),
       ClaimUiModel(id: "age", displayName: "Ålder", value: .int(70)),
-    ]
+    ],
   )
   .padding()
   .themed

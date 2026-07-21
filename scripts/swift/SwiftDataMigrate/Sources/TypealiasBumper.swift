@@ -14,7 +14,7 @@ struct TypealiasBumper {
     let original = try String(contentsOf: file, encoding: .utf8)
     let updated = original.replacingOccurrences(
       of: "SchemaV\(fromVersion).",
-      with: "SchemaV\(toVersion)."
+      with: "SchemaV\(toVersion).",
     )
     guard updated != original else { return false }
     try updated.write(to: file, atomically: true, encoding: .utf8)

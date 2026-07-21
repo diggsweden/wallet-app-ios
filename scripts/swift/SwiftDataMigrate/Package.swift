@@ -19,7 +19,7 @@ let package = Package(
       name: "SwiftDataMigrate",
       dependencies: [
         .product(name: "ArgumentParser", package: "swift-argument-parser")
-      ]
+      ],
     )
-  ]
+  ],
 )
