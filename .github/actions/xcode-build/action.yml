@@ -7,9 +7,9 @@ description: Restore Xcode cache, generate project, and build for testing to war
 
 inputs:
   should-restore-xcode-cache:
-  description: "Conditional for restoring xcode cache"
-  required: false
-  default: "false"
+    description: "Conditional for restoring xcode cache"
+    required: false
+    default: "false"
 
 runs:
   using: composite
