@@ -24,7 +24,7 @@ struct ErrorInfo: Sendable {
     timestamp: String? = nil,
     iosVersion: String? = nil,
     deviceModel: String? = nil,
-    network: String? = nil
+    network: String? = nil,
   ) {
     self.code = code
     self.message = message
@@ -48,6 +48,6 @@ extension ErrorInfo {
     timestamp: "14:32:03",
     iosVersion: "26.5",
     deviceModel: "iPhone 15",
-    network: "Wi-Fi"
+    network: "Wi-Fi",
   )
 }

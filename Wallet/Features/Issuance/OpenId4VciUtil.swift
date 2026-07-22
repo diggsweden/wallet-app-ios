@@ -20,13 +20,13 @@ struct OpenId4VciUtil {
     url: URL,
     token: String,
     credentialRequest: CredentialRequest,
-    requestEncryption: CryptoSpec? = nil
+    requestEncryption: CryptoSpec? = nil,
   ) async throws -> String {
     guard let requestEncryption else {
       return try await fetchPlainCredential(
         url: url,
         token: token,
-        credentialRequest: credentialRequest
+        credentialRequest: credentialRequest,
       )
     }
 
@@ -41,14 +41,14 @@ struct OpenId4VciUtil {
       proofs: credentialRequest.proofs,
       credentialResponseEncryption: CredentialResponseEncryptionDTO(
         jwk: responseJwk,
-        enc: enc.rawValue
-      )
+        enc: enc.rawValue,
+      ),
     )
 
     let jwe = try jwtUtil.encryptJwe(
       payload: encryptedRequest,
       recipientKey: requestEncryption.key,
-      enc: enc
+      enc: enc,
     )
 
     let encryptedResponse = try await NetworkClient.fetchJwt(
@@ -57,12 +57,12 @@ struct OpenId4VciUtil {
       contentType: "application/jwt",
       accept: "application/jwt",
       token: token,
-      body: jwe.utf8Data
+      body: jwe.utf8Data,
     )
 
     let response: CredentialResponse = try jwtUtil.decryptJwe(
       encryptedResponse,
-      decryptionKey: ephemeralKey.jwkRepresentation
+      decryptionKey: ephemeralKey.jwkRepresentation,
     )
 
     guard let credential = response.credentials.first else {
@@ -75,13 +75,13 @@ struct OpenId4VciUtil {
   private func fetchPlainCredential(
     url: URL,
     token: String,
-    credentialRequest: CredentialRequest
+    credentialRequest: CredentialRequest,
   ) async throws -> String {
     let response: CredentialResponse = try await NetworkClient.fetch(
       url,
       method: .post,
       token: token,
-      body: try encoder.encode(credentialRequest)
+      body: try encoder.encode(credentialRequest),
     )
     guard let credential = response.credentials.first else {
       throw AppError(reason: "Could not fetch credential")
@@ -91,11 +91,11 @@ struct OpenId4VciUtil {
   }
 
   func fetchNonce(
-    url: URL,
+    url: URL
   ) async throws -> String {
     let response: NonceResponse = try await NetworkClient.fetch(
       url,
-      method: .post
+      method: .post,
     )
     return response.cNonce
   }

@@ -13,7 +13,7 @@ struct OpenId4VpUtil {
 
   private func isCredentialRequired(
     _ queryId: QueryId,
-    in credentialSets: CredentialSets?
+    in credentialSets: CredentialSets?,
   ) -> Bool {
     guard let credentialSets else {
       return true
@@ -47,7 +47,7 @@ struct OpenId4VpUtil {
       return CredentialQuery(
         id: credential.id.value,
         claimPaths: Set(claimPaths),
-        required: required
+        required: required,
       )
     }
   }
@@ -69,7 +69,7 @@ struct OpenId4VpUtil {
       y: y.base64UrlEncodedString(),
       exponent: nil,
       modulus: nil,
-      alg: "ECDH-ES"
+      alg: "ECDH-ES",
     )
 
     let config = OpenId4VPConfiguration(
@@ -77,7 +77,7 @@ struct OpenId4VpUtil {
       publicWebKeySet: WebKeySet(keys: [webKey]),
       supportedClientIdSchemes: [.x509SanDns(trust: certificateTrustMock)],
       responseEncryptionConfiguration:
-        .supported(supportedAlgorithms: [.init(.ECDH_ES)], supportedMethods: [.init(.A128GCM)])
+        .supported(supportedAlgorithms: [.init(.ECDH_ES)], supportedMethods: [.init(.A128GCM)]),
     )
 
     let sdk = OpenID4VP(walletConfiguration: config)
@@ -113,7 +113,7 @@ struct OpenId4VpUtil {
       clientId: data.client.id.originalClientId,
       nonce: data.nonce,
       state: data.state,
-      recipientJWK: recipientJWK
+      recipientJWK: recipientJWK,
     )
   }
 }

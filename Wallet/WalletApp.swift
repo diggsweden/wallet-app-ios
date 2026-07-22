@@ -17,7 +17,14 @@ struct WalletApp: App {
 
   init() {
     DesignSystem.registerFonts()
-    _ = SystemInfoProvider.shared
+
+    let system = SystemInfoProvider.shared.snapshot()
+    let deviceInfo = DeviceInfo(
+      os: "iOS",
+      osVersion: system.iosVersion,
+      model: system.deviceModel,
+      appVersion: system.appVersion,
+    )
 
     do {
       userStore = try UserStore()
@@ -28,12 +35,14 @@ struct WalletApp: App {
     self.sessionManager = SessionManager(
       signingProvider: WalletSessionSigner(),
       accountIdProvider: userStore,
-      baseUrl: AppConfig.apiBaseUrl
+      baseUrl: AppConfig.apiBaseUrl,
+      deviceInfo: deviceInfo,
     )
     self.gatewayApiClient = GatewayApiClient(
       sessionManager: sessionManager,
       apiKey: AppConfig.apiKey,
-      baseUrl: AppConfig.apiBaseUrl
+      baseUrl: AppConfig.apiBaseUrl,
+      deviceInfo: deviceInfo,
     )
   }
 

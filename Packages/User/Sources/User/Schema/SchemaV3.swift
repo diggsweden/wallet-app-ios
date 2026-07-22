@@ -27,7 +27,7 @@ extension SchemaV3 {
       accountId: String? = nil,
       credentials: [SavedCredential] = [],
       pid: SavedCredential? = nil,
-      hsmServerParameters: HsmServerParameters? = nil
+      hsmServerParameters: HsmServerParameters? = nil,
     ) {
       self.id = id
       self.accountId = accountId

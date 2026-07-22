@@ -16,13 +16,13 @@ let package = Package(
   products: [
     .library(
       name: "WalletMacros",
-      targets: ["WalletMacros"]
+      targets: ["WalletMacros"],
     )
   ],
   dependencies: [
     .package(
       url: "https://github.com/swiftlang/swift-syntax.git",
-      exact: "603.0.1"
+      exact: "603.0.1",
     )
   ],
   targets: [
@@ -32,11 +32,11 @@ let package = Package(
         .product(name: "SwiftSyntax", package: "swift-syntax"),
         .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
         .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
-      ]
+      ],
     ),
     .target(
       name: "WalletMacros",
-      dependencies: ["WalletMacrosPlugin"]
+      dependencies: ["WalletMacrosPlugin"],
     ),
-  ]
+  ],
 )

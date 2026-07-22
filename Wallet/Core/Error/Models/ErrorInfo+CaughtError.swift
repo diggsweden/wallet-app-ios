@@ -15,7 +15,7 @@ extension ErrorInfo {
       timestamp: Self.timeFormatter.string(from: caught.occurredAt),
       iosVersion: system.iosVersion,
       deviceModel: system.deviceModel,
-      network: system.network
+      network: system.network,
     )
   }
 

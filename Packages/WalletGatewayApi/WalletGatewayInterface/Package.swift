@@ -15,7 +15,7 @@ let package = Package(
   products: [
     .library(
       name: "WalletGatewayInterface",
-      targets: ["WalletGatewayInterface"]
+      targets: ["WalletGatewayInterface"],
     )
   ],
   targets: [
@@ -23,5 +23,5 @@ let package = Package(
       name: "WalletGatewayInterface"
     )
   ],
-  swiftLanguageModes: [.v6]
+  swiftLanguageModes: [.v6],
 )

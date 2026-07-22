@@ -25,8 +25,8 @@ struct IssuanceView: View {
         credentialOfferUri: credentialOfferUri,
         gatewayApiClient: gatewayApiClient,
         hsmServerParameters: hsmServerParameters,
-        onSaveCredential: onSaveCredential
-      ),
+        onSaveCredential: onSaveCredential,
+      )
     )
   }
 
@@ -121,8 +121,8 @@ private extension IssuanceView {
             Task { @MainActor in
               viewModel.retry(anchor: anchor)
             }
-          }
-        )
+          },
+        ),
       )
     )
   }

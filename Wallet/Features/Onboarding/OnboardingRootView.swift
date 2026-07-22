@@ -25,7 +25,7 @@ struct OnboardingRootView: View {
     gatewayApiClient: any GatewayApi & HSMTransport,
     userSnapshot: UserSnapshot,
     initialStep: OnboardingStep = .intro,
-    actions: OnboardingActions
+    actions: OnboardingActions,
   ) {
     self.gatewayApiClient = gatewayApiClient
     self.userSnapshot = userSnapshot

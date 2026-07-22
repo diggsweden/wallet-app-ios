@@ -39,7 +39,7 @@ struct ClaimView: View {
       case .bool(let value):
         Label(
           value ? "Ja" : "Nej",
-          systemImage: value ? "checkmark.circle.fill" : "xmark.circle.fill"
+          systemImage: value ? "checkmark.circle.fill" : "xmark.circle.fill",
         )
         .foregroundStyle(value ? theme.colors.successInverse : theme.colors.errorInverse)
 
@@ -77,7 +77,7 @@ struct ClaimView: View {
     ClaimUiModel(
       id: "birth_date",
       displayName: "Födelsedatum",
-      value: .date(Date(timeIntervalSince1970: 631_152_000))
+      value: .date(Date(timeIntervalSince1970: 631_152_000)),
     ),
     ClaimUiModel(id: "verified", displayName: "Verifierad", value: .bool(true)),
     ClaimUiModel(id: "int", displayName: "Integer", value: .int(42)),
@@ -88,7 +88,7 @@ struct ClaimView: View {
       value: .array([
         ClaimUiModel(id: "nationalities.0", displayName: nil, value: .string("Svensk")),
         ClaimUiModel(id: "nationalities.1", displayName: nil, value: .string("Norsk")),
-      ])
+      ]),
     ),
     ClaimUiModel(
       id: "address",
@@ -96,7 +96,7 @@ struct ClaimView: View {
       value: .object([
         ClaimUiModel(id: "street", displayName: "Gatuadress", value: .string("Kungsgatan 1")),
         ClaimUiModel(id: "city", displayName: "Stad", value: .string("Stockholm")),
-      ])
+      ]),
     ),
   ]
 
