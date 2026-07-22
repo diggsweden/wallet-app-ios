@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
+import CredentialInterfaces
 import Foundation
 import Testing
 
@@ -14,7 +15,7 @@ struct CardSnapshotTests {
   func pidCard() {
     assertThemedSnapshots(
       of: PidCard(credential: Self.pid).environment(Router()),
-      width: 360
+      width: 360,
     )
   }
 
@@ -22,7 +23,7 @@ struct CardSnapshotTests {
   func documentCard() {
     assertThemedSnapshots(
       of: DocumentCard(credential: Self.document).environment(Router()),
-      width: 360
+      width: 360,
     )
   }
 
@@ -35,7 +36,7 @@ struct CardSnapshotTests {
     claimsCount: 15,
     issuedAt: issuedAt,
     type: "",
-    displayData: nil
+    displayData: nil,
   )
 
   private static let document = SavedCredential(
@@ -45,6 +46,6 @@ struct CardSnapshotTests {
     claimsCount: 15,
     issuedAt: issuedAt,
     type: "",
-    displayData: CredentialDisplayData(name: "Körkort")
+    displayData: CredentialDisplayData(name: "Körkort"),
   )
 }

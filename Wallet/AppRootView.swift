@@ -58,21 +58,22 @@ private extension AppRootView {
           ProgressView()
             .transition(.blurReplace)
 
-        case .error:
-          errorView
+        case let .error(caught):
+          errorView(caught: caught)
             .transition(.blurReplace)
       }
     }
     .animation(.default, value: userSessionViewModel.user)
   }
 
-  var errorView: some View {
+  func errorView(caught: CaughtError) -> some View {
     ErrorView(
       model: .init(
+        caughtError: caught,
         primaryButton: .init(
           label: "Försök igen",
           accessibilityHint: "Använd knappen för att försöka igen",
-          asyncAction: userSessionViewModel.retryInitUser
+          asyncAction: userSessionViewModel.retryInitUser,
         ),
         secondaryButton: .init(
           label: "Logga ut",
@@ -81,8 +82,8 @@ private extension AppRootView {
             Task { @MainActor in
               signOutFromErrorState()
             }
-          }
-        )
+          },
+        ),
       )
     )
   }
@@ -97,8 +98,8 @@ private extension AppRootView {
           signIn: userSessionViewModel.signIn,
           savePidCredential: userSessionViewModel.savePid,
           resetSession: userSessionViewModel.signOut,
-          saveHsmServerParameters: userSessionViewModel.saveHsmServerParameters
-        )
+          saveHsmServerParameters: userSessionViewModel.saveHsmServerParameters,
+        ),
       )
     } else {
       DashboardView(
@@ -132,14 +133,14 @@ private extension AppRootView {
           url: url,
           credential: userSessionViewModel.userSnapshot?.pid,
           gatewayApiClient: gatewayApiClient,
-          hsmServerParameters: userSessionViewModel.userSnapshot?.hsmServerParameters
+          hsmServerParameters: userSessionViewModel.userSnapshot?.hsmServerParameters,
         )
 
       case .issuance(let url):
         IssuanceViewWrapper(
           credentialOfferUri: url,
           gatewayApiClient: gatewayApiClient,
-          hsmServerParameters: userSessionViewModel.userSnapshot?.hsmServerParameters
+          hsmServerParameters: userSessionViewModel.userSnapshot?.hsmServerParameters,
         ) { credential in
           try await userSessionViewModel.saveCredential(credential)
           router.pop()

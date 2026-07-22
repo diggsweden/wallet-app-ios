@@ -27,7 +27,7 @@ enum NetworkClient {
   private static func makeHeaders(
     contentType: String?,
     accept: String?,
-    token: String?
+    token: String?,
   ) -> [String: String] {
     [
       "Content-Type": contentType,
@@ -43,14 +43,14 @@ enum NetworkClient {
     contentType: String? = nil,
     accept: String? = nil,
     token: String? = nil,
-    body: Data? = nil
+    body: Data? = nil,
   ) async throws -> Data {
     var request = URLRequest(url: url)
     request.httpMethod = method.rawValue
     request.allHTTPHeaderFields = makeHeaders(
       contentType: contentType,
       accept: accept,
-      token: token
+      token: token,
     )
     request.httpBody = body
 
@@ -58,31 +58,15 @@ enum NetworkClient {
     do {
       (data, response) = try await URLSession.shared.data(for: request)
     } catch {
-      throw HTTPError.networkError(error)
+      throw HTTPError.transport(underlying: error, url: url)
     }
 
     guard let httpResponse = response as? HTTPURLResponse else {
-      throw HTTPError.invalidResponse
+      throw HTTPError.invalidResponse(url: url)
     }
 
-    switch httpResponse.statusCode {
-      case 200 ... 299:
-        break
-
-      case 401:
-        throw HTTPError.unauthorized
-
-      case 403:
-        throw HTTPError.forbidden
-
-      case 404:
-        throw HTTPError.notFound
-
-      case 500 ... 599:
-        throw HTTPError.serverError(httpResponse.statusCode)
-
-      default:
-        throw HTTPError.serverError(httpResponse.statusCode)
+    guard 200 ... 299 ~= httpResponse.statusCode else {
+      throw HTTPError.http(status: httpResponse.statusCode, url: url, body: data)
     }
 
     return data
@@ -94,7 +78,7 @@ enum NetworkClient {
     contentType: String? = "application/json",
     accept: String? = "application/json",
     token: String? = nil,
-    body: Data? = nil
+    body: Data? = nil,
   ) async throws -> T {
     let data = try await sendRequest(
       url,
@@ -102,13 +86,13 @@ enum NetworkClient {
       contentType: contentType,
       accept: accept,
       token: token,
-      body: body
+      body: body,
     )
 
     do {
       return try decoder.decode(T.self, from: data)
     } catch {
-      throw HTTPError.decodingError(error)
+      throw HTTPError.decoding(underlying: error, url: url)
     }
   }
 
@@ -118,7 +102,7 @@ enum NetworkClient {
     contentType: String? = "application/jwt",
     accept: String? = "application/jwt",
     token: String? = nil,
-    body: Data? = nil
+    body: Data? = nil,
   ) async throws -> String {
     let data = try await sendRequest(
       url,
@@ -126,11 +110,11 @@ enum NetworkClient {
       contentType: contentType,
       accept: accept,
       token: token,
-      body: body
+      body: body,
     )
 
     guard let string = String(bytes: data, encoding: .utf8) else {
-      throw HTTPError.decodingError(URLError(.badServerResponse))
+      throw HTTPError.decoding(underlying: URLError(.badServerResponse), url: url)
     }
     return string
   }

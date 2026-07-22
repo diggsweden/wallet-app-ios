@@ -70,7 +70,7 @@ final class PresentationViewModel {
       optionalItems = allItems.filter { !$0.required }
       phase = .ready
     } catch {
-      phase = .error
+      phase = .error(CaughtError(error))
     }
   }
 

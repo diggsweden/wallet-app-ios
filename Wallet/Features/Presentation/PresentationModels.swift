@@ -8,7 +8,7 @@ import eudi_lib_sdjwt_swift
 
 enum PresentationPhase {
   case loading
-  case error
+  case error(CaughtError)
   case ready
 }
 
@@ -17,7 +17,7 @@ enum PresentationRoute: Hashable {
   case success
 }
 
-enum PresentationError: Error {
+enum PresentationError: LocalizedError {
   case noCredential
   case noRequestData
   case noMatchingClaims
@@ -26,6 +26,16 @@ enum PresentationError: Error {
   case unsupportedResponseMode
   case jweEncryptionFailed
   case keyBindingEncodingFailed
+
+  var errorDescription: String? {
+    switch self {
+      case .resolutionFailed(let detail):
+        detail
+
+      default:
+        "Något gick fel vid delning av uppgifter."
+    }
+  }
 }
 
 struct RedirectUrl: Decodable {

@@ -14,7 +14,7 @@ let package = Package(
   products: [
     .library(
       name: "CredentialInterfaces",
-      targets: ["CredentialInterfaces"]
+      targets: ["CredentialInterfaces"],
     )
   ],
   targets: [
@@ -22,5 +22,5 @@ let package = Package(
       name: "CredentialInterfaces"
     )
   ],
-  swiftLanguageModes: [.v6]
+  swiftLanguageModes: [.v6],
 )

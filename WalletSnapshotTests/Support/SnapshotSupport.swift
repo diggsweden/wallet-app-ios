@@ -20,7 +20,7 @@ func assertThemedSnapshots(
   file filePath: StaticString = #filePath,
   testName: String = #function,
   line: UInt = #line,
-  column: UInt = #column
+  column: UInt = #column,
 ) {
   for scheme in [ColorScheme.light, .dark] {
     let name = scheme == .dark ? "dark" : "light"
@@ -43,7 +43,7 @@ func assertThemedSnapshots(
       file: filePath,
       testName: testName,
       line: line,
-      column: column
+      column: column,
     )
   }
 }
@@ -58,7 +58,7 @@ func assertThemedDeviceSnapshots(
   file filePath: StaticString = #filePath,
   testName: String = #function,
   line: UInt = #line,
-  column: UInt = #column
+  column: UInt = #column,
 ) {
   for scheme in [ColorScheme.light, .dark] {
     let name = scheme == .dark ? "dark" : "light"
@@ -77,14 +77,14 @@ func assertThemedDeviceSnapshots(
         precision: precision,
         perceptualPrecision: perceptualPrecision,
         layout: .device(config: device),
-        traits: traits
+        traits: traits,
       ),
       named: name,
       fileID: fileID,
       file: filePath,
       testName: testName,
       line: line,
-      column: column
+      column: column,
     )
   }
 }

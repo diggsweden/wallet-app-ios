@@ -16,8 +16,8 @@ struct PidSetupView: View {
 
   var body: some View {
     ZStack {
-      if viewModel.hasError {
-        errorView
+      if let caught = viewModel.caughtError {
+        errorView(caught: caught)
           .transition(.opacity)
       } else {
         content
@@ -45,7 +45,10 @@ struct PidSetupView: View {
         )
         .padding(.bottom, 8)
 
-        InlineLink("Läs mer om de uppgifter vi hämtar", url: #URL("https://wallet.sandbox.digg.se"))
+        InlineLink(
+          "Läs mer om de uppgifter vi hämtar",
+          url: #URL("https://wallet.sandbox.digg.se"),
+        )
       }
 
       Spacer()
@@ -54,16 +57,17 @@ struct PidSetupView: View {
     }
   }
 
-  private var errorView: some View {
+  private func errorView(caught: CaughtError) -> some View {
     ErrorView(
       model: .init(
+        caughtError: caught,
         primaryButton: .init(
           label: "Försök igen",
           accessibilityHint: "Använd knappen för att försöka igen",
           action: {
             Task { await viewModel.fetchPid(anchor) }
-          }
-        )
+          },
+        ),
       )
     )
   }

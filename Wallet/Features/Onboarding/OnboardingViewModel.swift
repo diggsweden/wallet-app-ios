@@ -25,11 +25,13 @@ final class OnboardingViewModel {
   private var hadResetError: Bool = false
 
   init(
+    step: OnboardingStep = .intro,
     savePidCredential: @escaping (SavedCredential) async throws -> Void,
     signIn: @escaping (String) async throws -> Void,
     onReset: @escaping () async throws -> Void,
-    saveHsmServerParameters: @escaping (ServerParameters) async throws -> Void
+    saveHsmServerParameters: @escaping (ServerParameters) async throws -> Void,
   ) {
+    self.step = step
     self.savePidCredentialAction = savePidCredential
     self.signInAction = signIn
     self.resetSessionAction = onReset

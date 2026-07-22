@@ -121,6 +121,11 @@ build-clean:
 test:
     xcodebuild -workspace {{xcode_workspace}} -scheme "{{xcode_scheme}}" -destination 'platform=iOS Simulator,name=iPhone 15' test
 
+# Run Swift package unit tests
+[group('build')]
+test-packages:
+    xcodebuild -workspace {{xcode_workspace}} -scheme WalletGatewayTests -destination 'platform=iOS Simulator,name=iPhone 15' test
+
 # Run UI tests
 [group('build')]
 test-ui:

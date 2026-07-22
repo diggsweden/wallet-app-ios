@@ -15,14 +15,14 @@ struct PinDotSnapshotTests {
     .image(
       precision: 1,
       perceptualPrecision: 0.98,
-      layout: .fixed(width: 48, height: 48)
+      layout: .fixed(width: 48, height: 48),
     )
 
   @Test("Filled dot")
   func filled() {
     assertSnapshot(
       of: PinDot(filled: true, color: .black, size: 24),
-      as: Self.strategy
+      as: Self.strategy,
     )
   }
 
@@ -30,7 +30,7 @@ struct PinDotSnapshotTests {
   func empty() {
     assertSnapshot(
       of: PinDot(filled: false, color: .black, size: 24),
-      as: Self.strategy
+      as: Self.strategy,
     )
   }
 }

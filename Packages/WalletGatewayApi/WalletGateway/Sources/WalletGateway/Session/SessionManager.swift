@@ -16,13 +16,15 @@ public final actor SessionManager {
   public init(
     signingProvider: any SessionSigningProvider,
     accountIdProvider: any AccountIdProvider,
-    baseUrl: URL
+    baseUrl: URL,
+    deviceInfo: DeviceInfo,
   ) {
     self.signingProvider = signingProvider
     self.accountIdProvider = accountIdProvider
     client = Client(
       serverURL: baseUrl,
-      transport: URLSessionTransport()
+      transport: URLSessionTransport(),
+      middlewares: [DeviceInfoMiddleware(deviceInfo: deviceInfo)],
     )
   }
 
@@ -57,31 +59,38 @@ public final actor SessionManager {
     }
 
     let query = Operations.InitChallenge.Input.Query(accountId: accountId, keyId: keyId)
-    let response = try await client.initChallenge(query: query)
 
-    guard
-      case let .ok(payload) = response,
-      let nonce = try? payload.body.json.nonce
-    else {
-      throw SessionError.failedChallenge
+    switch try await client.initChallenge(query: query) {
+      case .ok(let payload):
+        guard let nonce = try? payload.body.json.nonce else {
+          throw SessionError.undecodableResponseBody
+        }
+        return nonce
+
+      case .unauthorized:
+        throw SessionError.unauthorized
+
+      case .`default`(let status, let response):
+        throw SessionError.problem(ProblemDetails(status: status, response: response))
     }
-
-    return nonce
   }
 
   private func validateChallenge(keyId: String, nonce: String) async throws -> String {
     let jwt = try await signingProvider.signSessionJwt(keyId: keyId, nonce: nonce)
     let input = Operations.ValidateChallenge.Input(body: .json(.init(signedJwt: jwt)))
-    let response = try await client.validateChallenge(input)
 
-    guard case let .ok(payload) = response else {
-      throw SessionError.failedChallenge
+    switch try await client.validateChallenge(input) {
+      case .ok(let payload):
+        guard let sessionId = try? payload.body.json.sessionId else {
+          throw SessionError.undecodableResponseBody
+        }
+        return sessionId
+
+      case .unauthorized:
+        throw SessionError.unauthorized
+
+      case .`default`(let status, let response):
+        throw SessionError.problem(ProblemDetails(status: status, response: response))
     }
-
-    guard let sessionId = try? payload.body.json.sessionId else {
-      throw SessionError.failedChallenge
-    }
-
-    return sessionId
   }
 }

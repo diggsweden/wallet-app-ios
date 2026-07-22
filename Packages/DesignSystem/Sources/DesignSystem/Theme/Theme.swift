@@ -75,8 +75,8 @@ extension Theme {
       backgroundPage: Color.rgba(243, 243, 243),
       layerAccent: BrandColors.yellow.100,
       borderInteractive: BrandColors.green.100,
-      pidBackground: BrandColors.brown.70
-    ),
+      pidBackground: BrandColors.brown.70,
+    )
   )
 
   public static let dark: Theme = .init(
@@ -106,7 +106,7 @@ extension Theme {
       backgroundPage: BrandColors.neutral.130,
       layerAccent: BrandColors.yellow.130,
       borderInteractive: BrandColors.green.25,
-      pidBackground: BrandColors.brown.100
-    ),
+      pidBackground: BrandColors.brown.100,
+    )
   )
 }

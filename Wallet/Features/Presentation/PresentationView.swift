@@ -24,7 +24,7 @@ struct PresentationView: View {
         url: url,
         credential: credential,
         gatewayApiClient: gatewayApiClient,
-        hsmServerParameters: hsmServerParameters
+        hsmServerParameters: hsmServerParameters,
       )
     )
   }
@@ -81,9 +81,10 @@ struct PresentationView: View {
             await viewModel.resolveAndMatchClaims()
           }
 
-      case .error:
+      case let .error(caught):
         ErrorView(
           model: .init(
+            caughtError: caught,
             primaryButton: .init(
               label: "Försök igen",
               accessibilityHint: "Använd knappen för att försöka igen",
@@ -91,8 +92,8 @@ struct PresentationView: View {
                 Task {
                   await viewModel.resolveAndMatchClaims()
                 }
-              }
-            )
+              },
+            ),
           )
         )
 
@@ -102,7 +103,7 @@ struct PresentationView: View {
           optionalItems: $viewModel.optionalItems,
           onConfirm: {
             router.navigationPath.append(PresentationRoute.pin)
-          }
+          },
         )
     }
   }
