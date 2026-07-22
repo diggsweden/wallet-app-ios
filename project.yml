@@ -229,3 +229,11 @@ schemes:
       targets:
         - WalletSnapshotTests
 
+  WalletGatewayTests:
+    build:
+      targets:
+        WalletDemo: none
+    test:
+      targets:
+        - package: WalletGateway/WalletGatewayTests
+
