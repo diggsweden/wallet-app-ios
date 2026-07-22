@@ -41,7 +41,7 @@ final class WalletSetupViewModel {
     while let step = current {
       state = .working(step)
       do {
-        await sleepProvider.sleep(for: .random(in: 0.5 ... 0.8))
+        await sleepProvider.sleep(for: .random(in: Constants.randomStepDelayInSeconds))
         current = try await perform(step)
       } catch {
         state = .failed(at: step, CaughtError(error))
@@ -49,7 +49,7 @@ final class WalletSetupViewModel {
       }
     }
     state = .complete
-    await sleepProvider.sleep(for: 1)
+    await sleepProvider.sleep(for: Constants.onCompleteDelayInSeconds)
     onComplete()
   }
 
@@ -79,5 +79,12 @@ final class WalletSetupViewModel {
         try await service.saveKey(key: key)
         return nil
     }
+  }
+}
+
+private extension WalletSetupViewModel {
+  enum Constants {
+    static let onCompleteDelayInSeconds: Double = 1
+    static let randomStepDelayInSeconds: ClosedRange<Double> = 0.5 ... 0.8
   }
 }
