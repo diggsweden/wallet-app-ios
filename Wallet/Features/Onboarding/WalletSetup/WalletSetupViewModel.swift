@@ -11,15 +11,18 @@ final class WalletSetupViewModel {
   private let pin: String
   private(set) var state: WalletSetupState = .idle
   private let onComplete: () -> Void
+  private let sleepProvider: any SleepProviding
 
   init(
     service: any WalletSetupService,
     pin: String,
     onComplete: @escaping () -> Void,
+    sleepProvider: any SleepProviding = SleepProvider(),
   ) {
     self.service = service
     self.pin = pin
     self.onComplete = onComplete
+    self.sleepProvider = sleepProvider
   }
 
   func setup() async {
@@ -38,7 +41,7 @@ final class WalletSetupViewModel {
     while let step = current {
       state = .working(step)
       do {
-        try? await Task.sleep(for: .seconds(.random(in: 0.5 ... 0.8)))
+        await sleepProvider.sleep(for: .random(in: 0.5 ... 0.8))
         current = try await perform(step)
       } catch {
         state = .failed(at: step, CaughtError(error))
@@ -46,7 +49,7 @@ final class WalletSetupViewModel {
       }
     }
     state = .complete
-    try? await Task.sleep(for: .seconds(1))
+    await sleepProvider.sleep(for: 1)
     onComplete()
   }
 
