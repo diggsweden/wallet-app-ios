@@ -82,7 +82,7 @@ struct WalletSetupViewModelTests {
   }
 
   @Test
-  func callsonCompleteOnSuccess() async {
+  func callsOnCompleteOnSuccess() async {
     var called = false
     let service = MockWalletSetupService()
     let vm = WalletSetupViewModel(
@@ -96,7 +96,7 @@ struct WalletSetupViewModelTests {
   }
 
   @Test
-  func doesNotCallonCompleteOnFailure() async {
+  func doesNotCallOnCompleteOnFailure() async {
     var called = false
     let service = MockWalletSetupService()
     service.failAt = .createAccount
