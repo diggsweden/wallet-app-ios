@@ -22,7 +22,7 @@ struct CredentialRequest: Codable {
   init(
     credentialConfigurationId: String,
     proofs: JwtProofType,
-    credentialResponseEncryption: CredentialResponseEncryptionDTO? = nil
+    credentialResponseEncryption: CredentialResponseEncryptionDTO? = nil,
   ) {
     self.credentialConfigurationId = credentialConfigurationId
     self.proofs = proofs

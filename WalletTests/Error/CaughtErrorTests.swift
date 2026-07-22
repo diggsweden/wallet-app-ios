@@ -18,7 +18,7 @@ struct CaughtErrorTests {
       status: 500,
       title: "Internal Server Error",
       instance: "/v0/accounts",
-      transactionId: "txn-123"
+      transactionId: "txn-123",
     )
     let caught = CaughtError(GatewayError.problem(details), at: date)
 
@@ -35,7 +35,7 @@ struct CaughtErrorTests {
       GatewayError.invalidResponse,
       at: date,
       file: "WalletDemo/WalletSetupViewModel.swift",
-      line: 56
+      line: 56,
     )
 
     #expect(caught.code == nil)
@@ -48,7 +48,7 @@ struct CaughtErrorTests {
       GatewayError.unauthorized,
       at: date,
       file: "WalletDemo/Flow.swift",
-      line: 10
+      line: 10,
     )
 
     #expect(caught.code == nil)
@@ -91,7 +91,7 @@ struct CaughtErrorTests {
       appVersion: "1.0 (1)",
       iosVersion: "26.0.0",
       deviceModel: "iPhone15,2",
-      network: "Wi-Fi"
+      network: "Wi-Fi",
     )
     let caught = CaughtError(GatewayError.unauthorized, at: date)
     let info = ErrorInfo(from: caught, system: system)

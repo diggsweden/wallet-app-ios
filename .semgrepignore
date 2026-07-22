@@ -1,0 +1,10 @@
+# SPDX-FileCopyrightText: 2026 Digg - Agency for Digital Government
+#
+# SPDX-License-Identifier: CC0-1.0
+
+# secrets: inherit is intentional here — reusable-ci does not yet declare
+# explicit secrets in on.workflow_call.secrets, so it cannot be enumerated.
+# TODO: remove once diggsweden/reusable-ci exposes explicit secret declarations.
+.github/workflows/pull-request-workflow.yml
+.github/workflows/release-dev-workflow.yml
+.github/workflows/release-workflow.yml

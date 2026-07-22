@@ -27,7 +27,7 @@ enum NetworkClient {
   private static func makeHeaders(
     contentType: String?,
     accept: String?,
-    token: String?
+    token: String?,
   ) -> [String: String] {
     [
       "Content-Type": contentType,
@@ -43,14 +43,14 @@ enum NetworkClient {
     contentType: String? = nil,
     accept: String? = nil,
     token: String? = nil,
-    body: Data? = nil
+    body: Data? = nil,
   ) async throws -> Data {
     var request = URLRequest(url: url)
     request.httpMethod = method.rawValue
     request.allHTTPHeaderFields = makeHeaders(
       contentType: contentType,
       accept: accept,
-      token: token
+      token: token,
     )
     request.httpBody = body
 
@@ -78,7 +78,7 @@ enum NetworkClient {
     contentType: String? = "application/json",
     accept: String? = "application/json",
     token: String? = nil,
-    body: Data? = nil
+    body: Data? = nil,
   ) async throws -> T {
     let data = try await sendRequest(
       url,
@@ -86,7 +86,7 @@ enum NetworkClient {
       contentType: contentType,
       accept: accept,
       token: token,
-      body: body
+      body: body,
     )
 
     do {
@@ -102,7 +102,7 @@ enum NetworkClient {
     contentType: String? = "application/jwt",
     accept: String? = "application/jwt",
     token: String? = nil,
-    body: Data? = nil
+    body: Data? = nil,
   ) async throws -> String {
     let data = try await sendRequest(
       url,
@@ -110,7 +110,7 @@ enum NetworkClient {
       contentType: contentType,
       accept: accept,
       token: token,
-      body: body
+      body: body,
     )
 
     guard let string = String(bytes: data, encoding: .utf8) else {

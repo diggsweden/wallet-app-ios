@@ -20,7 +20,7 @@ struct ErrorReportViewSnapshotTests {
       timestamp: "14:32:03",
       iosVersion: "26.5",
       deviceModel: "iPhone 15",
-      network: "Wi-Fi"
+      network: "Wi-Fi",
     )
     assertThemedDeviceSnapshots(of: ErrorReportView(info: info))
   }
@@ -32,7 +32,7 @@ struct ErrorReportViewSnapshotTests {
       timestamp: "14:32:03",
       iosVersion: "26.5",
       deviceModel: "iPhone 15",
-      network: "Wi-Fi"
+      network: "Wi-Fi",
     )
     assertThemedDeviceSnapshots(of: ErrorReportView(info: info))
   }

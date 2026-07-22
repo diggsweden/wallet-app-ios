@@ -41,7 +41,7 @@ private extension Scaffolder {
     body = SchemaTemplate.copiedSchema(
       from: stripped,
       prevVersion: prevVersion,
-      nextVersion: nextVersion
+      nextVersion: nextVersion,
     )
 
     try writeFile(at: destination, body: body)
@@ -96,7 +96,7 @@ private extension Scaffolder {
     let bumper = TypealiasBumper(
       fromVersion: prevVersion,
       toVersion: nextVersion,
-      file: context.currentModelsFile
+      file: context.currentModelsFile,
     )
     try bumper.run()
   }
