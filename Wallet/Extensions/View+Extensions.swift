@@ -10,13 +10,13 @@ extension View {
     if #available(iOS 26.0, *) {
       self.glassEffect(
         .regular.interactive(),
-        in: RoundedRectangle(cornerRadius: 12)
+        in: RoundedRectangle(cornerRadius: 12),
       )
     } else {
       self
         .background(
           .ultraThinMaterial,
-          in: RoundedRectangle(cornerRadius: 12)
+          in: RoundedRectangle(cornerRadius: 12),
         )
     }
   }

@@ -13,7 +13,7 @@ struct ErrorViewSnapshotTests {
   func primaryAndLink() {
     let model = ErrorView.ViewModel(
       primaryButton: .init(label: "Försök igen", accessibilityHint: "Försök igen", action: {}),
-      linkButton: .init(label: "Få hjälp", accessibilityHint: "Få hjälp", action: {})
+      linkButton: .init(label: "Få hjälp", accessibilityHint: "Få hjälp", action: {}),
     )
     assertThemedDeviceSnapshots(of: ErrorView(model: model).defaultScreenStyle)
   }
@@ -23,7 +23,7 @@ struct ErrorViewSnapshotTests {
     let model = ErrorView.ViewModel(
       primaryButton: .init(label: "Försök igen", accessibilityHint: "Försök igen", action: {}),
       secondaryButton: .init(label: "Avbryt", accessibilityHint: "Avbryt", action: {}),
-      linkButton: .init(label: "Få hjälp", accessibilityHint: "Få hjälp", action: {})
+      linkButton: .init(label: "Få hjälp", accessibilityHint: "Få hjälp", action: {}),
     )
     assertThemedDeviceSnapshots(of: ErrorView(model: model).defaultScreenStyle)
   }

@@ -21,7 +21,7 @@ struct ProblemDetailsTests {
           transactionId: "abcdefgh-digg-38sdgj5",
           invalidParameters: [
             .init(reason: "required", value: nil, property: "deviceKey")
-          ]
+          ],
         )
       )
     )

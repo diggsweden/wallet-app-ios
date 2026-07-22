@@ -15,7 +15,7 @@ struct AuthenticationMiddleware: ClientMiddleware {
     body: HTTPBody?,
     baseURL: URL,
     operationID: String,
-    next: (HTTPRequest, HTTPBody?, URL) async throws -> (HTTPResponse, HTTPBody?)
+    next: (HTTPRequest, HTTPBody?, URL) async throws -> (HTTPResponse, HTTPBody?),
   ) async throws -> (HTTPResponse, HTTPBody?) {
     var request = request
     request.setHeader("X-API-KEY", apiKey)
