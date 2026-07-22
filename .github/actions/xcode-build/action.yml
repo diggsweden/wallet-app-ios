@@ -5,6 +5,12 @@
 name: Xcode Build
 description: Restore Xcode cache, generate project, and build for testing to warm the cache
 
+inputs:
+  should-restore-xcode-cache:
+    description: "Conditional for restoring xcode cache"
+    required: false
+    default: "false"
+
 runs:
   using: composite
   steps:
