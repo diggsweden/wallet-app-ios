@@ -34,7 +34,7 @@ runs:
         set -o pipefail
         xcodebuild test \
           -workspace Wallet.xcworkspace \
-          -scheme WalletGateway \
+          -scheme WalletGatewayTests \
           -destination 'platform=iOS Simulator,name=iPhone 17' \
           COMPILER_INDEX_STORE_ENABLE=NO \
         | xcbeautify
