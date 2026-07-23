@@ -35,7 +35,12 @@ struct OnboardingSnapshotTests {
 
   @Test func walletSetupFailed() {
     assertThemedDeviceSnapshots(
-      of: WalletSetupContent(state: .failed(at: .createAccount, error: CancellationError()))
+      of: WalletSetupContent(
+        state: .failed(
+          at: .createAccount,
+          .init(CancellationError()),
+        )
+      )
     )
   }
 
