@@ -29,7 +29,7 @@ struct IssuanceViewWrapper: View {
           alignment: .top,
         )
       }
-      .navigationTitle("Hämta attributsintyg")
+      .navigationTitle("Begär attributsintyg")
       .navigationBarTitleDisplayMode(.inline)
     }
   }

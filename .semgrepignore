@@ -8,3 +8,6 @@
 .github/workflows/pull-request-workflow.yml
 .github/workflows/release-dev-workflow.yml
 .github/workflows/release-workflow.yml
+
+# JWT false positive: machine-generated mock SD-JWT fixture rendered in snapshot tests
+WalletSnapshotTests/Features/CredentialDetailsSnapshotTests.swift
