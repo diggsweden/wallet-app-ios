@@ -74,7 +74,7 @@ struct PidSetupView: View {
 
   @ViewBuilder
   private var button: some View {
-    PrimaryButton("Hämta personuppgifter", icon: "arrow.up.forward.app") {
+    PrimaryButton("Begär personuppgifter", icon: "arrow.up.forward.app") {
       Task { await viewModel.fetchPid(anchor) }
     }
   }

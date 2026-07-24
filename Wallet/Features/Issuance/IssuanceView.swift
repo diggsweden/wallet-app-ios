@@ -133,10 +133,13 @@ private struct ConfirmPinView: View {
 
   var body: some View {
     VStack(spacing: 24) {
-      Text("Bekräfta pinkod")
-        .textStyle(.h2)
+      Text("Skriv in din PIN-kod för att begära hämtning av dina personuppgifter")
+        .textStyle(.bodyLarge)
+        .multilineTextAlignment(.leading)
+        .frame(maxWidth: .infinity, alignment: .leading)
 
       PinView(onComplete: onComplete)
     }
+    .padding(.top, -30)
   }
 }
