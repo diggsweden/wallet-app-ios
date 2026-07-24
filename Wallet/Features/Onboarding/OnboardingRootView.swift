@@ -123,11 +123,11 @@ struct OnboardingRootView: View {
     let titleText =
       switch viewModel.step {
         case .intro: ""
-        case .pin: "Ange pinkod för identifiering"
-        case .verifyPin: "Bekräfta pinkod för identifiering"
+        case .pin: "Skapa PIN-kod"
+        case .verifyPin: "Bekräfta PIN-kod"
         case .walletSetup: "Sätter upp plånbok"
-        case .pid: "Hämta personuppgifter"
-        case .issueCredential: "Hämta personuppgifter"
+        case .pid: "Begär personuppgifter"
+        case .issueCredential: "Begär personuppgifter"
       }
 
     return Text(titleText)
@@ -143,13 +143,14 @@ struct OnboardingRootView: View {
         }
 
       case .pin:
-        PinSetupView("Pinkod används när du ska identifiera dig") { pin in
+        PinSetupView("Skapa en sexsiffrig PIN-kod som du" + " använder för att identifiera dig.") {
+          pin in
           try viewModel.setPin(pin)
           viewModel.next(from: .pin)
         }
 
       case .verifyPin:
-        PinSetupView("Pinkod används när du ska identifiera dig") { pin in
+        PinSetupView("Skriv samma PIN-kod igen för att bekräfta den.") { pin in
           try viewModel.confirmPin(pin)
           viewModel.next(from: .verifyPin)
         }
