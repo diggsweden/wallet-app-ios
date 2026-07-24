@@ -13,8 +13,9 @@ struct WalletTitleView: View {
       Text("Plånboken")
         .font(.custom("Ubuntu-Medium", size: 40, relativeTo: .largeTitle))
         .lineHeightIfAvailable(multiple: 1.2)
-      Text("Din data, ditt val")
-        .font(.custom("Ubuntu-Medium", size: 24, relativeTo: .title))
+      Text("Hela Sveriges digitala identitetsplånbok")
+        .textStyle(.bodyLarge)
+        .multilineTextAlignment(.center)
     }
     .foregroundStyle(titleColor)
   }

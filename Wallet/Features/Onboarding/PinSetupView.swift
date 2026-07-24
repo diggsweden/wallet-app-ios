@@ -18,7 +18,8 @@ struct PinSetupView: View {
     VStack(spacing: 20) {
       Text(bodyText)
         .textStyle(.bodyLarge)
-        .multilineTextAlignment(.center)
+        .multilineTextAlignment(.leading)
+        .frame(maxWidth: .infinity, alignment: .leading)
 
       PinView(buttonText: "onboardingNext") { pin in
         try onSubmit(pin)

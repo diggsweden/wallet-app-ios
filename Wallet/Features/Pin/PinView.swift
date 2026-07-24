@@ -19,7 +19,7 @@ struct PinView: View {
   @State private var gridWidth: CGFloat = 0
 
   init(
-    buttonText: String = "Identifiera",
+    buttonText: String = "Begär personuppgifter",
     onComplete: @escaping (String) throws -> Void,
   ) {
     self.buttonText = buttonText
