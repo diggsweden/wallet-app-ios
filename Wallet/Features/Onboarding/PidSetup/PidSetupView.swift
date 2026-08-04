@@ -45,7 +45,10 @@ struct PidSetupView: View {
         )
         .padding(.bottom, 8)
 
-        InlineLink("Läs mer om de uppgifter vi hämtar", url: #URL("https://wallet.sandbox.digg.se"))
+        InlineLink(
+          "Läs mer om de uppgifter vi hämtar",
+          url: #URL("https://wallet.sandbox.digg.se"),
+        )
       }
 
       Spacer()
@@ -63,15 +66,15 @@ struct PidSetupView: View {
           accessibilityHint: "Använd knappen för att försöka igen",
           action: {
             Task { await viewModel.fetchPid(anchor) }
-          }
-        )
+          },
+        ),
       )
     )
   }
 
   @ViewBuilder
   private var button: some View {
-    PrimaryButton("Hämta personuppgifter", icon: "arrow.up.forward.app") {
+    PrimaryButton("Begär personuppgifter", icon: "arrow.up.forward.app") {
       Task { await viewModel.fetchPid(anchor) }
     }
   }

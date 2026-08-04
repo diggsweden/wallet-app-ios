@@ -13,7 +13,7 @@ struct ToastSnapshotTests {
   func info() {
     assertThemedSnapshots(
       of: ToastView(Toast(type: .info, title: "Lite information")) {},
-      width: 350
+      width: 350,
     )
   }
 
@@ -21,7 +21,7 @@ struct ToastSnapshotTests {
   func success() {
     assertThemedSnapshots(
       of: ToastView(Toast(type: .success, title: "Något gick bra!")) {},
-      width: 350
+      width: 350,
     )
   }
 
@@ -29,7 +29,7 @@ struct ToastSnapshotTests {
   func warning() {
     assertThemedSnapshots(
       of: ToastView(Toast(type: .warning, title: "En varning!")) {},
-      width: 350
+      width: 350,
     )
   }
 
@@ -37,7 +37,7 @@ struct ToastSnapshotTests {
   func error() {
     assertThemedSnapshots(
       of: ToastView(Toast(type: .error, title: "Något gick fel! Testa igen")) {},
-      width: 350
+      width: 350,
     )
   }
 }

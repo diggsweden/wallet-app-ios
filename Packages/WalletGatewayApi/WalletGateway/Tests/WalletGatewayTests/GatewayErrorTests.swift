@@ -17,7 +17,7 @@ struct GatewayErrorTests {
       detail: "detaljer",
       instance: nil,
       transactionId: nil,
-      invalidParameters: nil
+      invalidParameters: nil,
     )
 
     #expect(GatewayError.problem(details).errorDescription == "Boom")
@@ -32,7 +32,7 @@ struct GatewayErrorTests {
       detail: nil,
       instance: nil,
       transactionId: nil,
-      invalidParameters: nil
+      invalidParameters: nil,
     )
 
     #expect(GatewayError.problem(details).errorDescription == "Servern returnerade ett fel (502).")

@@ -21,15 +21,15 @@ struct IssuanceViewWrapper: View {
           credentialOfferUri: credentialOfferUri,
           gatewayApiClient: gatewayApiClient,
           hsmServerParameters: hsmServerParameters,
-          onSaveCredential: onSave
+          onSaveCredential: onSave,
         )
         .frame(
           maxWidth: .infinity,
           minHeight: proxy.size.height,
-          alignment: .top
+          alignment: .top,
         )
       }
-      .navigationTitle("Hämta attributsintyg")
+      .navigationTitle("Begär attributsintyg")
       .navigationBarTitleDisplayMode(.inline)
     }
   }

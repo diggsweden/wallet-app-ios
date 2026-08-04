@@ -15,10 +15,10 @@ extension HsmServerParameters {
         crv: parameters.serverJwsPublicKey.crv,
         x: parameters.serverJwsPublicKey.x,
         y: parameters.serverJwsPublicKey.y,
-        kid: parameters.serverJwsPublicKey.kid
+        kid: parameters.serverJwsPublicKey.kid,
       ),
       opaqueContext: parameters.opaqueContext,
-      opaqueServerIdentifier: parameters.opaqueServerIdentifier
+      opaqueServerIdentifier: parameters.opaqueServerIdentifier,
     )
   }
 
@@ -44,7 +44,7 @@ private struct ServerParametersRepresentation: Encodable {
       crv: parameters.serverJwsPublicKey.crv,
       x: parameters.serverJwsPublicKey.x,
       y: parameters.serverJwsPublicKey.y,
-      kid: parameters.serverJwsPublicKey.kid
+      kid: parameters.serverJwsPublicKey.kid,
     )
     self.opaqueContext = parameters.opaqueContext
     self.opaqueServerIdentifier = parameters.opaqueServerIdentifier

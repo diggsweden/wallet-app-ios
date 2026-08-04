@@ -10,7 +10,7 @@ extension Color {
       red: r / 255,
       green: g / 255,
       blue: b / 255,
-      opacity: a
+      opacity: a,
     )
   }
 }

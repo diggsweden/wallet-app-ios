@@ -8,6 +8,6 @@ import SwiftData
 enum MigrateV1toV2 {
   static let stage = MigrationStage.lightweight(
     fromVersion: SchemaV1.self,
-    toVersion: SchemaV2.self
+    toVersion: SchemaV2.self,
   )
 }

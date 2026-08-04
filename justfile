@@ -124,7 +124,7 @@ test:
 # Run Swift package unit tests
 [group('build')]
 test-packages:
-    xcodebuild -workspace {{xcode_workspace}} -scheme WalletGateway -destination 'platform=iOS Simulator,name=iPhone 15' test
+    xcodebuild -workspace {{xcode_workspace}} -scheme WalletGatewayTests -destination 'platform=iOS Simulator,name=iPhone 15' test
 
 # Run UI tests
 [group('build')]

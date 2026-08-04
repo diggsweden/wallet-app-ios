@@ -14,7 +14,7 @@ let package = Package(
   products: [
     .library(
       name: "User",
-      targets: ["User"]
+      targets: ["User"],
     )
   ],
   dependencies: [
@@ -27,12 +27,12 @@ let package = Package(
       dependencies: [
         .product(name: "CredentialInterfaces", package: "CredentialInterfaces"),
         .product(name: "WalletGatewayInterface", package: "WalletGatewayInterface"),
-      ]
+      ],
     ),
     .testTarget(
       name: "UserTests",
-      dependencies: ["User"]
+      dependencies: ["User"],
     ),
   ],
-  swiftLanguageModes: [.v6]
+  swiftLanguageModes: [.v6],
 )
