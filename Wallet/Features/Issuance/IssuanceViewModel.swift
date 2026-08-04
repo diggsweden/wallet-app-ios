@@ -86,19 +86,15 @@ class IssuanceViewModel {
         throw IssuanceError.invalidAuth
       }
 
-      let authCodeReceived = try await issuer.handleAuthorizationCode(
-        request: preparedRequest,
-        authorizationCode: .init(authorizationCode: code),
-      )
-
       let authorizationServer = await issuer.issuerMetadata.authorizationServers?.first
       let issuerState = oAuthCallback.queryItemValue(for: "state") ?? preparedRequest.state
 
       let authResponse =
         try await issuer
         .authorizeWithAuthorizationCode(
-          request: authCodeReceived,
-          preparedRequest: preparedRequest,
+          serverState: issuerState,
+          request: preparedRequest,
+          authorizationCode: .init(value: code),
           grant: .authorizationCode(
             .init(
               issuerState: issuerState,
