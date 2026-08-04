@@ -52,6 +52,7 @@ struct OpenId4VpUtil {
     }
   }
 
+  // swiftlint:disable:next function_body_length
   func resolve(url: URL) async throws -> PresentationRequestData {
     let ephemeralKey = P256.Signing.PrivateKey()
     let secKey = try ephemeralKey.toSecKey()
@@ -81,11 +82,15 @@ struct OpenId4VpUtil {
     )
 
     let sdk = OpenID4VP(walletConfiguration: config)
-    let result = await sdk.authorize(url: url)
+    let result = await sdk.authorize(
+      fetcher: Fetcher<String>(session: config.session),
+      poster: Poster(session: config.session),
+      url: url,
+    )
 
     let resolvedRequest =
       switch result {
-        case .notSecured(let request), .jwt(let request):
+        case .notSecured(let request, _), .jwt(let request, _):
           request
 
         case .invalidResolution(let error, _):
