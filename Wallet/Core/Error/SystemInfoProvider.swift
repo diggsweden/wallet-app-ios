@@ -32,7 +32,7 @@ final class SystemInfoProvider: @unchecked Sendable {
       appVersion: Bundle.main.fullVersion,
       iosVersion: Self.osVersion,
       deviceModel: Self.deviceIdentifier,
-      network: network
+      network: network,
     )
   }
 

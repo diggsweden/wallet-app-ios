@@ -30,7 +30,7 @@ public struct ProblemDetails: Sendable {
     detail: String? = nil,
     instance: String? = nil,
     transactionId: String? = nil,
-    invalidParameters: [ProblemParameter]? = nil
+    invalidParameters: [ProblemParameter]? = nil,
   ) {
     self.status = status
     self.type = type
@@ -52,7 +52,7 @@ extension ProblemDetails {
       detail: problem?.detail,
       instance: problem?.instance,
       transactionId: problem?.transactionId,
-      invalidParameters: problem?.invalidParameters?.map(ProblemParameter.init)
+      invalidParameters: problem?.invalidParameters?.map(ProblemParameter.init),
     )
   }
 }

@@ -18,7 +18,7 @@ struct ButtonSnapshotTests {
   func primaryWithIcon() {
     assertThemedSnapshots(
       of: PrimaryButton("Fortsätt", icon: "arrow.right", onClick: {}),
-      width: 360
+      width: 360,
     )
   }
 

@@ -60,53 +60,82 @@ enum MockError: Error {
   case intentional
 }
 
+struct MockSleepProvider: SleepProviding {
+  func sleep(for seconds: Double) {}
+}
+
 // MARK: - Tests
 
 @MainActor
 struct WalletSetupViewModelTests {
   @Test
-  func `completes successfully`() async {
+  func completesSuccessfully() async {
     let service = MockWalletSetupService()
-    let vm = WalletSetupViewModel(service: service, pin: "1234", onComplete: {})
+    let vm = WalletSetupViewModel(
+      service: service,
+      pin: "1234",
+      onComplete: {},
+      sleepProvider: MockSleepProvider(),
+    )
     await vm.setup()
     #expect(vm.state == .complete)
   }
 
   @Test
-  func `calls onComplete on success`() async {
+  func callsOnCompleteOnSuccess() async {
     var called = false
     let service = MockWalletSetupService()
-    let vm = WalletSetupViewModel(service: service, pin: "1234", onComplete: { called = true })
+    let vm = WalletSetupViewModel(
+      service: service,
+      pin: "1234",
+      onComplete: { called = true },
+      sleepProvider: MockSleepProvider(),
+    )
     await vm.setup()
     #expect(called)
   }
 
   @Test
-  func `does not call onComplete on failure`() async {
+  func doesNotCallOnCompleteOnFailure() async {
     var called = false
     let service = MockWalletSetupService()
     service.failAt = .createAccount
-    let vm = WalletSetupViewModel(service: service, pin: "1234", onComplete: { called = true })
+    let vm = WalletSetupViewModel(
+      service: service,
+      pin: "1234",
+      onComplete: { called = true },
+      sleepProvider: MockSleepProvider(),
+    )
     await vm.setup()
     #expect(!called)
   }
 
   @Test
-  func `sets correct state on failure`() async throws {
+  func setsCorrectStateOnFailure() async throws {
     let service = MockWalletSetupService()
     let stretched = try PINStretch().stretch(input: Data("1234".utf8))
     service.failAt = .authenticate(stretched)
-    let vm = WalletSetupViewModel(service: service, pin: "1234", onComplete: {})
+    let vm = WalletSetupViewModel(
+      service: service,
+      pin: "1234",
+      onComplete: {},
+      sleepProvider: MockSleepProvider(),
+    )
     await vm.setup()
-    #expect(vm.state == .failed(at: .authenticate(stretched), error: MockError.intentional))
+    #expect(vm.state == .failed(at: .authenticate(stretched), CaughtError(MockError.intentional)))
   }
 
   @Test
-  func `retry resumes from failed step`() async throws {
+  func retryResumesFromFailedStep() async throws {
     let service = MockWalletSetupService()
     let stretched = try PINStretch().stretch(input: Data("1234".utf8))
     service.failAt = .authenticate(stretched)
-    let vm = WalletSetupViewModel(service: service, pin: "1234", onComplete: {})
+    let vm = WalletSetupViewModel(
+      service: service,
+      pin: "1234",
+      onComplete: {},
+      sleepProvider: MockSleepProvider(),
+    )
     await vm.setup()
 
     service.failAt = nil
@@ -120,9 +149,14 @@ struct WalletSetupViewModelTests {
   }
 
   @Test
-  func `retry does nothing if not failed`() async {
+  func retryDoesNothingIfNotFailed() async {
     let service = MockWalletSetupService()
-    let vm = WalletSetupViewModel(service: service, pin: "1234", onComplete: {})
+    let vm = WalletSetupViewModel(
+      service: service,
+      pin: "1234",
+      onComplete: {},
+      sleepProvider: MockSleepProvider(),
+    )
     await vm.setup()
     await vm.retry()
     #expect(service.createAccountCallCount == 1)

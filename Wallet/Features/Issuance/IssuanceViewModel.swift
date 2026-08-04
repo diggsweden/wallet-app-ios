@@ -40,7 +40,7 @@ class IssuanceViewModel {
     credentialOfferUri: String,
     gatewayApiClient: any GatewayApi & HSMTransport,
     hsmServerParameters: HsmServerParameters?,
-    onSaveCredential: @escaping (SavedCredential) async throws -> Void
+    onSaveCredential: @escaping (SavedCredential) async throws -> Void,
   ) {
     self.credentialOfferUri = credentialOfferUri
     self.gatewayApiClient = gatewayApiClient
@@ -86,19 +86,15 @@ class IssuanceViewModel {
         throw IssuanceError.invalidAuth
       }
 
-      let authCodeReceived = try await issuer.handleAuthorizationCode(
-        request: preparedRequest,
-        authorizationCode: .init(authorizationCode: code),
-      )
-
       let authorizationServer = await issuer.issuerMetadata.authorizationServers?.first
       let issuerState = oAuthCallback.queryItemValue(for: "state") ?? preparedRequest.state
 
       let authResponse =
         try await issuer
         .authorizeWithAuthorizationCode(
-          request: authCodeReceived,
-          preparedRequest: preparedRequest,
+          serverState: issuerState,
+          request: preparedRequest,
+          authorizationCode: .init(value: code),
           grant: .authorizationCode(
             .init(
               issuerState: issuerState,
@@ -225,7 +221,7 @@ class IssuanceViewModel {
 
     let hsmClient = try getHSMClient()
     _ = try await hsmClient.authenticate(
-      password: PINStretch().stretch(input: Data(pin.utf8)),
+      password: PINStretch().stretch(input: Data(pin.utf8))
     )
     let keys = try await hsmClient.listKeys()
 

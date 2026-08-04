@@ -15,11 +15,11 @@ struct ProjectContext {
 
   var latestVersion: Int { existingVersions.last ?? .zero }
 
-  static func discover() throws -> ProjectContext {
+  static func discover() throws -> Self {
     try discover(repoRoot: findRepoRoot())
   }
 
-  static func discover(repoRoot: URL) throws -> ProjectContext {
+  static func discover(repoRoot: URL) throws -> Self {
     let schemaDir = repoRoot.appendingPathComponent(Config.schemaDirectory)
     let migrationDir = repoRoot.appendingPathComponent(Config.migrationDirectory)
     let testsDir = repoRoot.appendingPathComponent(Config.testsDirectory)
@@ -38,14 +38,14 @@ struct ProjectContext {
       throw SwiftDataMigrationError.fileMissing(path: currentModelsFile.path)
     }
 
-    return ProjectContext(
+    return Self(
       repoRoot: repoRoot,
       schemaDir: schemaDir,
       migrationDir: migrationDir,
       testsDir: testsDir,
       planFile: planFile,
       currentModelsFile: currentModelsFile,
-      existingVersions: try discoverAllSchemaVersions(in: schemaDir)
+      existingVersions: try discoverAllSchemaVersions(in: schemaDir),
     )
   }
 

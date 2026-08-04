@@ -43,7 +43,7 @@ struct BackGesture: ViewModifier {
 extension View {
   func backGesture(
     isEnabled: Bool = true,
-    onDrag: @escaping () -> Void
+    onDrag: @escaping () -> Void,
   ) -> some View {
     modifier(BackGesture(isEnabled: isEnabled, onDrag: onDrag))
   }

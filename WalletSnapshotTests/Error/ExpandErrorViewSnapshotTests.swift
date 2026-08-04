@@ -13,7 +13,7 @@ struct ExpandErrorViewSnapshotTests {
   func codeAndTime() {
     assertThemedSnapshots(
       of: ExpandErrorView(code: "SERVER_ERROR_500", time: "14:32:03"),
-      width: 360
+      width: 360,
     )
   }
 }

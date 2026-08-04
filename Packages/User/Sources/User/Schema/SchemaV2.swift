@@ -25,7 +25,7 @@ extension SchemaV2 {
       id: Int = 0,
       accountId: String? = nil,
       credentials: [SavedCredential] = [],
-      pid: SavedCredential? = nil
+      pid: SavedCredential? = nil,
     ) {
       self.id = id
       self.accountId = accountId

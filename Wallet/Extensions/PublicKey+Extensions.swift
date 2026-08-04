@@ -22,7 +22,7 @@ extension P256.Signing.PublicKey {
       kid: try jwk.thumbprint(),
       crv: curve,
       x: x,
-      y: y
+      y: y,
     )
   }
 }

@@ -23,7 +23,7 @@ struct MigrateV2toV3Tests {
           id: userId,
           accountId: accountId,
           credentials: [Self.fakeV2Credential],
-          pid: Self.fakeV2Pid
+          pid: Self.fakeV2Pid,
         )
       )
     }
@@ -53,7 +53,7 @@ private extension MigrateV2toV3Tests {
 
     let container = try ModelContainer(
       for: SchemaV2.User.self,
-      configurations: ModelConfiguration(url: url)
+      configurations: ModelConfiguration(url: url),
     )
 
     let context = ModelContext(container)
@@ -63,7 +63,7 @@ private extension MigrateV2toV3Tests {
     return try ModelContainer(
       for: SchemaV3.User.self,
       migrationPlan: SwiftDataMigrationPlan.self,
-      configurations: ModelConfiguration(url: url)
+      configurations: ModelConfiguration(url: url),
     )
   }
 
@@ -71,55 +71,55 @@ private extension MigrateV2toV3Tests {
     issuer: SchemaV2.IssuerDisplay(
       name: "Some Issuer",
       info: "Some Info",
-      imageUrl: nil
+      imageUrl: nil,
     ),
     compactSerialized: "someSerialization",
     claimDisplayNames: ["abc": "123"],
     claimsCount: 1,
     issuedAt: .init(timeIntervalSince1970: 1),
     type: "Document",
-    displayData: SchemaV2.CredentialDisplayData(name: "Some Credential")
+    displayData: SchemaV2.CredentialDisplayData(name: "Some Credential"),
   )
 
   static let fakeV3Credential = SchemaV3.SavedCredential(
     issuer: SchemaV3.IssuerDisplay(
       name: "Some Issuer",
       info: "Some Info",
-      imageUrl: nil
+      imageUrl: nil,
     ),
     compactSerialized: "someSerialization",
     claimDisplayNames: ["abc": "123"],
     claimsCount: 1,
     issuedAt: .init(timeIntervalSince1970: 1),
     type: "Document",
-    displayData: SchemaV3.CredentialDisplayData(name: "Some Credential")
+    displayData: SchemaV3.CredentialDisplayData(name: "Some Credential"),
   )
 
   static let fakeV2Pid = SchemaV2.SavedCredential(
     issuer: SchemaV2.IssuerDisplay(
       name: "Digg",
       info: "ID-stuff",
-      imageUrl: nil
+      imageUrl: nil,
     ),
     compactSerialized: "Some Info",
     claimDisplayNames: ["abc": "123"],
     claimsCount: 1,
     issuedAt: .init(timeIntervalSince1970: 1),
     type: CredentialType.pid.rawValue,
-    displayData: SchemaV2.CredentialDisplayData(name: "PID")
+    displayData: SchemaV2.CredentialDisplayData(name: "PID"),
   )
 
   static let fakeV3Pid = SchemaV3.SavedCredential(
     issuer: SchemaV3.IssuerDisplay(
       name: "Digg",
       info: "ID-stuff",
-      imageUrl: nil
+      imageUrl: nil,
     ),
     compactSerialized: "Some Info",
     claimDisplayNames: ["abc": "123"],
     claimsCount: 1,
     issuedAt: .init(timeIntervalSince1970: 1),
     type: CredentialType.pid.rawValue,
-    displayData: SchemaV3.CredentialDisplayData(name: "PID")
+    displayData: SchemaV3.CredentialDisplayData(name: "PID"),
   )
 }

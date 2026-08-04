@@ -10,14 +10,14 @@ struct SwiftDataMigrate: ParsableCommand {
     commandName: "swiftdata-migrate",
     abstract: "Scaffolding for SwiftData schema versions and migrations.",
     subcommands: [NewCommand.self],
-    defaultSubcommand: NewCommand.self
+    defaultSubcommand: NewCommand.self,
   )
 }
 
 struct NewCommand: ParsableCommand {
   static let configuration = CommandConfiguration(
     commandName: "new",
-    abstract: "Scaffold the next schema version and its migration stage."
+    abstract: "Scaffold the next schema version and its migration stage.",
   )
 
   @Flag(name: .long, help: "Generate a lightweight migration stage (default).")

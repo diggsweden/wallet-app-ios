@@ -13,7 +13,7 @@ public enum BrandColors {
     `100`: Color.rgba(85, 105, 81),
     `130`: Color.rgba(60, 74, 57),
     `150`: Color.rgba(43, 53, 41),
-    `175`: Color.rgba(21, 26, 20)
+    `175`: Color.rgba(21, 26, 20),
   )
 
   public static let pink = ColorScale(
@@ -24,7 +24,7 @@ public enum BrandColors {
     `100`: Color.rgba(205, 121, 109),
     `130`: Color.rgba(143, 85, 76),
     `150`: Color.rgba(103, 61, 55),
-    `175`: Color.rgba(51, 30, 27)
+    `175`: Color.rgba(51, 30, 27),
   )
 
   public static let yellow = ColorScale(
