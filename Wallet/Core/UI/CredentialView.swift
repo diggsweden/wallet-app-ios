@@ -39,7 +39,7 @@ struct CredentialView: View {
     ClaimUiModel(
       id: "birth_date",
       displayName: "Födelsedatum",
-      value: .date(Date(timeIntervalSince1970: 631_152_000))
+      value: .date(Date(timeIntervalSince1970: 631_152_000)),
     ),
     ClaimUiModel(id: "age", displayName: "Ålder", value: .int(34)),
     ClaimUiModel(id: "verified", displayName: "Verifierad", value: .bool(true)),
@@ -48,7 +48,7 @@ struct CredentialView: View {
       displayName: "Nationaliteter",
       value: .array([
         ClaimUiModel(id: "nationalities.locality", displayName: nil, value: .string("SE"))
-      ])
+      ]),
     ),
     ClaimUiModel(
       id: "address",
@@ -57,11 +57,11 @@ struct CredentialView: View {
         ClaimUiModel(
           id: "street_address",
           displayName: "Gatuadress",
-          value: .string("Kungsgatan 1")
+          value: .string("Kungsgatan 1"),
         ),
         ClaimUiModel(id: "city", displayName: "Stad", value: .string("Stockholm")),
         ClaimUiModel(id: "postal_code", displayName: "Postnummer", value: .string("111 22")),
-      ])
+      ]),
     ),
   ]
 

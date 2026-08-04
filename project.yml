@@ -59,7 +59,7 @@ packages:
     exactVersion: 0.15.0
   swift-snapshot-testing:
     url: https://github.com/pointfreeco/swift-snapshot-testing.git
-    from: 1.19.2
+    from: 1.19.3
   WalletMacros:
     path: Packages/WalletMacros
   WalletGateway:
@@ -228,4 +228,12 @@ schemes:
     test:
       targets:
         - WalletSnapshotTests
+
+  WalletGatewayTests:
+    build:
+      targets:
+        WalletDemo: none
+    test:
+      targets:
+        - package: WalletGateway/WalletGatewayTests
 

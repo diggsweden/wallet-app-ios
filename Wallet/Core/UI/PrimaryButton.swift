@@ -18,7 +18,7 @@ struct PrimaryButton: View {
     _ text: String,
     icon: String? = nil,
     maxWidth: CGFloat = 360,
-    onClick: @escaping () -> Void
+    onClick: @escaping () -> Void,
   ) {
     self.text = text
     self.icon = icon
@@ -42,7 +42,7 @@ struct PrimaryButton: View {
       .frame(maxWidth: maxWidth)
       .background(
         theme.colors.button.opacity(isEnabled ? 1 : 0.5),
-        in: RoundedRectangle(cornerRadius: theme.cornerRadius)
+        in: RoundedRectangle(cornerRadius: theme.cornerRadius),
       )
       .foregroundStyle(theme.colors.onPrimary)
     }

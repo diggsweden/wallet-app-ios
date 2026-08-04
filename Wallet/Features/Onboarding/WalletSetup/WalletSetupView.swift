@@ -77,8 +77,8 @@ struct WalletSetupContent: View {
         primaryButton: .init(
           label: "Försök igen",
           accessibilityHint: "Använd knappen för att försöka igen",
-          action: onRetry
-        )
+          action: onRetry,
+        ),
       )
     )
   }

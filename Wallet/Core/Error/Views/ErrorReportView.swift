@@ -82,7 +82,7 @@ private extension ErrorReportView {
           onClick: {
             UIPasteboard.general.string = reportText
             dismiss()
-          }
+          },
         )
       }
     }

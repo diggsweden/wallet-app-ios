@@ -27,7 +27,7 @@ struct ClaimSnapshotTests {
     let claim = ClaimUiModel(
       id: "birth_date",
       displayName: "Födelsedatum",
-      value: .date(Date(timeIntervalSince1970: 631_152_000))
+      value: .date(Date(timeIntervalSince1970: 631_152_000)),
     )
     assertThemedSnapshots(of: ClaimView(claim: claim), width: 320)
   }
@@ -46,7 +46,7 @@ struct ClaimSnapshotTests {
       value: .array([
         ClaimUiModel(id: "n0", displayName: nil, value: .string("Svensk")),
         ClaimUiModel(id: "n1", displayName: nil, value: .string("Norsk")),
-      ])
+      ]),
     )
     assertThemedSnapshots(of: ClaimView(claim: claim), width: 320)
   }
@@ -59,7 +59,7 @@ struct ClaimSnapshotTests {
       value: .object([
         ClaimUiModel(id: "street", displayName: "Gatuadress", value: .string("Kungsgatan 1")),
         ClaimUiModel(id: "city", displayName: "Stad", value: .string("Stockholm")),
-      ])
+      ]),
     )
     assertThemedSnapshots(of: ClaimView(claim: claim), width: 320)
   }
@@ -68,7 +68,7 @@ struct ClaimSnapshotTests {
   func credentialWithTitle() {
     assertThemedSnapshots(
       of: CredentialView(title: "Körkort", claims: Self.claims),
-      width: 320
+      width: 320,
     )
   }
 
@@ -76,7 +76,7 @@ struct ClaimSnapshotTests {
   func credentialNoTitle() {
     assertThemedSnapshots(
       of: CredentialView(claims: Self.claims),
-      width: 320
+      width: 320,
     )
   }
 

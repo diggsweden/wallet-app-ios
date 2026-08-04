@@ -23,7 +23,7 @@ extension ErrorView {
       secondaryButton: ButtonModel? = nil,
       linkButton: ButtonModel? = nil,
       onDismiss: (@Sendable () -> Void)? = nil,
-      errorInfo: ErrorInfo = .mock
+      errorInfo: ErrorInfo = .mock,
     ) {
       self.imageReference = imageReference
       self.title = title
@@ -47,7 +47,7 @@ extension ErrorView.ButtonModel {
   init(
     label: String,
     accessibilityHint: String,
-    asyncAction: (@Sendable () async -> Void)?
+    asyncAction: (@Sendable () async -> Void)?,
   ) {
     self.init(
       label: label,
@@ -56,7 +56,7 @@ extension ErrorView.ButtonModel {
         Task {
           await asyncAction?()
         }
-      }
+      },
     )
   }
 
@@ -64,7 +64,7 @@ extension ErrorView.ButtonModel {
     label: String,
     accessibilityHint: String,
     asyncThrowingAction: (@Sendable () async throws -> Void)?,
-    onError: @escaping @Sendable () -> Void
+    onError: @escaping @Sendable () -> Void,
   ) {
     self.init(
       label: label,
@@ -77,7 +77,7 @@ extension ErrorView.ButtonModel {
             onError()
           }
         }
-      }
+      },
     )
   }
 
@@ -85,7 +85,7 @@ extension ErrorView.ButtonModel {
     label: String,
     accessibilityHint: String,
     throwingAction: (@Sendable () throws -> Void)?,
-    onError: @escaping @Sendable (Error) -> Void
+    onError: @escaping @Sendable (Error) -> Void,
   ) {
     self.init(
       label: label,
@@ -96,7 +96,7 @@ extension ErrorView.ButtonModel {
         } catch {
           onError(error)
         }
-      }
+      },
     )
   }
 }
@@ -110,14 +110,14 @@ extension ErrorView.ViewModel {
       primaryButton: .init(
         label: "Försök igen",
         accessibilityHint: "Använd knappen för att försöka igen",
-        action: {}
+        action: {},
       ),
       linkButton: .init(
         label: "Få hjälp",
         accessibilityHint: "Använd knappen för att få mer hjälp",
-        action: {}
+        action: {},
       ),
-      onDismiss: {}
+      onDismiss: {},
     )
   }
 }

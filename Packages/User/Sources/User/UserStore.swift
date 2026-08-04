@@ -23,7 +23,7 @@ public actor UserStore: AccountIdProvider {
     let modelContainer = try ModelContainer(
       for: User.self,
       migrationPlan: SwiftDataMigrationPlan.self,
-      configurations: ModelConfiguration()
+      configurations: ModelConfiguration(),
     )
     self.init(modelContainer: modelContainer)
   }
@@ -96,7 +96,7 @@ public actor UserStore: AccountIdProvider {
       accountId: model.accountId,
       credentials: model.credentials.map { $0.toDomain() },
       pid: model.pid?.toDomain(),
-      hsmServerParameters: model.hsmServerParameters?.toDomain()
+      hsmServerParameters: model.hsmServerParameters?.toDomain(),
     )
   }
 

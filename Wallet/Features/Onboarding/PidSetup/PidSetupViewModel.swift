@@ -66,7 +66,7 @@ final class PidSetupViewModel {
         method: .post,
         contentType: "application/x-www-form-urlencoded",
         accept: "text/html",
-        body: body.utf8Data
+        body: body.utf8Data,
       )
     else {
       return nil

@@ -20,7 +20,7 @@ public struct SavedCredential: Codable, Hashable, Sendable {
     claimsCount: Int,
     issuedAt: Date,
     type: String,
-    displayData: CredentialDisplayData?
+    displayData: CredentialDisplayData?,
   ) {
     self.issuer = issuer
     self.compactSerialized = compactSerialized
