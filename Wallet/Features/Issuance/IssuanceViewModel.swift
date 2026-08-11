@@ -21,6 +21,7 @@ class IssuanceViewModel {
   private let gatewayApiClient: GatewayApi & HSMTransport
   private let jwtUtil = JwtUtil()
   private let openId4VciUtil = OpenId4VciUtil()
+  private let dpopProofBuilder = DpopProofBuilder()
   private let hsmServerParameters: HsmServerParameters?
   private let onSaveCredential: (SavedCredential) async throws -> Void
 
@@ -176,9 +177,12 @@ class IssuanceViewModel {
         throw IssuanceError.credentialNotSupported
       }
 
+      let credentialEndpoint = metadata.credentialEndpoint.url
       let credential = try await openId4VciUtil.fetchCredential(
-        url: metadata.credentialEndpoint.url,
-        token: authRequest.accessToken.accessToken,
+        url: credentialEndpoint,
+        authorization: authRequest.accessToken.requestAuthorization(
+          proofBuilder: dpopProofBuilder
+        ),
         credentialRequest: CredentialRequest(
           credentialConfigurationId: configId.value,
           proofs: JwtProofType(jwt: [proof]),
@@ -233,10 +237,17 @@ class IssuanceViewModel {
     }
 
     let payload = JwtProofPayload(aud: issuerId, nonce: nonce)
+
+    // The proof must be signed by the key in the *first* element of the WUA's
+    // `attested_keys` claim, which the header names by its index — hence "0".
+    // ETSI TS 119 472-3, CRED-REQ-4.6.1.2-07:
+    // swiftlint:disable:next line_length
+    // https://www.etsi.org/deliver/etsi_ts/119400_119499/11947203/01.01.01_60/ts_11947203v010101p.pdf
     return try await jwtUtil.signJwt(
       payload: payload,
       header: KeyAttestationHeader(
         jwk: keyAttestationRequired ? nil : key.publicKey.toSecKey().jwk,
+        keyID: keyAttestationRequired ? "0" : nil,
         keyAttestation: keyAttestation,
       ),
     ) { signingInput in
@@ -285,13 +296,17 @@ class IssuanceViewModel {
   }
 
   private func createIssuer(from credentialOffer: CredentialOffer) async throws -> Issuer {
+    let authorizationServerMetadata = credentialOffer.authorizationServerMetadata
+
     let issuer = try Issuer(
-      authorizationServerMetadata: credentialOffer.authorizationServerMetadata,
+      authorizationServerMetadata: authorizationServerMetadata,
       issuerMetadata: credentialOffer.credentialIssuerMetadata,
       config: OpenId4VCIConfig(
         client: .init(public: "wallet-dev"),
         authFlowRedirectionURI: #URL("wallet-app://authorize"),
+        requireDpop: authorizationServerMetadata.supportsDpop,
       ),
+      dpopConstructor: dpopProofBuilder,
     )
 
     if let display = await issuer.issuerMetadata.display.first {

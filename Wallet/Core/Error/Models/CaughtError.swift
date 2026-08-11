@@ -34,8 +34,8 @@ struct CaughtError: Equatable {
         }
 
       case let error as HTTPError:
-        if case .http(let status, _, let body) = error {
-          code = String(status)
+        if case .http(let response, let body) = error {
+          code = String(response.statusCode)
           message = Self.serverMessage(from: body) ?? message
         }
         endpoint = error.url.map(Self.hostPath)
@@ -75,8 +75,10 @@ private extension CaughtError {
 private extension HTTPError {
   var url: URL? {
     switch self {
-      case .http(_, let url, _),
-        .transport(_, let url),
+      case .http(let response, _):
+        response.url
+
+      case .transport(_, let url),
         .decoding(_, let url),
         .invalidResponse(let url):
         url

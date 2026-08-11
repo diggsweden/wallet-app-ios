@@ -56,32 +56,23 @@ final class PidSetupViewModel {
   }
 
   private func generateCredentialOffer() async -> String? {
-    let url = AppConfig.pidIssuerUrl.appending(path: "issuer/credentialsOffer/generate")
-    let body =  // swiftlint:disable:next line_length
-      "credentialIds=eu.europa.ec.eudi.pid_vc_sd_jwt&credentialsOfferUri=openid-credential-offer%3A%2F%2F"
+    let url = AppConfig.pidIssuerUrl.appending(path: "issuer/credentialsOffer/create")
+    let body = #"{"credentialIds":["eu.europa.ec.eudi.pid_vc_sd_jwt"]}"#
 
     guard
-      let response = try? await NetworkClient.fetchJwt(
+      let response: CredentialsOfferResponse = try? await NetworkClient.fetch(
         url,
         method: .post,
-        contentType: "application/x-www-form-urlencoded",
-        accept: "text/html",
         body: body.utf8Data,
       )
     else {
       return nil
     }
 
-    return extractCredentialOfferURL(from: response)
+    return response.credentialsOffer
   }
+}
 
-  private func extractCredentialOfferURL(from html: String) -> String? {
-    let regex = /openid-credential-offer:\/\/[^\s"'<>]+/
-
-    guard let match = html.firstMatch(of: regex) else {
-      return nil
-    }
-
-    return String(match.output)
-  }
+private struct CredentialsOfferResponse: Decodable {
+  let credentialsOffer: String?
 }
