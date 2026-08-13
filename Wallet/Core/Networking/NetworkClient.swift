@@ -3,19 +3,6 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import Foundation
-import SwiftyJSON
-
-enum HTTPMethod: String {
-  case get = "GET"
-  case post = "POST"
-
-  init?(from string: String?) {
-    guard let string else {
-      return nil
-    }
-    self.init(rawValue: string.uppercased())
-  }
-}
 
 enum NetworkClient {
   private static let decoder: JSONDecoder = {
@@ -24,39 +11,43 @@ enum NetworkClient {
     return decoder
   }()
 
-  private static func makeHeaders(
-    contentType: String?,
-    accept: String?,
-    token: String?,
-  ) -> [String: String] {
-    [
-      "Content-Type": contentType,
-      "Accept": accept,
-      "Authorization": token.map { "Bearer \($0)" },
-    ]
-    .compactMapValues { $0 }
-  }
-
+  /// Sends the request, retrying once with the server's nonce on a
+  /// `use_dpop_nonce` challenge (RFC 9449 §8).
   private static func sendRequest(
     _ url: URL,
     method: HTTPMethod = .get,
     contentType: String? = nil,
     accept: String? = nil,
-    token: String? = nil,
+    authorization: RequestAuthorization? = nil,
     body: Data? = nil,
   ) async throws -> Data {
-    var request = URLRequest(url: url)
-    request.httpMethod = method.rawValue
-    request.allHTTPHeaderFields = makeHeaders(
+    let request = NetworkRequest(
+      url: url,
+      method: method,
       contentType: contentType,
       accept: accept,
-      token: token,
+      authorization: authorization,
+      body: body,
     )
-    request.httpBody = body
+
+    do {
+      return try await attempt(request, dpopNonce: nil)
+    } catch let error as HTTPError {
+      guard case .dpop? = authorization, let dpopNonce = error.dpopNonceChallenge else {
+        throw error
+      }
+
+      return try await attempt(request, dpopNonce: dpopNonce)
+    }
+  }
+
+  private static func attempt(_ request: NetworkRequest, dpopNonce: String?) async throws -> Data {
+    let url = request.url
+    let urlRequest = try await request.urlRequest(dpopNonce: dpopNonce)
 
     let (data, response): (Data, URLResponse)
     do {
-      (data, response) = try await URLSession.shared.data(for: request)
+      (data, response) = try await URLSession.shared.data(for: urlRequest)
     } catch {
       throw HTTPError.transport(underlying: error, url: url)
     }
@@ -66,7 +57,7 @@ enum NetworkClient {
     }
 
     guard 200 ... 299 ~= httpResponse.statusCode else {
-      throw HTTPError.http(status: httpResponse.statusCode, url: url, body: data)
+      throw HTTPError.http(response: httpResponse, body: data)
     }
 
     return data
@@ -77,7 +68,7 @@ enum NetworkClient {
     method: HTTPMethod = .get,
     contentType: String? = "application/json",
     accept: String? = "application/json",
-    token: String? = nil,
+    authorization: RequestAuthorization? = nil,
     body: Data? = nil,
   ) async throws -> T {
     let data = try await sendRequest(
@@ -85,7 +76,7 @@ enum NetworkClient {
       method: method,
       contentType: contentType,
       accept: accept,
-      token: token,
+      authorization: authorization,
       body: body,
     )
 
@@ -101,7 +92,7 @@ enum NetworkClient {
     method: HTTPMethod = .get,
     contentType: String? = "application/jwt",
     accept: String? = "application/jwt",
-    token: String? = nil,
+    authorization: RequestAuthorization? = nil,
     body: Data? = nil,
   ) async throws -> String {
     let data = try await sendRequest(
@@ -109,7 +100,7 @@ enum NetworkClient {
       method: method,
       contentType: contentType,
       accept: accept,
-      token: token,
+      authorization: authorization,
       body: body,
     )
 

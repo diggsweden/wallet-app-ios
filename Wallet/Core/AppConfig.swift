@@ -16,7 +16,7 @@ enum AppConfig {
 
   static var pidIssuerUrl: URL {
     #if LOCALHOST
-      #URL("http://localhost/pid-issuer")
+      #URL("https://localhost/pid-issuer")
     #else
       #URL("https://wallet.sandbox.digg.se/pid-issuer")
     #endif

@@ -5,6 +5,7 @@
 import Foundation
 import Testing
 import WalletGateway
+import WalletMacros
 
 @testable import WalletDemo
 
@@ -57,10 +58,16 @@ struct CaughtErrorTests {
   }
 
   @Test("http error keeps the status and url and surfaces the server's OAuth message")
-  func httpError() {
-    let url = URL(string: "https://issuer.example.com/token")
+  func httpError() throws {
+    let url = #URL("https://issuer.example.com/token")
     let body = Data(#"{"error":"invalid_grant","error_description":"expired"}"#.utf8)
-    let caught = CaughtError(HTTPError.http(status: 400, url: url, body: body), at: date)
+    let response = try #require(
+      HTTPURLResponse(url: url, statusCode: 400, httpVersion: "HTTP/1.1", headerFields: nil)
+    )
+    let caught = CaughtError(
+      HTTPError.http(response: response, body: body),
+      at: date,
+    )
 
     #expect(caught.code == "400")
     #expect(caught.endpoint == "issuer.example.com/token")

@@ -18,14 +18,14 @@ struct OpenId4VciUtil {
 
   func fetchCredential(
     url: URL,
-    token: String,
+    authorization: RequestAuthorization,
     credentialRequest: CredentialRequest,
     requestEncryption: CryptoSpec? = nil,
   ) async throws -> String {
     guard let requestEncryption else {
       return try await fetchPlainCredential(
         url: url,
-        token: token,
+        authorization: authorization,
         credentialRequest: credentialRequest,
       )
     }
@@ -56,7 +56,7 @@ struct OpenId4VciUtil {
       method: .post,
       contentType: "application/jwt",
       accept: "application/jwt",
-      token: token,
+      authorization: authorization,
       body: jwe.utf8Data,
     )
 
@@ -74,13 +74,13 @@ struct OpenId4VciUtil {
 
   private func fetchPlainCredential(
     url: URL,
-    token: String,
+    authorization: RequestAuthorization,
     credentialRequest: CredentialRequest,
   ) async throws -> String {
     let response: CredentialResponse = try await NetworkClient.fetch(
       url,
       method: .post,
-      token: token,
+      authorization: authorization,
       body: try encoder.encode(credentialRequest),
     )
     guard let credential = response.credentials.first else {
