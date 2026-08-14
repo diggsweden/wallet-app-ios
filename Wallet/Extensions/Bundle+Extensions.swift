@@ -25,7 +25,6 @@ extension Bundle {
     "\(appVersion) (\(buildNumber))"
   }
 
-  /// Build variant name ("demo", "local"), or nil for release builds.
   var variantLabel: String? {
     #if LOCALHOST
       return "local"
