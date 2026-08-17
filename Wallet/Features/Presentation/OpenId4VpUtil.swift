@@ -115,7 +115,7 @@ struct OpenId4VpUtil {
     return PresentationRequestData(
       credentialQueries: credentialQueries,
       responseUrl: responseUrl,
-      clientId: data.client.id.originalClientId,
+      clientId: data.client.id.clientId,
       nonce: data.nonce,
       state: data.state,
       recipientJWK: recipientJWK,
