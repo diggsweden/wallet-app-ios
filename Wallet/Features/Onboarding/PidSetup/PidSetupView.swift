@@ -4,7 +4,6 @@
 
 import DesignSystem
 import SwiftUI
-import WalletMacros
 
 struct PidSetupView: View {
   @State private var viewModel: PidSetupViewModel
@@ -42,12 +41,6 @@ struct PidSetupView: View {
         Text(
           // swiftlint:disable:next line_length
           "För att kunna använda plånboken behöver vi hämta uppgifter om dig. Uppgifterna som hämtas används som ett id-kort."
-        )
-        .padding(.bottom, 8)
-
-        InlineLink(
-          "Läs mer om de uppgifter vi hämtar",
-          url: #URL("https://wallet.sandbox.digg.se"),
         )
       }
 
