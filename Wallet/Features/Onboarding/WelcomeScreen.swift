@@ -13,7 +13,7 @@ struct WelcomeScreen: View {
   @Environment(\.colorScheme) private var colorScheme
   @Environment(\.orientation) private var orientation
 
-  private let appVersion: String = "App version: \(Bundle.main.fullVersion)"
+  private let appVersion: String = "App version: \(Bundle.main.displayVersion)"
 
   var body: some View {
     VStack(alignment: .center) {

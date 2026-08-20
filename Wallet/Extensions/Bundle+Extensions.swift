@@ -24,4 +24,22 @@ extension Bundle {
   var fullVersion: String {
     "\(appVersion) (\(buildNumber))"
   }
+
+  var variantLabel: String? {
+    #if LOCALHOST
+      return "local"
+    #elseif DEBUG
+      return "demo"
+    #else
+      return nil
+    #endif
+  }
+
+  var displayVersion: String {
+    guard let variantLabel else {
+      return fullVersion
+    }
+
+    return "\(fullVersion) (\(variantLabel))"
+  }
 }

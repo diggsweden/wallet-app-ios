@@ -24,7 +24,7 @@ struct SettingsView: View {
         .accessibilityHidden(true)
       Text("App version:")
         .textStyle(.h3)
-      Text(Bundle.main.fullVersion)
+      Text(Bundle.main.displayVersion)
         .textStyle(.bodyLarge)
       Spacer()
       PrimaryButton("Logga ut") {

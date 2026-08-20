@@ -29,7 +29,7 @@ final class SystemInfoProvider: @unchecked Sendable {
 
   func snapshot() -> SystemInfo {
     SystemInfo(
-      appVersion: Bundle.main.fullVersion,
+      appVersion: Bundle.main.displayVersion,
       iosVersion: Self.osVersion,
       deviceModel: Self.deviceIdentifier,
       network: network,

@@ -95,11 +95,14 @@ targets:
         PRODUCT_NAME: WalletDemo
         SWIFT_EMIT_LOC_STRINGS: YES
         SWIFT_VERSION: "6.0"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
       configs:
         Debug:
           CODE_SIGN_STYLE: Automatic
+          ASSETCATALOG_COMPILER_APPICON_NAME: AppIconDemo
         Debug Localhost:
           CODE_SIGN_STYLE: Automatic
+          ASSETCATALOG_COMPILER_APPICON_NAME: AppIconLocal
     dependencies:
       - package: jose-swift
       - package: eudi-lib-ios-openid4vp-swift
