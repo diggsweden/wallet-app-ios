@@ -18,7 +18,7 @@ struct PidCard: View {
       HStack(alignment: .center, spacing: 24) {
         Image(systemName: "person.text.rectangle")
           .resizable()
-          .aspectRatio(contentMode: .fit)
+          .scaledToFit()
           .frame(width: 29)
           .padding(14)
           .background(.white, in: .circle)
