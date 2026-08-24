@@ -18,7 +18,7 @@ struct DocumentCard: View {
       HStack(spacing: 10) {
         Image(systemName: "person.text.rectangle")
           .resizable()
-          .aspectRatio(contentMode: .fit)
+          .scaledToFit()
           .frame(width: 29)
           .foregroundStyle(.white)
           .accessibilityHidden(true)
