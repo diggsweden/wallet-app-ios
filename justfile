@@ -126,6 +126,11 @@ test:
 test-packages:
     xcodebuild -workspace {{xcode_workspace}} -scheme WalletGatewayTests -destination 'platform=iOS Simulator,name=iPhone 15' test
 
+# Run snapshot tests
+[group('build')]
+test-snapshots:
+    xcodebuild -workspace {{xcode_workspace}} -scheme WalletSnapshotTests -destination 'platform=iOS Simulator,name=iPhone 15' test
+
 # Run UI tests
 [group('build')]
 test-ui:
