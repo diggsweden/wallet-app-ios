@@ -9,9 +9,25 @@ permissions:
 
 on:
   pull_request:
+    paths-ignore:
+      - "docs/**"
+      - "scripts/**"
+      - "LICENSES/**"
+      - "WalletTests/**"
+      - "WalletUITests/**"
+      - "**.md"
+      - "justfile"
   push:
     branches:
       - main
+    paths-ignore:
+      - "docs/**"
+      - "scripts/**"
+      - "LICENSES/**"
+      - "WalletTests/**"
+      - "WalletUITests/**"
+      - "**.md"
+      - "justfile"
   workflow_dispatch:
 
 concurrency:
