@@ -38,7 +38,15 @@ jobs:
 
       - name: Install Screenshotbot recorder
         if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-        run: curl https://cdn.screenshotbot.io/recorder.sh | sh
+        env:
+          RECORDER_VERSION: releases/2.18.15/
+          RECORDER_SHA256: 5d4badcab5ef25357757ce1e6e6edb561eedaffd1fafa143cb00c375dd7fc6a6
+        run: |
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/recorder-installer.sh" \
+            "https://cdn.screenshotbot.io/artifact/${RECORDER_VERSION}recorder-darwin"
+          echo "$RECORDER_SHA256  $RUNNER_TEMP/recorder-installer.sh" | shasum -a 256 -c -
+          sh "$RUNNER_TEMP/recorder-installer.sh"
+          rm -f "$RUNNER_TEMP/recorder-installer.sh"
 
       - name: Record snapshots
         run: |
