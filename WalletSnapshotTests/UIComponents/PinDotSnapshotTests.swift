@@ -20,7 +20,7 @@ struct PinDotSnapshotTests {
 
   @Test("Filled dot")
   func filled() {
-    assertSnapshot(
+    assertWalletSnapshot(
       of: PinDot(filled: true, color: .black, size: 24),
       as: Self.strategy,
     )
@@ -28,7 +28,7 @@ struct PinDotSnapshotTests {
 
   @Test("Empty dot")
   func empty() {
-    assertSnapshot(
+    assertWalletSnapshot(
       of: PinDot(filled: false, color: .black, size: 24),
       as: Self.strategy,
     )

@@ -234,6 +234,16 @@ schemes:
       targets:
         - WalletSnapshotTests
 
+  WalletSnapshotTests Screenshotbot:
+    build:
+      targets:
+        WalletSnapshotTests: test
+    test:
+      environmentVariables:
+        SCREENSHOTBOT: "1"
+      targets:
+        - WalletSnapshotTests
+
   WalletGatewayTests:
     build:
       targets:

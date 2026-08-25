@@ -22,7 +22,7 @@ struct OnboardingSnapshotTests {
   }
 
   @Test("PID")
-  func pid() {
+  func pidSetup() {
     assertThemedSnapshots(
       of: PidSetupView { _ in }.withToast,
       width: 360,
@@ -38,7 +38,7 @@ struct OnboardingSnapshotTests {
       of: WalletSetupContent(
         state: .failed(
           at: .createAccount,
-          .init(CancellationError()),
+          .init(CancellationError(), at: Date(timeIntervalSince1970: 1_700_000_000)),
         )
       )
     )
