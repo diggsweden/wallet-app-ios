@@ -8,6 +8,8 @@ import Testing
 
 @testable import WalletDemo
 
+private let isScreenshotbot = ProcessInfo.processInfo.environment["SCREENSHOTBOT"] == "1"
+
 @MainActor
 func assertThemedSnapshots(
   of view: some View,
@@ -35,7 +37,7 @@ func assertThemedSnapshots(
       mutableTraits.userInterfaceStyle = style
       mutableTraits.displayScale = displayScale
     }
-    assertSnapshot(
+    assertWalletSnapshot(
       of: content,
       as: .image(precision: precision, perceptualPrecision: perceptualPrecision, traits: traits),
       named: name,
@@ -71,7 +73,7 @@ func assertThemedDeviceSnapshots(
       mutableTraits.userInterfaceStyle = style
       mutableTraits.displayScale = device.traits.displayScale
     }
-    assertSnapshot(
+    assertWalletSnapshot(
       of: content,
       as: .image(
         precision: precision,
@@ -87,4 +89,63 @@ func assertThemedDeviceSnapshots(
       column: column,
     )
   }
+}
+
+/// Without `SCREENSHOTBOT=1` this forwards straight to `assertSnapshot`.
+func assertWalletSnapshot<Value, Format>(
+  of value: @autoclosure () throws -> Value,
+  as snapshotting: Snapshotting<Value, Format>,
+  named name: String? = nil,
+  timeout: TimeInterval = 5,
+  fileID: StaticString = #fileID,
+  file filePath: StaticString = #filePath,
+  testName: String = #function,
+  line: UInt = #line,
+  column: UInt = #column,
+) {
+  guard isScreenshotbot else {
+    assertSnapshot(
+      of: try value(),
+      as: snapshotting,
+      named: name,
+      timeout: timeout,
+      fileID: fileID,
+      file: filePath,
+      testName: testName,
+      line: line,
+      column: column,
+    )
+    return
+  }
+
+  let failure = verifySnapshot(
+    of: try value(),
+    as: snapshotting,
+    named: name,
+    record: .all,
+    timeout: timeout,
+    fileID: fileID,
+    file: filePath,
+    testName: testName,
+    line: line,
+    column: column,
+  )
+
+  guard let message = failure else { return }
+
+  let recordNoticePrefixes = [
+    "Record mode is on",
+    "No reference was found on disk",
+  ]
+  guard !recordNoticePrefixes.contains(where: message.hasPrefix) else { return }
+
+  Issue.record(
+    Comment(rawValue: message),
+    sourceLocation: SourceLocation(
+      fileID: fileID.description,
+      filePath: filePath.description,
+      line: Int(line),
+      column: Int(column),
+    ),
+  )
 }
