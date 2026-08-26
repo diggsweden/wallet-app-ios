@@ -131,7 +131,7 @@ private extension AppRootView {
       case .presentation(let url):
         PresentationView(
           url: url,
-          credential: userSessionViewModel.userSnapshot?.pid,
+          credentials: userSessionViewModel.userSnapshot?.credentials ?? [],
           gatewayApiClient: gatewayApiClient,
           hsmServerParameters: userSessionViewModel.userSnapshot?.hsmServerParameters,
         )

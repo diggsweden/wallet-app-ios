@@ -15,14 +15,14 @@ struct PresentationView: View {
 
   init(
     url: URL,
-    credential: SavedCredential?,
+    credentials: [SavedCredential],
     gatewayApiClient: any GatewayApi & HSMTransport,
     hsmServerParameters: HsmServerParameters?,
   ) {
     _viewModel = State(
       wrappedValue: .init(
         url: url,
-        credential: credential,
+        credentials: credentials,
         gatewayApiClient: gatewayApiClient,
         hsmServerParameters: hsmServerParameters,
       )

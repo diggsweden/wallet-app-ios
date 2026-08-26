@@ -15,7 +15,7 @@ import eudi_lib_sdjwt_swift
 @Observable
 final class PresentationViewModel {
   let url: URL
-  let credential: SavedCredential?
+  let credentials: [SavedCredential]
   private let jwtUtil = JwtUtil()
   private let gatewayApiClient: GatewayApi & HSMTransport
   private let hsmServerParameters: HsmServerParameters?
@@ -28,38 +28,36 @@ final class PresentationViewModel {
 
   init(
     url: URL,
-    credential: SavedCredential?,
+    credentials: [SavedCredential],
     gatewayApiClient: any GatewayApi & HSMTransport,
     hsmServerParameters: HsmServerParameters?,
   ) {
     self.url = url
-    self.credential = credential
+    self.credentials = credentials
     self.gatewayApiClient = gatewayApiClient
     self.hsmServerParameters = hsmServerParameters
   }
 
   func resolveAndMatchClaims() async {
     do {
-      guard let credential else {
+      if credentials.isEmpty {
         throw PresentationError.noCredential
       }
+
       let data = try await OpenId4VpUtil().resolve(url: url)
       self.requestData = data
 
-      let sdJwt = try CompactParser().getSignedSdJwt(serialisedString: credential.compactSerialized)
+      let storedTypes: [String: SavedCredential] = credentials.reduce(into: [:]) {
+        dict,
+        credential in
+        dict[credential.type] = credential
+      }
 
       let allItems: [PresentationItem] = try data.credentialQueries.compactMap { query in
-        guard let disclosed = try sdJwt.present(query: query.claimPaths) else {
-          return nil
+        guard let credential = query.vctValues.compactMap({ storedTypes[$0] }).first else {
+          throw PresentationError.noMatchingCredential
         }
-        let claims = try disclosed.toClaimUiModels(displayNames: credential.claimDisplayNames)
-        return PresentationItem(
-          id: query.id,
-          required: query.required,
-          claims: claims,
-          disclosedSdJwt: disclosed,
-          isSelected: query.required,
-        )
+        return try matchClaims(from: credential, to: query)
       }
 
       if allItems.isEmpty {
@@ -226,6 +224,24 @@ private extension PresentationViewModel {
       transport: gatewayApiClient,
       privateKey: SecKeyStore.getOrCreateKey(withTag: .walletKey),
       serverParameters: hsmServerParameters.toServerParameters(),
+    )
+  }
+
+  func matchClaims(
+    from credential: SavedCredential,
+    to query: CredentialQuery,
+  ) throws -> PresentationItem? {
+    let sdJwt = try CompactParser().getSignedSdJwt(serialisedString: credential.compactSerialized)
+    guard let disclosed = try sdJwt.present(query: query.claimPaths) else {
+      return nil
+    }
+    let claims = try disclosed.toClaimUiModels(displayNames: credential.claimDisplayNames)
+    return PresentationItem(
+      id: query.id,
+      required: query.required,
+      claims: claims,
+      disclosedSdJwt: disclosed,
+      isSelected: query.required,
     )
   }
 }
