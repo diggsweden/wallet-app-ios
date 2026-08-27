@@ -32,7 +32,7 @@ struct OnboardingRootView: View {
     _viewModel = State(
       wrappedValue: .init(
         step: initialStep,
-        savePidCredential: actions.savePidCredential,
+        saveCredential: actions.saveCredential,
         signIn: actions.signIn,
         onReset: actions.resetSession,
         saveHsmServerParameters: actions.saveHsmServerParameters,
@@ -183,7 +183,7 @@ struct OnboardingRootView: View {
             gatewayApiClient: gatewayApiClient,
             hsmServerParameters: userSnapshot.hsmServerParameters,
           ) { credential in
-            try await viewModel.savePidCredential(credential)
+            try await viewModel.saveCredential(credential)
           }
         } else {
           PidSetupView { credentialOfferUri in

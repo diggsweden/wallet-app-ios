@@ -49,7 +49,7 @@ struct OpenId4VpUtil {
         id: credential.id.value,
         claimPaths: Set(claimPaths),
         required: required,
-        vctValues: vctValues
+        vctValues: vctValues,
       )
     }
   }

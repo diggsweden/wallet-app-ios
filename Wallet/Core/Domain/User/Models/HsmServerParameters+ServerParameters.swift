@@ -17,7 +17,6 @@ extension HsmServerParameters {
         y: parameters.serverJwsPublicKey.y,
         kid: parameters.serverJwsPublicKey.kid,
       ),
-      opaqueContext: parameters.opaqueContext,
       opaqueServerIdentifier: parameters.opaqueServerIdentifier,
     )
   }
@@ -35,7 +34,6 @@ extension HsmServerParameters {
 /// Encodes to the exact JSON shape that `ServerParameters` decodes from.
 private struct ServerParametersRepresentation: Encodable {
   let serverJwsPublicKey: JwkKey
-  let opaqueContext: Data
   let opaqueServerIdentifier: Data
 
   init(_ parameters: HsmServerParameters) {
@@ -46,7 +44,6 @@ private struct ServerParametersRepresentation: Encodable {
       y: parameters.serverJwsPublicKey.y,
       kid: parameters.serverJwsPublicKey.kid,
     )
-    self.opaqueContext = parameters.opaqueContext
     self.opaqueServerIdentifier = parameters.opaqueServerIdentifier
   }
 }

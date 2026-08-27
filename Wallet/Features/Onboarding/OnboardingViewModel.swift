@@ -13,7 +13,7 @@ final class OnboardingViewModel {
     case start, forward, back
   }
 
-  private let savePidCredentialAction: (SavedCredential) async throws -> Void
+  private let saveCredential: (SavedCredential) async throws -> Void
   private let signInAction: (String) async throws -> Void
   private let resetSessionAction: () async throws -> Void
   private let saveHsmServerParametersAction: (ServerParameters) async throws -> Void
@@ -26,13 +26,13 @@ final class OnboardingViewModel {
 
   init(
     step: OnboardingStep = .intro,
-    savePidCredential: @escaping (SavedCredential) async throws -> Void,
+    saveCredential: @escaping (SavedCredential) async throws -> Void,
     signIn: @escaping (String) async throws -> Void,
     onReset: @escaping () async throws -> Void,
     saveHsmServerParameters: @escaping (ServerParameters) async throws -> Void,
   ) {
     self.step = step
-    self.savePidCredentialAction = savePidCredential
+    self.saveCredential = saveCredential
     self.signInAction = signIn
     self.resetSessionAction = onReset
     self.saveHsmServerParametersAction = saveHsmServerParameters
@@ -65,8 +65,8 @@ final class OnboardingViewModel {
     try await signInAction(accountId)
   }
 
-  func savePidCredential(_ credential: SavedCredential) async throws {
-    try await savePidCredentialAction(credential)
+  func saveCredential(_ credential: SavedCredential) async throws {
+    try await saveCredential(credential)
   }
 
   func saveHsmServerParameters(_ parameters: ServerParameters) async throws {

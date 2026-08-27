@@ -6,12 +6,10 @@ import Foundation
 
 public struct HsmServerParameters: Equatable, Sendable {
   public let serverJwsPublicKey: Jwk
-  public let opaqueContext: Data
   public let opaqueServerIdentifier: Data
 
-  public init(serverJwsPublicKey: Jwk, opaqueContext: Data, opaqueServerIdentifier: Data) {
+  public init(serverJwsPublicKey: Jwk, opaqueServerIdentifier: Data) {
     self.serverJwsPublicKey = serverJwsPublicKey
-    self.opaqueContext = opaqueContext
     self.opaqueServerIdentifier = opaqueServerIdentifier
   }
 
