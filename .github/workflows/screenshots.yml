@@ -17,6 +17,17 @@ on:
       - "WalletUITests/**"
       - "**.md"
       - "justfile"
+      - ".mise.toml"
+      - ".gitignore"
+      - ".gitleaks.toml"
+      - ".gommitlint.yaml"
+      - ".semgrepignore"
+      - ".swift-format"
+      - ".swiftlint.yml"
+      - ".yamlfmt.yml"
+      - "CODEOWNERS"
+      - "REUSE.toml"
+      - "renovate.json"
   push:
     branches:
       - main
@@ -28,6 +39,17 @@ on:
       - "WalletUITests/**"
       - "**.md"
       - "justfile"
+      - ".mise.toml"
+      - ".gitignore"
+      - ".gitleaks.toml"
+      - ".gommitlint.yaml"
+      - ".semgrepignore"
+      - ".swift-format"
+      - ".swiftlint.yml"
+      - ".yamlfmt.yml"
+      - "CODEOWNERS"
+      - "REUSE.toml"
+      - "renovate.json"
   workflow_dispatch:
 
 concurrency:
