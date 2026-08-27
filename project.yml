@@ -41,7 +41,7 @@ settings:
 packages:
   jose-swift:
     url: https://github.com/beatt83/jose-swift.git
-    from: 6.0.4
+    from: 6.0.5
   eudi-lib-ios-openid4vp-swift:
     url: https://github.com/eu-digital-identity-wallet/eudi-lib-ios-openid4vp-swift.git
     exactVersion: 0.41.0
