@@ -19,6 +19,6 @@ enum MigrateV3toV4 {
       }
       try context.save()
     },
-    didMigrate: nil
+    didMigrate: nil,
   )
 }
