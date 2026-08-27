@@ -58,6 +58,7 @@ extension SchemaV4 {
 
   struct HsmServerParameters: Codable, Hashable, Sendable {
     let serverJwsPublicKey: HsmServerJwk
+    let opaqueContext: Data
     let opaqueServerIdentifier: Data
   }
 

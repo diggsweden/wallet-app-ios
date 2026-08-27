@@ -61,6 +61,7 @@ extension CurrentSchema.HsmServerParameters {
         y: parameters.serverJwsPublicKey.y,
         kid: parameters.serverJwsPublicKey.kid,
       ),
+      opaqueContext: parameters.opaqueContext,
       opaqueServerIdentifier: parameters.opaqueServerIdentifier,
     )
   }
@@ -74,6 +75,7 @@ extension CurrentSchema.HsmServerParameters {
         y: serverJwsPublicKey.y,
         kid: serverJwsPublicKey.kid,
       ),
+      opaqueContext: opaqueContext,
       opaqueServerIdentifier: opaqueServerIdentifier,
     )
   }
