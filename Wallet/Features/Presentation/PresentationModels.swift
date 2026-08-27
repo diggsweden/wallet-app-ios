@@ -21,16 +21,21 @@ enum PresentationError: LocalizedError {
   case noCredential
   case noRequestData
   case noMatchingClaims
+  case noMatchingCredential
   case resolutionFailed(String)
   case unsupportedQuery
   case unsupportedResponseMode
   case jweEncryptionFailed
   case keyBindingEncodingFailed
 
+  // TODO: Add error descriptions for cases
   var errorDescription: String? {
     switch self {
       case .resolutionFailed(let detail):
         detail
+
+      case .noCredential:
+        "Hittade inga attributsintyg att verifiera mot"
 
       default:
         "Något gick fel vid delning av uppgifter."
@@ -64,6 +69,7 @@ struct CredentialQuery {
   let id: String
   let claimPaths: Set<ClaimPath>
   let required: Bool
+  let vctValues: [String]
 }
 
 struct PresentationItem: Identifiable {

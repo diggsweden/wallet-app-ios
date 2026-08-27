@@ -96,15 +96,15 @@ private extension AppRootView {
         userSnapshot: user,
         actions: OnboardingActions(
           signIn: userSessionViewModel.signIn,
-          savePidCredential: userSessionViewModel.savePid,
+          saveCredential: userSessionViewModel.saveCredential,
           resetSession: userSessionViewModel.signOut,
           saveHsmServerParameters: userSessionViewModel.saveHsmServerParameters,
         ),
       )
     } else {
       DashboardView(
-        pid: user.pid,
-        credentials: user.credentials,
+        pid: user.credentials.first,
+        credentials: Array(user.credentials.dropFirst()),
       )
     }
   }
@@ -131,7 +131,7 @@ private extension AppRootView {
       case .presentation(let url):
         PresentationView(
           url: url,
-          credential: userSessionViewModel.userSnapshot?.pid,
+          credentials: userSessionViewModel.userSnapshot?.credentials ?? [],
           gatewayApiClient: gatewayApiClient,
           hsmServerParameters: userSessionViewModel.userSnapshot?.hsmServerParameters,
         )

@@ -56,13 +56,12 @@ private extension OnboardingSnapshotTests {
       userSnapshot: UserSnapshot(
         accountId: nil,
         credentials: [],
-        pid: nil,
         hsmServerParameters: nil,
       ),
       initialStep: step,
       actions: OnboardingActions(
         signIn: { _ in },
-        savePidCredential: { _ in },
+        saveCredential: { _ in },
         resetSession: {},
         saveHsmServerParameters: { _ in },
       ),

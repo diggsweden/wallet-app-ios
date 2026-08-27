@@ -54,7 +54,7 @@ extension CurrentSchema.CredentialDisplayData {
 extension CurrentSchema.HsmServerParameters {
   init(_ parameters: HsmServerParameters) {
     self.init(
-      serverJwsPublicKey: SchemaV3.HsmServerJwk(
+      serverJwsPublicKey: SchemaV4.HsmServerJwk(
         kty: parameters.serverJwsPublicKey.kty,
         crv: parameters.serverJwsPublicKey.crv,
         x: parameters.serverJwsPublicKey.x,
