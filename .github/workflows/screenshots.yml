@@ -1,0 +1,151 @@
+# SPDX-FileCopyrightText: 2026 Digg - Agency for Digital Government
+#
+# SPDX-License-Identifier: CC0-1.0
+
+name: Screenshots
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    paths-ignore:
+      - "docs/**"
+      - "scripts/**"
+      - "LICENSES/**"
+      - "WalletTests/**"
+      - "WalletUITests/**"
+      - "**.md"
+      - "justfile"
+      - ".mise.toml"
+      - ".gitignore"
+      - ".gitleaks.toml"
+      - ".gommitlint.yaml"
+      - ".semgrepignore"
+      - ".swift-format"
+      - ".swiftlint.yml"
+      - ".yamlfmt.yml"
+      - "CODEOWNERS"
+      - "REUSE.toml"
+      - "renovate.json"
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "docs/**"
+      - "scripts/**"
+      - "LICENSES/**"
+      - "WalletTests/**"
+      - "WalletUITests/**"
+      - "**.md"
+      - "justfile"
+      - ".mise.toml"
+      - ".gitignore"
+      - ".gitleaks.toml"
+      - ".gommitlint.yaml"
+      - ".semgrepignore"
+      - ".swift-format"
+      - ".swiftlint.yml"
+      - ".yamlfmt.yml"
+      - "CODEOWNERS"
+      - "REUSE.toml"
+      - "renovate.json"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  snapshot-tests:
+    runs-on: ${{ vars.MACOS_VERSION || 'macos-26' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - uses: ./.github/actions/setup-env
+        with:
+          xcode-version: ${{ vars.XCODE_VERSION || '26.4' }}
+
+      - name: Restore Xcode cache
+        uses: ./.github/actions/xcode-cache-restore
+
+      - name: Generate Xcode project
+        run: xcodegen generate --use-cache --cache-path .xcodegen/cache
+
+      - name: Install Screenshotbot recorder
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        run: |
+          brew install mise
+          mise trust
+          mise install http:screenshotbot-recorder
+          sh "$(mise where http:screenshotbot-recorder)/recorder"
+
+      - name: Record snapshots
+        run: |
+          set -o pipefail
+          rm -rf SnapshotTestResults.xcresult
+          xcodebuild test \
+            -workspace Wallet.xcworkspace \
+            -scheme "WalletSnapshotTests Screenshotbot" \
+            -destination 'platform=iOS Simulator,name=iPhone 17' \
+            -resultBundlePath SnapshotTestResults.xcresult \
+            COMPILER_INDEX_STORE_ENABLE=NO \
+          | xcbeautify
+
+      - name: Upload screenshots to Screenshotbot
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          SCREENSHOTBOT_API_KEY: ${{ secrets.SCREENSHOTBOT_API_KEY }}
+          SCREENSHOTBOT_API_SECRET: ${{ secrets.SCREENSHOTBOT_API_SECRET }}
+          BUILD_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          stage="$RUNNER_TEMP/screenshotbot-stage"
+          rm -rf "$stage"
+          mkdir -p "$stage"
+
+          while IFS= read -r -d '' dir; do
+            rsync -a "$dir/" "$stage/"
+          done < <(find WalletSnapshotTests -type d -name '__Snapshots__' -print0)
+
+          expected=$(find WalletSnapshotTests -path '*/__Snapshots__/*' -type f -name '*.png' | wc -l | tr -d ' ')
+          count=$(find "$stage" -type f -name '*.png' | wc -l | tr -d ' ')
+          echo "Staged $count of $expected screenshots"
+          if [ "$count" -eq 0 ] || [ "$count" -ne "$expected" ]; then
+            echo "::error::Expected $expected screenshots, staged $count"
+            exit 1
+          fi
+
+          ~/screenshotbot/recorder \
+            --directory "$stage" \
+            --recursive \
+            --channel wallet-app-ios \
+            --main-branch main \
+            --repo-url https://github.com/diggsweden/wallet-app-ios \
+            --build-url "$BUILD_URL"
+
+      - name: Mark Screenshotbot run as failed
+        if: failure() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+        env:
+          SCREENSHOTBOT_API_KEY: ${{ secrets.SCREENSHOTBOT_API_KEY }}
+          SCREENSHOTBOT_API_SECRET: ${{ secrets.SCREENSHOTBOT_API_SECRET }}
+          BUILD_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ ! -x ~/screenshotbot/recorder ]; then
+            echo "Recorder not installed, skipping"
+            exit 0
+          fi
+          ~/screenshotbot/recorder \
+            --mark-failed \
+            --channel wallet-app-ios \
+            --main-branch main \
+            --repo-url https://github.com/diggsweden/wallet-app-ios \
+            --build-url "$BUILD_URL"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: snapshot-test-results
+          path: SnapshotTestResults.xcresult
