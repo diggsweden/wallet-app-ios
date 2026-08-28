@@ -35,7 +35,7 @@ final class UserSessionViewModel {
       return false
     }
 
-    return user.accountId != nil && user.pid != nil
+    return user.accountId != nil && user.hasPid
   }
 
   func initUser() async {
@@ -57,7 +57,7 @@ final class UserSessionViewModel {
   }
 
   private func hasStaleDeviceKey(_ snapshot: UserSnapshot) -> Bool {
-    let enrolled = snapshot.accountId != nil && snapshot.pid != nil
+    let enrolled = snapshot.accountId != nil && snapshot.hasPid
     return !enrolled && SigningKeyStore.hasKey(withTag: .deviceKey)
   }
 
@@ -77,11 +77,6 @@ final class UserSessionViewModel {
     try SigningKeyStore.deleteAll()
     let newUser = try await userStore.getOrCreate()
     user = .ready(newUser)
-  }
-
-  func savePid(_ credential: SavedCredential) async throws {
-    let updated = try await userStore.savePid(credential)
-    user = .ready(updated)
   }
 
   func saveCredential(_ credential: SavedCredential) async throws {

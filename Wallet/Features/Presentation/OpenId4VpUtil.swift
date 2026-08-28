@@ -43,11 +43,13 @@ struct OpenId4VpUtil {
         } ?? []
 
       let required = isCredentialRequired(credential.id, in: dcql.credentialSets)
+      let vctValues = credential.meta["vct_values"].arrayValue.compactMap(\.string)
 
       return CredentialQuery(
         id: credential.id.value,
         claimPaths: Set(claimPaths),
         required: required,
+        vctValues: vctValues,
       )
     }
   }

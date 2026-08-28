@@ -40,16 +40,6 @@ public actor UserStore: AccountIdProvider {
     return snapshot(from: session)
   }
 
-  public func savePid(_ credential: SavedCredential) throws -> UserSnapshot {
-    guard credential.type == CredentialType.pid.rawValue else {
-      throw UserStoreError.invalidPidCredential
-    }
-    let user = try getOrCreateModel()
-    user.pid = CurrentSchema.SavedCredential(credential)
-    try save()
-    return snapshot(from: user)
-  }
-
   public func addCredential(_ credential: SavedCredential) throws -> UserSnapshot {
     let user = try getOrCreateModel()
     user.credentials.append(CurrentSchema.SavedCredential(credential))
@@ -95,7 +85,6 @@ public actor UserStore: AccountIdProvider {
     UserSnapshot(
       accountId: model.accountId,
       credentials: model.credentials.map { $0.toDomain() },
-      pid: model.pid?.toDomain(),
       hsmServerParameters: model.hsmServerParameters?.toDomain(),
     )
   }
