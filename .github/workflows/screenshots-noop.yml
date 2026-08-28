@@ -1,0 +1,40 @@
+# SPDX-FileCopyrightText: 2026 Digg - Agency for Digital Government
+#
+# SPDX-License-Identifier: CC0-1.0
+
+name: Screenshots Noop
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    paths:
+      - "docs/**"
+      - "scripts/**"
+      - "LICENSES/**"
+      - "WalletTests/**"
+      - "WalletUITests/**"
+      - "**.md"
+      - "justfile"
+      - ".mise.toml"
+      - ".gitignore"
+      - ".gitleaks.toml"
+      - ".gommitlint.yaml"
+      - ".semgrepignore"
+      - ".swift-format"
+      - ".swiftlint.yml"
+      - ".yamlfmt.yml"
+      - "CODEOWNERS"
+      - "REUSE.toml"
+      - "renovate.json"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  snapshot-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "No files affecting snapshots changed, skipping"
