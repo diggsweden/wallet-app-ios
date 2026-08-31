@@ -32,6 +32,9 @@ struct AppRootView: View {
             .defaultScreenStyle
         }
     }
+    .sheet(isPresented: $router.isSettingsSheetPresented) {
+      SettingsView(onLogout: userSessionViewModel.signOut)
+    }
     .environment(router)
     .onOpenURL(perform: handleOpenURL)
     .task {
@@ -148,9 +151,6 @@ private extension AppRootView {
 
       case .credentialDetails(let credential):
         CredentialDetailsView(credential: credential)
-
-      case .settings:
-        SettingsView(onLogout: userSessionViewModel.signOut)
     }
   }
 

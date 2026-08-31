@@ -9,5 +9,4 @@ enum Route: Hashable {
   case presentation(url: URL)
   case issuance(credentialOfferUri: String)
   case credentialDetails(_ credential: SavedCredential)
-  case settings
 }
