@@ -4,11 +4,11 @@
 
 import Foundation
 
-enum RequestAuthorization {
+public enum RequestAuthorization {
   case bearer(String)
   case dpop(accessToken: String, proofBuilder: any DpopProofProviding)
 
-  func headers(
+  public func headers(
     endpoint: URL,
     method: HTTPMethod,
     dpopNonce: String?,

@@ -4,13 +4,13 @@
 
 import Foundation
 
-enum HTTPError: LocalizedError {
+public enum HTTPError: LocalizedError {
   case http(response: HTTPURLResponse, body: Data?)
   case transport(underlying: Error, url: URL?)
   case decoding(underlying: Error, url: URL?)
   case invalidResponse(url: URL?)
 
-  var errorDescription: String? {
+  public var errorDescription: String? {
     switch self {
       case .http(let response, _):
         "Server error with status code: \(response.statusCode)"

@@ -6,9 +6,11 @@ import CredentialInterfaces
 import CryptoKit
 import Foundation
 import JSONWebSignature
+import Jose
 import SwiftAccessMechanism
 import User
 import WalletGatewayInterface
+import WalletNetworking
 import eudi_lib_sdjwt_swift
 
 @MainActor
@@ -16,7 +18,6 @@ import eudi_lib_sdjwt_swift
 final class PresentationViewModel {
   let url: URL
   let credentials: [SavedCredential]
-  private let jwtUtil = JwtUtil()
   private let gatewayApiClient: GatewayApi & HSMTransport
   private let hsmServerParameters: HsmServerParameters?
   private(set) var phase: PresentationPhase = .loading
@@ -145,7 +146,7 @@ final class PresentationViewModel {
       throw PresentationError.jweEncryptionFailed
     }
 
-    let jwe = try jwtUtil.encryptJwe(
+    let jwe = try JwtUtil.encryptJwe(
       payload: vpToken,
       recipientKey: recipientKey,
     )
@@ -205,7 +206,7 @@ final class PresentationViewModel {
       sdHash: sdHash,
     )
 
-    return try await jwtUtil.signJwt(
+    return try await JwtUtil.signJwt(
       payload: payload,
       header: header,
     ) { signingInput in

@@ -6,6 +6,7 @@ import AuthenticationServices
 import CredentialInterfaces
 import CryptoKit
 import Foundation
+import Jose
 import OpenID4VCI
 import SwiftAccessMechanism
 import User
@@ -19,7 +20,6 @@ import eudi_lib_sdjwt_swift
 class IssuanceViewModel {
   private let credentialOfferUri: String
   private let gatewayApiClient: GatewayApi & HSMTransport
-  private let jwtUtil = JwtUtil()
   private let openId4VciUtil = OpenId4VciUtil()
   private let dpopProofBuilder = DpopProofBuilder()
   private let hsmServerParameters: HsmServerParameters?
@@ -243,7 +243,7 @@ class IssuanceViewModel {
     // ETSI TS 119 472-3, CRED-REQ-4.6.1.2-07:
     // swiftlint:disable:next line_length
     // https://www.etsi.org/deliver/etsi_ts/119400_119499/11947203/01.01.01_60/ts_11947203v010101p.pdf
-    return try await jwtUtil.signJwt(
+    return try await JwtUtil.signJwt(
       payload: payload,
       header: KeyAttestationHeader(
         jwk: keyAttestationRequired ? nil : key.publicKey.toSecKey().jwk,

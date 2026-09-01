@@ -4,7 +4,7 @@
 
 import Foundation
 
-extension Data {
+public extension Data {
   init?(base64UrlEncoded string: String) {
     var base64 =
       string

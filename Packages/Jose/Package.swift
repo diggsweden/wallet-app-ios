@@ -7,23 +7,29 @@
 import PackageDescription
 
 let package = Package(
-  name: "WalletNetworking",
+  name: "Jose",
   platforms: [
     .iOS(.v17)
   ],
   products: [
     .library(
-      name: "WalletNetworking",
-      targets: ["WalletNetworking"],
+      name: "Jose",
+      targets: ["Jose"],
     )
+  ],
+  dependencies: [
+    .package(url: "https://github.com/beatt83/jose-swift.git", exact: "6.0.5")
   ],
   targets: [
     .target(
-      name: "WalletNetworking"
+      name: "Jose",
+      dependencies: [
+        .product(name: "jose-swift", package: "jose-swift")
+      ],
     ),
     .testTarget(
-      name: "WalletNetworkingTests",
-      dependencies: ["WalletNetworking"],
+      name: "JoseTests",
+      dependencies: ["Jose"],
     ),
   ],
   swiftLanguageModes: [.v6],

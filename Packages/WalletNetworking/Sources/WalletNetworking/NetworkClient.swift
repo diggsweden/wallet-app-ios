@@ -4,7 +4,7 @@
 
 import Foundation
 
-enum NetworkClient {
+public enum NetworkClient {
   private static let decoder: JSONDecoder = {
     let decoder = JSONDecoder()
     decoder.keyDecodingStrategy = .convertFromSnakeCase
@@ -63,7 +63,7 @@ enum NetworkClient {
     return data
   }
 
-  static func fetch<T: Decodable>(
+  public static func fetch<T: Decodable>(
     _ url: URL,
     method: HTTPMethod = .get,
     contentType: String? = "application/json",
@@ -87,7 +87,7 @@ enum NetworkClient {
     }
   }
 
-  static func fetchJwt(
+  public static func fetchJwt(
     _ url: URL,
     method: HTTPMethod = .get,
     contentType: String? = "application/jwt",

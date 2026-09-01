@@ -79,6 +79,8 @@ packages:
     path: Packages/User
   WalletNetworking:
     path: Packages/WalletNetworking
+  Jose:
+    path: Packages/Jose
 
 targets:
   WalletDemo:
@@ -133,6 +135,8 @@ targets:
         product: User
       - package: WalletNetworking
         product: WalletNetworking
+      - package: Jose
+        product: Jose
     preBuildScripts:
       - name: SwiftLint
         path: scripts/swiftlint.sh
@@ -256,4 +260,5 @@ schemes:
       targets:
         - package: WalletGateway/WalletGatewayTests
         - package: WalletNetworking/WalletNetworkingTests
+        - package: Jose/JoseTests
 

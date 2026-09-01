@@ -4,6 +4,7 @@
 
 import Foundation
 import OpenID4VCI
+import WalletNetworking
 
 extension IssuanceAccessToken {
   func requestAuthorization(proofBuilder: any DpopProofProviding) -> RequestAuthorization {

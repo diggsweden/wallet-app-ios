@@ -5,6 +5,7 @@
 import AuthenticationServices
 import Foundation
 import WalletMacros
+import WalletNetworking
 
 @MainActor
 @Observable

@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import Foundation
-import JSONWebSignature
+import Jose
+import WalletGatewayInterface
 
 struct WalletSessionSigner: SessionSigningProvider {
   func keyId() throws -> String {
@@ -19,8 +20,8 @@ struct WalletSessionSigner: SessionSigningProvider {
       let nonce: String
     }
     let key = try SigningKeyStore.getOrCreateKey(withTag: .deviceKey)
-    let header = DefaultJWSHeaderImpl(algorithm: .ES256, keyID: keyId)
+    let header = WalletJWSHeader(algorithm: .ES256, keyID: keyId)
     let payload = SessionPayload(nonce: nonce)
-    return try await JwtUtil().signJwt(with: key, payload: payload, header: header)
+    return try await JwtUtil.signJwt(with: key, payload: payload, header: header)
   }
 }

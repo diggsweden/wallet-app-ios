@@ -6,14 +6,14 @@ import CryptoKit
 import Foundation
 import WalletNetworking
 
-struct DpopProofBuilder: DpopProofProviding {
+public struct DpopProofBuilder: DpopProofProviding {
   private let privateKey: P256.Signing.PrivateKey
 
-  init(privateKey: P256.Signing.PrivateKey = P256.Signing.PrivateKey()) {
+  public init(privateKey: P256.Signing.PrivateKey = P256.Signing.PrivateKey()) {
     self.privateKey = privateKey
   }
 
-  func proof(
+  public func proof(
     endpoint: URL,
     method: HTTPMethod,
     accessToken: String?,
@@ -30,7 +30,8 @@ struct DpopProofBuilder: DpopProofProviding {
       },
     )
 
-    return try await JwtUtil()
+    return
+      try await JwtUtil
       .signJwt(
         payload: claims,
         header: DpopProofHeader(jwk: privateKey.publicKey.jwkRepresentation),

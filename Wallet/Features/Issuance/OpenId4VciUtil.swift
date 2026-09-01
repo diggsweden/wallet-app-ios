@@ -6,6 +6,8 @@ import Crypto
 import Foundation
 import JSONWebAlgorithms
 import JSONWebKey
+import Jose
+import WalletNetworking
 
 struct CryptoSpec {
   let key: JWK
@@ -13,7 +15,6 @@ struct CryptoSpec {
 }
 
 struct OpenId4VciUtil {
-  private let jwtUtil = JwtUtil()
   private let encoder = JSONEncoder()
 
   func fetchCredential(
@@ -45,7 +46,7 @@ struct OpenId4VciUtil {
       ),
     )
 
-    let jwe = try jwtUtil.encryptJwe(
+    let jwe = try JwtUtil.encryptJwe(
       payload: encryptedRequest,
       recipientKey: requestEncryption.key,
       enc: enc,
@@ -60,7 +61,7 @@ struct OpenId4VciUtil {
       body: jwe.utf8Data,
     )
 
-    let response: CredentialResponse = try jwtUtil.decryptJwe(
+    let response: CredentialResponse = try JwtUtil.decryptJwe(
       encryptedResponse,
       decryptionKey: ephemeralKey.jwkRepresentation,
     )
