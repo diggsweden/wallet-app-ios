@@ -4,7 +4,6 @@
 
 import Foundation
 import JSONWebSignature
-import WalletGateway
 
 struct WalletSessionSigner: SessionSigningProvider {
   func keyId() throws -> String {

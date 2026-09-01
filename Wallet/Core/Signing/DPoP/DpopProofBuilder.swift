@@ -4,22 +4,13 @@
 
 import CryptoKit
 import Foundation
-import OpenID4VCI
+import WalletNetworking
 
-struct DpopProofBuilder: DPoPConstructorType, DpopProofProviding {
+struct DpopProofBuilder: DpopProofProviding {
   private let privateKey: P256.Signing.PrivateKey
 
   init(privateKey: P256.Signing.PrivateKey = P256.Signing.PrivateKey()) {
     self.privateKey = privateKey
-  }
-
-  func jwt(endpoint: URL, accessToken: String?, nonce: Nonce?) async throws -> String {
-    try await proof(
-      endpoint: endpoint,
-      method: .post,
-      accessToken: accessToken,
-      nonce: nonce?.value,
-    )
   }
 
   func proof(

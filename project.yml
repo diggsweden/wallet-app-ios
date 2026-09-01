@@ -77,6 +77,8 @@ packages:
     path: Packages/CredentialInterfaces
   User:
     path: Packages/User
+  WalletNetworking:
+    path: Packages/WalletNetworking
 
 targets:
   WalletDemo:
@@ -129,6 +131,8 @@ targets:
         product: CredentialInterfaces
       - package: User
         product: User
+      - package: WalletNetworking
+        product: WalletNetworking
     preBuildScripts:
       - name: SwiftLint
         path: scripts/swiftlint.sh
@@ -244,11 +248,12 @@ schemes:
       targets:
         - WalletSnapshotTests
 
-  WalletGatewayTests:
+  PackageTests:
     build:
       targets:
         WalletDemo: none
     test:
       targets:
         - package: WalletGateway/WalletGatewayTests
+        - package: WalletNetworking/WalletNetworkingTests
 

@@ -4,7 +4,7 @@
 
 import Foundation
 
-protocol DpopProofProviding: Sendable {
+public protocol DpopProofProviding: Sendable {
   func proof(
     endpoint: URL,
     method: HTTPMethod,
