@@ -6,6 +6,7 @@ name: Screenshots Noop
 
 permissions:
   contents: read
+  statuses: write
 
 on:
   pull_request:
@@ -38,3 +39,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: echo "No files affecting snapshots changed, skipping"
+      - run: |
+          gh api "repos/${{ github.repository }}/statuses/${{ github.event.pull_request.head.sha }}" \
+            -f state=success \
+            -f context="Screenshotbot Changes: wallet-app-ios" \
+            -f description="No screenshot-affecting changes"
+        env:
+          GH_TOKEN: ${{ github.token }}
