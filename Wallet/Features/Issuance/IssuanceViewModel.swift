@@ -4,35 +4,27 @@
 
 import AuthenticationServices
 import CredentialInterfaces
-import CryptoKit
 import Foundation
-import OpenID4VCI
+import Issuance
+import OpenId4VCInterface
 import SwiftAccessMechanism
 import User
 import WalletGatewayInterface
 import WalletMacros
-import eudi_lib_sdjwt_swift
 
 @MainActor
 @Observable
-// swiftlint:disable:next type_body_length
-class IssuanceViewModel {
+final class IssuanceViewModel {
   private let credentialOfferUri: String
-  private let gatewayApiClient: GatewayApi & HSMTransport
-  private let jwtUtil = JwtUtil()
-  private let openId4VciUtil = OpenId4VciUtil()
-  private let dpopProofBuilder = DpopProofBuilder()
+  private var flow: (any IssuanceFlow)?
+  private let gatewayApiClient: any GatewayApi & HSMTransport
   private let hsmServerParameters: HsmServerParameters?
   private let onSaveCredential: (SavedCredential) async throws -> Void
+  private var oauth = OauthCoordinator()
 
-  private(set) var claimsMetadata: [String: String] = [:]
   private(set) var issuerDisplayData: IssuerDisplay?
   private(set) var phase: IssuancePhase = .fetchingIssuer
   private(set) var pinAttempt = 0
-
-  private var credentialOffer: CredentialOffer?
-  private var issuer: Issuer?
-  private var oauth = OauthCoordinator()
 
   var pinError = false
   var saveError = false
@@ -51,104 +43,68 @@ class IssuanceViewModel {
 
   func start() async {
     phase = .fetchingIssuer
+    let flow = IssuanceSession(
+      config: IssuanceConfig(
+        clientId: "wallet-dev",
+        redirectUri: #URL("wallet-app://authorize"),
+      )
+    )
+    self.flow = flow
     do {
-      let credentialOffer = try await fetchCredentialOffer(with: credentialOfferUri)
-      self.credentialOffer = credentialOffer
-      claimsMetadata = getClaimsMetadata(from: credentialOffer)
-      issuer = try await createIssuer(from: credentialOffer)
-      phase = .readyToAuthorize(credentialOffer)
+      let offer = try await flow.loadOffer(credentialOfferUri)
+      issuerDisplayData = offer.issuer.map { issuer in
+        IssuerDisplay(
+          name: issuer.name ?? "Okänd utfärdare",
+          info: issuer.info,
+          imageUrl: issuer.imageUrl,
+        )
+      }
+      phase = .readyToAuthorize
     } catch {
       phase = .error(.start, CaughtError(error))
     }
   }
 
   func beginAuthorization(anchor: ASPresentationAnchor) async {
-    guard case .readyToAuthorize(let offer) = phase else {
+    guard let flow, case .readyToAuthorize = phase else {
       return
     }
 
     phase = .authorizing
     do {
-      guard let issuer else {
-        throw IssuanceError.issuerNotFound
-      }
-
-      let preparedRequest = try await issuer.prepareAuthorizationRequest(
-        credentialOffer: offer
-      )
-
-      let oAuthCallback = try await oauth.start(
-        url: preparedRequest.authorizationCodeURL.url,
+      let authorizationUrl = try await flow.authorizationUrl()
+      let callbackUrl = try await oauth.start(
+        url: authorizationUrl,
         callbackScheme: "wallet-app",
         anchor: anchor,
       )
-
-      guard let code = oAuthCallback.queryItemValue(for: "code") else {
-        throw IssuanceError.invalidAuth
-      }
-
-      let authorizationServer = await issuer.issuerMetadata.authorizationServers?.first
-      let issuerState = oAuthCallback.queryItemValue(for: "state") ?? preparedRequest.state
-
-      let authResponse =
-        try await issuer
-        .authorizeWithAuthorizationCode(
-          serverState: issuerState,
-          request: preparedRequest,
-          authorizationCode: .init(value: code),
-          grant: .authorizationCode(
-            .init(
-              issuerState: issuerState,
-              authorizationServer: authorizationServer,
-            )
-          ),
-        )
-
-      phase = .readyToSign(authResponse)
+      try await flow.exchangeAuthorizationCode(callbackUrl: callbackUrl)
+      phase = .readyToSign
     } catch {
       if error.isWebAuthCancellation {
-        phase = .readyToAuthorize(offer)
+        phase = .readyToAuthorize
       } else {
-        phase = .error(.authorize(offer), CaughtError(error))
+        phase = .error(.authorize, CaughtError(error))
       }
     }
   }
 
   func createProof(with pin: String) async {
-    guard case .readyToSign(let authRequest) = phase else {
+    guard let flow, case .readyToSign = phase else {
       return
     }
 
     do {
-      guard let issuer else {
-        throw IssuanceError.issuerNotFound
-      }
-
-      let metadata = await issuer.issuerMetadata
-
-      guard
-        let configId = credentialOffer?.credentialConfigurationIdentifiers.first,
-        let supportedCredential = metadata.credentialsSupported[configId],
-        case let .sdJwtVc(credentialConfig) = supportedCredential,
-        let proofTypeJwt = credentialConfig.proofTypesSupported?["jwt"]
-      else {
-        throw IssuanceError.credentialNotSupported
-      }
-
-      let keyAttestationRequired =
-        switch proofTypeJwt.keyAttestationRequirement {
-          case .required, .requiredNoConstraints: true
-          default: false
-        }
-
-      let proof = try await createJwtProof(
-        issuerId: metadata.credentialIssuerIdentifier.url.absoluteString,
-        keyAttestationRequired: keyAttestationRequired,
-        nonceUrl: metadata.nonceEndpoint?.url,
+      let signer = HsmProofSigner(
+        transport: gatewayApiClient,
+        parameters: hsmServerParameters,
         pin: pin,
       )
-
-      phase = .readyToFetch(authRequest, proof: proof)
+      try await flow.createProof(
+        signer: signer,
+        attestations: WalletUnitAttestationProvider(gatewayApiClient: gatewayApiClient),
+      )
+      phase = .readyToFetch
       await fetchCredential()
     } catch {
       pinError = true
@@ -157,200 +113,17 @@ class IssuanceViewModel {
   }
 
   func fetchCredential() async {
-    guard case .readyToFetch(let authRequest, let proof) = phase else {
+    guard let flow, case .readyToFetch = phase else {
       return
     }
 
     phase = .fetchingCredential
     do {
-      guard let issuer else {
-        throw IssuanceError.issuerNotFound
-      }
-
-      let metadata = await issuer.issuerMetadata
-
-      guard
-        let configId = credentialOffer?.credentialConfigurationIdentifiers.first,
-        let supportedCredential = metadata.credentialsSupported[configId],
-        case let .sdJwtVc(credentialConfig) = supportedCredential
-      else {
-        throw IssuanceError.credentialNotSupported
-      }
-
-      let credentialEndpoint = metadata.credentialEndpoint.url
-      let credential = try await openId4VciUtil.fetchCredential(
-        url: credentialEndpoint,
-        authorization: authRequest.accessToken.requestAuthorization(
-          proofBuilder: dpopProofBuilder
-        ),
-        credentialRequest: CredentialRequest(
-          credentialConfigurationId: configId.value,
-          proofs: JwtProofType(jwt: [proof]),
-        ),
-        requestEncryption: metadata.credentialRequestEncryption.toCryptoSpec(),
-      )
-
-      let display = metadata.display.first
-      let (parsedCredential, credentialUiModels) = try parseCredential(
-        credential,
-        credentialConfiguration: credentialConfig,
-        issuer: display,
-      )
-
-      phase = .done(parsedCredential, credentialUiModels)
+      let issued = try await flow.fetchCredential()
+      phase = .done(issued.credential, issued.claims)
     } catch {
-      phase = .error(.fetchCredential(authRequest, proof: proof), CaughtError(error))
+      phase = .error(.fetchCredential, CaughtError(error))
     }
-  }
-
-  private func createJwtProof(
-    issuerId: String,
-    keyAttestationRequired: Bool,
-    nonceUrl: URL?,
-    pin: String,
-  ) async throws -> String {
-    let nonce: String? =
-      if let nonceUrl {
-        try await openId4VciUtil.fetchNonce(url: nonceUrl)
-      } else {
-        nil
-      }
-
-    let keyAttestation: String? =
-      if keyAttestationRequired {
-        try await gatewayApiClient.getWalletUnitAttestation(nonce: nonce)
-      } else {
-        nil
-      }
-
-    let hsmClient = try getHSMClient()
-    _ = try await hsmClient.authenticate(
-      password: PINStretch().stretch(input: Data(pin.utf8))
-    )
-    let keys = try await hsmClient.listKeys()
-
-    guard
-      let key = keys.keyInfo.first,
-      let keyId = key.kid
-    else {
-      throw IssuanceError.noHSMKey
-    }
-
-    let payload = JwtProofPayload(aud: issuerId, nonce: nonce)
-
-    // The proof must be signed by the key in the *first* element of the WUA's
-    // `attested_keys` claim, which the header names by its index — hence "0".
-    // ETSI TS 119 472-3, CRED-REQ-4.6.1.2-07:
-    // swiftlint:disable:next line_length
-    // https://www.etsi.org/deliver/etsi_ts/119400_119499/11947203/01.01.01_60/ts_11947203v010101p.pdf
-    return try await jwtUtil.signJwt(
-      payload: payload,
-      header: KeyAttestationHeader(
-        jwk: keyAttestationRequired ? nil : key.publicKey.toSecKey().jwk,
-        keyID: keyAttestationRequired ? "0" : nil,
-        keyAttestation: keyAttestation,
-      ),
-    ) { signingInput in
-      try await hsmClient.sign(hsmKeyId: keyId, data: signingInput).signature
-    }
-  }
-
-  private func getHSMClient() throws -> BFFHttpClient {
-    guard let hsmServerParameters else {
-      throw IssuanceError.missingHSMConfig
-    }
-
-    return try BFFHttpClient.resume(
-      transport: gatewayApiClient,
-      privateKey: SecKeyStore.getOrCreateKey(withTag: .walletKey),
-      serverParameters: hsmServerParameters.toServerParameters(),
-    )
-  }
-
-  private func parseCredential(
-    _ credential: String,
-    credentialConfiguration: SdJwtVcFormat.CredentialConfiguration,
-    issuer: Display?,
-  ) throws -> (SavedCredential, [ClaimUiModel]) {
-    let sdJwt = try CompactParser().getSignedSdJwt(serialisedString: credential)
-    let displayName = credentialConfiguration.credentialMetadata?.display.first?.name
-    let claims = try sdJwt.toClaimUiModels(displayNames: claimsMetadata)
-
-    let issuerDisplay = IssuerDisplay(
-      name: issuer?.name ?? "",
-      info: issuer?.description,
-      imageUrl: issuer?.logo?.uri,
-    )
-
-    return (
-      SavedCredential(
-        issuer: issuerDisplay,
-        compactSerialized: credential,
-        claimDisplayNames: claimsMetadata,
-        claimsCount: claims.count,
-        issuedAt: .now,
-        type: credentialConfiguration.vct ?? "",
-        displayData: CredentialDisplayData(name: displayName),
-      ), claims,
-    )
-  }
-
-  private func createIssuer(from credentialOffer: CredentialOffer) async throws -> Issuer {
-    let authorizationServerMetadata = credentialOffer.authorizationServerMetadata
-
-    let issuer = try Issuer(
-      authorizationServerMetadata: authorizationServerMetadata,
-      issuerMetadata: credentialOffer.credentialIssuerMetadata,
-      config: OpenId4VCIConfig(
-        client: .init(public: "wallet-dev"),
-        authFlowRedirectionURI: #URL("wallet-app://authorize"),
-        requireDpop: authorizationServerMetadata.supportsDpop,
-      ),
-      dpopConstructor: dpopProofBuilder,
-    )
-
-    if let display = await issuer.issuerMetadata.display.first {
-      issuerDisplayData = IssuerDisplay(
-        name: display.name ?? "Okänd utfärdare",
-        info: display.description,
-        imageUrl: display.logo?.uri,
-      )
-    }
-
-    return issuer
-  }
-
-  private func fetchCredentialOffer(with url: String) async throws -> CredentialOffer {
-    let resolver = CredentialOfferRequestResolver()
-    let result = await resolver.resolve(source: try .init(urlString: url), policy: .ignoreSigned)
-    return try result.get()
-  }
-
-  private func getClaimsMetadata(from credentialOffer: CredentialOffer) -> [String: String] {
-    credentialOffer.credentialConfigurationIdentifiers
-      .compactMap { id in
-        credentialOffer.credentialIssuerMetadata.credentialsSupported[id]
-      }
-      .flatMap { supportedCredential in
-        switch supportedCredential {
-          case .sdJwtVc(let config):
-            return config.credentialMetadata?.claims ?? []
-
-          case .msoMdoc(let config):
-            return config.credentialMetadata?.claims ?? []
-
-          default:
-            return []
-        }
-      }
-      .reduce(into: [String: String]()) { result, claim in
-        let claimPath = claim.path.value
-          .map(\.description)
-          .joined(separator: ".")
-        let displayName = claim.display?.first?.name
-
-        result[claimPath] = displayName
-      }
   }
 
   func saveCredential(_ credential: SavedCredential) async {
@@ -379,13 +152,13 @@ class IssuanceViewModel {
         case .start:
           await start()
 
-        case .authorize(let offer):
+        case .authorize:
           guard let anchor else { return }
-          phase = .readyToAuthorize(offer)
+          phase = .readyToAuthorize
           await beginAuthorization(anchor: anchor)
 
-        case .fetchCredential(let authRequest, let proof):
-          phase = .readyToFetch(authRequest, proof: proof)
+        case .fetchCredential:
+          phase = .readyToFetch
           await fetchCredential()
       }
     }

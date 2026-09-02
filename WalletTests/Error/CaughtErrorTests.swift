@@ -3,9 +3,11 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import Foundation
+import OpenId4VCInterface
 import Testing
-import WalletGateway
+import WalletGatewayInterface
 import WalletMacros
+import WalletNetworking
 
 @testable import WalletDemo
 

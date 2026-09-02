@@ -3,24 +3,22 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import CredentialInterfaces
-import CryptoKit
 import Foundation
-import JSONWebSignature
+import OpenId4VCInterface
+import Presentation
 import SwiftAccessMechanism
 import User
-import WalletGatewayInterface
-import eudi_lib_sdjwt_swift
 
 @MainActor
 @Observable
 final class PresentationViewModel {
   let url: URL
   let credentials: [SavedCredential]
-  private let jwtUtil = JwtUtil()
-  private let gatewayApiClient: GatewayApi & HSMTransport
+  private let flow = PresentationSession()
+  private let hsmTransport: any HSMTransport
   private let hsmServerParameters: HsmServerParameters?
+  private var resolved: ResolvedPresentation?
   private(set) var phase: PresentationPhase = .loading
-  private(set) var requestData: PresentationRequestData?
   private(set) var requiredItems: [PresentationItem] = []
   private(set) var isSending = false
   var optionalItems: [PresentationItem] = []
@@ -29,219 +27,51 @@ final class PresentationViewModel {
   init(
     url: URL,
     credentials: [SavedCredential],
-    gatewayApiClient: any GatewayApi & HSMTransport,
+    hsmTransport: any HSMTransport,
     hsmServerParameters: HsmServerParameters?,
   ) {
     self.url = url
     self.credentials = credentials
-    self.gatewayApiClient = gatewayApiClient
+    self.hsmTransport = hsmTransport
     self.hsmServerParameters = hsmServerParameters
   }
 
   func resolveAndMatchClaims() async {
     do {
-      if credentials.isEmpty {
-        throw PresentationError.noCredential
+      let resolved = try await flow.resolve(url: url, credentials: credentials)
+      self.resolved = resolved
+
+      let items = resolved.candidates.map { candidate in
+        PresentationItem(candidate: candidate, isSelected: candidate.required)
       }
-
-      let data = try await OpenId4VpUtil().resolve(url: url)
-      self.requestData = data
-
-      let storedTypes: [String: SavedCredential] = credentials.reduce(into: [:]) {
-        dict,
-        credential in
-        dict[credential.type] = credential
-      }
-
-      let allItems: [PresentationItem] = try data.credentialQueries.compactMap { query in
-        guard let credential = query.vctValues.compactMap({ storedTypes[$0] }).first else {
-          throw PresentationError.noMatchingCredential
-        }
-        return try matchClaims(from: credential, to: query)
-      }
-
-      if allItems.isEmpty {
-        throw PresentationError.noMatchingClaims
-      }
-
-      requiredItems = allItems.filter(\.required)
-      optionalItems = allItems.filter { !$0.required }
+      requiredItems = items.filter(\.required)
+      optionalItems = items.filter { !$0.required }
       phase = .ready
     } catch {
       phase = .error(CaughtError(error))
     }
   }
 
-  func sendPresentation(_ pin: String) async -> PresentationResult? {
+  func sendPresentation(_ pin: String) async -> PresentationOutcome? {
+    guard let resolved else {
+      sendError = true
+      return nil
+    }
+
     isSending = true
     defer { isSending = false }
+
     do {
-      let redirectUrl = try await send(pin)
-      return PresentationResult(redirectUrl: redirectUrl)
+      let signer = HsmProofSigner(
+        transport: hsmTransport,
+        parameters: hsmServerParameters,
+        pin: pin,
+      )
+      let selectedIds = (requiredItems + optionalItems.filter(\.isSelected)).map(\.id)
+      return try await flow.submit(resolved, selectedIds: selectedIds, signer: signer)
     } catch {
       sendError = true
       return nil
     }
-  }
-
-  private func send(_ pin: String) async throws -> URL? {
-    guard let data = requestData else {
-      throw PresentationError.noRequestData
-    }
-
-    let key = try SigningKeyStore.getOrCreateKey(withTag: .walletKey)
-
-    let selectedItems = requiredItems + optionalItems.filter(\.isSelected)
-
-    var vpTokenEntries: [String: [String]] = [:]
-    for item in selectedItems {
-      let serialized = try await createPresentationSdJwt(
-        with: key,
-        disclosedSdJwt: item.disclosedSdJwt,
-        clientId: data.clientId,
-        nonce: data.nonce,
-        pin: pin,
-      )
-      vpTokenEntries[item.id] = [serialized]
-    }
-
-    let vpToken = VerifiablePresentationToken(
-      state: data.state,
-      nonce: data.nonce,
-      vpToken: vpTokenEntries,
-    )
-
-    let body = try createRequestBody(with: vpToken)
-
-    let response: RedirectUrl = try await NetworkClient.fetch(
-      data.responseUrl,
-      method: .post,
-      contentType: "application/x-www-form-urlencoded",
-      body: body.utf8Data,
-    )
-
-    return response.redirectUri.flatMap { URL(string: $0) }
-  }
-
-  private func createRequestBody(with vpToken: VerifiablePresentationToken) throws -> String {
-    let token = try JSONEncoder().encode(vpToken.vpToken)
-    let allowed = CharacterSet.urlQueryAllowed.subtracting(.init(charactersIn: "+&="))
-
-    var parts: [String] = []
-    if let state = vpToken.state {
-      parts.append("state=\(state)")
-    }
-    parts.append("nonce=\(vpToken.nonce)")
-    let vpTokenString = String(bytes: token, encoding: .utf8) ?? ""
-    let encodedVpToken =
-      vpTokenString.addingPercentEncoding(withAllowedCharacters: allowed) ?? vpTokenString
-    parts.append("vp_token=\(encodedVpToken)")
-
-    return parts.joined(separator: "&")
-  }
-
-  private func createJweResponseBody(with vpToken: VerifiablePresentationToken) throws -> String {
-    guard let recipientKey = requestData?.recipientJWK else {
-      throw PresentationError.jweEncryptionFailed
-    }
-
-    let jwe = try jwtUtil.encryptJwe(
-      payload: vpToken,
-      recipientKey: recipientKey,
-    )
-
-    return "response=\(jwe)"
-  }
-
-  private func createPresentationSdJwt(
-    with key: SecureEnclave.P256.Signing.PrivateKey,
-    disclosedSdJwt: SignedSDJWT,
-    clientId: String,
-    nonce: String,
-    pin: String,
-  ) async throws -> String {
-    let sdJwtSerialized = disclosedSdJwt.serialisation
-    let keyBindingJwt = try await createKeyBinding(
-      for: sdJwtSerialized,
-      with: key,
-      aud: clientId,
-      nonce: nonce,
-      pin: pin,
-    )
-
-    return sdJwtSerialized + keyBindingJwt
-  }
-
-  private func createKeyBinding(
-    for sdJwt: String,
-    with key: SecureEnclave.P256.Signing.PrivateKey,
-    aud: String,
-    nonce: String,
-    pin: String,
-  ) async throws -> String {
-    guard let sdJwtData = sdJwt.data(using: .ascii) else {
-      throw PresentationError.keyBindingEncodingFailed
-    }
-
-    let hsmClient = try getHSMClient()
-    _ = try await hsmClient.authenticate(
-      password: PINStretch().stretch(input: Data(pin.utf8))
-    )
-    let keys = try await hsmClient.listKeys()
-
-    guard
-      let key = keys.keyInfo.first,
-      let keyId = key.kid
-    else {
-      throw IssuanceError.noHSMKey
-    }
-
-    let hash = SHA256.hash(data: sdJwtData)
-    let sdHash = Data(hash).base64UrlEncodedString()
-    let header = DefaultJWSHeaderImpl(algorithm: .ES256, type: "kb+jwt")
-    let payload = KeyBindingPayload(
-      aud: aud,
-      nonce: nonce,
-      sdHash: sdHash,
-    )
-
-    return try await jwtUtil.signJwt(
-      payload: payload,
-      header: header,
-    ) { signingInput in
-      try await hsmClient.sign(hsmKeyId: keyId, data: signingInput).signature
-    }
-  }
-}
-
-private extension PresentationViewModel {
-  func getHSMClient() throws -> BFFHttpClient {
-    guard let hsmServerParameters else {
-      throw IssuanceError.missingHSMConfig
-    }
-
-    return try BFFHttpClient.resume(
-      transport: gatewayApiClient,
-      privateKey: SecKeyStore.getOrCreateKey(withTag: .walletKey),
-      serverParameters: hsmServerParameters.toServerParameters(),
-    )
-  }
-
-  func matchClaims(
-    from credential: SavedCredential,
-    to query: CredentialQuery,
-  ) throws -> PresentationItem? {
-    let sdJwt = try CompactParser().getSignedSdJwt(serialisedString: credential.compactSerialized)
-    guard let disclosed = try sdJwt.present(query: query.claimPaths) else {
-      return nil
-    }
-    let claims = try disclosed.toClaimUiModels(displayNames: credential.claimDisplayNames)
-    return PresentationItem(
-      id: query.id,
-      required: query.required,
-      claims: claims,
-      disclosedSdJwt: disclosed,
-      isSelected: query.required,
-    )
   }
 }

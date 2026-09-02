@@ -4,6 +4,7 @@
 
 import Foundation
 import SwiftAccessMechanism
+import WalletGatewayInterface
 
 extension GatewayApiClient: HSMTransport {
   public func registerState(

@@ -4,6 +4,7 @@
 
 import CredentialInterfaces
 import DesignSystem
+import OpenId4VCInterface
 import SwiftAccessMechanism
 import SwiftUI
 import User

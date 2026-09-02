@@ -135,7 +135,7 @@ private extension AppRootView {
         PresentationView(
           url: url,
           credentials: userSessionViewModel.userSnapshot?.credentials ?? [],
-          gatewayApiClient: gatewayApiClient,
+          hsmTransport: gatewayApiClient,
           hsmServerParameters: userSessionViewModel.userSnapshot?.hsmServerParameters,
         )
 

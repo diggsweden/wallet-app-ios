@@ -1,0 +1,27 @@
+// SPDX-FileCopyrightText: 2026 Digg - Agency for digital government
+//
+// SPDX-License-Identifier: EUPL-1.2
+
+import Foundation
+import Jose
+import WalletGatewayInterface
+
+struct WalletSessionSigner: SessionSigningProvider {
+  func keyId() throws -> String {
+    let key = try SigningKeyStore.getOrCreateKey(withTag: .deviceKey)
+    guard let keyId = try? WalletJoseJWK(key.publicKey).thumbprint() else {
+      throw SessionError.noKeyId
+    }
+    return keyId
+  }
+
+  func signSessionJwt(keyId: String, nonce: String) async throws -> String {
+    struct SessionPayload: Codable {
+      let nonce: String
+    }
+    let key = try SigningKeyStore.getOrCreateKey(withTag: .deviceKey)
+    let header = WalletJWSDefaultHeader(algorithm: .ES256, keyID: keyId)
+    let payload = SessionPayload(nonce: nonce)
+    return try await JwtUtil.signJwt(with: key, payload: payload, header: header)
+  }
+}

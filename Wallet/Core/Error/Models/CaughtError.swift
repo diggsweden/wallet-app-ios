@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import Foundation
-import WalletGateway
+import WalletGatewayInterface
+import WalletNetworking
 
 struct CaughtError: Equatable {
   let code: String?
