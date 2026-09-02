@@ -4,13 +4,29 @@
 
 import Foundation
 
-struct NetworkRequest {
-  let url: URL
-  let method: HTTPMethod
-  let contentType: String?
-  let accept: String?
-  let authorization: RequestAuthorization?
-  let body: Data?
+public struct NetworkRequest: Sendable {
+  public let url: URL
+  public let method: HTTPMethod
+  public let contentType: String?
+  public let accept: String?
+  public let authorization: RequestAuthorization?
+  public let body: Data?
+
+  public init(
+    url: URL,
+    method: HTTPMethod = .get,
+    contentType: String? = nil,
+    accept: String? = nil,
+    authorization: RequestAuthorization? = nil,
+    body: Data? = nil,
+  ) {
+    self.url = url
+    self.method = method
+    self.contentType = contentType
+    self.accept = accept
+    self.authorization = authorization
+    self.body = body
+  }
 
   func urlRequest(dpopNonce: String?) async throws -> URLRequest {
     var headers = [

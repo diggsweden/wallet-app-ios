@@ -2,49 +2,47 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
-import CredentialInterfaces
 import Foundation
 import Jose
 import OpenID4VCI
 import OpenId4VCInterface
-import SdJwtClaims
 import WalletNetworking
-import eudi_lib_sdjwt_swift
 
 public actor IssuanceSession: IssuanceFlow {
   private let config: IssuanceConfig
   private let dpopProofBuilder = DpopProofBuilder()
-  private let credentialEndpointClient = CredentialEndpointClient()
+  private let credentialEndpointClient: CredentialEndpointClient
   private var credentialOffer: CredentialOffer?
   private var issuer: Issuer?
-  private var claimDisplayNames: [String: String] = [:]
   private var preparedRequest: AuthorizationRequested?
   private var authorizedRequest: AuthorizedRequest?
   private var proof: String?
 
   public init(config: IssuanceConfig) {
+    self.init(config: config, networkClient: URLSessionNetworkClient())
+  }
+
+  init(config: IssuanceConfig, networkClient: any NetworkClient) {
     self.config = config
+    self.credentialEndpointClient = CredentialEndpointClient(networkClient: networkClient)
   }
 
   public func loadOffer(_ offerUri: String) async throws -> OfferedIssuance {
-    let resolver = CredentialOfferRequestResolver()
-    let result = await resolver.resolve(
-      source: try .init(urlString: offerUri),
-      policy: .ignoreSigned,
-    )
+    let result = await CredentialOfferRequestResolver()
+      .resolve(
+        source: try .init(urlString: offerUri),
+        policy: .ignoreSigned,
+      )
     let offer = try result.get()
     let issuer = try createIssuer(from: offer)
 
     credentialOffer = offer
     self.issuer = issuer
-    claimDisplayNames = Self.claimDisplayNames(from: offer)
 
-    let display = await issuer.issuerMetadata.display.first
     return OfferedIssuance(
-      issuer: display.map { display in
+      issuer: offer.credentialIssuerMetadata.display.first.map { display in
         OfferedIssuer(name: display.name, info: display.description, imageUrl: display.logo?.uri)
-      },
-      claimDisplayNames: claimDisplayNames,
+      }
     )
   }
 
@@ -56,7 +54,7 @@ public actor IssuanceSession: IssuanceFlow {
   }
 
   public func exchangeAuthorizationCode(callbackUrl: URL) async throws {
-    let (issuer, _) = try loadedIssuer()
+    let (issuer, offer) = try loadedIssuer()
     guard let preparedRequest else {
       throw IssuanceError.authRequestFailed
     }
@@ -65,7 +63,6 @@ public actor IssuanceSession: IssuanceFlow {
       throw IssuanceError.invalidAuth
     }
 
-    let authorizationServer = await issuer.issuerMetadata.authorizationServers?.first
     let issuerState = callbackUrl.queryItemValue(for: "state") ?? preparedRequest.state
 
     authorizedRequest = try await issuer.authorizeWithAuthorizationCode(
@@ -75,7 +72,7 @@ public actor IssuanceSession: IssuanceFlow {
       grant: .authorizationCode(
         .init(
           issuerState: issuerState,
-          authorizationServer: authorizationServer,
+          authorizationServer: offer.credentialIssuerMetadata.authorizationServers?.first,
         )
       ),
     )
@@ -85,19 +82,13 @@ public actor IssuanceSession: IssuanceFlow {
     signer: any ProofSigner,
     attestations: any KeyAttestationProviding,
   ) async throws {
-    let (issuer, offer) = try loadedIssuer()
-    let metadata = await issuer.issuerMetadata
-    let (_, credentialConfig) = try Self.sdJwtVcConfiguration(metadata, offer: offer)
+    let offer = try loadedOffer()
+    let metadata = offer.credentialIssuerMetadata
+    let credentialConfig = try offer.sdJwtVcConfiguration().configuration
 
     guard let proofTypeJwt = credentialConfig.proofTypesSupported?["jwt"] else {
       throw IssuanceError.credentialNotSupported
     }
-
-    let keyAttestationRequired =
-      switch proofTypeJwt.keyAttestationRequirement {
-        case .required, .requiredNoConstraints: true
-        default: false
-      }
 
     let nonce: String? =
       if let nonceUrl = metadata.nonceEndpoint?.url {
@@ -107,10 +98,12 @@ public actor IssuanceSession: IssuanceFlow {
       }
 
     let keyAttestation: String? =
-      if keyAttestationRequired {
-        try await attestations.keyAttestation(nonce: nonce)
-      } else {
-        nil
+      switch proofTypeJwt.keyAttestationRequirement {
+        case .required, .requiredNoConstraints:
+          try await attestations.keyAttestation(nonce: nonce)
+
+        case .notRequired, nil:
+          nil
       }
 
     proof = try await Self.buildProof(
@@ -122,13 +115,13 @@ public actor IssuanceSession: IssuanceFlow {
   }
 
   public func fetchCredential() async throws -> OpenId4VCInterface.IssuedCredential {
-    let (issuer, offer) = try loadedIssuer()
+    let offer = try loadedOffer()
     guard let authorizedRequest, let proof else {
       throw IssuanceError.authRequestFailed
     }
 
-    let metadata = await issuer.issuerMetadata
-    let (configId, credentialConfig) = try Self.sdJwtVcConfiguration(metadata, offer: offer)
+    let metadata = offer.credentialIssuerMetadata
+    let (configId, credentialConfig) = try offer.sdJwtVcConfiguration()
 
     let credential = try await credentialEndpointClient.fetchCredential(
       url: metadata.credentialEndpoint.url,
@@ -142,10 +135,11 @@ public actor IssuanceSession: IssuanceFlow {
       requestEncryption: metadata.credentialRequestEncryption.toCryptoSpec(),
     )
 
-    return try parseCredential(
-      credential,
-      credentialConfiguration: credentialConfig,
+    return try IssuedCredential(
+      compactSdJwt: credential,
+      configuration: credentialConfig,
       issuer: metadata.display.first,
+      claimDisplayNames: offer.claimDisplayNames,
     )
   }
 
@@ -174,13 +168,6 @@ public actor IssuanceSession: IssuanceFlow {
     }
   }
 
-  private func loadedIssuer() throws -> (Issuer, CredentialOffer) {
-    guard let issuer, let credentialOffer else {
-      throw IssuanceError.issuerNotFound
-    }
-    return (issuer, credentialOffer)
-  }
-
   private func createIssuer(from credentialOffer: CredentialOffer) throws -> Issuer {
     let authorizationServerMetadata = credentialOffer.authorizationServerMetadata
 
@@ -196,74 +183,19 @@ public actor IssuanceSession: IssuanceFlow {
     )
   }
 
-  private func parseCredential(
-    _ credential: String,
-    credentialConfiguration: SdJwtVcFormat.CredentialConfiguration,
-    issuer: Display?,
-  ) throws -> OpenId4VCInterface.IssuedCredential {
-    let sdJwt = try CompactParser().getSignedSdJwt(serialisedString: credential)
-    let displayName = credentialConfiguration.credentialMetadata?.display.first?.name
-    let claims = try sdJwt.toClaimUiModels(displayNames: claimDisplayNames)
-
-    let issuerDisplay = IssuerDisplay(
-      name: issuer?.name ?? "",
-      info: issuer?.description,
-      imageUrl: issuer?.logo?.uri,
-    )
-
-    return IssuedCredential(
-      credential: SavedCredential(
-        issuer: issuerDisplay,
-        compactSerialized: credential,
-        claimDisplayNames: claimDisplayNames,
-        claimsCount: claims.count,
-        issuedAt: .now,
-        type: credentialConfiguration.vct ?? "",
-        displayData: CredentialDisplayData(name: displayName),
-      ),
-      claims: claims,
-    )
-  }
-
-  private static func sdJwtVcConfiguration(
-    _ metadata: CredentialIssuerMetadata,
-    offer: CredentialOffer,
-  ) throws -> (CredentialConfigurationIdentifier, SdJwtVcFormat.CredentialConfiguration) {
-    guard
-      let configId = offer.credentialConfigurationIdentifiers.first,
-      let supportedCredential = metadata.credentialsSupported[configId],
-      case let .sdJwtVc(credentialConfig) = supportedCredential
-    else {
-      throw IssuanceError.credentialNotSupported
+  private func loadedIssuer() throws -> (Issuer, CredentialOffer) {
+    guard let issuer else {
+      throw IssuanceError.issuerNotFound
     }
 
-    return (configId, credentialConfig)
+    return (issuer, try loadedOffer())
   }
 
-  private static func claimDisplayNames(from credentialOffer: CredentialOffer) -> [String: String] {
-    credentialOffer.credentialConfigurationIdentifiers
-      .compactMap { id in
-        credentialOffer.credentialIssuerMetadata.credentialsSupported[id]
-      }
-      .flatMap { supportedCredential in
-        switch supportedCredential {
-          case .sdJwtVc(let config):
-            return config.credentialMetadata?.claims ?? []
+  private func loadedOffer() throws -> CredentialOffer {
+    guard let credentialOffer else {
+      throw IssuanceError.issuerNotFound
+    }
 
-          case .msoMdoc(let config):
-            return config.credentialMetadata?.claims ?? []
-
-          default:
-            return []
-        }
-      }
-      .reduce(into: [String: String]()) { result, claim in
-        let claimPath = claim.path.value
-          .map(\.description)
-          .joined(separator: ".")
-        let displayName = claim.display?.first?.name
-
-        result[claimPath] = displayName
-      }
+    return credentialOffer
   }
 }

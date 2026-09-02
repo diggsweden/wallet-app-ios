@@ -6,17 +6,20 @@ import CryptoKit
 import Foundation
 import Jose
 
-enum JwtDecodingError: Error {
+public enum JwtDecodingError: Error {
   case malformed
 }
 
-struct DecodedJwt {
-  let header: [String: Any]
-  let claims: [String: Any]
-  let signingInput: Data
-  let signature: Data
+/// A compact-serialized JWT taken apart so tests can assert on what was signed.
+public struct DecodedJwt {
+  public let header: [String: Any]
+  public let claims: [String: Any]
 
-  init(compact: String) throws {
+  /// The bytes covered by the signature, i.e. `header.claims` in base64url.
+  public let signingInput: Data
+  public let signature: Data
+
+  public init(compact: String) throws {
     let parts = compact.split(separator: ".")
 
     guard
@@ -37,11 +40,22 @@ struct DecodedJwt {
     self.signature = signature
   }
 
-  var jwk: [String: Any]? {
+  public func headerString(_ name: String) -> String? {
+    header[name] as? String
+  }
+
+  public func claim(_ name: String) -> String? {
+    claims[name] as? String
+  }
+
+  /// The `jwk` the header advertises as the verification key.
+  public var jwk: [String: Any]? {
     header["jwk"] as? [String: Any]
   }
 
-  func verifiesWithAdvertisedKey() throws -> Bool {
+  /// Whether the signature verifies under the key the header advertises, which
+  /// is what a server checks: it has nothing but the proof itself to go on.
+  public func verifiesWithAdvertisedKey() throws -> Bool {
     guard
       let jwk,
       let x = (jwk["x"] as? String).flatMap({ Data(base64UrlEncoded: $0) }),
@@ -50,9 +64,11 @@ struct DecodedJwt {
       throw JwtDecodingError.malformed
     }
 
-    let publicKey = try P256.Signing.PublicKey(rawRepresentation: x + y)
-    let signature = try P256.Signing.ECDSASignature(rawRepresentation: signature)
+    return try verifies(with: P256.Signing.PublicKey(rawRepresentation: x + y))
+  }
 
+  public func verifies(with publicKey: P256.Signing.PublicKey) throws -> Bool {
+    let signature = try P256.Signing.ECDSASignature(rawRepresentation: signature)
     return publicKey.isValidSignature(signature, for: signingInput)
   }
 }

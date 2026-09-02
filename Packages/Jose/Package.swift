@@ -15,7 +15,11 @@ let package = Package(
     .library(
       name: "Jose",
       targets: ["Jose"],
-    )
+    ),
+    .library(
+      name: "JoseTestSupport",
+      targets: ["JoseTestSupport"],
+    ),
   ],
   dependencies: [
     .package(url: "https://github.com/beatt83/jose-swift.git", exact: "6.0.5"),
@@ -30,10 +34,15 @@ let package = Package(
         .product(name: "WalletNetworking", package: "WalletNetworking"),
       ],
     ),
+    .target(
+      name: "JoseTestSupport",
+      dependencies: ["Jose"],
+    ),
     .testTarget(
       name: "JoseTests",
       dependencies: [
         "Jose",
+        "JoseTestSupport",
         .product(name: "WalletMacros", package: "WalletMacros"),
         .product(name: "WalletNetworking", package: "WalletNetworking"),
       ],

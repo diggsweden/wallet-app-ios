@@ -15,12 +15,20 @@ let package = Package(
     .library(
       name: "CredentialInterfaces",
       targets: ["CredentialInterfaces"],
-    )
+    ),
+    .library(
+      name: "CredentialInterfacesTestSupport",
+      targets: ["CredentialInterfacesTestSupport"],
+    ),
   ],
   targets: [
     .target(
       name: "CredentialInterfaces"
-    )
+    ),
+    .target(
+      name: "CredentialInterfacesTestSupport",
+      dependencies: ["CredentialInterfaces"],
+    ),
   ],
   swiftLanguageModes: [.v6],
 )

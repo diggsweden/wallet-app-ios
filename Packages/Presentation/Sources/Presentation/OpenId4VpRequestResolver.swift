@@ -9,54 +9,10 @@ import OpenID4VP
 import OpenId4VCInterface
 import eudi_lib_sdjwt_swift
 
-struct OpenId4VpUtil {
-  private let certificateTrustMock: CertificateTrust = { _ in true }
-
-  private func isCredentialRequired(
-    _ queryId: QueryId,
-    in credentialSets: CredentialSets?,
-  ) -> Bool {
-    guard let credentialSets else {
-      return true
-    }
-
-    let matchingSets = credentialSets.filter { set in
-      set.options.contains { $0.contains(queryId) }
-    }
-
-    return matchingSets.contains { $0.required ?? true }
-  }
-
-  private func mapCredentialQueries(_ dcql: DCQL) -> [CredentialQuery] {
-    dcql.credentials.map { credential in
-      let claimPaths =
-        credential.claims?
-        .map { claim in
-          eudi_lib_sdjwt_swift.ClaimPath(
-            claim.path.value.map { element in
-              switch element {
-                case .claim(let name): .claim(name: name)
-                case .arrayElement(let index): .arrayElement(index: index)
-                case .allArrayElements: .allArrayElements
-              }
-            }
-          )
-        } ?? []
-
-      let required = isCredentialRequired(credential.id, in: dcql.credentialSets)
-      let vctValues = credential.meta["vct_values"].arrayValue.compactMap(\.string)
-
-      return CredentialQuery(
-        id: credential.id.value,
-        claimPaths: Set(claimPaths),
-        required: required,
-        vctValues: vctValues,
-      )
-    }
-  }
-
-  // swiftlint:disable:next function_body_length
+struct OpenId4VpRequestResolver {
   func resolve(url: URL) async throws -> PresentationRequestData {
+    // TODO: Replace with real x509 trust evaluation before production use.
+    let certificateTrustMock: CertificateTrust = { _ in true }
     let ephemeralKey = P256.Signing.PrivateKey()
     let secKey = try ephemeralKey.toSecKey()
     let rawRep = ephemeralKey.publicKey.rawRepresentation
@@ -100,23 +56,65 @@ struct OpenId4VpUtil {
           throw PresentationError.resolutionFailed("\(error)")
       }
 
-    let data = resolvedRequest.request
+    return try Self.requestData(from: resolvedRequest.request)
+  }
 
+  static func requestData(
+    from data: ResolvedRequestData.VpTokenData
+  ) throws
+    -> PresentationRequestData
+  {
     guard case let .byDigitalCredentialsQuery(dcql) = data.presentationQuery else {
       throw PresentationError.unsupportedQuery
     }
 
     guard case let .directPost(responseURI: responseUrl) = data.responseMode else {
-      // DirectPostJwt is not yet supported
       throw PresentationError.unsupportedResponseMode
     }
 
     return PresentationRequestData(
-      credentialQueries: mapCredentialQueries(dcql),
+      credentialQueries: credentialQueries(from: dcql),
       responseUrl: responseUrl,
       clientId: data.client.id.clientId,
       nonce: data.nonce,
       state: data.state,
     )
+  }
+
+  static func credentialQueries(from dcql: DCQL) -> [CredentialQuery] {
+    dcql.credentials.map { credential in
+      let claimPaths =
+        credential.claims?
+        .map { claim in
+          eudi_lib_sdjwt_swift.ClaimPath(
+            claim.path.value.map { element in
+              switch element {
+                case .claim(let name): .claim(name: name)
+                case .arrayElement(let index): .arrayElement(index: index)
+                case .allArrayElements: .allArrayElements
+              }
+            }
+          )
+        } ?? []
+
+      return CredentialQuery(
+        id: credential.id.value,
+        claimPaths: Set(claimPaths),
+        required: isRequired(credential.id, in: dcql.credentialSets),
+        vctValues: credential.meta["vct_values"].arrayValue.compactMap(\.string),
+      )
+    }
+  }
+
+  private static func isRequired(_ queryId: QueryId, in credentialSets: CredentialSets?) -> Bool {
+    guard let credentialSets else {
+      return true
+    }
+
+    let matchingSets = credentialSets.filter { set in
+      set.options.contains { $0.contains(queryId) }
+    }
+
+    return matchingSets.contains { $0.required ?? true }
   }
 }

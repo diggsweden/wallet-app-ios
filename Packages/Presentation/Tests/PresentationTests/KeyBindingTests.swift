@@ -2,10 +2,13 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
+import CredentialInterfacesTestSupport
 import CryptoKit
 import Foundation
 import Jose
+import JoseTestSupport
 import OpenId4VCInterface
+import OpenId4VCInterfaceTestSupport
 import Testing
 
 @testable import Presentation
@@ -13,7 +16,7 @@ import Testing
 struct KeyBindingTests {
   @Test func `header has ES256 and kb+jwt, claims have aud, nonce, iat and exp`() async throws {
     let signer = FakeProofSigner()
-    let sdJwt = Fixtures.compactSdJwt
+    let sdJwt = SampleCredential.compactSdJwt
 
     let jwt = try await PresentationSession.createKeyBinding(
       for: sdJwt,
@@ -32,7 +35,7 @@ struct KeyBindingTests {
   }
 
   @Test func `sd_hash is the base64url SHA-256 of the presented SD-JWT`() async throws {
-    let sdJwt = Fixtures.compactSdJwt
+    let sdJwt = SampleCredential.compactSdJwt
     let expected = Data(SHA256.hash(data: Data(sdJwt.utf8))).base64UrlEncodedString()
 
     let jwt = try await PresentationSession.createKeyBinding(
@@ -50,19 +53,19 @@ struct KeyBindingTests {
     let signer = FakeProofSigner()
 
     let jwt = try await PresentationSession.createKeyBinding(
-      for: Fixtures.compactSdJwt,
+      for: SampleCredential.compactSdJwt,
       aud: "aud",
       nonce: "nonce",
       signer: signer,
     )
     let decoded = try DecodedJwt(compact: jwt)
-    let signature = try P256.Signing.ECDSASignature(rawRepresentation: decoded.signature)
 
-    #expect(signer.key.publicKey.isValidSignature(signature, for: decoded.signingInput))
+    #expect(try decoded.verifies(with: signer.key.publicKey))
+    #expect(decoded.jwk == nil, "the key is bound through cnf, never advertised in the KB-JWT")
   }
 
   @Test func `rejects an SD-JWT that is not ASCII`() async {
-    await #expect(throws: PresentationError.self) {
+    await #expect(throws: PresentationError.keyBindingEncodingFailed) {
       try await PresentationSession.createKeyBinding(
         for: "não-ascii",
         aud: "aud",

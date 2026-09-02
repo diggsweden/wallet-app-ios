@@ -3,12 +3,13 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import Foundation
+import WalletNetworking
 
-@testable import WalletNetworking
+public struct FakeDpopProofProvider: DpopProofProviding {
+  public init() {}
 
-struct FakeDpopProofProvider: DpopProofProviding {
   // swiftlint:disable async_without_await
-  func proof(
+  public func proof(
     endpoint: URL,
     method: HTTPMethod,
     accessToken: String?,

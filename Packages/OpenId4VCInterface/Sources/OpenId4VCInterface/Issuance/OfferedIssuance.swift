@@ -18,10 +18,8 @@ public struct OfferedIssuer: Sendable {
 
 public struct OfferedIssuance: Sendable {
   public let issuer: OfferedIssuer?
-  public let claimDisplayNames: [String: String]
 
-  public init(issuer: OfferedIssuer?, claimDisplayNames: [String: String]) {
+  public init(issuer: OfferedIssuer?) {
     self.issuer = issuer
-    self.claimDisplayNames = claimDisplayNames
   }
 }

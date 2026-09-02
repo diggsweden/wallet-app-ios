@@ -4,7 +4,7 @@
 
 import Foundation
 
-public enum PresentationError: LocalizedError {
+public enum PresentationError: LocalizedError, Equatable {
   case noCredential
   case noMatchingClaims
   case noMatchingCredential

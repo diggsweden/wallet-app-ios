@@ -30,6 +30,7 @@ let package = Package(
     .package(name: "Jose", path: "../Jose"),
     .package(name: "OpenId4VCInterface", path: "../OpenId4VCInterface"),
     .package(name: "SdJwtClaims", path: "../SdJwtClaims"),
+    .package(name: "WalletMacros", path: "../WalletMacros"),
     .package(name: "WalletNetworking", path: "../WalletNetworking"),
   ],
   targets: [
@@ -49,8 +50,15 @@ let package = Package(
       name: "IssuanceTests",
       dependencies: [
         "Issuance",
+        .product(name: "OpenID4VCI", package: "eudi-lib-ios-openid4vci-swift"),
+        .product(name: "CredentialInterfacesTestSupport", package: "CredentialInterfaces"),
         .product(name: "Jose", package: "Jose"),
+        .product(name: "JoseTestSupport", package: "Jose"),
         .product(name: "OpenId4VCInterface", package: "OpenId4VCInterface"),
+        .product(name: "OpenId4VCInterfaceTestSupport", package: "OpenId4VCInterface"),
+        .product(name: "WalletMacros", package: "WalletMacros"),
+        .product(name: "WalletNetworking", package: "WalletNetworking"),
+        .product(name: "WalletNetworkingTestSupport", package: "WalletNetworking"),
       ],
     ),
   ],

@@ -61,11 +61,12 @@ final class PidSetupViewModel {
     let body = #"{"credentialIds":["eu.europa.ec.eudi.pid_vc_sd_jwt"]}"#
 
     guard
-      let response: CredentialsOfferResponse = try? await NetworkClient.fetch(
-        url,
-        method: .post,
-        body: body.utf8Data,
-      )
+      let response: CredentialsOfferResponse = try? await URLSessionNetworkClient()
+        .fetch(
+          url,
+          method: .post,
+          body: body.utf8Data,
+        )
     else {
       return nil
     }
