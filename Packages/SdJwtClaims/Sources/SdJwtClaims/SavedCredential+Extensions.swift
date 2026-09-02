@@ -7,7 +7,7 @@ import Foundation
 import eudi_lib_sdjwt_swift
 
 extension SavedCredential {
-  func getClaimUiModels() throws -> [ClaimUiModel] {
+  public func getClaimUiModels() throws -> [ClaimUiModel] {
     try CompactParser()
       .getSignedSdJwt(serialisedString: compactSerialized)
       .toClaimUiModels(displayNames: claimDisplayNames)

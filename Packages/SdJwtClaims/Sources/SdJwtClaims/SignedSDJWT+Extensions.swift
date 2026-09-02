@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
+import CredentialInterfaces
 import Foundation
 import SwiftyJSON
 import eudi_lib_sdjwt_swift
@@ -12,7 +13,7 @@ extension SignedSDJWT {
     "cnf", "vct", "_sd", "_sd_alg",
   ]
 
-  func toClaimUiModels(displayNames: [String: String]) throws -> [ClaimUiModel] {
+  public func toClaimUiModels(displayNames: [String: String]) throws -> [ClaimUiModel] {
     let claims = try recreateClaims().recreatedClaims.dictionaryValue
 
     return claims.keys

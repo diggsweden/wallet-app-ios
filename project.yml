@@ -81,6 +81,8 @@ packages:
     path: Packages/WalletNetworking
   Jose:
     path: Packages/Jose
+  SdJwtClaims:
+    path: Packages/SdJwtClaims
 
 targets:
   WalletDemo:
@@ -137,6 +139,8 @@ targets:
         product: WalletNetworking
       - package: Jose
         product: Jose
+      - package: SdJwtClaims
+        product: SdJwtClaims
     preBuildScripts:
       - name: SwiftLint
         path: scripts/swiftlint.sh
@@ -261,4 +265,5 @@ schemes:
         - package: WalletGateway/WalletGatewayTests
         - package: WalletNetworking/WalletNetworkingTests
         - package: Jose/JoseTests
+        - package: SdJwtClaims/SdJwtClaimsTests
 
