@@ -28,7 +28,7 @@ fi
 
 mkdir -p "$pkg_dir/Sources/$name" "$pkg_dir/Tests/${name}Tests"
 
-cat > "$pkg_dir/Package.swift" <<EOF
+cat >"$pkg_dir/Package.swift" <<EOF
 // SPDX-FileCopyrightText: 2026 Digg - Agency for digital government
 //
 // SPDX-License-Identifier: EUPL-1.2
@@ -61,7 +61,7 @@ let package = Package(
 )
 EOF
 
-cat > "$pkg_dir/.gitignore" <<'EOF'
+cat >"$pkg_dir/.gitignore" <<'EOF'
 .DS_Store
 /.build
 /Packages
@@ -72,7 +72,7 @@ DerivedData/
 .netrc
 EOF
 
-cat > "$pkg_dir/Sources/$name/$name.swift" <<EOF
+cat >"$pkg_dir/Sources/$name/$name.swift" <<EOF
 // SPDX-FileCopyrightText: 2026 Digg - Agency for digital government
 //
 // SPDX-License-Identifier: EUPL-1.2
@@ -80,7 +80,7 @@ cat > "$pkg_dir/Sources/$name/$name.swift" <<EOF
 import Foundation
 EOF
 
-cat > "$pkg_dir/Tests/${name}Tests/${name}Tests.swift" <<EOF
+cat >"$pkg_dir/Tests/${name}Tests/${name}Tests.swift" <<EOF
 // SPDX-FileCopyrightText: 2026 Digg - Agency for digital government
 //
 // SPDX-License-Identifier: EUPL-1.2
