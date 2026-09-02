@@ -34,7 +34,7 @@ public struct DpopProofBuilder: DpopProofProviding {
       try await JwtUtil
       .signJwt(
         payload: claims,
-        header: DpopProofHeader(jwk: privateKey.publicKey.jwkRepresentation),
+        header: DpopProofHeader(jwk: WalletJoseJWK(privateKey.publicKey)),
       ) { signingInput in
         try privateKey.signature(for: signingInput).rawRepresentation.base64UrlEncodedString()
       }

@@ -7,7 +7,6 @@ import Foundation
 import JSONWebAlgorithms
 import JSONWebEncryption
 import JSONWebKey
-import JSONWebSignature
 import JSONWebToken
 
 enum JwtSigningError: Error {
@@ -25,7 +24,7 @@ public enum JwtUtil {
   ///   (Secure Enclave, remote HSM, ...) without `JwtUtil` knowing about keys.
   public static func signJwt<T: Codable>(
     payload: T,
-    header: JWSRegisteredFieldsHeader = DefaultJWSHeaderImpl(algorithm: .ES256),
+    header: any WalletJWSHeader = WalletJWSDefaultHeader(algorithm: .ES256),
     sign: sending (Data) async throws -> String,
   ) async throws -> String {
     let jsonEncoder = JSONEncoder()
@@ -49,9 +48,9 @@ public enum JwtUtil {
   public static func signJwt<T: Codable>(
     with key: SecureEnclave.P256.Signing.PrivateKey,
     payload: T,
-    header: WalletJWSHeader = WalletJWSHeader(algorithm: .ES256),
+    header: any WalletJWSHeader = WalletJWSDefaultHeader(algorithm: .ES256),
   ) async throws -> String {
-    try await signJwt(payload: payload, header: header.joseHeader) { signingInput in
+    try await signJwt(payload: payload, header: header) { signingInput in
       try key.signature(for: signingInput).rawRepresentation.base64UrlEncodedString()
     }
   }

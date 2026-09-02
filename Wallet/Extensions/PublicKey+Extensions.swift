@@ -4,7 +4,6 @@
 
 import CryptoKit
 import Foundation
-import JSONWebKey
 import WalletGatewayInterface
 
 extension P256.Signing.PublicKey {

@@ -7,10 +7,10 @@ import JSONWebAlgorithms
 import JSONWebKey
 import JSONWebSignature
 
-struct DpopProofHeader: JWSRegisteredFieldsHeader {
-  var algorithm: JSONWebAlgorithms.SigningAlgorithm? = .ES256
+struct DpopProofHeader: WalletJWSHeader {
+  var algorithm: WalletJoseSigningAlgorithm? = .ES256
   var jwkSetURL: String?
-  var jwk: JSONWebKey.JWK?
+  var jwk: WalletJoseJWK?
   var keyID: String?
   var x509URL: String?
   var x509CertificateChain: [String]?

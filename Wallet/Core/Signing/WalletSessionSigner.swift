@@ -20,7 +20,7 @@ struct WalletSessionSigner: SessionSigningProvider {
       let nonce: String
     }
     let key = try SigningKeyStore.getOrCreateKey(withTag: .deviceKey)
-    let header = WalletJWSHeader(algorithm: .ES256, keyID: keyId)
+    let header = WalletJWSDefaultHeader(algorithm: .ES256, keyID: keyId)
     let payload = SessionPayload(nonce: nonce)
     return try await JwtUtil.signJwt(with: key, payload: payload, header: header)
   }

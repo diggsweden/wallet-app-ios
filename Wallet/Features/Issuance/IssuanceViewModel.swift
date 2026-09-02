@@ -245,8 +245,8 @@ class IssuanceViewModel {
     // https://www.etsi.org/deliver/etsi_ts/119400_119499/11947203/01.01.01_60/ts_11947203v010101p.pdf
     return try await JwtUtil.signJwt(
       payload: payload,
-      header: KeyAttestationHeader(
-        jwk: keyAttestationRequired ? nil : key.publicKey.toSecKey().jwk,
+      header: WalletKeyAttestationHeader(
+        jwk: keyAttestationRequired ? nil : WalletJoseJWK(secKey: key.publicKey.toSecKey()),
         keyID: keyAttestationRequired ? "0" : nil,
         keyAttestation: keyAttestation,
       ),

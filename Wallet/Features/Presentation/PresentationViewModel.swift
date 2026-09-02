@@ -5,7 +5,6 @@
 import CredentialInterfaces
 import CryptoKit
 import Foundation
-import JSONWebSignature
 import Jose
 import SwiftAccessMechanism
 import User
@@ -199,7 +198,7 @@ final class PresentationViewModel {
 
     let hash = SHA256.hash(data: sdJwtData)
     let sdHash = Data(hash).base64UrlEncodedString()
-    let header = DefaultJWSHeaderImpl(algorithm: .ES256, type: "kb+jwt")
+    let header = WalletJWSDefaultHeader(algorithm: .ES256, type: "kb+jwt")
     let payload = KeyBindingPayload(
       aud: aud,
       nonce: nonce,
