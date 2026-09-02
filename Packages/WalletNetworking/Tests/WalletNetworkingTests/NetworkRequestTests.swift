@@ -6,7 +6,7 @@ import Foundation
 import Testing
 import WalletMacros
 
-@testable import WalletDemo
+@testable import WalletNetworking
 
 private let credentialEndpoint = #URL("https://issuer.example.com/credential")
 
@@ -77,13 +77,14 @@ struct NetworkRequestTests {
   @Test("a dpop request carries both the token and its proof")
   func dpopRequest() async throws {
     let request = try await makeRequest(
-      authorization: .dpop(accessToken: "access-token", proofBuilder: DpopProofBuilder()),
+      authorization: .dpop(accessToken: "access-token", proofBuilder: FakeDpopProofProvider()),
       dpopNonce: "nonce-abc",
     )
 
     #expect(request.value(forHTTPHeaderField: "Authorization") == "DPoP access-token")
-
-    let proof = try DecodedJwt(compact: try #require(request.value(forHTTPHeaderField: "DPoP")))
-    #expect(proof.claim("nonce") == "nonce-abc")
+    #expect(
+      request.value(forHTTPHeaderField: "DPoP")
+        == "POST https://issuer.example.com/credential nonce=nonce-abc"
+    )
   }
 }

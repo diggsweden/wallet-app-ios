@@ -3,8 +3,6 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import Foundation
-import OpenID4VCI
-import SwiftyJSON
 
 struct IssuanceRouter: DeeplinkRouter {
   func route(from url: URL) throws -> Route {

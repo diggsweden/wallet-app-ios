@@ -2,19 +2,13 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
-import Crypto
+import CryptoKit
 import Foundation
-import JSONWebAlgorithms
-import JSONWebKey
 import Jose
+import OpenId4VCInterface
 import WalletNetworking
 
-struct CryptoSpec {
-  let key: JWK
-  let enc: ContentEncryptionAlgorithm
-}
-
-struct OpenId4VciUtil {
+struct CredentialEndpointClient {
   private let encoder = JSONEncoder()
 
   func fetchCredential(
@@ -34,8 +28,8 @@ struct OpenId4VciUtil {
     let ephemeralKey = P256.KeyAgreement.PrivateKey()
     let enc = requestEncryption.enc
 
-    var responseJwk = ephemeralKey.publicKey.jwkRepresentation
-    responseJwk.algorithm = KeyManagementAlgorithm.ecdhES.rawValue
+    var responseJwk = WalletJoseJWK(ephemeralKey.publicKey)
+    responseJwk.algorithm = WalletJoseKeyManagementAlgorithm.ecdhES.rawValue
 
     let encryptedRequest = CredentialRequest(
       credentialConfigurationId: credentialRequest.credentialConfigurationId,
@@ -58,16 +52,16 @@ struct OpenId4VciUtil {
       contentType: "application/jwt",
       accept: "application/jwt",
       authorization: authorization,
-      body: jwe.utf8Data,
+      body: Data(jwe.utf8),
     )
 
     let response: CredentialResponse = try JwtUtil.decryptJwe(
       encryptedResponse,
-      decryptionKey: ephemeralKey.jwkRepresentation,
+      decryptionKey: WalletJoseJWK(ephemeralKey),
     )
 
     guard let credential = response.credentials.first else {
-      throw AppError(reason: "Could not fetch credential")
+      throw IssuanceError.invalidCredential
     }
 
     return credential.credential
@@ -85,19 +79,14 @@ struct OpenId4VciUtil {
       body: try encoder.encode(credentialRequest),
     )
     guard let credential = response.credentials.first else {
-      throw AppError(reason: "Could not fetch credential")
+      throw IssuanceError.invalidCredential
     }
 
     return credential.credential
   }
 
-  func fetchNonce(
-    url: URL
-  ) async throws -> String {
-    let response: NonceResponse = try await NetworkClient.fetch(
-      url,
-      method: .post,
-    )
+  func fetchNonce(url: URL) async throws -> String {
+    let response: NonceResponse = try await NetworkClient.fetch(url, method: .post)
     return response.cNonce
   }
 }

@@ -3,10 +3,12 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import Foundation
-import JSONWebAlgorithms
-import JSONWebKey
-import JSONWebSignature
-import OpenID4VCI
+import Jose
+
+struct CryptoSpec {
+  let key: WalletJoseJWK
+  let enc: WalletJoseContentEncryptionAlgorithm
+}
 
 struct CredentialRequest: Codable {
   let credentialConfigurationId: String
@@ -31,7 +33,7 @@ struct CredentialRequest: Codable {
 }
 
 struct CredentialResponseEncryptionDTO: Codable {
-  let jwk: JWK
+  let jwk: WalletJoseJWK
   let enc: String
 }
 

@@ -18,6 +18,7 @@ extension WalletJoseJWK {
       keyType: WalletJoseKeyType(rawValue: jwk.keyType.rawValue) ?? .ellipticCurve,
       curve: jwk.curve.flatMap { WalletJoseCurve(rawValue: $0.rawValue) },
       keyID: jwk.keyID,
+      algorithm: jwk.algorithm,
       x: jwk.x,
       y: jwk.y,
       d: jwk.d,
@@ -27,6 +28,7 @@ extension WalletJoseJWK {
   var joseJWK: JWK {
     JWK(
       keyType: JWK.KeyType(rawValue: keyType.rawValue) ?? .ellipticCurve,
+      algorithm: algorithm,
       keyID: keyID,
       curve: curve.flatMap { JWK.CryptographicCurve(rawValue: $0.rawValue) },
       x: x,

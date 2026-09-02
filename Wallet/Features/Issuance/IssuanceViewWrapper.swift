@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import CredentialInterfaces
+import OpenId4VCInterface
 import SwiftAccessMechanism
 import SwiftUI
 import User
@@ -10,6 +11,7 @@ import WalletGatewayInterface
 
 struct IssuanceViewWrapper: View {
   let credentialOfferUri: String
+  let makeIssuanceFlow: () -> any IssuanceFlow
   let gatewayApiClient: any GatewayApi & HSMTransport
   let hsmServerParameters: HsmServerParameters?
   let onSave: (SavedCredential) async throws -> Void
@@ -19,6 +21,7 @@ struct IssuanceViewWrapper: View {
       ScrollView {
         IssuanceView(
           credentialOfferUri: credentialOfferUri,
+          flow: makeIssuanceFlow(),
           gatewayApiClient: gatewayApiClient,
           hsmServerParameters: hsmServerParameters,
           onSaveCredential: onSave,

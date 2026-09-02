@@ -9,7 +9,7 @@ import WalletGatewayInterface
 struct WalletSessionSigner: SessionSigningProvider {
   func keyId() throws -> String {
     let key = try SigningKeyStore.getOrCreateKey(withTag: .deviceKey)
-    guard let keyId = try? key.publicKey.jwk.thumbprint() else {
+    guard let keyId = try? WalletJoseJWK(key.publicKey).thumbprint() else {
       throw SessionError.noKeyId
     }
     return keyId

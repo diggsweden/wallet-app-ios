@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import AuthenticationServices
+import Issuance
+import OpenId4VCInterface
 import Presentation
 import SDWebImageWebPCoder
 import SwiftAccessMechanism
@@ -10,6 +12,7 @@ import SwiftData
 import SwiftUI
 import User
 import WalletGateway
+import WalletMacros
 
 struct AppRootView: View {
   private let gatewayApiClient: GatewayApiClient
@@ -97,6 +100,7 @@ private extension AppRootView {
     if !userSessionViewModel.isEnrolled {
       OnboardingRootView(
         gatewayApiClient: gatewayApiClient,
+        makeIssuanceFlow: makeIssuanceFlow,
         userSnapshot: user,
         actions: OnboardingActions(
           signIn: userSessionViewModel.signIn,
@@ -144,6 +148,7 @@ private extension AppRootView {
       case .issuance(let url):
         IssuanceViewWrapper(
           credentialOfferUri: url,
+          makeIssuanceFlow: makeIssuanceFlow,
           gatewayApiClient: gatewayApiClient,
           hsmServerParameters: userSessionViewModel.userSnapshot?.hsmServerParameters,
         ) { credential in
@@ -154,6 +159,15 @@ private extension AppRootView {
       case .credentialDetails(let credential):
         CredentialDetailsView(credential: credential)
     }
+  }
+
+  func makeIssuanceFlow() -> any IssuanceFlow {
+    IssuanceSession(
+      config: IssuanceConfig(
+        clientId: "wallet-dev",
+        redirectUri: #URL("wallet-app://authorize"),
+      )
+    )
   }
 
   func handleOpenURL(_ url: URL) {

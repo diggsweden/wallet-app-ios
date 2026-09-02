@@ -3,14 +3,13 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import CredentialInterfaces
-import OpenID4VCI
 
 enum IssuancePhase {
   case fetchingIssuer
-  case readyToAuthorize(CredentialOffer)
+  case readyToAuthorize
   case authorizing
-  case readyToSign(AuthorizedRequest)
-  case readyToFetch(AuthorizedRequest, proof: String)
+  case readyToSign
+  case readyToFetch
   case fetchingCredential
   case done(SavedCredential, [ClaimUiModel])
   case error(IssuanceRecovery, CaughtError)

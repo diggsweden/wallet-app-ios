@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import Foundation
+import Jose
 import OpenId4VCInterface
 import SwiftAccessMechanism
 import User
@@ -16,7 +17,7 @@ actor HsmProofSigner: ProofSigner {
   private let transport: any HSMTransport
   private let parameters: HsmServerParameters?
   private let pin: String
-  private var session: (client: BFFHttpClient, keyId: String)?
+  private var session: HsmSession?
 
   init(transport: any HSMTransport, parameters: HsmServerParameters?, pin: String) {
     self.transport = transport
@@ -25,11 +26,15 @@ actor HsmProofSigner: ProofSigner {
   }
 
   func sign(_ signingInput: Data) async throws -> String {
-    let (client, keyId) = try await authenticatedSession()
-    return try await client.sign(hsmKeyId: keyId, data: signingInput).signature
+    let session = try await authenticatedSession()
+    return try await session.client.sign(hsmKeyId: session.keyId, data: signingInput).signature
   }
 
-  private func authenticatedSession() async throws -> (client: BFFHttpClient, keyId: String) {
+  func publicKey() async throws -> WalletJoseJWK {
+    try await authenticatedSession().publicKey
+  }
+
+  private func authenticatedSession() async throws -> HsmSession {
     if let session {
       return session
     }
@@ -45,12 +50,25 @@ actor HsmProofSigner: ProofSigner {
     )
     _ = try await client.authenticate(password: PINStretch().stretch(input: Data(pin.utf8)))
 
-    guard let keyId = try await client.listKeys().keyInfo.first?.kid else {
+    guard
+      let key = try await client.listKeys().keyInfo.first,
+      let keyId = key.kid
+    else {
       throw HsmSignerError.noKey
     }
 
-    let session = (client: client, keyId: keyId)
+    let session = HsmSession(
+      client: client,
+      keyId: keyId,
+      publicKey: try WalletJoseJWK(secKey: key.publicKey.toSecKey()),
+    )
     self.session = session
     return session
   }
+}
+
+private struct HsmSession {
+  let client: BFFHttpClient
+  let keyId: String
+  let publicKey: WalletJoseJWK
 }

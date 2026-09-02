@@ -4,6 +4,7 @@
 
 import CredentialInterfaces
 import DesignSystem
+import OpenId4VCInterface
 import SwiftAccessMechanism
 import SwiftUI
 import User
@@ -16,6 +17,7 @@ struct IssuanceView: View {
 
   init(
     credentialOfferUri: String,
+    flow: any IssuanceFlow,
     gatewayApiClient: any GatewayApi & HSMTransport,
     hsmServerParameters: HsmServerParameters?,
     onSaveCredential: @escaping (SavedCredential) async throws -> Void,
@@ -23,6 +25,7 @@ struct IssuanceView: View {
     _viewModel = State(
       wrappedValue: .init(
         credentialOfferUri: credentialOfferUri,
+        flow: flow,
         gatewayApiClient: gatewayApiClient,
         hsmServerParameters: hsmServerParameters,
         onSaveCredential: onSaveCredential,

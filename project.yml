@@ -39,18 +39,6 @@ settings:
       ONLY_ACTIVE_ARCH: YES
 
 packages:
-  jose-swift:
-    url: https://github.com/beatt83/jose-swift.git
-    from: 6.0.5
-  eudi-lib-ios-openid4vp-swift:
-    url: https://github.com/eu-digital-identity-wallet/eudi-lib-ios-openid4vp-swift.git
-    exactVersion: 0.41.0
-  eudi-lib-ios-openid4vci-swift:
-    url: https://github.com/eu-digital-identity-wallet/eudi-lib-ios-openid4vci-swift.git
-    exactVersion: 0.53.1
-  eudi-lib-sdjwt-swift:
-    url: https://github.com/eu-digital-identity-wallet/eudi-lib-sdjwt-swift.git
-    exactVersion: 0.14.6
   SDWebImageSwiftUI:
     url: https://github.com/SDWebImage/SDWebImageSwiftUI.git
     exactVersion: 3.1.4
@@ -88,6 +76,8 @@ packages:
     path: Packages/OpenId4VCInterface
   Presentation:
     path: Packages/Presentation
+  Issuance:
+    path: Packages/Issuance
 targets:
   WalletDemo:
     type: application
@@ -114,13 +104,6 @@ targets:
           CODE_SIGN_STYLE: Automatic
           ASSETCATALOG_COMPILER_APPICON_NAME: AppIconLocal
     dependencies:
-      - package: jose-swift
-      - package: eudi-lib-ios-openid4vp-swift
-        product: OpenID4VP
-      - package: eudi-lib-ios-openid4vci-swift
-        product: OpenID4VCI
-      - package: eudi-lib-sdjwt-swift
-        product: eudi-lib-sdjwt-swift
       - package: WalletMacros
         product: WalletMacros
       - package: WalletGateway
@@ -149,6 +132,8 @@ targets:
         product: OpenId4VCInterface
       - package: Presentation
         product: Presentation
+      - package: Issuance
+        product: Issuance
     preBuildScripts:
       - name: SwiftLint
         path: scripts/swiftlint.sh
@@ -276,4 +261,5 @@ schemes:
         - package: SdJwtClaims/SdJwtClaimsTests
         - package: OpenId4VCInterface/OpenId4VCInterfaceTests
         - package: Presentation/PresentationTests
+        - package: Issuance/IssuanceTests
 

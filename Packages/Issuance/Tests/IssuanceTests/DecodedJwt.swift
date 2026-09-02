@@ -10,12 +10,9 @@ enum JwtDecodingError: Error {
   case malformed
 }
 
-/// A compact-serialized JWT taken apart so tests can assert on what was signed.
 struct DecodedJwt {
   let header: [String: Any]
   let claims: [String: Any]
-
-  /// The bytes covered by the signature, i.e. `header.claims` in base64url.
   let signingInput: Data
   let signature: Data
 
@@ -40,21 +37,10 @@ struct DecodedJwt {
     self.signature = signature
   }
 
-  func headerString(_ name: String) -> String? {
-    header[name] as? String
-  }
-
-  func claim(_ name: String) -> String? {
-    claims[name] as? String
-  }
-
-  /// The `jwk` the header advertises as the verification key.
   var jwk: [String: Any]? {
     header["jwk"] as? [String: Any]
   }
 
-  /// Whether the signature verifies under the key the header advertises, which
-  /// is what a server checks: it has nothing but the proof itself to go on.
   func verifiesWithAdvertisedKey() throws -> Bool {
     guard
       let jwk,

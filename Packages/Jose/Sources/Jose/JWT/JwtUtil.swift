@@ -57,28 +57,28 @@ public enum JwtUtil {
 
   public static func encryptJwe<T: Codable>(
     payload: T,
-    recipientKey: JWK,
-    alg: KeyManagementAlgorithm = .ecdhES,
-    enc: ContentEncryptionAlgorithm = .a128GCM,
+    recipientKey: WalletJoseJWK,
+    alg: WalletJoseKeyManagementAlgorithm = .ecdhES,
+    enc: WalletJoseContentEncryptionAlgorithm = .a128GCM,
   ) throws -> String {
     let data = try JSONEncoder().encode(payload)
 
     return
       try JWT.encrypt(
         payload: data,
-        keyManagementAlg: alg,
-        encryptionAlgorithm: enc,
-        recipientKey: recipientKey,
+        keyManagementAlg: alg.joseAlgorithm,
+        encryptionAlgorithm: enc.joseAlgorithm,
+        recipientKey: recipientKey.joseJWK,
       )
       .jwtString
   }
 
   public static func decryptJwe<T: Decodable>(
     _ compactString: String,
-    decryptionKey: JWK,
+    decryptionKey: WalletJoseJWK,
   ) throws -> T {
     let jwe = try JWE(compactString: compactString)
-    let payload = try jwe.decrypt(recipientKey: decryptionKey)
+    let payload = try jwe.decrypt(recipientKey: decryptionKey.joseJWK)
     return try JSONDecoder().decode(T.self, from: payload)
   }
 

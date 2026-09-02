@@ -4,12 +4,10 @@
 
 import Foundation
 
-enum IssuanceError: LocalizedError {
+public enum IssuanceError: LocalizedError {
   case invalidAuth
   case invalidCredential
   case issuerNotFound
   case authRequestFailed
   case credentialNotSupported
-  case noHSMKey
-  case missingHSMConfig
 }

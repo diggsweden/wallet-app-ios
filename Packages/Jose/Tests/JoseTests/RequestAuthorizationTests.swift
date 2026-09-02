@@ -5,8 +5,9 @@
 import Foundation
 import Testing
 import WalletMacros
+import WalletNetworking
 
-@testable import WalletDemo
+@testable import Jose
 
 private let credentialEndpoint = #URL("https://issuer.example.com/credential?format=vc")
 

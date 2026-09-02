@@ -26,6 +26,7 @@ public struct WalletJoseJWK: Codable, Sendable {
   public var keyType: WalletJoseKeyType
   public var curve: WalletJoseCurve?
   public var keyID: String?
+  public var algorithm: String?
   public var x: Data?
   public var y: Data?
   public var d: Data?
@@ -34,6 +35,7 @@ public struct WalletJoseJWK: Codable, Sendable {
     keyType: WalletJoseKeyType,
     curve: WalletJoseCurve? = nil,
     keyID: String? = nil,
+    algorithm: String? = nil,
     x: Data? = nil,
     y: Data? = nil,
     d: Data? = nil,
@@ -41,6 +43,7 @@ public struct WalletJoseJWK: Codable, Sendable {
     self.keyType = keyType
     self.curve = curve
     self.keyID = keyID
+    self.algorithm = algorithm
     self.x = x
     self.y = y
     self.d = d

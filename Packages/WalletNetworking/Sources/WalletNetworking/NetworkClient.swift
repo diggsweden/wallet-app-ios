@@ -4,6 +4,7 @@
 
 import Foundation
 
+// TODO: Add protocol and conform
 public enum NetworkClient {
   private static let decoder: JSONDecoder = {
     let decoder = JSONDecoder()

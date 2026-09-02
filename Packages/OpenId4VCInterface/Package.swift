@@ -18,13 +18,15 @@ let package = Package(
     )
   ],
   dependencies: [
-    .package(name: "CredentialInterfaces", path: "../CredentialInterfaces")
+    .package(name: "CredentialInterfaces", path: "../CredentialInterfaces"),
+    .package(name: "Jose", path: "../Jose"),
   ],
   targets: [
     .target(
       name: "OpenId4VCInterface",
       dependencies: [
-        .product(name: "CredentialInterfaces", package: "CredentialInterfaces")
+        .product(name: "CredentialInterfaces", package: "CredentialInterfaces"),
+        .product(name: "Jose", package: "Jose"),
       ],
     ),
     .testTarget(

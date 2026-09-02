@@ -67,6 +67,7 @@ struct PidSetupView: View {
 
   @ViewBuilder
   private var button: some View {
+    // TODO: ProgressView in label while loading
     PrimaryButton("Begär personuppgifter", icon: "arrow.up.forward.app") {
       Task { await viewModel.fetchPid(anchor) }
     }

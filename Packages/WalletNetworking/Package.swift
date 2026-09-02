@@ -17,13 +17,19 @@ let package = Package(
       targets: ["WalletNetworking"],
     )
   ],
+  dependencies: [
+    .package(name: "WalletMacros", path: "../WalletMacros")
+  ],
   targets: [
     .target(
       name: "WalletNetworking"
     ),
     .testTarget(
       name: "WalletNetworkingTests",
-      dependencies: ["WalletNetworking"],
+      dependencies: [
+        "WalletNetworking",
+        .product(name: "WalletMacros", package: "WalletMacros"),
+      ],
     ),
   ],
   swiftLanguageModes: [.v6],

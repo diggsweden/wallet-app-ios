@@ -18,18 +18,25 @@ let package = Package(
     )
   ],
   dependencies: [
-    .package(url: "https://github.com/beatt83/jose-swift.git", exact: "6.0.5")
+    .package(url: "https://github.com/beatt83/jose-swift.git", exact: "6.0.5"),
+    .package(name: "WalletMacros", path: "../WalletMacros"),
+    .package(name: "WalletNetworking", path: "../WalletNetworking"),
   ],
   targets: [
     .target(
       name: "Jose",
       dependencies: [
-        .product(name: "jose-swift", package: "jose-swift")
+        .product(name: "jose-swift", package: "jose-swift"),
+        .product(name: "WalletNetworking", package: "WalletNetworking"),
       ],
     ),
     .testTarget(
       name: "JoseTests",
-      dependencies: ["Jose"],
+      dependencies: [
+        "Jose",
+        .product(name: "WalletMacros", package: "WalletMacros"),
+        .product(name: "WalletNetworking", package: "WalletNetworking"),
+      ],
     ),
   ],
   swiftLanguageModes: [.v6],

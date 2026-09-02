@@ -4,11 +4,12 @@
 
 import CryptoKit
 import Foundation
+import Jose
 import WalletGatewayInterface
 
 extension P256.Signing.PublicKey {
   func toPublicKeyComponents() throws -> PublicKeyComponents {
-    let jwk = self.jwk
+    let jwk = WalletJoseJWK(self)
     guard
       let curve = jwk.curve?.rawValue,
       let x = jwk.x?.base64UrlEncodedString(),

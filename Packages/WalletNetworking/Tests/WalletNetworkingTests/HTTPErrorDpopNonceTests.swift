@@ -6,7 +6,7 @@ import Foundation
 import Testing
 import WalletMacros
 
-@testable import WalletDemo
+@testable import WalletNetworking
 
 @Suite("DPoP nonce challenge detection")
 struct HTTPErrorDpopNonceTests {
