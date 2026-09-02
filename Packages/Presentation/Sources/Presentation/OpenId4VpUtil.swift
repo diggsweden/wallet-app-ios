@@ -4,8 +4,9 @@
 
 import CryptoKit
 import Foundation
-import JSONWebKey
+import Jose
 import OpenID4VP
+import OpenId4VCInterface
 import eudi_lib_sdjwt_swift
 
 struct OpenId4VpUtil {
@@ -110,17 +111,12 @@ struct OpenId4VpUtil {
       throw PresentationError.unsupportedResponseMode
     }
 
-    let credentialQueries = mapCredentialQueries(dcql)
-
-    let recipientJWK = try? data.clientMetaData?.jwkSet?.keys.first?.toJWK()
-
     return PresentationRequestData(
-      credentialQueries: credentialQueries,
+      credentialQueries: mapCredentialQueries(dcql),
       responseUrl: responseUrl,
       clientId: data.client.id.clientId,
       nonce: data.nonce,
       state: data.state,
-      recipientJWK: recipientJWK,
     )
   }
 }

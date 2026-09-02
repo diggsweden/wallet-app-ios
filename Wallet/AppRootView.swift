@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import AuthenticationServices
+import Presentation
 import SDWebImageWebPCoder
 import SwiftAccessMechanism
 import SwiftData
@@ -135,7 +136,8 @@ private extension AppRootView {
         PresentationView(
           url: url,
           credentials: userSessionViewModel.userSnapshot?.credentials ?? [],
-          gatewayApiClient: gatewayApiClient,
+          flow: PresentationSession(),
+          hsmTransport: gatewayApiClient,
           hsmServerParameters: userSessionViewModel.userSnapshot?.hsmServerParameters,
         )
 

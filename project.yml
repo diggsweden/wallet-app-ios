@@ -84,6 +84,10 @@ packages:
   SdJwtClaims:
     path: Packages/SdJwtClaims
 
+  OpenId4VCInterface:
+    path: Packages/OpenId4VCInterface
+  Presentation:
+    path: Packages/Presentation
 targets:
   WalletDemo:
     type: application
@@ -141,6 +145,10 @@ targets:
         product: Jose
       - package: SdJwtClaims
         product: SdJwtClaims
+      - package: OpenId4VCInterface
+        product: OpenId4VCInterface
+      - package: Presentation
+        product: Presentation
     preBuildScripts:
       - name: SwiftLint
         path: scripts/swiftlint.sh
@@ -266,4 +274,6 @@ schemes:
         - package: WalletNetworking/WalletNetworkingTests
         - package: Jose/JoseTests
         - package: SdJwtClaims/SdJwtClaimsTests
+        - package: OpenId4VCInterface/OpenId4VCInterfaceTests
+        - package: Presentation/PresentationTests
 

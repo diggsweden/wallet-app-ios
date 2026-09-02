@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import CredentialInterfaces
+import OpenId4VCInterface
 import SwiftAccessMechanism
 import SwiftUI
 import User
-import WalletGatewayInterface
 
 struct PresentationView: View {
   @State private var viewModel: PresentationViewModel
@@ -16,14 +16,16 @@ struct PresentationView: View {
   init(
     url: URL,
     credentials: [SavedCredential],
-    gatewayApiClient: any GatewayApi & HSMTransport,
+    flow: any PresentationFlow,
+    hsmTransport: any HSMTransport,
     hsmServerParameters: HsmServerParameters?,
   ) {
     _viewModel = State(
       wrappedValue: .init(
         url: url,
         credentials: credentials,
-        gatewayApiClient: gatewayApiClient,
+        flow: flow,
+        hsmTransport: hsmTransport,
         hsmServerParameters: hsmServerParameters,
       )
     )
