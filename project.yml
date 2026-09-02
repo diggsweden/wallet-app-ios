@@ -50,7 +50,7 @@ packages:
     exactVersion: 0.53.1
   eudi-lib-sdjwt-swift:
     url: https://github.com/eu-digital-identity-wallet/eudi-lib-sdjwt-swift.git
-    exactVersion: 0.14.6
+    exactVersion: 0.14.7
   SDWebImageSwiftUI:
     url: https://github.com/SDWebImage/SDWebImageSwiftUI.git
     exactVersion: 3.1.4
