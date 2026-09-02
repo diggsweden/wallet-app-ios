@@ -100,7 +100,7 @@ struct OnboardingRootView: View {
         content()
       }
     } else {
-      VStack(spacing: 50) {
+      VStack(spacing: 12) {
         content()
       }
     }
@@ -169,6 +169,7 @@ struct OnboardingRootView: View {
             viewModel.next(from: .walletSetup)
           },
         )
+        .padding(.top, 30)
 
       case .pid:
         PidSetupView { credentialOfferUri in
