@@ -26,6 +26,5 @@ struct PinSetupView: View {
       }
       .frame(maxWidth: .infinity, alignment: .center)
     }
-    .padding(.top, -30)
   }
 }

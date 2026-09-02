@@ -84,18 +84,27 @@ struct WalletSetupContent: View {
   }
 
   private var completeView: some View {
-    VStack(spacing: 24) {
-      Image(systemName: "checkmark.circle.fill")
-        .font(.system(size: 80))
-        .foregroundStyle(.green)
-        .accessibilityHidden(true)
-      Text("Klart!")
-        .textStyle(.h2)
+    stepLayout {
+      Color.clear
+    } label: {
+      Text(" ")
+        .textStyle(.bodyLarge)
+        .hidden()
+    }
+    .overlay {
+      VStack(spacing: 24) {
+        Image(systemName: "checkmark.circle.fill")
+          .font(.system(size: 80))
+          .foregroundStyle(.green)
+          .accessibilityHidden(true)
+        Text("Klart!")
+          .textStyle(.h2)
+      }
     }
   }
 
   private func loadingIndicator(label: String) -> some View {
-    VStack {
+    stepLayout {
       AnimatedImage(
         name: "wallet-loading-transparent.webp",
         bundle: .main,
@@ -104,13 +113,23 @@ struct WalletSetupContent: View {
       .resizable()
       .indicator(.activity)
       .scaledToFit()
-      .frame(width: 230)
-
+    } label: {
       HStack(spacing: .zero) {
         Text(label)
           .textStyle(.bodyLarge)
         DotsLoadingView()
       }
+    }
+  }
+
+  private func stepLayout(
+    @ViewBuilder illustration: () -> some View,
+    @ViewBuilder label: () -> some View,
+  ) -> some View {
+    VStack {
+      illustration()
+        .frame(width: 230, height: 230)
+      label()
     }
   }
 }

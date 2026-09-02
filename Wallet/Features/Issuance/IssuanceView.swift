@@ -140,6 +140,5 @@ private struct ConfirmPinView: View {
 
       PinView(onComplete: onComplete)
     }
-    .padding(.top, -30)
   }
 }
