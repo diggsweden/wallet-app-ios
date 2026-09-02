@@ -25,14 +25,12 @@ let package = Package(
       url: "https://github.com/diggsweden/SwiftAccessMechanism.git",
       branch: "chore/spm-vendored-xcframework",
     ),
-    .package(name: "Jose", path: "../../Jose"),
     .package(name: "WalletGatewayInterface", path: "./WalletGatewayInterface"),
   ],
   targets: [
     .target(
       name: "WalletGateway",
       dependencies: [
-        .product(name: "Jose", package: "Jose"),
         .product(name: "OpenAPIRuntime", package: "swift-openapi-runtime"),
         .product(name: "OpenAPIURLSession", package: "swift-openapi-urlsession"),
         .product(name: "SwiftAccessMechanism", package: "SwiftAccessMechanism"),

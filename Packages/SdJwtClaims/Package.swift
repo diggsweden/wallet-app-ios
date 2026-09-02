@@ -23,6 +23,7 @@ let package = Package(
       exact: "0.14.6",
     ),
     .package(url: "https://github.com/SwiftyJSON/SwiftyJSON.git", from: "5.0.2"),
+    .package(name: "CredentialInterfaces", path: "../CredentialInterfaces"),
   ],
   targets: [
     .target(
@@ -30,6 +31,7 @@ let package = Package(
       dependencies: [
         .product(name: "eudi-lib-sdjwt-swift", package: "eudi-lib-sdjwt-swift"),
         .product(name: "SwiftyJSON", package: "SwiftyJSON"),
+        .product(name: "CredentialInterfaces", package: "CredentialInterfaces"),
       ],
     ),
     .testTarget(

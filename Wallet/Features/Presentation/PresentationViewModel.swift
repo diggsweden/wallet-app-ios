@@ -5,6 +5,7 @@
 import CredentialInterfaces
 import Foundation
 import OpenId4VCInterface
+import Presentation
 import SwiftAccessMechanism
 import User
 
@@ -13,7 +14,7 @@ import User
 final class PresentationViewModel {
   let url: URL
   let credentials: [SavedCredential]
-  private let flow: any PresentationFlow
+  private let flow = PresentationSession()
   private let hsmTransport: any HSMTransport
   private let hsmServerParameters: HsmServerParameters?
   private var resolved: ResolvedPresentation?
@@ -26,13 +27,11 @@ final class PresentationViewModel {
   init(
     url: URL,
     credentials: [SavedCredential],
-    flow: any PresentationFlow,
     hsmTransport: any HSMTransport,
     hsmServerParameters: HsmServerParameters?,
   ) {
     self.url = url
     self.credentials = credentials
-    self.flow = flow
     self.hsmTransport = hsmTransport
     self.hsmServerParameters = hsmServerParameters
   }

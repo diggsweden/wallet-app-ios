@@ -5,16 +5,18 @@
 import AuthenticationServices
 import CredentialInterfaces
 import Foundation
+import Issuance
 import OpenId4VCInterface
 import SwiftAccessMechanism
 import User
 import WalletGatewayInterface
+import WalletMacros
 
 @MainActor
 @Observable
 final class IssuanceViewModel {
   private let credentialOfferUri: String
-  private let flow: any IssuanceFlow
+  private var flow: (any IssuanceFlow)?
   private let gatewayApiClient: any GatewayApi & HSMTransport
   private let hsmServerParameters: HsmServerParameters?
   private let onSaveCredential: (SavedCredential) async throws -> Void
@@ -29,13 +31,11 @@ final class IssuanceViewModel {
 
   init(
     credentialOfferUri: String,
-    flow: any IssuanceFlow,
     gatewayApiClient: any GatewayApi & HSMTransport,
     hsmServerParameters: HsmServerParameters?,
     onSaveCredential: @escaping (SavedCredential) async throws -> Void,
   ) {
     self.credentialOfferUri = credentialOfferUri
-    self.flow = flow
     self.gatewayApiClient = gatewayApiClient
     self.hsmServerParameters = hsmServerParameters
     self.onSaveCredential = onSaveCredential
@@ -43,6 +43,13 @@ final class IssuanceViewModel {
 
   func start() async {
     phase = .fetchingIssuer
+    let flow = IssuanceSession(
+      config: IssuanceConfig(
+        clientId: "wallet-dev",
+        redirectUri: #URL("wallet-app://authorize"),
+      )
+    )
+    self.flow = flow
     do {
       let offer = try await flow.loadOffer(credentialOfferUri)
       issuerDisplayData = offer.issuer.map { issuer in
@@ -59,7 +66,7 @@ final class IssuanceViewModel {
   }
 
   func beginAuthorization(anchor: ASPresentationAnchor) async {
-    guard case .readyToAuthorize = phase else {
+    guard let flow, case .readyToAuthorize = phase else {
       return
     }
 
@@ -83,7 +90,7 @@ final class IssuanceViewModel {
   }
 
   func createProof(with pin: String) async {
-    guard case .readyToSign = phase else {
+    guard let flow, case .readyToSign = phase else {
       return
     }
 
@@ -106,7 +113,7 @@ final class IssuanceViewModel {
   }
 
   func fetchCredential() async {
-    guard case .readyToFetch = phase else {
+    guard let flow, case .readyToFetch = phase else {
       return
     }
 

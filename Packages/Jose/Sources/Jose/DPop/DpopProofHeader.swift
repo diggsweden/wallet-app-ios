@@ -3,9 +3,6 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import Foundation
-import JSONWebAlgorithms
-import JSONWebKey
-import JSONWebSignature
 
 struct DpopProofHeader: WalletJWSHeader {
   var algorithm: WalletJoseSigningAlgorithm? = .ES256

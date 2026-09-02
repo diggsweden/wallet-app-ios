@@ -4,7 +4,6 @@
 
 import CredentialInterfaces
 import DesignSystem
-import OpenId4VCInterface
 import SwiftAccessMechanism
 import SwiftData
 import SwiftUI
@@ -14,7 +13,6 @@ import WalletMacros
 
 struct OnboardingRootView: View {
   private let gatewayApiClient: any GatewayApi & HSMTransport
-  private let makeIssuanceFlow: () -> any IssuanceFlow
   private let userSnapshot: UserSnapshot
 
   @Environment(\.theme) private var theme
@@ -25,13 +23,11 @@ struct OnboardingRootView: View {
 
   init(
     gatewayApiClient: any GatewayApi & HSMTransport,
-    makeIssuanceFlow: @escaping () -> any IssuanceFlow,
     userSnapshot: UserSnapshot,
     initialStep: OnboardingStep = .intro,
     actions: OnboardingActions,
   ) {
     self.gatewayApiClient = gatewayApiClient
-    self.makeIssuanceFlow = makeIssuanceFlow
     self.userSnapshot = userSnapshot
     _viewModel = State(
       wrappedValue: .init(
@@ -186,7 +182,6 @@ struct OnboardingRootView: View {
         if let uri = viewModel.context.credentialOfferUri {
           IssuanceView(
             credentialOfferUri: uri,
-            flow: makeIssuanceFlow(),
             gatewayApiClient: gatewayApiClient,
             hsmServerParameters: userSnapshot.hsmServerParameters,
           ) { credential in

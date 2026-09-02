@@ -16,7 +16,6 @@ struct PresentationView: View {
   init(
     url: URL,
     credentials: [SavedCredential],
-    flow: any PresentationFlow,
     hsmTransport: any HSMTransport,
     hsmServerParameters: HsmServerParameters?,
   ) {
@@ -24,7 +23,6 @@ struct PresentationView: View {
       wrappedValue: .init(
         url: url,
         credentials: credentials,
-        flow: flow,
         hsmTransport: hsmTransport,
         hsmServerParameters: hsmServerParameters,
       )
