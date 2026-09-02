@@ -176,6 +176,7 @@ struct OnboardingRootView: View {
           viewModel.setCredentialOfferUri(credentialOfferUri)
           viewModel.next(from: .pid)
         }
+        .padding(.top, 30)
 
       case .issueCredential:
         if let uri = viewModel.context.credentialOfferUri {
