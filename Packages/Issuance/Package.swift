@@ -24,7 +24,7 @@ let package = Package(
     ),
     .package(
       url: "https://github.com/eu-digital-identity-wallet/eudi-lib-sdjwt-swift.git",
-      exact: "0.14.6",
+      exact: "0.14.7",
     ),
     .package(name: "CredentialInterfaces", path: "../CredentialInterfaces"),
     .package(name: "Jose", path: "../Jose"),

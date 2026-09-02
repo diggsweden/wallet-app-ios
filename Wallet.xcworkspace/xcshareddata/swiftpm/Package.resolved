@@ -33,8 +33,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/eu-digital-identity-wallet/eudi-lib-sdjwt-swift.git",
       "state" : {
-        "revision" : "a3c4bd2c52e9f91ac45d720e728fb757c63f39fc",
-        "version" : "0.14.6"
+        "revision" : "0cc38aaab39bc41f61799e03322d0b7fdbb8705d",
+        "version" : "0.14.7"
       }
     },
     {
