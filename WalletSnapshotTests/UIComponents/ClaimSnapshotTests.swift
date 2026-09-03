@@ -5,6 +5,7 @@
 import CredentialInterfaces
 import Foundation
 import Testing
+import UIKit
 
 @testable import WalletDemo
 
@@ -62,6 +63,23 @@ struct ClaimSnapshotTests {
         ClaimUiModel(id: "city", displayName: "Stad", value: .string("Stockholm")),
       ]),
     )
+    assertThemedSnapshots(of: ClaimView(claim: claim), width: 320)
+  }
+
+  @Test("Claim - image")
+  func image() {
+    let data = UIGraphicsImageRenderer(size: CGSize(width: 120, height: 160))
+      .pngData { context in
+        UIColor.systemBlue.setFill()
+        context.fill(CGRect(origin: .zero, size: CGSize(width: 120, height: 160)))
+      }
+    let claim = ClaimUiModel(id: "picture", displayName: "Foto", value: .imageData(data))
+    assertThemedSnapshots(of: ClaimView(claim: claim), width: 320)
+  }
+
+  @Test("Claim - broken image")
+  func brokenImage() {
+    let claim = ClaimUiModel(id: "picture", displayName: "Foto", value: .imageData(Data()))
     assertThemedSnapshots(of: ClaimView(claim: claim), width: 320)
   }
 
