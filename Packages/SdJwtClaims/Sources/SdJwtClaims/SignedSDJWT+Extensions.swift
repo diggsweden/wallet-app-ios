@@ -40,6 +40,7 @@ extension SignedSDJWT {
 }
 
 private extension JSON {
+  // swiftlint:disable:next function_body_length
   func toClaimValue(
     path: String,
     displayNames: [String: String],
@@ -50,8 +51,12 @@ private extension JSON {
           return .date(date)
         }
 
-        if stringValue.starts(with: "data:image") {
-          return .string("TODO: Image")
+        if stringValue.hasPrefix("data:image") {
+          let base64String = stringValue.replacingOccurrences(
+            of: "data:image/jpeg;base64,",
+            with: "",
+          )
+          return .imageData(Data(base64Encoded: base64String) ?? Data())
         }
 
         return .string(stringValue)
