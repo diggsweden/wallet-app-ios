@@ -73,12 +73,13 @@ struct ClaimView: View {
           Image(uiImage: image)
             .resizable()
             .scaledToFit()
+            .frame(height: 160)
             .accessibilityHidden(true)
         } else {
           Image(systemName: "photo.trianglebadge.exclamationmark")
             .resizable()
             .scaledToFit()
-            .frame(width: 120)
+            .frame(width: 120, height: 120)
             .accessibilityHidden(true)
         }
     }
