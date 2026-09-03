@@ -32,9 +32,11 @@ runs:
       shell: bash
       run: |
         set -o pipefail
+        rm -rf PackageTestResults.xcresult
         xcodebuild test \
           -workspace Wallet.xcworkspace \
           -scheme PackageTests \
           -destination 'platform=iOS Simulator,name=iPhone 17' \
+          -resultBundlePath PackageTestResults.xcresult \
           COMPILER_INDEX_STORE_ENABLE=NO \
         | xcbeautify

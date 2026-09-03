@@ -69,6 +69,14 @@ jobs:
           xcresult-path: TestResults.xcresult
           artifact-name: coverage-report
 
+      - name: Generate and upload package coverage report
+        if: always()
+        uses: ./.github/actions/xcode-coverage-report
+        with:
+          xcresult-path: PackageTestResults.xcresult
+          artifact-name: package-coverage-report
+          title: Package Code Coverage
+
   # TODO: Enable when UI tests are implemented
   # ui-tests:
   #   runs-on: ${{ vars.MACOS_VERSION || 'macos-14' }}
