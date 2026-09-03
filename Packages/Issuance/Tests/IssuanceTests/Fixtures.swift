@@ -44,7 +44,7 @@ enum Fixtures {
   static func issuerMetadata(
     requestEncryption: RequestEncryption? = nil
   ) throws -> CredentialIssuerMetadata {
-    let encryptionMember = try requestEncryption.map { try encryptionMember($0) } ?? ""
+    let encryptionMember = try requestEncryption.map { try getEncryptionMember($0) } ?? ""
 
     let json = #"""
       {
@@ -81,7 +81,7 @@ enum Fixtures {
     )
   }
 
-  private static func encryptionMember(_ encryption: RequestEncryption) throws -> String {
+  private static func getEncryptionMember(_ encryption: RequestEncryption) throws -> String {
     let jwk = try #require(
       String(bytes: JSONEncoder().encode(WalletJoseJWK(encryption.key)), encoding: .utf8)
     )
