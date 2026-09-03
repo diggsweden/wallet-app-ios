@@ -254,6 +254,7 @@ schemes:
       targets:
         WalletDemo: none
     test:
+      gatherCoverageData: true
       targets:
         - package: WalletGateway/WalletGatewayTests
         - package: WalletNetworking/WalletNetworkingTests

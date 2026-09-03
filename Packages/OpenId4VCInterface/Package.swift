@@ -15,7 +15,11 @@ let package = Package(
     .library(
       name: "OpenId4VCInterface",
       targets: ["OpenId4VCInterface"],
-    )
+    ),
+    .library(
+      name: "OpenId4VCInterfaceTestSupport",
+      targets: ["OpenId4VCInterfaceTestSupport"],
+    ),
   ],
   dependencies: [
     .package(name: "CredentialInterfaces", path: "../CredentialInterfaces"),
@@ -26,6 +30,13 @@ let package = Package(
       name: "OpenId4VCInterface",
       dependencies: [
         .product(name: "CredentialInterfaces", package: "CredentialInterfaces"),
+        .product(name: "Jose", package: "Jose"),
+      ],
+    ),
+    .target(
+      name: "OpenId4VCInterfaceTestSupport",
+      dependencies: [
+        "OpenId4VCInterface",
         .product(name: "Jose", package: "Jose"),
       ],
     ),

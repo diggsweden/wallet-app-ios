@@ -5,6 +5,7 @@
 import Foundation
 import Testing
 import WalletMacros
+import WalletNetworkingTestSupport
 
 @testable import WalletNetworking
 

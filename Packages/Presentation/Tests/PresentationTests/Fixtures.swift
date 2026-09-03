@@ -2,44 +2,61 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
-import CredentialInterfaces
+import CredentialInterfacesTestSupport
 import Foundation
+import OpenID4VP
+import WalletMacros
+import eudi_lib_sdjwt_swift
 
+@testable import Presentation
+
+/// Builds presentation requests, both as the resolver produces them and as the
+/// DCQL JSON it receives.
 enum Fixtures {
-  static let pidType = "urn:eudi:pid:1"
+  static let responseUrl = #URL("https://verifier.example/response")
 
-  static let compactSdJwt = [
-    "eyJhbGciOiAiRVMyNTYiLCAidHlwIjogImV4YW1wbGUrc2Qtand0In0.eyJfc2QiOiBbIkczU0laclAzWmZl",
-    "c1FDNGVuYkp0a2g3UzY5YlFlcm01ejRSRG5EUmhMN00iLCAiS3daaDRjdllWZ1JlOUhOcXNSZXh4U3lZck1P",
-    "dGVVOEtSVEpadGdKZEloRSIsICJQVlFfeHB4X1VQNGJZNVpVYXlkVm1fcTN6YTRCdkpSYjVaMVRDb3JURElV",
-    "IiwgImk5NG13TkV1LVVTTmd1ajJJNHp1eUI3YUtXeWZsWE1JMTlzOFl2MDJCR1kiLCAidmdXMk9PSDRMbHlL",
-    "ODM4VWFGYkVYeG1fYWF1eU8yQnhkNXBjRDZ5c1BLQSJdLCAiaXNzIjogImh0dHBzOi8vaXNzdWVyLmV4YW1w",
-    "bGUuY29tIiwgImlhdCI6IDE2ODMwMDAwMDAsICJleHAiOiAxODgzMDAwMDAwLCAic3ViIjogInVzZXJfNDIi",
-    "LCAiX3NkX2FsZyI6ICJzaGEtMjU2IiwgImNuZiI6IHsiandrIjogeyJrdHkiOiAiRUMiLCAiY3J2IjogIlAt",
-    "MjU2IiwgIngiOiAiVENBRVIxOVp2dTNPSEY0ajRXNHZmU1ZvSElQMUlMaWxEbHM3dkNlR2VtYyIsICJ5Ijog",
-    "Ilp4amlXV2JaTVFHSFZXS1ZRNGhiU0lpcnNWZnVlY0NFNnQ0alQ5RjJIWlEifX19.ZfSxIFLHf7f84WIMqt7",
-    "Fzme8-586WutjFnXH4TO5XuWG_peQ4hPsqDpiMBClkh2aUJdl83bwyyOriqvdFra-bg~WyIyR0xDNDJzS1F2",
-    "ZUNmR2ZyeU5STjl3IiwgImdpdmVuX25hbWUiLCAiSm9obm55Il0~WyJlbHVWNU9nM2dTTklJOEVZbnN4QV9B",
-    "IiwgImZhbWlseV9uYW1lIiwgIkpvaG5zc29uIl0~WyI2SWo3dE0tYTVpVlBHYm9TNXRtdlZBIiwgImJpcnRo",
-    "ZGF0ZSIsICIxOTg1LTAzLTEyIl0~WyJlSThaV205UW5LUHBOUGVOZW5IZGhRIiwgIm5hdGlvbmFsaXRpZXMi",
-    "LCBbIlNFIl1d~WyJRZ19PNjR6cUF4ZTQxMmExMDhpcm9BIiwgImFkZHJlc3MiLCB7InN0cmVldF9hZGRyZXN",
-    "zIjogIlN2ZWF2w6RnZW4gMSIsICJwb3N0YWxfY29kZSI6ICIxMTEgNTciLCAibG9jYWxpdHkiOiAiU3RvY2t",
-    "ob2xtIiwgImNvdW50cnkiOiAiU0UifV0~",
-  ]
-  .joined()
-
-  static func credential(
-    type: String = pidType,
-    claimDisplayNames: [String: String] = ["given_name": "Förnamn"],
-  ) -> SavedCredential {
-    SavedCredential(
-      issuer: IssuerDisplay(name: "Issuer", info: nil, imageUrl: nil),
-      compactSerialized: compactSdJwt,
-      claimDisplayNames: claimDisplayNames,
-      claimsCount: 5,
-      issuedAt: Date(timeIntervalSince1970: 0),
-      type: type,
-      displayData: nil,
+  static func query(
+    id: String,
+    claims: [String] = ["given_name"],
+    required: Bool = true,
+    vctValues: [String] = [SampleCredential.pidType],
+  ) -> Presentation.CredentialQuery {
+    CredentialQuery(
+      id: id,
+      claimPaths: Set(claims.map { ClaimPath([.claim(name: $0)]) }),
+      required: required,
+      vctValues: vctValues,
     )
+  }
+
+  static func request(
+    _ queries: [Presentation.CredentialQuery],
+    state: String? = "state-1",
+  ) -> PresentationRequestData {
+    PresentationRequestData(
+      credentialQueries: queries,
+      responseUrl: responseUrl,
+      clientId: "verifier-1",
+      nonce: "nonce-1",
+      state: state,
+    )
+  }
+
+  /// Decodes a DCQL document the way the OpenID4VP library does before the
+  /// resolver maps it.
+  static func dcql(credentials: String, credentialSets: String? = nil) throws -> DCQL {
+    let sets = credentialSets.map { #", "credential_sets": \#($0)"# } ?? ""
+    let json = #"{"credentials": \#(credentials)\#(sets)}"#
+    return try JSONDecoder().decode(DCQL.self, from: Data(json.utf8))
+  }
+
+  /// One DCQL credential query for the PID, as JSON. `nil` claims omits the member.
+  static func pidCredential(
+    id: String = "pid",
+    claims: String? = #"[{"path": ["given_name"]}]"#,
+  ) -> String {
+    let claimsMember = claims.map { #", "claims": \#($0)"# } ?? ""
+    return #"{"id": "\#(id)", "format": "dc+sd-jwt", "#
+      + #""meta": {"vct_values": ["\#(SampleCredential.pidType)"]}\#(claimsMember)}"#
   }
 }

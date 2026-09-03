@@ -33,3 +33,11 @@ jobs:
         with:
           xcresult-path: TestResults.xcresult
           artifact-name: coverage-report
+
+      - name: Generate and upload package coverage report
+        if: always()
+        uses: ./.github/actions/xcode-coverage-report
+        with:
+          xcresult-path: PackageTestResults.xcresult
+          artifact-name: package-coverage-report
+          title: Package Code Coverage

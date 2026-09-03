@@ -11,4 +11,4 @@
 
 # JWT false positive: machine-generated mock SD-JWT fixture rendered in snapshot tests
 WalletSnapshotTests/Features/CredentialDetailsSnapshotTests.swift
-Packages/Presentation/Tests/PresentationTests/Fixtures.swift
+Packages/CredentialInterfaces/Sources/CredentialInterfacesTestSupport/SampleCredential.swift

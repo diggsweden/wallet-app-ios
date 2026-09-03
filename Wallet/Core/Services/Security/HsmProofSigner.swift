@@ -17,7 +17,6 @@ actor HsmProofSigner: ProofSigner {
   private let transport: any HSMTransport
   private let parameters: HsmServerParameters?
   private let pin: String
-  private var session: HsmSession?
 
   init(transport: any HSMTransport, parameters: HsmServerParameters?, pin: String) {
     self.transport = transport
@@ -35,10 +34,6 @@ actor HsmProofSigner: ProofSigner {
   }
 
   private func authenticatedSession() async throws -> HsmSession {
-    if let session {
-      return session
-    }
-
     guard let parameters else {
       throw HsmSignerError.missingConfig
     }
@@ -57,13 +52,11 @@ actor HsmProofSigner: ProofSigner {
       throw HsmSignerError.noKey
     }
 
-    let session = HsmSession(
+    return HsmSession(
       client: client,
       keyId: keyId,
       publicKey: try WalletJoseJWK(secKey: key.publicKey.toSecKey()),
     )
-    self.session = session
-    return session
   }
 }
 

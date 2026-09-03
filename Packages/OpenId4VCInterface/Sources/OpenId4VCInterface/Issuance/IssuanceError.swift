@@ -4,7 +4,7 @@
 
 import Foundation
 
-public enum IssuanceError: LocalizedError {
+public enum IssuanceError: LocalizedError, Equatable {
   case invalidAuth
   case invalidCredential
   case issuerNotFound

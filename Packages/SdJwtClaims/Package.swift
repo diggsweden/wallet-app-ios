@@ -36,7 +36,10 @@ let package = Package(
     ),
     .testTarget(
       name: "SdJwtClaimsTests",
-      dependencies: ["SdJwtClaims"],
+      dependencies: [
+        "SdJwtClaims",
+        .product(name: "CredentialInterfacesTestSupport", package: "CredentialInterfaces"),
+      ],
     ),
   ],
   swiftLanguageModes: [.v6],

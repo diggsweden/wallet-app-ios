@@ -15,7 +15,11 @@ let package = Package(
     .library(
       name: "WalletNetworking",
       targets: ["WalletNetworking"],
-    )
+    ),
+    .library(
+      name: "WalletNetworkingTestSupport",
+      targets: ["WalletNetworkingTestSupport"],
+    ),
   ],
   dependencies: [
     .package(name: "WalletMacros", path: "../WalletMacros")
@@ -24,10 +28,15 @@ let package = Package(
     .target(
       name: "WalletNetworking"
     ),
+    .target(
+      name: "WalletNetworkingTestSupport",
+      dependencies: ["WalletNetworking"],
+    ),
     .testTarget(
       name: "WalletNetworkingTests",
       dependencies: [
         "WalletNetworking",
+        "WalletNetworkingTestSupport",
         .product(name: "WalletMacros", package: "WalletMacros"),
       ],
     ),

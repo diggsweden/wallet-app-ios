@@ -4,6 +4,7 @@
 
 import CryptoKit
 import Foundation
+import JoseTestSupport
 import Testing
 import WalletMacros
 import WalletNetworking

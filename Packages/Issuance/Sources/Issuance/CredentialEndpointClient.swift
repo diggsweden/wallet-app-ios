@@ -9,7 +9,12 @@ import OpenId4VCInterface
 import WalletNetworking
 
 struct CredentialEndpointClient {
+  private let networkClient: any NetworkClient
   private let encoder = JSONEncoder()
+
+  init(networkClient: any NetworkClient) {
+    self.networkClient = networkClient
+  }
 
   func fetchCredential(
     url: URL,
@@ -46,7 +51,7 @@ struct CredentialEndpointClient {
       enc: enc,
     )
 
-    let encryptedResponse = try await NetworkClient.fetchJwt(
+    let encryptedResponse = try await networkClient.fetchJwt(
       url,
       method: .post,
       contentType: "application/jwt",
@@ -72,7 +77,7 @@ struct CredentialEndpointClient {
     authorization: RequestAuthorization,
     credentialRequest: CredentialRequest,
   ) async throws -> String {
-    let response: CredentialResponse = try await NetworkClient.fetch(
+    let response: CredentialResponse = try await networkClient.fetch(
       url,
       method: .post,
       authorization: authorization,
@@ -86,7 +91,7 @@ struct CredentialEndpointClient {
   }
 
   func fetchNonce(url: URL) async throws -> String {
-    let response: NonceResponse = try await NetworkClient.fetch(url, method: .post)
+    let response: NonceResponse = try await networkClient.fetch(url, method: .post)
     return response.cNonce
   }
 }

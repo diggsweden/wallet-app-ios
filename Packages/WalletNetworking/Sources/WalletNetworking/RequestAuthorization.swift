@@ -4,7 +4,7 @@
 
 import Foundation
 
-public enum RequestAuthorization {
+public enum RequestAuthorization: Sendable {
   case bearer(String)
   case dpop(accessToken: String, proofBuilder: any DpopProofProviding)
 

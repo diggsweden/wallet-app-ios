@@ -14,6 +14,11 @@ inputs:
     description: Name of the uploaded coverage artifact
     required: true
 
+  title:
+    description: Heading used in the step summary
+    required: false
+    default: Code Coverage
+
 runs:
   using: composite
   steps:
@@ -21,7 +26,10 @@ runs:
       shell: bash
       env:
         XCRESULT_PATH: ${{ inputs.xcresult-path }}
+        TITLE: ${{ inputs.title }}
       run: |
+        rm -f coverage-files.txt coverage.json
+
         if [ ! -d "$XCRESULT_PATH" ]; then
           echo "⚠️ No $XCRESULT_PATH - skipping coverage report ⚠️"
           exit 0
@@ -34,7 +42,7 @@ runs:
         xcrun xccov view --report --json "$XCRESULT_PATH" > coverage.json
 
         {
-          echo "## 📊 Code Coverage"
+          echo "## 📊 $TITLE"
           echo ""
           echo '```'
           head -60 coverage-files.txt

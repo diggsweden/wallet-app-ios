@@ -12,7 +12,15 @@ import WalletNetworking
 import eudi_lib_sdjwt_swift
 
 public struct PresentationSession: PresentationFlow {
-  public init() {}
+  private let networkClient: any NetworkClient
+
+  public init() {
+    self.init(networkClient: URLSessionNetworkClient())
+  }
+
+  init(networkClient: any NetworkClient) {
+    self.networkClient = networkClient
+  }
 
   public func resolve(
     url: URL,
@@ -22,7 +30,10 @@ public struct PresentationSession: PresentationFlow {
       throw PresentationError.noCredential
     }
 
-    return try Self.match(try await OpenId4VpUtil().resolve(url: url), credentials: credentials)
+    return try Self.match(
+      try await OpenId4VpRequestResolver().resolve(url: url),
+      credentials: credentials,
+    )
   }
 
   static func match(
@@ -81,7 +92,7 @@ public struct PresentationSession: PresentationFlow {
       vpToken: vpTokenEntries,
     )
 
-    let response: RedirectUrl = try await NetworkClient.fetch(
+    let response: RedirectUrl = try await networkClient.fetch(
       resolved.responseUrl,
       method: .post,
       contentType: "application/x-www-form-urlencoded",

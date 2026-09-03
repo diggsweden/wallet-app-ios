@@ -5,6 +5,8 @@
 import CryptoKit
 import Foundation
 import Jose
+import JoseTestSupport
+import OpenId4VCInterfaceTestSupport
 import Testing
 
 @testable import Issuance

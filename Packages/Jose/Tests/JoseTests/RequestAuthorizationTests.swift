@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import Foundation
+import JoseTestSupport
 import Testing
 import WalletMacros
 import WalletNetworking
