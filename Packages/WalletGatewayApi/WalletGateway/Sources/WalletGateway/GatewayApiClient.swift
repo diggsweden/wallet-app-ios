@@ -47,6 +47,13 @@ public struct GatewayApiClient: GatewayApi {
       case .unauthorized:
         throw GatewayError.unauthorized
 
+      case .conflict(let response):
+        guard let problemJson = try? response.body.applicationProblemJson else {
+          throw GatewayError.invalidResponse
+        }
+
+        throw GatewayError.problem(ProblemDetails(from: problemJson))
+
       case .`default`(let status, let response):
         throw GatewayError.problem(ProblemDetails(status: status, response: response))
     }

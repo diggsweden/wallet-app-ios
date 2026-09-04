@@ -17,6 +17,18 @@ extension ProblemDetails {
       invalidParameters: problem?.invalidParameters?.map(ProblemParameter.init),
     )
   }
+
+  init(from problem: Components.Schemas.ProblemResponse) {
+    self.init(
+      status: problem.status,
+      type: problem._type,
+      title: problem.title,
+      detail: problem.detail,
+      instance: problem.instance,
+      transactionId: problem.transactionId,
+      invalidParameters: problem.invalidParameters?.map(ProblemParameter.init),
+    )
+  }
 }
 
 extension ProblemParameter {
