@@ -77,6 +77,11 @@ install-hooks:
 setup-configuration:
     @./scripts/setup-configuration.sh
 
+# ▪ Fetch the latest Wallet Client Gateway OpenAPI spec
+[group('setup')]
+update-openapi-spec:
+    @./scripts/update-openapi-spec.sh
+
 # ==================================================================================== #
 # BUILD - Application builds
 # ==================================================================================== #

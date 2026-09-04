@@ -4,7 +4,7 @@
 openapi: 3.0.3
 info:
   title: Wallet Client Gateway API
-  version: 0.0.2
+  version: 0.0.5
   description: |
     Detta API tillhandahåller serveroperationer som i huvudsak används av klienter till den svenska
     statliga digitala identitetsplånboken.
@@ -65,6 +65,11 @@ paths:
       summary: Create account
       description: Creates a new account
       operationId: createAccount
+      parameters:
+        - $ref: '#/components/parameters/Wallet-Device-OS'
+        - $ref: '#/components/parameters/Wallet-Device-OS-Version'
+        - $ref: '#/components/parameters/Wallet-Device-Model'
+        - $ref: '#/components/parameters/Wallet-App-Version'
       requestBody:
         content:
           application/json:
@@ -80,6 +85,14 @@ paths:
                 $ref: '#/components/schemas/CreateAccountResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: |
+            Duplicate account. Indicates a save conflict with an existing account having the same unique
+            account identifier. The deviceKey.kid value for new accounts must be unique.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemResponse'
         'default':
           $ref: '#/components/responses/default'
 
@@ -92,6 +105,11 @@ paths:
         This operation adds a public wallet key (typically owned by the HSM) to the associated account.
         Currently, only one wallet key per account is supported. Any existing key will be replaced.
       operationId: addAccountWalletKey
+      parameters:
+        - $ref: '#/components/parameters/Wallet-Device-OS'
+        - $ref: '#/components/parameters/Wallet-Device-OS-Version'
+        - $ref: '#/components/parameters/Wallet-Device-Model'
+        - $ref: '#/components/parameters/Wallet-App-Version'
       requestBody:
         content:
           application/json:
@@ -112,23 +130,29 @@ paths:
       description: Request new login challenge
       operationId: initChallenge
       parameters:
+        - $ref: '#/components/parameters/Wallet-Device-OS'
+        - $ref: '#/components/parameters/Wallet-Device-OS-Version'
+        - $ref: '#/components/parameters/Wallet-Device-Model'
+        - $ref: '#/components/parameters/Wallet-App-Version'
         - name: accountId
           in: query
           required: true
           schema:
             type: string
+            minLength: 1
         - name: keyId
           in: query
           required: true
           schema:
             type: string
+            minLength: 1
       responses:
         '200':
           description: Challenge issued
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthChallengeDto'
+                $ref: '#/components/schemas/AuthChallengeResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
         'default':
@@ -141,12 +165,17 @@ paths:
       summary: Request new Session
       description: Creates a new Session from a given Challenge
       operationId: validateChallenge
+      parameters:
+        - $ref: '#/components/parameters/Wallet-Device-OS'
+        - $ref: '#/components/parameters/Wallet-Device-OS-Version'
+        - $ref: '#/components/parameters/Wallet-Device-Model'
+        - $ref: '#/components/parameters/Wallet-App-Version'
       requestBody:
         description: Challenge response
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ValidateAuthChallengeRequestDto'
+              $ref: '#/components/schemas/AuthChallengeRequest'
             example:
               signedJwt: insert.signed.jwt
         required: true
@@ -163,7 +192,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ValidateAuthChallengeResponseDto'
+                $ref: '#/components/schemas/SessionResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
         'default':
@@ -177,6 +206,10 @@ paths:
       description: Creates a Wallet Unit Attestation
       operationId: createWua
       parameters:
+        - $ref: '#/components/parameters/Wallet-Device-OS'
+        - $ref: '#/components/parameters/Wallet-Device-OS-Version'
+        - $ref: '#/components/parameters/Wallet-Device-Model'
+        - $ref: '#/components/parameters/Wallet-App-Version'
         - name: nonce
           in: query
           required: false
@@ -188,7 +221,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WuaDto'
+                $ref: '#/components/schemas/WuaResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
         'default':
@@ -202,6 +235,10 @@ paths:
       description: "Submit an HSM key operation request arranged by the client. This process may be completed quickly and returned \nin the response with status 200 OK. On heavy load, when process takes longer than 3 seconds, the response\nwill be 202 Accepted. In this case the process is running in the background. The result must be fetched by\npolling the getResult endpoint using the corresponding request id until completed.\n"
       operationId: createRequest
       parameters:
+        - $ref: '#/components/parameters/Wallet-Device-OS'
+        - $ref: '#/components/parameters/Wallet-Device-OS-Version'
+        - $ref: '#/components/parameters/Wallet-Device-Model'
+        - $ref: '#/components/parameters/Wallet-App-Version'
         - name: type
           in: query
           description: Optional. Apply the intended HSM operation type. Only used for traceability.
@@ -239,6 +276,10 @@ paths:
         Get the processed HSM key operation result. Use this operation to poll a pending request until completed.
       operationId: getResult
       parameters:
+        - $ref: '#/components/parameters/Wallet-Device-OS'
+        - $ref: '#/components/parameters/Wallet-Device-OS-Version'
+        - $ref: '#/components/parameters/Wallet-Device-Model'
+        - $ref: '#/components/parameters/Wallet-App-Version'
         - name: id
           in: path
           required: true
@@ -273,6 +314,11 @@ paths:
       summary: Save the device state
       description: Save the latest state using the device key.
       operationId: saveState
+      parameters:
+        - $ref: '#/components/parameters/Wallet-Device-OS'
+        - $ref: '#/components/parameters/Wallet-Device-OS-Version'
+        - $ref: '#/components/parameters/Wallet-Device-Model'
+        - $ref: '#/components/parameters/Wallet-App-Version'
       requestBody:
         content:
           application/json:
@@ -290,6 +336,46 @@ paths:
           $ref: '#/components/responses/default'
 
 components:
+  parameters:
+    Wallet-Device-OS:
+      name: Wallet-Device-OS
+      in: header
+      description: Optional. Client device operating system name. (Example iOS or Android).
+      example: 'iOS'
+      required: false
+      schema:
+        type: string
+        enum:
+          - iOS
+          - Android
+    Wallet-Device-OS-Version:
+      name: Wallet-Device-OS-Version
+      in: header
+      description: Optional. Client device operating system version.
+      example: '17.4.1'
+      required: false
+      schema:
+        type: string
+        maxLength: 50
+    Wallet-Device-Model:
+      name: Wallet-Device-Model
+      in: header
+      description: Optional. Client device model name.
+      example: 'iPhone 15'
+      required: false
+      schema:
+        type: string
+        maxLength: 100
+    Wallet-App-Version:
+      name: Wallet-App-Version
+      in: header
+      description: Optional. Wallet app version.
+      example: '0.0.12 Build 129'
+      required: false
+      schema:
+        type: string
+        maxLength: 20
+
   responses:
     Unauthorized:
       description: Unauthorized
@@ -348,8 +434,8 @@ components:
         status:
           type: integer
           description: Reflects the http response status code with 3 digits returned by the server.
-          minLength: 3
-          maxLength: 3
+          minimum: 100
+          maximum: 599
           example: 400
         title:
           type: string
@@ -395,7 +481,7 @@ components:
           description: Name of the property.
           example: deviceKey
 
-    WuaDto:
+    WuaResponse:
       type: object
       properties:
         jwt:
@@ -405,7 +491,7 @@ components:
       required:
         - jwt
 
-    ValidateAuthChallengeRequestDto:
+    AuthChallengeRequest:
       type: object
       properties:
         signedJwt:
@@ -414,7 +500,7 @@ components:
       required:
         - signedJwt
 
-    ValidateAuthChallengeResponseDto:
+    SessionResponse:
       type: object
       properties:
         sessionId:
@@ -434,7 +520,12 @@ components:
         email:
           type: string
           format: email
-          description: Optional. Contact e-mail address.
+          # The e-mail regex pattern originates from https://emailregex.com/index.html
+          # Modified to accept both lower and upper case letters.
+          pattern: (?:[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-zA-Z0-9-]*[a-zA-Z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])
+          minLength: 1
+          maxLength: 100
+          description: Optional. Contact e-mail address (RFC 5322 Internet Message Format).
           example: first.last@example.xx
         emailAdress:
           deprecated: true
@@ -580,7 +671,7 @@ components:
       required:
         - status
 
-    AuthChallengeDto:
+    AuthChallengeResponse:
       type: object
       properties:
         nonce:
