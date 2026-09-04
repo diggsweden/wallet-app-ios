@@ -13,6 +13,7 @@ public enum ClaimValue: Sendable {
   case null
   case array([ClaimUiModel])
   case object([ClaimUiModel])
+  case imageData(Data)
 }
 
 public struct ClaimUiModel: Identifiable, Sendable {

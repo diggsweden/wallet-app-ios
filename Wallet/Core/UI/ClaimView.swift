@@ -67,6 +67,21 @@ struct ClaimView: View {
         .padding(.leading, 12)
         .padding(.top, 8)
         .frame(maxWidth: .infinity, alignment: .leading)
+
+      case let .imageData(data):
+        if let image = UIImage(data: data) {
+          Image(uiImage: image)
+            .resizable()
+            .scaledToFit()
+            .frame(height: 160)
+            .accessibilityHidden(true)
+        } else {
+          Image(systemName: "photo.trianglebadge.exclamationmark")
+            .resizable()
+            .scaledToFit()
+            .frame(width: 120, height: 120)
+            .accessibilityHidden(true)
+        }
     }
   }
 }
