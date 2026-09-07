@@ -68,8 +68,13 @@ struct OpenId4VpRequestResolver {
       throw PresentationError.unsupportedQuery
     }
 
-    guard case let .directPost(responseURI: responseUrl) = data.responseMode else {
-      throw PresentationError.unsupportedResponseMode
+    let responseUrl: URL
+    switch data.responseMode {
+      case .directPost(let url), .directPostJWT(let url):
+        responseUrl = url
+
+      default:
+        throw PresentationError.unsupportedResponseMode
     }
 
     return PresentationRequestData(
@@ -78,7 +83,28 @@ struct OpenId4VpRequestResolver {
       clientId: data.client.id.clientId,
       nonce: data.nonce,
       state: data.state,
+      encryption: try data.responseEncryptionSpecification.map { try Self.cryptoSpec(from: $0) },
     )
+  }
+
+  private static func cryptoSpec(
+    from specification: ResponseEncryptionSpecification
+  ) throws
+    -> CryptoSpec
+  {
+    guard let key = specification.clientKey.keys.first,
+      let algorithm = WalletJoseKeyManagementAlgorithm(
+        rawValue: specification.responseEncryptionAlg.name
+      ),
+      let method = WalletJoseContentEncryptionAlgorithm(
+        rawValue: specification.responseEncryptionEnc.name
+      )
+    else {
+      throw PresentationError.resolutionFailed("Unsupported response encryption specification")
+    }
+
+    let jwk = try JSONDecoder().decode(WalletJoseJWK.self, from: JSONEncoder().encode(key))
+    return CryptoSpec(key: jwk, enc: method, alg: algorithm)
   }
 
   static func credentialQueries(from dcql: DCQL) -> [CredentialQuery] {

@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import Foundation
+import Jose
 import eudi_lib_sdjwt_swift
 
 struct RedirectUrl: Decodable {
@@ -25,6 +26,11 @@ struct VerifiablePresentationToken: Codable {
   let state: String?
   let nonce: String
   let vpToken: [String: [String]]
+
+  enum CodingKeys: String, CodingKey {
+    case state, nonce
+    case vpToken = "vp_token"
+  }
 }
 
 struct CredentialQuery {
@@ -40,4 +46,5 @@ struct PresentationRequestData {
   let clientId: String
   let nonce: String
   let state: String?
+  let encryption: CryptoSpec?
 }
