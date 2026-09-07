@@ -4,6 +4,7 @@
 
 import CredentialInterfacesTestSupport
 import Foundation
+import Jose
 import OpenID4VP
 import WalletMacros
 import eudi_lib_sdjwt_swift
@@ -32,6 +33,7 @@ enum Fixtures {
   static func request(
     _ queries: [Presentation.CredentialQuery],
     state: String? = "state-1",
+    encryption: CryptoSpec? = nil,
   ) -> PresentationRequestData {
     PresentationRequestData(
       credentialQueries: queries,
@@ -39,6 +41,7 @@ enum Fixtures {
       clientId: "verifier-1",
       nonce: "nonce-1",
       state: state,
+      encryption: encryption,
     )
   }
 

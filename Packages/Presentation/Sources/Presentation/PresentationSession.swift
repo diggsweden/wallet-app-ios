@@ -64,6 +64,7 @@ public struct PresentationSession: PresentationFlow {
       clientId: data.clientId,
       nonce: data.nonce,
       state: data.state,
+      encryption: data.encryption,
     )
   }
 
@@ -92,14 +93,27 @@ public struct PresentationSession: PresentationFlow {
       vpToken: vpTokenEntries,
     )
 
+    let body = try getRequestBody(vpToken: vpToken, cryptoSpec: resolved.encryption)
+
     let response: RedirectUrl = try await networkClient.fetch(
       resolved.responseUrl,
       method: .post,
       contentType: "application/x-www-form-urlencoded",
-      body: Data(try Self.createRequestBody(with: vpToken).utf8),
+      body: Data(body.utf8),
     )
 
     return PresentationOutcome(redirectUrl: response.redirectUri.flatMap { URL(string: $0) })
+  }
+
+  private func getRequestBody(
+    vpToken: VerifiablePresentationToken,
+    cryptoSpec: CryptoSpec?,
+  ) throws -> String {
+    if let encryption = cryptoSpec {
+      try Self.createRequestBodyWithEncryption(with: encryption, vpToken: vpToken)
+    } else {
+      try Self.createRequestBody(with: vpToken)
+    }
   }
 
   private struct MatchedCredential {
@@ -162,5 +176,20 @@ public struct PresentationSession: PresentationFlow {
     parts.append("vp_token=\(encodedVpToken)")
 
     return parts.joined(separator: "&")
+  }
+
+  static func createRequestBodyWithEncryption(
+    with cryptoSpec: CryptoSpec,
+    vpToken: VerifiablePresentationToken,
+  ) throws -> String {
+    let allowed = CharacterSet.urlQueryAllowed.subtracting(.init(charactersIn: "+&="))
+    let jwe = try JwtUtil.encryptJwe(
+      payload: vpToken,
+      recipientKey: cryptoSpec.key,
+      alg: cryptoSpec.alg,
+      enc: cryptoSpec.enc,
+    )
+    let encodedJwe = jwe.addingPercentEncoding(withAllowedCharacters: allowed) ?? jwe
+    return "response=\(encodedJwe)"
   }
 }

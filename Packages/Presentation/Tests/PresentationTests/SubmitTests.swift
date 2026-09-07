@@ -16,6 +16,18 @@ import WalletNetworkingTestSupport
 
 @testable import Presentation
 
+private struct EncryptedResponse: Decodable {
+  let vpToken: [String: [String]]
+  let nonce: String
+  let state: String?
+
+  enum CodingKeys: String, CodingKey {
+    case vpToken = "vp_token"
+    case nonce
+    case state
+  }
+}
+
 struct SubmitTests {
   private struct Submission {
     let outcome: PresentationOutcome
@@ -25,9 +37,14 @@ struct SubmitTests {
   private func resolved(
     queryIds: [String] = ["pid"],
     state: String? = "state-1",
+    encryption: CryptoSpec? = nil,
   ) throws -> ResolvedPresentation {
     try PresentationSession.match(
-      Fixtures.request(queryIds.map { Fixtures.query(id: $0) }, state: state),
+      Fixtures.request(
+        queryIds.map { Fixtures.query(id: $0) },
+        state: state,
+        encryption: encryption,
+      ),
       credentials: [SampleCredential.saved()],
     )
   }
@@ -75,6 +92,7 @@ struct SubmitTests {
     #expect(submission.request.authorization == nil)
     #expect(fields["state"] == "state-1")
     #expect(fields["nonce"] == "nonce-1")
+    #expect(fields["response"] == nil)
     #expect(try vpToken(of: submission.request).keys.sorted() == ["pid"])
   }
 
@@ -153,5 +171,59 @@ struct SubmitTests {
     await #expect(throws: URLError.self) {
       try await session.submit(try resolved(), selectedIds: ["pid"], signer: FakeProofSigner())
     }
+  }
+
+  @Test(arguments: ["st&te=+ å", nil])
+  func `encrypted submission contains the selected presentations nonce and optional state`(
+    state: String?
+  ) async throws {
+    let verifierKey = P256.KeyAgreement.PrivateKey()
+    let encryption = CryptoSpec(key: WalletJoseJWK(verifierKey.publicKey), enc: .a128GCM)
+    let resolved = try resolved(
+      queryIds: ["pid", "optional"],
+      state: state,
+      encryption: encryption,
+    )
+
+    let submission = try await submit(resolved)
+
+    let fields = try formFields(of: submission.request)
+    #expect(fields.keys.sorted() == ["response"])
+    #expect(submission.request.url == Fixtures.responseUrl)
+    #expect(submission.request.method == .post)
+    #expect(submission.request.contentType == "application/x-www-form-urlencoded")
+    let jwe = try #require(fields["response"])
+
+    let response: EncryptedResponse = try JwtUtil.decryptJwe(
+      jwe,
+      decryptionKey: WalletJoseJWK(verifierKey),
+    )
+    #expect(response.nonce == resolved.nonce)
+    #expect(response.state == state)
+    #expect(response.vpToken.keys.sorted() == ["pid"])
+    let presentation = try #require(response.vpToken["pid"]?.first)
+    let disclosed = try #require(resolved.disclosedSdJwts["pid"])
+    #expect(presentation.hasPrefix(disclosed))
+    let keyBinding = try DecodedJwt(compact: String(presentation.dropFirst(disclosed.count)))
+    #expect(keyBinding.headerString("typ") == "kb+jwt")
+    #expect(keyBinding.claim("nonce") == resolved.nonce)
+  }
+
+  @Test func `encryption failure sends no response`() async throws {
+    let network = FakeNetworkClient(body: "{}")
+    let encryption = CryptoSpec(
+      key: WalletJoseJWK(keyType: .ellipticCurve, curve: .p256),
+      enc: .a128GCM,
+    )
+
+    await #expect(throws: (any Error).self) {
+      try await PresentationSession(networkClient: network)
+        .submit(
+          try resolved(encryption: encryption),
+          selectedIds: ["pid"],
+          signer: FakeProofSigner(),
+        )
+    }
+    #expect(await network.requests.isEmpty)
   }
 }

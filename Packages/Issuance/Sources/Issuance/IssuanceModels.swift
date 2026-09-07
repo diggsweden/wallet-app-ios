@@ -5,11 +5,6 @@
 import Foundation
 import Jose
 
-struct CryptoSpec {
-  let key: WalletJoseJWK
-  let enc: WalletJoseContentEncryptionAlgorithm
-}
-
 struct CredentialRequest: Codable {
   let credentialConfigurationId: String
   let proofs: JwtProofType

@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import Foundation
+import Jose
 
 public struct ResolvedPresentation: Sendable {
   public let candidates: [PresentationCandidate]
@@ -11,6 +12,7 @@ public struct ResolvedPresentation: Sendable {
   public let clientId: String
   public let nonce: String
   public let state: String?
+  public let encryption: CryptoSpec?
 
   public init(
     candidates: [PresentationCandidate],
@@ -19,6 +21,7 @@ public struct ResolvedPresentation: Sendable {
     clientId: String,
     nonce: String,
     state: String?,
+    encryption: CryptoSpec? = nil,
   ) {
     self.candidates = candidates
     self.disclosedSdJwts = disclosedSdJwts
@@ -26,5 +29,6 @@ public struct ResolvedPresentation: Sendable {
     self.clientId = clientId
     self.nonce = nonce
     self.state = state
+    self.encryption = encryption
   }
 }
