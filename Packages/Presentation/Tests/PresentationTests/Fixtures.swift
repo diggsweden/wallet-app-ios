@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
+import CredentialInterfaces
 import CredentialInterfacesTestSupport
 import Foundation
 import Jose
 import OpenID4VP
 import WalletMacros
-import eudi_lib_sdjwt_swift
 
 @testable import Presentation
 
@@ -24,7 +24,7 @@ enum Fixtures {
   ) -> Presentation.CredentialQuery {
     CredentialQuery(
       id: id,
-      claimPaths: Set(claims.map { ClaimPath([.claim(name: $0)]) }),
+      claimPaths: Set(claims.map { CredentialInterfaces.ClaimPath([.claim(name: $0)]) }),
       required: required,
       vctValues: vctValues,
     )

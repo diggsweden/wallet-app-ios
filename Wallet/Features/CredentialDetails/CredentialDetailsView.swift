@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import CredentialInterfaces
-import SdJwtClaims
+import SdJwt
 import SwiftUI
 
 struct CredentialDetailsView: View {

@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
+import CredentialInterfaces
 import Foundation
 import Jose
-import eudi_lib_sdjwt_swift
 
 struct RedirectUrl: Decodable {
   let redirectUri: String?

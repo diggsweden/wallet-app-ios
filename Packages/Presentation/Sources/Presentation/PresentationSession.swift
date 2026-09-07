@@ -7,9 +7,8 @@ import CryptoKit
 import Foundation
 import Jose
 import OpenId4VCInterface
-import SdJwtClaims
+import SdJwt
 import WalletNetworking
-import eudi_lib_sdjwt_swift
 
 public struct PresentationSession: PresentationFlow {
   private let networkClient: any NetworkClient
@@ -125,8 +124,13 @@ public struct PresentationSession: PresentationFlow {
     from credential: SavedCredential,
     to query: CredentialQuery,
   ) throws -> MatchedCredential? {
-    let sdJwt = try CompactParser().getSignedSdJwt(serialisedString: credential.compactSerialized)
-    guard let disclosed = try sdJwt.present(query: query.claimPaths) else {
+    guard
+      let disclosed = try SdJwtVc.disclose(
+        compactSerialized: credential.compactSerialized,
+        matching: query.claimPaths,
+        displayNames: credential.claimDisplayNames,
+      )
+    else {
       return nil
     }
 
@@ -134,9 +138,9 @@ public struct PresentationSession: PresentationFlow {
       candidate: PresentationCandidate(
         id: query.id,
         required: query.required,
-        claims: try disclosed.toClaimUiModels(displayNames: credential.claimDisplayNames),
+        claims: disclosed.claims,
       ),
-      serialisation: disclosed.serialisation,
+      serialisation: disclosed.compactSerialized,
     )
   }
 

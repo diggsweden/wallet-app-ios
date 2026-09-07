@@ -7,14 +7,14 @@
 import PackageDescription
 
 let package = Package(
-  name: "SdJwtClaims",
+  name: "SdJwt",
   platforms: [
     .iOS(.v17)
   ],
   products: [
     .library(
-      name: "SdJwtClaims",
-      targets: ["SdJwtClaims"],
+      name: "SdJwt",
+      targets: ["SdJwt"],
     )
   ],
   dependencies: [
@@ -27,7 +27,7 @@ let package = Package(
   ],
   targets: [
     .target(
-      name: "SdJwtClaims",
+      name: "SdJwt",
       dependencies: [
         .product(name: "eudi-lib-sdjwt-swift", package: "eudi-lib-sdjwt-swift"),
         .product(name: "SwiftyJSON", package: "SwiftyJSON"),
@@ -35,9 +35,10 @@ let package = Package(
       ],
     ),
     .testTarget(
-      name: "SdJwtClaimsTests",
+      name: "SdJwtTests",
       dependencies: [
-        "SdJwtClaims",
+        "SdJwt",
+        .product(name: "CredentialInterfaces", package: "CredentialInterfaces"),
         .product(name: "CredentialInterfacesTestSupport", package: "CredentialInterfaces"),
       ],
     ),

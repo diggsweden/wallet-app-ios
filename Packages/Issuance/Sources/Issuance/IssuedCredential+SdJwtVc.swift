@@ -6,8 +6,7 @@ import CredentialInterfaces
 import Foundation
 import OpenID4VCI
 import OpenId4VCInterface
-import SdJwtClaims
-import eudi_lib_sdjwt_swift
+import SdJwt
 
 extension OpenId4VCInterface.IssuedCredential {
   init(
@@ -16,8 +15,10 @@ extension OpenId4VCInterface.IssuedCredential {
     issuer: Display?,
     claimDisplayNames: [String: String],
   ) throws {
-    let sdJwt = try CompactParser().getSignedSdJwt(serialisedString: compactSdJwt)
-    let claims = try sdJwt.toClaimUiModels(displayNames: claimDisplayNames)
+    let claims = try SdJwtVc.claimUiModels(
+      compactSerialized: compactSdJwt,
+      displayNames: claimDisplayNames,
+    )
 
     self.init(
       credential: SavedCredential(

@@ -5,15 +5,15 @@
 import CredentialInterfaces
 import CredentialInterfacesTestSupport
 import Testing
-import eudi_lib_sdjwt_swift
 
-@testable import SdJwtClaims
+@testable import SdJwt
 
 struct ClaimUiModelRenderingTests {
   private func claims(displayNames: [String: String] = [:]) throws -> [ClaimUiModel] {
-    try CompactParser()
-      .getSignedSdJwt(serialisedString: SampleCredential.compactSdJwt)
-      .toClaimUiModels(displayNames: displayNames)
+    try SdJwtVc.claimUiModels(
+      compactSerialized: SampleCredential.compactSdJwt,
+      displayNames: displayNames,
+    )
   }
 
   @Test func `every disclosure becomes a claim in id order and reserved claims are skipped`()
