@@ -13,7 +13,7 @@ extension SignedSDJWT {
     "cnf", "vct", "_sd", "_sd_alg",
   ]
 
-  public func toClaimUiModels(displayNames: [String: String]) throws -> [ClaimUiModel] {
+  func toClaimUiModels(displayNames: [String: String]) throws -> [ClaimUiModel] {
     let claims = try recreateClaims().recreatedClaims.dictionaryValue
 
     return claims.keys

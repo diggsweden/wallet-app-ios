@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
+import CredentialInterfaces
 import CryptoKit
 import Foundation
 import Jose
 import OpenID4VP
 import OpenId4VCInterface
-import eudi_lib_sdjwt_swift
 
 struct OpenId4VpRequestResolver {
   func resolve(url: URL) async throws -> PresentationRequestData {
@@ -112,7 +112,7 @@ struct OpenId4VpRequestResolver {
       let claimPaths =
         credential.claims?
         .map { claim in
-          eudi_lib_sdjwt_swift.ClaimPath(
+          CredentialInterfaces.ClaimPath(
             claim.path.value.map { element in
               switch element {
                 case .claim(let name): .claim(name: name)

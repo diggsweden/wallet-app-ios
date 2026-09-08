@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
+import CredentialInterfaces
 import CredentialInterfacesTestSupport
 import Testing
-import eudi_lib_sdjwt_swift
 
 @testable import Presentation
 

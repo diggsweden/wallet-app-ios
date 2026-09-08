@@ -69,8 +69,8 @@ packages:
     path: Packages/WalletNetworking
   Jose:
     path: Packages/Jose
-  SdJwtClaims:
-    path: Packages/SdJwtClaims
+  SdJwt:
+    path: Packages/SdJwt
 
   OpenId4VCInterface:
     path: Packages/OpenId4VCInterface
@@ -126,8 +126,8 @@ targets:
         product: WalletNetworking
       - package: Jose
         product: Jose
-      - package: SdJwtClaims
-        product: SdJwtClaims
+      - package: SdJwt
+        product: SdJwt
       - package: OpenId4VCInterface
         product: OpenId4VCInterface
       - package: Presentation
@@ -259,7 +259,7 @@ schemes:
         - package: WalletGateway/WalletGatewayTests
         - package: WalletNetworking/WalletNetworkingTests
         - package: Jose/JoseTests
-        - package: SdJwtClaims/SdJwtClaimsTests
+        - package: SdJwt/SdJwtTests
         - package: OpenId4VCInterface/OpenId4VCInterfaceTests
         - package: Presentation/PresentationTests
         - package: Issuance/IssuanceTests
