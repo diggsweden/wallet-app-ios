@@ -16,7 +16,7 @@ struct OnboardingSnapshotTests {
   @Test("Onboarding step", arguments: [OnboardingStep.intro, .pin, .verifyPin, .pid])
   func onboardingStep(_ step: OnboardingStep) {
     assertThemedDeviceSnapshots(
-      of: onboardingRootView(step: step).withToast,
+      of: onboardingRootView(step: step).environment(Router()).withToast,
       testName: String(describing: step),
     )
   }

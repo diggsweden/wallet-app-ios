@@ -33,7 +33,10 @@ struct AppRootView: View {
         }
     }
     .sheet(isPresented: $router.isSettingsSheetPresented) {
-      SettingsView(onLogout: userSessionViewModel.signOut)
+      SettingsView(
+        showsLogout: userSessionViewModel.isEnrolled,
+        onLogout: userSessionViewModel.signOut,
+      )
     }
     .environment(router)
     .onOpenURL(perform: handleOpenURL)
