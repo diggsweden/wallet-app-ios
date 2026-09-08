@@ -15,6 +15,7 @@ struct OnboardingRootView: View {
   private let gatewayApiClient: any GatewayApi & HSMTransport
   private let userSnapshot: UserSnapshot
 
+  @Environment(Router.self) private var router
   @Environment(\.theme) private var theme
   @Environment(\.orientation) private var orientation
   @Environment(\.openURL) private var openURL
@@ -208,7 +209,16 @@ struct OnboardingRootView: View {
       }
     }
 
-    if viewModel.step != .intro {
+    if viewModel.step == .intro {
+      ToolbarItem(placement: .topBarTrailing) {
+        Button {
+          router.isSettingsSheetPresented = true
+        } label: {
+          Image(systemName: "gearshape")
+            .accessibilityLabel("Inställningar")
+        }
+      }
+    } else {
       ToolbarItem(placement: .destructiveAction) {
         Button {
           resetOnboarding()

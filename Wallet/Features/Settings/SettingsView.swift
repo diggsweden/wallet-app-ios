@@ -6,13 +6,15 @@ import DesignSystem
 import SwiftUI
 
 struct SettingsView: View {
+  private let showsLogout: Bool
   @Environment(Router.self) private var router
   @Environment(\.openURL) private var openURL
   @Environment(\.theme) private var theme
   @State private var settingsViewModel: SettingsViewModel
   @State private var isLogoutConfirmationPresented = false
 
-  init(onLogout: @escaping () async throws -> Void) {
+  init(showsLogout: Bool = true, onLogout: @escaping () async throws -> Void) {
+    self.showsLogout = showsLogout
     self._settingsViewModel = State(
       wrappedValue: SettingsViewModel(onLogout: onLogout)
     )
@@ -22,7 +24,9 @@ struct SettingsView: View {
     NavigationStack {
       List {
         appInfoSection
-        accountDetailsSection
+        if showsLogout {
+          accountDetailsSection
+        }
       }
       .navigationTitle("Inställningar")
       .navigationBarTitleDisplayMode(.inline)
