@@ -68,7 +68,11 @@ final class PresentationViewModel {
         pin: pin,
       )
       let selectedIds = (requiredItems + optionalItems.filter(\.isSelected)).map(\.id)
-      return try await flow.submit(resolved, selectedIds: selectedIds, signer: signer)
+      return try await flow.submit(
+        resolved,
+        selectedIds: selectedIds,
+        signer: signer,
+      )
     } catch {
       sendError = true
       return nil

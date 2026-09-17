@@ -12,25 +12,19 @@ struct IssuanceViewWrapper: View {
   let credentialOfferUri: String
   let gatewayApiClient: any GatewayApi & HSMTransport
   let hsmServerParameters: HsmServerParameters?
-  let onSave: (SavedCredential) async throws -> Void
+  let actions: IssuanceActions
 
   var body: some View {
-    GeometryReader { proxy in
-      ScrollView {
-        IssuanceView(
-          credentialOfferUri: credentialOfferUri,
-          gatewayApiClient: gatewayApiClient,
-          hsmServerParameters: hsmServerParameters,
-          onSaveCredential: onSave,
-        )
-        .frame(
-          maxWidth: .infinity,
-          minHeight: proxy.size.height,
-          alignment: .top,
-        )
-      }
-      .navigationTitle("Begär attributsintyg")
-      .navigationBarTitleDisplayMode(.inline)
+    ScrollView {
+      IssuanceView(
+        credentialOfferUri: credentialOfferUri,
+        gatewayApiClient: gatewayApiClient,
+        hsmServerParameters: hsmServerParameters,
+        actions: actions,
+      )
     }
+    .navigationTitle("Begär attributsintyg")
+    .navigationBarTitleDisplayMode(.inline)
+    .navigationBarBackButtonHidden()
   }
 }

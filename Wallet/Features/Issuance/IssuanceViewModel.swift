@@ -16,150 +16,175 @@ import WalletMacros
 @Observable
 final class IssuanceViewModel {
   private let credentialOfferUri: String
-  private var flow: (any IssuanceFlow)?
+  private var flow: any IssuanceFlow
   private let gatewayApiClient: any GatewayApi & HSMTransport
-  private let hsmServerParameters: HsmServerParameters?
-  private let onSaveCredential: (SavedCredential) async throws -> Void
+  private let actions: IssuanceActions
   private var oauth = OauthCoordinator()
+  private(set) var state: IssuanceState = .idle
 
   private(set) var issuerDisplayData: IssuerDisplay?
-  private(set) var phase: IssuancePhase = .fetchingIssuer
-  private(set) var pinAttempt = 0
-
-  var pinError = false
-  var saveError = false
+  private let makeSigner: (_ pin: String) -> any ProofKeyManager
 
   init(
     credentialOfferUri: String,
     gatewayApiClient: any GatewayApi & HSMTransport,
     hsmServerParameters: HsmServerParameters?,
-    onSaveCredential: @escaping (SavedCredential) async throws -> Void,
-  ) {
-    self.credentialOfferUri = credentialOfferUri
-    self.gatewayApiClient = gatewayApiClient
-    self.hsmServerParameters = hsmServerParameters
-    self.onSaveCredential = onSaveCredential
-  }
-
-  func start() async {
-    phase = .fetchingIssuer
-    let flow = IssuanceSession(
+    actions: IssuanceActions,
+    issuanceFlow: any IssuanceFlow = IssuanceSession(
       config: IssuanceConfig(
         clientId: "wallet-dev",
         redirectUri: #URL("wallet-app://authorize"),
       )
-    )
-    self.flow = flow
-    do {
-      let offer = try await flow.loadOffer(credentialOfferUri)
-      issuerDisplayData = offer.issuer.map { issuer in
-        IssuerDisplay(
-          name: issuer.name ?? "Okänd utfärdare",
-          info: issuer.info,
-          imageUrl: issuer.imageUrl,
+    ),
+    makeSigner: ((_ pin: String) -> any ProofKeyManager)? = nil,
+  ) {
+    self.credentialOfferUri = credentialOfferUri
+    self.gatewayApiClient = gatewayApiClient
+    self.actions = actions
+    self.flow = issuanceFlow
+    self.makeSigner =
+      makeSigner ?? { pin in
+        HsmProofSigner(transport: gatewayApiClient, parameters: hsmServerParameters, pin: pin)
+      }
+  }
+
+  func start() async {
+    await resume(from: .loadingCredentialOffer)
+  }
+
+  func retry() async {
+    guard case .failed(let step, _) = state else {
+      return
+    }
+
+    await resume(from: step.retryStep)
+  }
+
+  func login(authenticate: @escaping WebAuthenticate) async {
+    guard case .step(.preparingToAuthorize) = state else {
+      return
+    }
+
+    await resume(from: .authorizing(authenticate))
+  }
+
+  func enterPin(_ pin: String) async {
+    guard case .step(.awaitingPin) = state else {
+      return
+    }
+
+    await resume(from: .authenticatingPin(makeSigner(pin)))
+  }
+
+  func completeIssuance() async {
+    guard case let .step(.savingCredential(credential, _, _)) = state else {
+      return
+    }
+    await resume(from: .complete(credential))
+  }
+
+  func dismiss() async {
+    let currentStep: IssuanceStep? =
+      switch state {
+        case let .step(step),
+          let .failed(at: step, _):
+          step
+
+        case .idle: nil
+      }
+
+    if let currentStep,
+      let (keyId, store) = currentStep.pendingKey
+    {
+      try? await store.deleteKey(id: keyId)
+    }
+
+    await actions.onDismiss()
+  }
+
+  private func resume(from startStep: IssuanceStep) async {
+    var current: IssuanceStep? = startStep
+    while let step = current {
+      state = .step(step)
+      do {
+        current = try await perform(step)
+      } catch {
+        state = .failed(at: step, CaughtError(error))
+        return
+      }
+    }
+  }
+
+  private func perform(_ step: IssuanceStep) async throws -> IssuanceStep? {
+    switch step {
+      case .loadingCredentialOffer:
+        try await loadOffer()
+        return .preparingToAuthorize
+
+      case .preparingToAuthorize:
+        return nil
+
+      case let .authorizing(authenticate):
+        let callbackUrl = try await authenticate(flow.authorizationUrl())
+        try await flow.exchangeAuthorizationCode(callbackUrl: callbackUrl)
+        return .awaitingPin
+
+      case .awaitingPin:
+        return nil
+
+      case let .authenticatingPin(signer):
+        try await signer.authenticate()
+        return .creatingKey(signer)
+
+      case let .creatingKey(signer):
+        let key = try await signer.createKey()
+        return .signingProof(proofKey: key, signer: signer)
+
+      case let .signingProof(proofKey, signer):
+        try await flow.createProof(
+          proofKey: proofKey,
+          signer: signer,
+          attestations: KeyAttestationProvider(gatewayApiClient: gatewayApiClient),
         )
-      }
-      phase = .readyToAuthorize
-    } catch {
-      phase = .error(.start, CaughtError(error))
+        return .fetchingCredential(
+          proofKey: proofKey,
+          signer: signer,
+        )
+
+      case let .fetchingCredential(proofKey, signer):
+        let issuedCredential = try await flow.fetchCredential(proofKey: proofKey)
+        return .savingCredential(issuedCredential, proofKey: proofKey, signer: signer)
+
+      case let .savingCredential(issuedCredential, _, _):
+        try await actions.onSaveCredential(issuedCredential.credential)
+        return nil
+
+      case .complete:
+        try await actions.onComplete()
+        return nil
     }
   }
+}
 
-  func beginAuthorization(anchor: ASPresentationAnchor) async {
-    guard let flow, case .readyToAuthorize = phase else {
-      return
-    }
-
-    phase = .authorizing
-    do {
-      let authorizationUrl = try await flow.authorizationUrl()
-      let callbackUrl = try await oauth.start(
-        url: authorizationUrl,
-        callbackScheme: "wallet-app",
-        anchor: anchor,
+private extension IssuanceViewModel {
+  private func loadOffer() async throws {
+    let offer = try await flow.loadOffer(credentialOfferUri)
+    issuerDisplayData = offer.issuer.map { issuer in
+      IssuerDisplay(
+        name: issuer.name ?? "Okänd utfärdare",
+        info: issuer.info,
+        imageUrl: issuer.imageUrl,
       )
-      try await flow.exchangeAuthorizationCode(callbackUrl: callbackUrl)
-      phase = .readyToSign
-    } catch {
-      if error.isWebAuthCancellation {
-        phase = .readyToAuthorize
-      } else {
-        phase = .error(.authorize, CaughtError(error))
-      }
     }
   }
 
-  func createProof(with pin: String) async {
-    guard let flow, case .readyToSign = phase else {
-      return
-    }
+  enum IssuanceViewModelError: LocalizedError {
+    case invalidPhase(got: IssuanceStep, expected: IssuanceStep)
 
-    do {
-      let signer = HsmProofSigner(
-        transport: gatewayApiClient,
-        parameters: hsmServerParameters,
-        pin: pin,
-      )
-      try await flow.createProof(
-        signer: signer,
-        attestations: WalletUnitAttestationProvider(gatewayApiClient: gatewayApiClient),
-      )
-      phase = .readyToFetch
-      await fetchCredential()
-    } catch {
-      pinError = true
-      pinAttempt += 1
-    }
-  }
-
-  func fetchCredential() async {
-    guard let flow, case .readyToFetch = phase else {
-      return
-    }
-
-    phase = .fetchingCredential
-    do {
-      let issued = try await flow.fetchCredential()
-      phase = .done(issued.credential, issued.claims)
-    } catch {
-      phase = .error(.fetchCredential, CaughtError(error))
-    }
-  }
-
-  func saveCredential(_ credential: SavedCredential) async {
-    do {
-      try await onSaveCredential(credential)
-    } catch {
-      saveError = true
-    }
-  }
-
-  func retrySave() async {
-    guard case .done(let credential, _) = phase else {
-      return
-    }
-
-    await saveCredential(credential)
-  }
-
-  func retry(anchor: ASPresentationAnchor?) {
-    guard case .error(let recovery, _) = phase else {
-      return
-    }
-
-    Task {
-      switch recovery {
-        case .start:
-          await start()
-
-        case .authorize:
-          guard let anchor else { return }
-          phase = .readyToAuthorize
-          await beginAuthorization(anchor: anchor)
-
-        case .fetchCredential:
-          phase = .readyToFetch
-          await fetchCredential()
+    var errorDescription: String? {
+      switch self {
+        case let .invalidPhase(passedPhase, expectedPhase):
+          "Couldn't continue operation. Got \(passedPhase)" + " but expected \(expectedPhase)"
       }
     }
   }

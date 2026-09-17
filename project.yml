@@ -263,4 +263,5 @@ schemes:
         - package: OpenId4VCInterface/OpenId4VCInterfaceTests
         - package: Presentation/PresentationTests
         - package: Issuance/IssuanceTests
+        - package: User/UserTests
 

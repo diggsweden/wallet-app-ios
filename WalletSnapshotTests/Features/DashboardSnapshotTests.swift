@@ -56,6 +56,7 @@ private extension DashboardSnapshotTests {
       claimsCount: 2,
       issuedAt: issuedAt,
       type: CredentialType.pid.rawValue,
+      keyId: "snapshot-key",
       displayData: nil,
     )
   }
@@ -68,6 +69,7 @@ private extension DashboardSnapshotTests {
       claimsCount: 4,
       issuedAt: issuedAt,
       type: "preview.\(name.lowercased())",
+      keyId: "snapshot-key",
       displayData: CredentialDisplayData(name: name),
     )
   }
