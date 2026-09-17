@@ -22,7 +22,7 @@ public enum WalletJoseCurve: String, Codable, Sendable {
   case secp256k1
 }
 
-public struct WalletJoseJWK: Codable, Sendable {
+public struct WalletJoseJWK: Codable, Sendable, Hashable {
   public var keyType: WalletJoseKeyType
   public var curve: WalletJoseCurve?
   public var keyID: String?

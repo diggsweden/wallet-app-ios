@@ -6,6 +6,5 @@ import Foundation
 import Jose
 
 public protocol ProofSigner: Sendable {
-  func sign(_ signingInput: Data) async throws -> String
-  func publicKey() async throws -> WalletJoseJWK
+  func sign(_ signingInput: Data, keyId: ProofKey.ID) async throws -> String
 }

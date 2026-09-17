@@ -31,6 +31,7 @@ struct IssuanceViewWrapper: View {
       }
       .navigationTitle("Begär attributsintyg")
       .navigationBarTitleDisplayMode(.inline)
+      .navigationBarBackButtonHidden()
     }
   }
 }

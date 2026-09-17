@@ -4,7 +4,7 @@
 
 import Foundation
 
-public struct SavedCredential: Codable, Hashable, Sendable {
+public struct SavedCredential: Codable, Hashable, Sendable, Equatable {
   public let issuer: IssuerDisplay
   public let compactSerialized: String
   public let claimDisplayNames: [String: String]
@@ -32,7 +32,7 @@ public struct SavedCredential: Codable, Hashable, Sendable {
   }
 }
 
-public struct IssuerDisplay: Codable, Hashable, Sendable {
+public struct IssuerDisplay: Codable, Hashable, Sendable, Equatable {
   public let name: String
   public let info: String?
   public let imageUrl: URL?
@@ -44,7 +44,7 @@ public struct IssuerDisplay: Codable, Hashable, Sendable {
   }
 }
 
-public struct CredentialDisplayData: Codable, Hashable, Sendable {
+public struct CredentialDisplayData: Codable, Hashable, Sendable, Equatable {
   public let name: String?
 
   public init(name: String?) {

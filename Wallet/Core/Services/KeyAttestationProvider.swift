@@ -2,13 +2,14 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
+import Jose
 import OpenId4VCInterface
 import WalletGatewayInterface
 
-struct WalletUnitAttestationProvider: KeyAttestationProviding {
+struct KeyAttestationProvider: KeyAttestationProviding {
   let gatewayApiClient: any GatewayApi
 
-  func keyAttestation(nonce: String?) async throws -> String {
+  func keyAttestation(for: [WalletJoseJWK], nonce: String?) async throws -> String {
     try await gatewayApiClient.getWalletUnitAttestation(nonce: nonce)
   }
 }

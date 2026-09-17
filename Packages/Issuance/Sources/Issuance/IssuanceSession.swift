@@ -79,6 +79,7 @@ public actor IssuanceSession: IssuanceFlow {
   }
 
   public func createProof(
+    proofKey: ProofKey,
     signer: any ProofSigner,
     attestations: any KeyAttestationProviding,
   ) async throws {
@@ -100,7 +101,7 @@ public actor IssuanceSession: IssuanceFlow {
     let keyAttestation: String? =
       switch proofTypeJwt.keyAttestationRequirement {
         case .required, .requiredNoConstraints:
-          try await attestations.keyAttestation(nonce: nonce)
+          try await attestations.keyAttestation(for: [proofKey.publicKey], nonce: nonce)
 
         case .notRequired, nil:
           nil
@@ -111,6 +112,7 @@ public actor IssuanceSession: IssuanceFlow {
       nonce: nonce,
       keyAttestation: keyAttestation,
       signer: signer,
+      proofKey: proofKey,
     )
   }
 
@@ -152,10 +154,11 @@ public actor IssuanceSession: IssuanceFlow {
     nonce: String?,
     keyAttestation: String?,
     signer: any ProofSigner,
+    proofKey: ProofKey,
   ) async throws -> String {
     let attested = keyAttestation != nil
     let header = WalletKeyAttestationHeader(
-      jwk: attested ? nil : try await signer.publicKey(),
+      jwk: attested ? nil : proofKey.publicKey,
       keyID: attested ? "0" : nil,
       keyAttestation: keyAttestation,
     )
@@ -164,7 +167,7 @@ public actor IssuanceSession: IssuanceFlow {
       payload: JwtProofPayload(aud: issuerId, nonce: nonce),
       header: header,
     ) { signingInput in
-      try await signer.sign(signingInput)
+      try await signer.sign(signingInput, keyId: proofKey.id)
     }
   }
 
