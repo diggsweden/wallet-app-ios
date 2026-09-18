@@ -5,6 +5,7 @@
 import Foundation
 
 public protocol ProofKeyStore: Sendable {
+  func authenticate() async throws
   func createKey() async throws -> ProofKey
   func deleteKey(id: ProofKey.ID) async throws
 }

@@ -13,5 +13,5 @@ public protocol IssuanceFlow: Sendable {
     signer: any ProofSigner,
     attestations: any KeyAttestationProviding,
   ) async throws
-  func fetchCredential() async throws -> IssuedCredential
+  func fetchCredential(proofKey: ProofKey) async throws -> IssuedCredential
 }

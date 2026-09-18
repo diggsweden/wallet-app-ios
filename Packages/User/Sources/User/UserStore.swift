@@ -86,6 +86,7 @@ public actor UserStore: AccountIdProvider {
       accountId: model.accountId,
       credentials: model.credentials.map { $0.toDomain() },
       hsmServerParameters: model.hsmServerParameters?.toDomain(),
+      isOnboardingCompleted: model.isOnboardingCompleted,
     )
   }
 

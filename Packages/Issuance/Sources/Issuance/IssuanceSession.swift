@@ -116,7 +116,9 @@ public actor IssuanceSession: IssuanceFlow {
     )
   }
 
-  public func fetchCredential() async throws -> OpenId4VCInterface.IssuedCredential {
+  public func fetchCredential(
+    proofKey: ProofKey
+  ) async throws -> OpenId4VCInterface.IssuedCredential {
     let offer = try loadedOffer()
     guard let authorizedRequest, let proof else {
       throw IssuanceError.authRequestFailed
@@ -142,6 +144,7 @@ public actor IssuanceSession: IssuanceFlow {
       configuration: credentialConfig,
       issuer: metadata.display.first,
       claimDisplayNames: offer.claimDisplayNames,
+      attestedKeyId: proofKey.id.rawValue,
     )
   }
 

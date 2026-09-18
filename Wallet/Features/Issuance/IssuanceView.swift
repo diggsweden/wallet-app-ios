@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
+import AuthenticationServices
 import CredentialInterfaces
 import DesignSystem
 import OpenId4VCInterface
@@ -9,7 +10,6 @@ import SwiftAccessMechanism
 import SwiftUI
 import User
 import WalletGatewayInterface
-import AuthenticationServices
 
 struct IssuanceView: View {
   @State private var viewModel: IssuanceViewModel
@@ -36,22 +36,22 @@ struct IssuanceView: View {
 
   var body: some View {
     // swiftlint:disable:next closure_body_length
-    ZStack {
+    VStack {
       switch viewModel.state {
         case .idle:
           EmptyView()
 
         case .step(let step):
+          if let issuerDisplayData = viewModel.issuerDisplayData, step != .awaitingPin {
+            IssuerDisplayView(issuerDisplayData: issuerDisplayData)
+          }
+
           switch step {
-            case .readyToAuthorize:
-              PrimaryButton("LOGIN") {
-                Task {
-                  await viewModel.login(anchor: anchor)
-                }
-              }
+            case .preparingToAuthorize:
+              EmptyView()
 
             case .awaitingPin:
-              PinView { pin in
+              ConfirmPinView { pin in
                 Task { await viewModel.enterPin(pin) }
               }
 
@@ -67,50 +67,48 @@ struct IssuanceView: View {
                 label: "HEHE",
                 accessibilityHint: "XD",
                 action: {
-                  print("HEJ JOHNNY")
+                  print("ERROR ERROR ERROR")
                 },
               ),
             )
           )
-
-        case .complete:
-          EmptyView()
       }
     }
     .task { await viewModel.start() }
+    .toolbar { issuanceToolbar }
   }
 }
 
-// MARK: - Child Views
 private extension IssuanceView {
-  //  @ViewBuilder
-  //  private var button: some View {
-  //    switch viewModel.phase {
-  //      case .fetchingIssuer, .authorizing, .fetchingCredential:
-  //        ProgressView()
-  //
-  //      case .readyToAuthorize:
-  //        PrimaryButton("Logga in", icon: "arrow.right.circle.fill") {
-  //          Task {
-  //            guard let anchor else { return }
-  //            await viewModel.beginAuthorization(anchor: anchor)
-  //          }
-  //        }
-  //
-  //      case .readyToFetoch:
-  //        PrimaryButton("Försök igen") {
-  //          Task { await viewModel.fetchCredential() }
-  //        }
-  //
-  //      case .done(let savedCredential, _):
-  //        PrimaryButton("Godkänn", icon: "checkmark.circle") {
-  //          Task { await viewModel.saveCredential(savedCredential) }
-  //        }
-  //
-  //      case .readyToSign:
-  //        EmptyView()
-  //    }
-  //  }
+  @ContentBuilder
+  var issuanceToolbar: some ToolbarContent {
+    ToolbarItem(placement: .bottomBar) {
+      if case .step(let step) = viewModel.state {
+        issuanceToolbarButton(for: step)
+      }
+    }
+    .sharedBackgroundVisibilityHiddenIfPossible()
+  }
+
+  @ContentBuilder
+  func issuanceToolbarButton(for step: IssuanceStep) -> some View {
+    switch step {
+      case .preparingToAuthorize:
+        PrimaryButton("LOGIN", maxWidth: .infinity) {
+          Task {
+            await viewModel.login(authenticate: webAuthSession.handler())
+          }
+        }
+
+      case .done(let issuedCredential):
+        PrimaryButton("Done", maxWidth: .infinity) {
+          print("hej")
+        }
+
+      default:
+        EmptyView()
+    }
+  }
 }
 
 private struct ConfirmPinView: View {

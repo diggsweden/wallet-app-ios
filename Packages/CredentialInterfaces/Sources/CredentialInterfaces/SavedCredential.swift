@@ -11,6 +11,7 @@ public struct SavedCredential: Codable, Hashable, Sendable, Equatable {
   public let claimsCount: Int
   public let issuedAt: Date
   public let type: String
+  public let attestedKeyId: String
   public let displayData: CredentialDisplayData?
 
   public init(
@@ -20,6 +21,7 @@ public struct SavedCredential: Codable, Hashable, Sendable, Equatable {
     claimsCount: Int,
     issuedAt: Date,
     type: String,
+    attestedKeyId: String,
     displayData: CredentialDisplayData?,
   ) {
     self.issuer = issuer
@@ -28,6 +30,7 @@ public struct SavedCredential: Codable, Hashable, Sendable, Equatable {
     self.claimsCount = claimsCount
     self.issuedAt = issuedAt
     self.type = type
+    self.attestedKeyId = attestedKeyId
     self.displayData = displayData
   }
 }

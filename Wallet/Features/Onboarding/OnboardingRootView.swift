@@ -196,7 +196,7 @@ struct OnboardingRootView: View {
     }
   }
 
-  @ToolbarContentBuilder
+  @ContentBuilder
   private var toolbarContent: some ToolbarContent {
     if viewModel.canGoBack() {
       ToolbarItem(placement: .navigation) {

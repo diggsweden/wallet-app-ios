@@ -14,6 +14,7 @@ enum HsmSignerError: Error {
 }
 
 actor HsmProofSigner: ProofSigner, ProofKeyStore {
+  private var client: BFFHttpClient?
   private let transport: any HSMTransport
   private let parameters: HsmServerParameters?
   private let pin: String
@@ -25,12 +26,15 @@ actor HsmProofSigner: ProofSigner, ProofKeyStore {
   }
 
   func sign(_ signingInput: Data, keyId: ProofKey.ID) async throws -> String {
-    let client = try await authenticatedClient()
-    return try await client.sign(hsmKeyId: keyId.rawValue, data: signingInput).signature
+    try await getClient().sign(hsmKeyId: keyId.rawValue, data: signingInput).signature
+  }
+
+  func authenticate() async throws {
+    client = try await makeAuthenticatedClient()
   }
 
   func createKey() async throws -> ProofKey {
-    let key = try await authenticatedClient().createHsmKey().public_key
+    let key = try await getClient().createHsmKey().public_key
 
     guard let keyId = key.kid else {
       throw IssuanceError.noKeyId
@@ -41,10 +45,18 @@ actor HsmProofSigner: ProofSigner, ProofKeyStore {
   }
 
   func deleteKey(id: ProofKey.ID) async throws {
-    try await authenticatedClient().deleteKey(hsmKeyId: id.rawValue)
+    try await getClient().deleteKey(hsmKeyId: id.rawValue)
   }
 
-  private func authenticatedClient() async throws -> BFFHttpClient {
+  private func getClient() async throws -> BFFHttpClient {
+    if let client = client.take() {
+      return client
+    }
+
+    return try await makeAuthenticatedClient()
+  }
+
+  private func makeAuthenticatedClient() async throws -> BFFHttpClient {
     guard let parameters else {
       throw HsmSignerError.missingConfig
     }

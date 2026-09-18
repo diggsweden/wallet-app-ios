@@ -13,7 +13,7 @@ extension WebAuthenticationSession {
     { url in
       try await authenticate(
         using: url,
-        callback: callbackScheme,
+        callbackURLScheme: callbackScheme,
         preferredBrowserSession: .ephemeral,
       )
     }

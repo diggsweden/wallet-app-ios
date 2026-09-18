@@ -161,8 +161,9 @@ public struct PresentationSession: PresentationFlow {
       payload: payload,
       header: WalletJWSDefaultHeader(algorithm: .ES256, type: "kb+jwt"),
     ) { signingInput in
+      // TODO: Use keyid from credential
       try await signer
-        .sign(signingInput, keyId: ProofKey.ID(rawValue: "hehe")) // TODO: Use keyid from credential
+        .sign(signingInput, keyId: ProofKey.ID(rawValue: "hehe"))
     }
   }
 

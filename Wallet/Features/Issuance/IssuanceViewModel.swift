@@ -70,7 +70,12 @@ final class IssuanceViewModel {
       return
     }
 
-    await resume(from: .creatingKey(pin: pin))
+    let signer = HsmProofSigner(
+      transport: gatewayApiClient,
+      parameters: hsmServerParameters,
+      pin: pin,
+    )
+    await resume(from: .authenticating(signer))
   }
 
   private func resume(from startStep: IssuanceStep) async {
@@ -103,16 +108,24 @@ final class IssuanceViewModel {
       case .awaitingPin:
         return nil
 
-      case let .creatingKey(pin):
-        let key = try await createKey(pin: pin)
-        return .signingProof(proofKey: key, pin: pin)
+      case let .authenticating(signer):
+        try await signer.authenticate()
+        return .creatingKey(signer)
 
-      case let .signingProof(proofKey, pin):
-        try await signProof(with: proofKey, pin: pin)
-        return .fetchingCredential
+      case let .creatingKey(signer):
+        let key = try await signer.createKey()
+        return .signingProof(proofKey: key, signer: signer)
 
-      case .fetchingCredential:
-        let issuedCredential = try await flow.fetchCredential()
+      case let .signingProof(proofKey, signer):
+        try await flow.createProof(
+          proofKey: proofKey,
+          signer: signer,
+          attestations: KeyAttestationProvider(gatewayApiClient: gatewayApiClient),
+        )
+        return .fetchingCredential(proofKey: proofKey)
+
+      case let .fetchingCredential(proofKey):
+        let issuedCredential = try await flow.fetchCredential(proofKey: proofKey)
         return .done(issuedCredential)
 
       case let .done(issuedCredential):
@@ -132,30 +145,6 @@ private extension IssuanceViewModel {
         imageUrl: issuer.imageUrl,
       )
     }
-  }
-
-  private func signProof(with key: ProofKey, pin: String) async throws {
-    let signer = HsmProofSigner(
-      transport: gatewayApiClient,
-      parameters: hsmServerParameters,
-      pin: pin,
-    )
-    let key = try await signer.createKey()
-    try await flow.createProof(
-      proofKey: key,
-      signer: signer,
-      attestations: KeyAttestationProvider(gatewayApiClient: gatewayApiClient),
-    )
-  }
-
-  func createKey(pin: String) async throws -> ProofKey {
-    let hsmProofSigner = HsmProofSigner(
-      transport: gatewayApiClient,
-      parameters: hsmServerParameters,
-      pin: pin,
-    )
-
-    return try await hsmProofSigner.createKey()
   }
 
   enum IssuanceViewModelError: LocalizedError {

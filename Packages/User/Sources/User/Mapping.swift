@@ -14,6 +14,7 @@ extension CurrentSchema.SavedCredential {
       claimsCount: credential.claimsCount,
       issuedAt: credential.issuedAt,
       type: credential.type,
+      attestedKeyId: credential.attestedKeyId,
       displayData: credential.displayData.map { CurrentSchema.CredentialDisplayData($0) },
     )
   }
@@ -26,6 +27,7 @@ extension CurrentSchema.SavedCredential {
       claimsCount: claimsCount,
       issuedAt: issuedAt,
       type: type,
+      attestedKeyId: attestedKeyId,
       displayData: displayData?.toDomain(),
     )
   }
@@ -54,7 +56,7 @@ extension CurrentSchema.CredentialDisplayData {
 extension CurrentSchema.HsmServerParameters {
   init(_ parameters: HsmServerParameters) {
     self.init(
-      serverJwsPublicKey: SchemaV4.HsmServerJwk(
+      serverJwsPublicKey: SchemaV5.HsmServerJwk(
         kty: parameters.serverJwsPublicKey.kty,
         crv: parameters.serverJwsPublicKey.crv,
         x: parameters.serverJwsPublicKey.x,
