@@ -31,7 +31,7 @@ final class UserSessionViewModel {
   }
 
   var isOnboardingCompleted: Bool {
-    userSnapshot?.isFullyOnboarded ?? false
+    userSnapshot?.hasCompletedOnboarding ?? false
   }
 
   func initUser() async {
@@ -52,8 +52,8 @@ final class UserSessionViewModel {
     }
   }
 
-  private func hasStaleDeviceKey(_ snapshot: UserSnapshot) -> Bool {
-    !snapshot.isFullyOnboarded && SigningKeyStore.hasKey(withTag: .deviceKey)
+  private func hasStaleDeviceKey(_ user: UserSnapshot) -> Bool {
+    !user.hasCompletedOnboarding && SigningKeyStore.hasKey(withTag: .deviceKey)
   }
 
   func retryInitUser() async {
@@ -91,7 +91,7 @@ final class UserSessionViewModel {
 }
 
 private extension UserSnapshot {
-  var isFullyOnboarded: Bool {
+  var hasCompletedOnboarding: Bool {
     accountId != nil && hasPid && isOnboardingCompleted
   }
 }
