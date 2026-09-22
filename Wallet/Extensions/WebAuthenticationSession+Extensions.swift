@@ -6,16 +6,21 @@ import AuthenticationServices
 import Foundation
 import SwiftUI
 
-typealias WebAuthenticate = @MainActor (URL) async throws -> URL
+/// Returns the callback URL, or `nil` if the user cancelled the web session.
+typealias WebAuthenticate = @MainActor (URL) async throws -> URL?
 
 extension WebAuthenticationSession {
   func handler(callbackScheme: String = "wallet-app") -> WebAuthenticate {
     { url in
-      try await authenticate(
-        using: url,
-        callbackURLScheme: callbackScheme,
-        preferredBrowserSession: .ephemeral,
-      )
+      do {
+        return try await authenticate(
+          using: url,
+          callbackURLScheme: callbackScheme,
+          preferredBrowserSession: .ephemeral,
+        )
+      } catch where error.isWebAuthCancellation {
+        return nil
+      }
     }
   }
 }

@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
+// swiftlint:disable file_length
+
 import CredentialInterfaces
 import Foundation
 import OpenId4VCInterface
@@ -32,7 +34,8 @@ struct IssuanceViewModelTests {
   private func makeViewModel(
     flow: FakeIssuanceFlow = FakeIssuanceFlow(),
     signerFailures: Set<FakeProofKeyManager.Operation> = [],
-    onSave: ((SavedCredential) throws -> Void)? = nil,
+    onSave: ((SavedCredential) async throws -> Void)? = nil,
+    onDismiss: @escaping @MainActor () -> Void = {},
   ) -> IssuanceViewModel {
     let recorder = recorder
     return IssuanceViewModel(
@@ -42,10 +45,10 @@ struct IssuanceViewModelTests {
       actions: .init(
         onSaveCredential: { credential in
           recorder.savedCredentials.append(credential)
-          try onSave?(credential)
+          try await onSave?(credential)
         },
         onComplete: { recorder.completeCount += 1 },
-        onDismiss: {},
+        onDismiss: onDismiss,
       ),
       issuanceFlow: flow,
       makeSigner: { pin in
@@ -128,6 +131,18 @@ struct IssuanceViewModelTests {
   }
 
   @Test
+  func cancelledLoginReturnsToLoginWithoutFailing() async {
+    let flow = FakeIssuanceFlow()
+    let viewModel = makeViewModel(flow: flow)
+    await viewModel.start()
+
+    await viewModel.login { _ in nil }
+
+    #expect(viewModel.state.currentStep == .preparingToAuthorize)
+    #expect(!(await flow.calls).contains(.exchangeAuthorizationCode))
+  }
+
+  @Test
   func loginIsIgnoredBeforeTheOfferIsLoaded() async {
     let flow = FakeIssuanceFlow()
     let viewModel = makeViewModel(flow: flow)
@@ -160,15 +175,7 @@ struct IssuanceViewModelTests {
     #expect(signedBySessionSigner)
     #expect(attestsThroughGateway)
     #expect(recorder.savedCredentials.map(\.keyId) == [key.id.rawValue])
-    #expect(
-      viewModel.state.currentStep == .savingCredential(
-        .bound(
-          to: key
-        ),
-        proofKey: key,
-        signer: signer
-      )
-    )
+    #expect(viewModel.state.currentStep == .awaitingCompletion(.bound(to: key)))
   }
 
   @Test
@@ -299,13 +306,7 @@ struct IssuanceViewModelTests {
     )
 
     await viewModel.retry()
-    #expect(
-      viewModel.state.currentStep == .savingCredential(
-        .bound(to: key),
-        proofKey: key,
-        signer: signer
-      )
-    )
+    #expect(viewModel.state.currentStep == .awaitingCompletion(.bound(to: key)))
     #expect(await flow.fetchKeys == [key])
     #expect(recorder.savedCredentials.count == 2)
   }
@@ -329,6 +330,7 @@ struct IssuanceViewModelTests {
     await awaitingPin(viewModel)
     await viewModel.enterPin("123456")
     let key = try #require(await recorder.signers.first?.createdKeys.first)
+    #expect(recorder.completeCount == 0, "saving waits for the user before completing")
 
     await viewModel.completeIssuance()
 
@@ -345,5 +347,91 @@ struct IssuanceViewModelTests {
 
     #expect(recorder.completeCount == 0)
     #expect(viewModel.state.currentStep == .awaitingPin)
+  }
+
+  // MARK: Dismissal
+
+  @Test
+  func dismissAfterSaveKeepsTheCredentialKey() async throws {
+    let viewModel = makeViewModel()
+    await awaitingPin(viewModel)
+    await viewModel.enterPin("123456")
+    let signer = try #require(recorder.signers.first)
+
+    await viewModel.dismiss()
+
+    #expect(await signer.deletedKeyIds.isEmpty)
+  }
+
+  @Test
+  func dismissAfterFailedSaveDeletesTheKey() async throws {
+    let viewModel = makeViewModel { _ in throw FakeError.intentional }
+    await awaitingPin(viewModel)
+    await viewModel.enterPin("123456")
+    let signer = try #require(recorder.signers.first)
+    let key = try #require(await signer.createdKeys.first)
+
+    await viewModel.dismiss()
+
+    #expect(await signer.deletedKeyIds == [key.id])
+  }
+
+  // Each test below opens the gate from `onDismiss`, so the running step
+  // finishes only after the flow has been cancelled.
+
+  @Test
+  func dismissDuringFetchStopsBeforeSavingAndDeletesTheKey() async throws {
+    let gate = Gate()
+    let flow = FakeIssuanceFlow(fetchGate: gate)
+    let viewModel = makeViewModel(flow: flow, onDismiss: gate.open)
+    await awaitingPin(viewModel)
+
+    async let issuing: Void = viewModel.enterPin("123456")
+    await gate.reached()
+    await viewModel.dismiss()
+    await issuing
+
+    let signer = try #require(recorder.signers.first)
+    let key = try #require(await signer.createdKeys.first)
+    #expect(recorder.savedCredentials.isEmpty)
+    #expect(await signer.deletedKeyIds == [key.id])
+  }
+
+  @Test
+  func dismissDuringASuccessfulSaveKeepsTheKey() async throws {
+    let gate = Gate()
+    let viewModel = makeViewModel(onSave: { _ in await gate.pass() }, onDismiss: gate.open)
+    await awaitingPin(viewModel)
+
+    async let issuing: Void = viewModel.enterPin("123456")
+    await gate.reached()
+    await viewModel.dismiss()
+    await issuing
+
+    let signer = try #require(recorder.signers.first)
+    #expect(recorder.savedCredentials.count == 1)
+    #expect(await signer.deletedKeyIds.isEmpty)
+  }
+
+  @Test
+  func dismissDuringAFailedSaveDeletesTheKey() async throws {
+    let gate = Gate()
+    let viewModel = makeViewModel(
+      onSave: { _ in
+        await gate.pass()
+        throw FakeError.intentional
+      },
+      onDismiss: gate.open,
+    )
+    await awaitingPin(viewModel)
+
+    async let issuing: Void = viewModel.enterPin("123456")
+    await gate.reached()
+    await viewModel.dismiss()
+    await issuing
+
+    let signer = try #require(recorder.signers.first)
+    let key = try #require(await signer.createdKeys.first)
+    #expect(await signer.deletedKeyIds == [key.id])
   }
 }

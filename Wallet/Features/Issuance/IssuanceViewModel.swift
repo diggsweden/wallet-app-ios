@@ -21,6 +21,7 @@ final class IssuanceViewModel {
   private let actions: IssuanceActions
   private var oauth = OauthCoordinator()
   private(set) var state: IssuanceState = .idle
+  private var flowTask: Task<Void, Never>?
 
   private(set) var issuerDisplayData: IssuerDisplay?
   private let makeSigner: (_ pin: String) -> any ProofKeyManager
@@ -77,13 +78,19 @@ final class IssuanceViewModel {
   }
 
   func completeIssuance() async {
-    guard case let .step(.savingCredential(credential, _, _)) = state else {
+    guard case let .step(.awaitingCompletion(credential)) = state else {
       return
     }
+
     await resume(from: .complete(credential))
   }
 
   func dismiss() async {
+    flowTask?.cancel()
+    await actions.onDismiss()
+    // The running step may still finish; clean up based on where the flow settled.
+    await flowTask?.value
+
     let currentStep: IssuanceStep? =
       switch state {
         case let .step(step),
@@ -98,14 +105,26 @@ final class IssuanceViewModel {
     {
       try? await store.deleteKey(id: keyId)
     }
-
-    await actions.onDismiss()
   }
 
   private func resume(from startStep: IssuanceStep) async {
+    let task = Task { await run(from: startStep) }
+    flowTask = task
+    await withTaskCancellationHandler {
+      await task.value
+    } onCancel: {
+      task.cancel()
+    }
+  }
+
+  private func run(from startStep: IssuanceStep) async {
     var current: IssuanceStep? = startStep
     while let step = current {
       state = .step(step)
+      guard !Task.isCancelled else {
+        return
+      }
+
       do {
         current = try await perform(step)
       } catch {
@@ -117,20 +136,20 @@ final class IssuanceViewModel {
 
   private func perform(_ step: IssuanceStep) async throws -> IssuanceStep? {
     switch step {
+      case .preparingToAuthorize, .awaitingPin, .awaitingCompletion:
+        return nil
+
       case .loadingCredentialOffer:
         try await loadOffer()
         return .preparingToAuthorize
 
-      case .preparingToAuthorize:
-        return nil
-
       case let .authorizing(authenticate):
-        let callbackUrl = try await authenticate(flow.authorizationUrl())
+        guard let callbackUrl = try await authenticate(flow.authorizationUrl()) else {
+          return .preparingToAuthorize
+        }
+
         try await flow.exchangeAuthorizationCode(callbackUrl: callbackUrl)
         return .awaitingPin
-
-      case .awaitingPin:
-        return nil
 
       case let .authenticatingPin(signer):
         try await signer.authenticate()
@@ -157,7 +176,7 @@ final class IssuanceViewModel {
 
       case let .savingCredential(issuedCredential, _, _):
         try await actions.onSaveCredential(issuedCredential.credential)
-        return nil
+        return .awaitingCompletion(issuedCredential)
 
       case .complete:
         try await actions.onComplete()

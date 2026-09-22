@@ -17,6 +17,36 @@ enum FakeError: Error {
   case intentional
 }
 
+/// Holds a step in flight until the test opens it, so the test can act mid-step.
+@MainActor
+final class Gate {
+  private var blocked: CheckedContinuation<Void, Never>?
+  private var arrival: CheckedContinuation<Void, Never>?
+
+  /// Called by the code under test; suspends until `open()`.
+  func pass() async {
+    await withCheckedContinuation { continuation in
+      blocked = continuation
+      arrival?.resume()
+      arrival = nil
+    }
+  }
+
+  /// Suspends until the code under test is waiting in `pass()`.
+  func reached() async {
+    guard blocked == nil else {
+      return
+    }
+
+    await withCheckedContinuation { arrival = $0 }
+  }
+
+  func open() {
+    blocked?.resume()
+    blocked = nil
+  }
+}
+
 actor FakeIssuanceFlow: IssuanceFlow {
   enum Operation: Hashable {
     case loadOffer
@@ -35,9 +65,11 @@ actor FakeIssuanceFlow: IssuanceFlow {
   private(set) var proofSigners: [any ProofSigner] = []
   private(set) var attestationProviders: [any KeyAttestationProviding] = []
   private(set) var fetchKeys: [ProofKey] = []
+  private let fetchGate: Gate?
 
-  init(failingOnce failures: Set<Operation> = []) {
+  init(failingOnce failures: Set<Operation> = [], fetchGate: Gate? = nil) {
     pendingFailures = failures
+    self.fetchGate = fetchGate
   }
 
   func loadOffer(_ offerUri: String) throws -> OfferedIssuance {
@@ -68,7 +100,8 @@ actor FakeIssuanceFlow: IssuanceFlow {
     try record(.createProof)
   }
 
-  func fetchCredential(proofKey: ProofKey) throws -> IssuedCredential {
+  func fetchCredential(proofKey: ProofKey) async throws -> IssuedCredential {
+    await fetchGate?.pass()
     fetchKeys.append(proofKey)
     try record(.fetchCredential)
     return IssuedCredential.bound(to: proofKey)
@@ -92,6 +125,7 @@ actor FakeProofKeyManager: ProofSigner, ProofKeyStore {
   private(set) var authenticateCount = 0
   private(set) var createKeyCount = 0
   private(set) var createdKeys: [ProofKey] = []
+  private(set) var deletedKeyIds: [ProofKey.ID] = []
 
   init(failingOnce failures: Set<Operation> = []) {
     pendingFailures = failures
@@ -113,7 +147,9 @@ actor FakeProofKeyManager: ProofSigner, ProofKeyStore {
     return key
   }
 
-  func deleteKey(id: ProofKey.ID) {}
+  func deleteKey(id: ProofKey.ID) {
+    deletedKeyIds.append(id)
+  }
 
   func sign(_ signingInput: Data, keyId: ProofKey.ID) -> String { "signature" }
 

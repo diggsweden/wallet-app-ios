@@ -31,15 +31,7 @@ final class UserSessionViewModel {
   }
 
   var isOnboardingCompleted: Bool {
-    guard case let .ready(user) = user else {
-      return false
-    }
-
-    return user.accountId != nil && user.hasPid && user.isOnboardingCompleted
-  }
-
-  private var hasStaleDeviceKey: Bool {
-    return !isOnboardingCompleted && SigningKeyStore.hasKey(withTag: .deviceKey)
+    userSnapshot?.isFullyOnboarded ?? false
   }
 
   func initUser() async {
@@ -50,7 +42,7 @@ final class UserSessionViewModel {
     do {
       let value = try await userStore.getOrCreate()
 
-      if hasStaleDeviceKey {
+      if hasStaleDeviceKey(value) {
         try await signOut()
       } else {
         user = .ready(value)
@@ -58,6 +50,10 @@ final class UserSessionViewModel {
     } catch {
       user = .error(CaughtError(error))
     }
+  }
+
+  private func hasStaleDeviceKey(_ snapshot: UserSnapshot) -> Bool {
+    !snapshot.isFullyOnboarded && SigningKeyStore.hasKey(withTag: .deviceKey)
   }
 
   func retryInitUser() async {
@@ -91,5 +87,11 @@ final class UserSessionViewModel {
   func completeOnboarding() async throws {
     let updated = try await userStore.completeOnboarding()
     user = .ready(updated)
+  }
+}
+
+private extension UserSnapshot {
+  var isFullyOnboarded: Bool {
+    accountId != nil && hasPid && isOnboardingCompleted
   }
 }
