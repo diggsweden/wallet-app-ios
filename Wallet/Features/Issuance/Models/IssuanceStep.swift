@@ -10,7 +10,7 @@ typealias ProofKeyManager = ProofSigner & ProofKeyStore & AnyObject
 enum IssuanceStep {
   case loadingCredentialOffer
   case preparingToAuthorize
-  case authorizing(WebAuthenticate)
+  case authorizing(WebAuthenticator)
   case awaitingPin
   case authenticatingPin(any ProofKeyManager)
   case creatingKey(any ProofKeyManager)

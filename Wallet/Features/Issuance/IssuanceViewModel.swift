@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
-import AuthenticationServices
 import CredentialInterfaces
 import Foundation
 import Issuance
@@ -19,7 +18,6 @@ final class IssuanceViewModel {
   private var flow: any IssuanceFlow
   private let gatewayApiClient: any GatewayApi & HSMTransport
   private let actions: IssuanceActions
-  private var oauth = OauthCoordinator()
   private(set) var state: IssuanceState = .idle
   private var flowTask: Task<Void, Never>?
 
@@ -61,7 +59,7 @@ final class IssuanceViewModel {
     await resume(from: step.retryStep)
   }
 
-  func login(authenticate: @escaping WebAuthenticate) async {
+  func login(authenticate: @escaping WebAuthenticator) async {
     guard case .step(.preparingToAuthorize) = state else {
       return
     }
@@ -88,7 +86,6 @@ final class IssuanceViewModel {
   func dismiss() async {
     flowTask?.cancel()
     await actions.onDismiss()
-    // The running step may still finish; clean up based on where the flow settled.
     await flowTask?.value
 
     let currentStep: IssuanceStep? =
@@ -144,7 +141,11 @@ final class IssuanceViewModel {
         return .preparingToAuthorize
 
       case let .authorizing(authenticate):
-        guard let callbackUrl = try await authenticate(flow.authorizationUrl()) else {
+        guard
+          let callbackUrl = try await authenticate(
+            WebAuthRequest(url: flow.authorizationUrl(), callbackScheme: "wallet-app")
+          )
+        else {
           return .preparingToAuthorize
         }
 

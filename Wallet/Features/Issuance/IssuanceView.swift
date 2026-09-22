@@ -14,7 +14,6 @@ import WalletGatewayInterface
 struct IssuanceView: View {
   @State private var viewModel: IssuanceViewModel
   @Environment(\.theme) private var theme
-  @Environment(\.authPresentationAnchor) private var anchor
   @Environment(Router.self) private var router
   @Environment(\.webAuthenticationSession) private var webAuthSession
 
@@ -90,7 +89,7 @@ private extension IssuanceView {
       case .preparingToAuthorize:
         PrimaryButton("Logga in", maxWidth: .infinity) {
           Task {
-            await viewModel.login(authenticate: webAuthSession.handler())
+            await viewModel.login(authenticate: webAuthSession.authenticator)
           }
         }
 
