@@ -19,7 +19,6 @@ final class IssuanceViewModel {
   private let gatewayApiClient: any GatewayApi & HSMTransport
   private let actions: IssuanceActions
   private(set) var state: IssuanceState = .idle
-  private(set) var credentialSaved = false
   private var flowTask: Task<Void, Never>?
 
   private(set) var issuerDisplayData: IssuerDisplay?
@@ -49,7 +48,6 @@ final class IssuanceViewModel {
   }
 
   func start() async {
-    credentialSaved = false
     await resume(from: .loadingCredentialOffer)
   }
 
@@ -78,7 +76,7 @@ final class IssuanceViewModel {
   }
 
   func completeIssuance() async {
-    guard credentialSaved, case let .step(.savingCredential(credential, _, _)) = state else {
+    guard case let .step(.awaitingCompletion(credential)) = state else {
       return
     }
 
@@ -99,7 +97,7 @@ final class IssuanceViewModel {
         case .idle: nil
       }
 
-    if !credentialSaved, let currentStep,
+    if let currentStep,
       let (keyId, store) = currentStep.pendingKey
     {
       try? await store.deleteKey(id: keyId)
@@ -135,7 +133,7 @@ final class IssuanceViewModel {
 
   private func perform(_ step: IssuanceStep) async throws -> IssuanceStep? {
     switch step {
-      case .preparingToAuthorize, .awaitingPin:
+      case .preparingToAuthorize, .awaitingPin, .awaitingCompletion:
         return nil
 
       case .loadingCredentialOffer:
@@ -178,10 +176,8 @@ final class IssuanceViewModel {
         return .savingCredential(issuedCredential, proofKey: proofKey, signer: signer)
 
       case let .savingCredential(issuedCredential, _, _):
-        credentialSaved = false
         try await actions.onSaveCredential(issuedCredential.credential)
-        credentialSaved = true
-        return nil
+        return .awaitingCompletion(issuedCredential)
 
       case .complete:
         try await actions.onComplete()

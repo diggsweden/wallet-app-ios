@@ -63,10 +63,10 @@ struct IssuanceViewModelTests {
     )
   }
 
-  private func authenticate() -> WebAuthenticate {
+  private func authenticate() -> WebAuthenticator {
     let recorder = recorder
-    return { url in
-      recorder.authorizationUrls.append(url)
+    return { request in
+      recorder.authorizationUrls.append(request.url)
       return Self.callbackUrl
     }
   }
@@ -175,16 +175,7 @@ struct IssuanceViewModelTests {
     #expect(signedBySessionSigner)
     #expect(attestsThroughGateway)
     #expect(recorder.savedCredentials.map(\.keyId) == [key.id.rawValue])
-    #expect(
-      viewModel.state.currentStep
-        == .savingCredential(
-          .bound(
-            to: key
-          ),
-          proofKey: key,
-          signer: signer,
-        )
-    )
+    #expect(viewModel.state.currentStep == .awaitingCompletion(.bound(to: key)))
   }
 
   @Test
@@ -316,14 +307,7 @@ struct IssuanceViewModelTests {
     )
 
     await viewModel.retry()
-    #expect(
-      viewModel.state.currentStep
-        == .savingCredential(
-          .bound(to: key),
-          proofKey: key,
-          signer: signer,
-        )
-    )
+    #expect(viewModel.state.currentStep == .awaitingCompletion(.bound(to: key)))
     #expect(await flow.fetchKeys == [key])
     #expect(recorder.savedCredentials.count == 2)
   }
@@ -366,10 +350,8 @@ struct IssuanceViewModelTests {
     #expect(viewModel.state.currentStep == .awaitingPin)
   }
 
-  // MARK: Dismissal
-
   @Test
-  func completeIssuanceWaitsForAnInFlightSave() async {
+  func completeIssuanceWaitsForAnInFlightSave() async throws {
     let gate = Gate()
     let viewModel = makeViewModel(onSave: { _ in await gate.pass() })
     await awaitingPin(viewModel)
@@ -378,14 +360,21 @@ struct IssuanceViewModelTests {
     await gate.reached()
     await viewModel.completeIssuance()
     #expect(recorder.completeCount == 0)
-    #expect(!viewModel.credentialSaved)
+    let signer = try #require(recorder.signers.first)
+    let key = try #require(await signer.createdKeys.first)
+    #expect(
+      viewModel.state.currentStep
+        == .savingCredential(.bound(to: key), proofKey: key, signer: signer)
+    )
 
     gate.open()
     await issuing
-    #expect(viewModel.credentialSaved)
+    #expect(viewModel.state.currentStep == .awaitingCompletion(.bound(to: key)))
     await viewModel.completeIssuance()
     #expect(recorder.completeCount == 1)
   }
+
+  // MARK: Dismissal
 
   @Test
   func dismissAfterSaveKeepsTheCredentialKey() async throws {

@@ -67,24 +67,27 @@ private extension IssuanceView {
   var issuanceToolbar: some ToolbarContent {
     if case .step(let step) = viewModel.state {
       ToolbarItem(placement: .bottomBar) {
-        issuanceToolbarButton(for: step)
+        issuanceBottomToolbarButton(for: step)
       }
       .sharedBackgroundVisibilityHiddenIfPossible()
     }
-    ToolbarItem(placement: .destructiveAction) {
-      Button {
-        Task {
-          await viewModel.dismiss()
+
+    if shouldShowDismissButton {
+      ToolbarItem(placement: .destructiveAction) {
+        Button {
+          Task {
+            await viewModel.dismiss()
+          }
+        } label: {
+          Image(systemName: "xmark")
+            .accessibilityLabel("Avbryt")
         }
-      } label: {
-        Image(systemName: "xmark")
-          .accessibilityLabel("Avbryt")
       }
     }
   }
 
   @ContentBuilder
-  func issuanceToolbarButton(for step: IssuanceStep) -> some View {
+  func issuanceBottomToolbarButton(for step: IssuanceStep) -> some View {
     switch step {
       case .preparingToAuthorize:
         PrimaryButton("Logga in", maxWidth: .infinity) {
@@ -93,16 +96,29 @@ private extension IssuanceView {
           }
         }
 
-      case .savingCredential, .complete:
+      case .awaitingCompletion, .complete:
         PrimaryButton("Fortsätt", maxWidth: .infinity) {
           Task {
             await viewModel.completeIssuance()
           }
         }
-        .disabled(!viewModel.credentialSaved)
 
       default:
         EmptyView()
+    }
+  }
+
+  var shouldShowDismissButton: Bool {
+    guard case .step(let step) = viewModel.state else {
+      return true
+    }
+
+    switch step {
+      case .awaitingCompletion, .complete:
+        return false
+
+      default:
+        return true
     }
   }
 
@@ -122,7 +138,9 @@ private extension IssuanceView {
             Task { await viewModel.enterPin(pin) }
           }
 
-        case let .savingCredential(credential, _, _), let .complete(credential):
+        case let .savingCredential(credential, _, _),
+          let .awaitingCompletion(credential),
+          let .complete(credential):
           CredentialView(claims: credential.claims)
 
         default:
