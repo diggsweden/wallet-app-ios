@@ -30,12 +30,8 @@ final class UserSessionViewModel {
     return nil
   }
 
-  var isEnrolled: Bool {
-    guard case let .ready(user) = user else {
-      return false
-    }
-
-    return user.accountId != nil && user.hasPid
+  var isOnboardingCompleted: Bool {
+    userSnapshot?.hasCompletedOnboarding ?? false
   }
 
   func initUser() async {
@@ -56,9 +52,8 @@ final class UserSessionViewModel {
     }
   }
 
-  private func hasStaleDeviceKey(_ snapshot: UserSnapshot) -> Bool {
-    let enrolled = snapshot.accountId != nil && snapshot.hasPid
-    return !enrolled && SigningKeyStore.hasKey(withTag: .deviceKey)
+  private func hasStaleDeviceKey(_ user: UserSnapshot) -> Bool {
+    !user.hasCompletedOnboarding && SigningKeyStore.hasKey(withTag: .deviceKey)
   }
 
   func retryInitUser() async {
@@ -87,5 +82,16 @@ final class UserSessionViewModel {
   func saveHsmServerParameters(_ parameters: ServerParameters) async throws {
     let updated = try await userStore.saveHsmServerParameters(HsmServerParameters(parameters))
     user = .ready(updated)
+  }
+
+  func completeOnboarding() async throws {
+    let updated = try await userStore.completeOnboarding()
+    user = .ready(updated)
+  }
+}
+
+private extension UserSnapshot {
+  var hasCompletedOnboarding: Bool {
+    accountId != nil && hasPid && isOnboardingCompleted
   }
 }

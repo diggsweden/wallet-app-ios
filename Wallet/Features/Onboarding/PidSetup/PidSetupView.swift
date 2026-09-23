@@ -2,12 +2,13 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
+import AuthenticationServices
 import DesignSystem
 import SwiftUI
 
 struct PidSetupView: View {
   @State private var viewModel: PidSetupViewModel
-  @Environment(\.authPresentationAnchor) private var anchor
+  @Environment(\.webAuthenticationSession) private var webAuthSession
 
   init(onSubmit: @escaping (String) -> Void) {
     _viewModel = State(wrappedValue: PidSetupViewModel(onSubmit: onSubmit))
@@ -58,7 +59,7 @@ struct PidSetupView: View {
           label: "Försök igen",
           accessibilityHint: "Använd knappen för att försöka igen",
           action: {
-            Task { await viewModel.fetchPid(anchor) }
+            Task { await viewModel.fetchPid(authenticate: webAuthSession.authenticator) }
           },
         ),
       )
@@ -69,7 +70,9 @@ struct PidSetupView: View {
   private var button: some View {
     // TODO: ProgressView in label while loading
     PrimaryButton("Begär personuppgifter", icon: "arrow.up.forward.app") {
-      Task { await viewModel.fetchPid(anchor) }
+      Task {
+        await viewModel.fetchPid(authenticate: webAuthSession.authenticator)
+      }
     }
   }
 }

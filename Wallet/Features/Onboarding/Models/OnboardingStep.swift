@@ -26,7 +26,6 @@ enum OnboardingStep: CaseIterable {
   func previous() -> Self? {
     switch self {
       case .verifyPin: .pin
-      case .issueCredential: .pid
       default: nil
     }
   }

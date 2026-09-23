@@ -7,7 +7,7 @@ import Jose
 
 public struct ResolvedPresentation: Sendable {
   public let candidates: [PresentationCandidate]
-  public let disclosedSdJwts: [String: String]
+  public let disclosedCredentials: [String: DisclosedCredential]
   public let responseUrl: URL
   public let clientId: String
   public let nonce: String
@@ -16,7 +16,7 @@ public struct ResolvedPresentation: Sendable {
 
   public init(
     candidates: [PresentationCandidate],
-    disclosedSdJwts: [String: String],
+    disclosedCredentials: [String: DisclosedCredential],
     responseUrl: URL,
     clientId: String,
     nonce: String,
@@ -24,7 +24,7 @@ public struct ResolvedPresentation: Sendable {
     encryption: CryptoSpec? = nil,
   ) {
     self.candidates = candidates
-    self.disclosedSdJwts = disclosedSdJwts
+    self.disclosedCredentials = disclosedCredentials
     self.responseUrl = responseUrl
     self.clientId = clientId
     self.nonce = nonce

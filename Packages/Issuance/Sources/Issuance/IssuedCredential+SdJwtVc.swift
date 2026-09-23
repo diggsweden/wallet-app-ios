@@ -14,6 +14,7 @@ extension OpenId4VCInterface.IssuedCredential {
     configuration: SdJwtVcFormat.CredentialConfiguration,
     issuer: Display?,
     claimDisplayNames: [String: String],
+    keyId: String,
   ) throws {
     let claims = try SdJwtVc.claimUiModels(
       compactSerialized: compactSdJwt,
@@ -32,6 +33,7 @@ extension OpenId4VCInterface.IssuedCredential {
         claimsCount: claims.count,
         issuedAt: .now,
         type: configuration.vct ?? "",
+        keyId: keyId,
         displayData: CredentialDisplayData(
           name: configuration.credentialMetadata?.display.first?.name
         ),

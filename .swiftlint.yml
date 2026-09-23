@@ -88,6 +88,11 @@ disabled_rules:
   - opening_brace
   - closure_parameter_position
   - todo
+  - type_name
+
+# Flat switches over state enums are not complex; only count real branching.
+cyclomatic_complexity:
+  ignores_case_statements: true
 
 # Line length is kept consistent with swift-format's lineLength setting.
 line_length:

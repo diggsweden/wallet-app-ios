@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
-enum IssuanceRecovery {
-  case start
-  case authorize
-  case fetchCredential
+enum IssuanceState {
+  case idle
+  case step(IssuanceStep)
+  case failed(at: IssuanceStep, CaughtError)
 }

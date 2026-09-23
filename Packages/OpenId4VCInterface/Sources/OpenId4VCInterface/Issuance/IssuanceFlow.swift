@@ -9,8 +9,9 @@ public protocol IssuanceFlow: Sendable {
   func authorizationUrl() async throws -> URL
   func exchangeAuthorizationCode(callbackUrl: URL) async throws
   func createProof(
+    proofKey: ProofKey,
     signer: any ProofSigner,
     attestations: any KeyAttestationProviding,
   ) async throws
-  func fetchCredential() async throws -> IssuedCredential
+  func fetchCredential(proofKey: ProofKey) async throws -> IssuedCredential
 }

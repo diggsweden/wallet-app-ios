@@ -54,6 +54,13 @@ public actor UserStore: AccountIdProvider {
     return snapshot(from: user)
   }
 
+  public func completeOnboarding() throws -> UserSnapshot {
+    let user = try getOrCreateModel()
+    user.isOnboardingCompleted = true
+    try save()
+    return snapshot(from: user)
+  }
+
   public func deleteAll() throws {
     try modelContext.delete(model: User.self)
     try save()
@@ -86,6 +93,7 @@ public actor UserStore: AccountIdProvider {
       accountId: model.accountId,
       credentials: model.credentials.map { $0.toDomain() },
       hsmServerParameters: model.hsmServerParameters?.toDomain(),
+      isOnboardingCompleted: model.isOnboardingCompleted,
     )
   }
 

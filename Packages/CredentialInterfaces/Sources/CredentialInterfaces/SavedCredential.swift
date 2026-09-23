@@ -4,13 +4,14 @@
 
 import Foundation
 
-public struct SavedCredential: Codable, Hashable, Sendable {
+public struct SavedCredential: Codable, Hashable, Sendable, Equatable {
   public let issuer: IssuerDisplay
   public let compactSerialized: String
   public let claimDisplayNames: [String: String]
   public let claimsCount: Int
   public let issuedAt: Date
   public let type: String
+  public let keyId: String
   public let displayData: CredentialDisplayData?
 
   public init(
@@ -20,6 +21,7 @@ public struct SavedCredential: Codable, Hashable, Sendable {
     claimsCount: Int,
     issuedAt: Date,
     type: String,
+    keyId: String,
     displayData: CredentialDisplayData?,
   ) {
     self.issuer = issuer
@@ -28,11 +30,12 @@ public struct SavedCredential: Codable, Hashable, Sendable {
     self.claimsCount = claimsCount
     self.issuedAt = issuedAt
     self.type = type
+    self.keyId = keyId
     self.displayData = displayData
   }
 }
 
-public struct IssuerDisplay: Codable, Hashable, Sendable {
+public struct IssuerDisplay: Codable, Hashable, Sendable, Equatable {
   public let name: String
   public let info: String?
   public let imageUrl: URL?
@@ -44,7 +47,7 @@ public struct IssuerDisplay: Codable, Hashable, Sendable {
   }
 }
 
-public struct CredentialDisplayData: Codable, Hashable, Sendable {
+public struct CredentialDisplayData: Codable, Hashable, Sendable, Equatable {
   public let name: String?
 
   public init(name: String?) {
