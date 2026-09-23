@@ -47,7 +47,7 @@ packages:
     exactVersion: 0.15.0
   swift-snapshot-testing:
     url: https://github.com/pointfreeco/swift-snapshot-testing.git
-    from: 1.19.4
+    from: 1.19.5
   WalletMacros:
     path: Packages/WalletMacros
   WalletGateway:
