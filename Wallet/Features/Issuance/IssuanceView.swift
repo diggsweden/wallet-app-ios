@@ -94,12 +94,13 @@ private extension IssuanceView {
           }
         }
 
-      case .awaitingCompletion, .complete:
+      case .savingCredential, .complete:
         PrimaryButton("Fortsätt", maxWidth: .infinity) {
           Task {
             await viewModel.completeIssuance()
           }
         }
+        .disabled(!viewModel.credentialSaved)
 
       default:
         EmptyView()
@@ -122,9 +123,7 @@ private extension IssuanceView {
             Task { await viewModel.enterPin(pin) }
           }
 
-        case let .savingCredential(credential, _, _),
-          let .awaitingCompletion(credential),
-          let .complete(credential):
+        case let .savingCredential(credential, _, _), let .complete(credential):
           CredentialView(claims: credential.claims)
 
         default:

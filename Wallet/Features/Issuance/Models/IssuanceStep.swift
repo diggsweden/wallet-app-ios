@@ -21,7 +21,6 @@ enum IssuanceStep {
     proofKey: ProofKey,
     signer: any ProofKeyManager,
   )
-  case awaitingCompletion(IssuedCredential)
   case complete(IssuedCredential)
 }
 
@@ -41,7 +40,6 @@ extension IssuanceStep {
         .creatingKey,
         .signingProof,
         .savingCredential,
-        .awaitingCompletion,
         .complete:
         self
     }
@@ -62,7 +60,6 @@ extension IssuanceStep {
         .awaitingPin,
         .authenticatingPin,
         .creatingKey,
-        .awaitingCompletion,
         .complete:
         nil
     }
@@ -95,7 +92,7 @@ extension IssuanceStep: Equatable {
 
       case let (
         .fetchingCredential(lhsProofKey, lhsSigner),
-        .fetchingCredential(rhsProofKey, rhsSigner)
+        .fetchingCredential(rhsProofKey, rhsSigner),
       ):
         return lhsProofKey == rhsProofKey && lhsSigner === rhsSigner
 
@@ -103,12 +100,8 @@ extension IssuanceStep: Equatable {
         .savingCredential(lhsCredential, lhsProofKey, lhsSigner),
         .savingCredential(rhsCredential, rhsProofKey, rhsSigner),
       ):
-        return lhsCredential == rhsCredential &&
-               lhsSigner === rhsSigner &&
-               lhsProofKey == rhsProofKey
-
-      case let (.awaitingCompletion(lhsCredential), .awaitingCompletion(rhsCredential)):
-        return lhsCredential == rhsCredential
+        return lhsCredential == rhsCredential && lhsSigner === rhsSigner
+          && lhsProofKey == rhsProofKey
 
       case let (.complete(lhsCredential), .complete(rhsCredential)):
         return lhsCredential == rhsCredential

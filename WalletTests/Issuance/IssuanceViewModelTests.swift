@@ -175,7 +175,16 @@ struct IssuanceViewModelTests {
     #expect(signedBySessionSigner)
     #expect(attestsThroughGateway)
     #expect(recorder.savedCredentials.map(\.keyId) == [key.id.rawValue])
-    #expect(viewModel.state.currentStep == .awaitingCompletion(.bound(to: key)))
+    #expect(
+      viewModel.state.currentStep
+        == .savingCredential(
+          .bound(
+            to: key
+          ),
+          proofKey: key,
+          signer: signer,
+        )
+    )
   }
 
   @Test
@@ -298,15 +307,23 @@ struct IssuanceViewModelTests {
     let signer = try #require(recorder.signers.first)
     let key = try #require(await signer.createdKeys.first)
     #expect(
-      viewModel.state.failedStep == .savingCredential(
-        .bound(to: key),
-        proofKey: key,
-        signer: signer
-      )
+      viewModel.state.failedStep
+        == .savingCredential(
+          .bound(to: key),
+          proofKey: key,
+          signer: signer,
+        )
     )
 
     await viewModel.retry()
-    #expect(viewModel.state.currentStep == .awaitingCompletion(.bound(to: key)))
+    #expect(
+      viewModel.state.currentStep
+        == .savingCredential(
+          .bound(to: key),
+          proofKey: key,
+          signer: signer,
+        )
+    )
     #expect(await flow.fetchKeys == [key])
     #expect(recorder.savedCredentials.count == 2)
   }
@@ -350,6 +367,25 @@ struct IssuanceViewModelTests {
   }
 
   // MARK: Dismissal
+
+  @Test
+  func completeIssuanceWaitsForAnInFlightSave() async {
+    let gate = Gate()
+    let viewModel = makeViewModel(onSave: { _ in await gate.pass() })
+    await awaitingPin(viewModel)
+
+    async let issuing: Void = viewModel.enterPin("123456")
+    await gate.reached()
+    await viewModel.completeIssuance()
+    #expect(recorder.completeCount == 0)
+    #expect(!viewModel.credentialSaved)
+
+    gate.open()
+    await issuing
+    #expect(viewModel.credentialSaved)
+    await viewModel.completeIssuance()
+    #expect(recorder.completeCount == 1)
+  }
 
   @Test
   func dismissAfterSaveKeepsTheCredentialKey() async throws {
