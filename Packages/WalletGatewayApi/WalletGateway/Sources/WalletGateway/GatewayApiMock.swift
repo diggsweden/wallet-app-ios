@@ -11,6 +11,6 @@ public struct GatewayApiMock: GatewayApi {
 
   public func getKeyAttestation(
     keys: [PublicKeyComponents],
-    nonce: String?
+    nonce: String?,
   ) throws -> String { "" }
 }

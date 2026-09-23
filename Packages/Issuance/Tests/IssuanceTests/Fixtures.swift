@@ -103,9 +103,10 @@ enum Fixtures {
   }
 
   private static func sdJwtConfiguration(_ keyAttestationsRequired: String?) -> String {
-    let keyAttestationsMember = keyAttestationsRequired.map { member in
-      #", "key_attestations_required": \#(member)"#
-    } ?? ""
+    let keyAttestationsMember =
+      keyAttestationsRequired.map { member in
+        #", "key_attestations_required": \#(member)"#
+      } ?? ""
 
     return #"""
       {

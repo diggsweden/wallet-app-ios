@@ -19,11 +19,15 @@ public actor FakeKeyAttestationProvider: KeyAttestationProviding {
     self.attestation = attestation
   }
 
-  // swiftlint:disable:next async_without_await
-  public func keyAttestation(for publicKeys: [WalletJoseJWK], nonce: String?) async throws
+  // swiftlint:disable async_without_await
+  public func keyAttestation(
+    for publicKeys: [WalletJoseJWK],
+    nonce: String?,
+  ) async throws
     -> String
   {
     requests.append(Request(publicKeys: publicKeys, nonce: nonce))
     return attestation
   }
+  // swiftlint:enable async_without_await
 }

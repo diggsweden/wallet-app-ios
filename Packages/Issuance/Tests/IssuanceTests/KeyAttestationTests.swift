@@ -57,12 +57,13 @@ struct KeyAttestationTests {
   }
 
   @Test func `issuer metadata with key storage constraints asks for an attestation`() throws {
-    let configuration = try Fixtures.offer(
-      keyAttestationsRequired: #"""
-        {"key_storage": ["iso_18045_high"], "user_authentication": ["iso_18045_moderate"]}
-        """#
-    )
-    .sdJwtVcConfiguration().configuration
+    let configuration =
+      try Fixtures.offer(
+        keyAttestationsRequired: #"""
+          {"key_storage": ["iso_18045_high"], "user_authentication": ["iso_18045_moderate"]}
+          """#
+      )
+      .sdJwtVcConfiguration().configuration
 
     let requirement = configuration.proofTypesSupported?["jwt"]?.keyAttestationRequirement
     #expect(

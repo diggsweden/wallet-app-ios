@@ -22,9 +22,9 @@ extension WebAuthenticationSession {
           using: request.url,
           callback: .customScheme(request.callbackScheme),
           preferredBrowserSession: .ephemeral,
-          additionalHeaderFields: [:]
+          additionalHeaderFields: [:],
         )
-      } catch where error.isWebAuthCancellation {
+      } catch  where error.isWebAuthCancellation {
         return nil
       }
     }
