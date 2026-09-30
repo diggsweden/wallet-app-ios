@@ -58,6 +58,8 @@ private extension OnboardingSnapshotTests {
         credentials: [],
         hsmServerParameters: nil,
         isOnboardingCompleted: false,
+        isReset: false,
+        backendResetAt: nil,
       ),
       initialStep: step,
       actions: OnboardingActions(
@@ -72,6 +74,10 @@ private extension OnboardingSnapshotTests {
 }
 
 private struct SnapshotGateway: GatewayApi, HSMTransport {
+  func getDatabaseUpdateTimestamp() throws -> Date {
+    Date(timeIntervalSince1970: 0)
+  }
+
   func createAccount(publicKey: PublicKeyComponents) throws -> String { "" }
   func getKeyAttestation(keys: [PublicKeyComponents], nonce: String?) throws -> String { "" }
 

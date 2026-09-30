@@ -216,7 +216,7 @@ struct OnboardingRootView: View {
     if viewModel.step == .intro {
       ToolbarItem(placement: .topBarTrailing) {
         Button {
-          router.isSettingsSheetPresented = true
+          router.presentedSheet = .settings
         } label: {
           Image(systemName: "gearshape")
             .accessibilityLabel("Inställningar")

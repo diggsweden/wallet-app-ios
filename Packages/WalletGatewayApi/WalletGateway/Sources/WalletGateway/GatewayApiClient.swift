@@ -59,6 +59,10 @@ public struct GatewayApiClient: GatewayApi {
     }
   }
 
+  public func getDatabaseUpdateTimestamp() throws -> Date {
+    throw CocoaError(.featureUnsupported)
+  }
+
   public func getKeyAttestation(
     keys: [PublicKeyComponents],
     nonce: String?,
