@@ -33,16 +33,22 @@ struct UserStoreTests {
     #expect(snapshot.credentials.map(\.keyId) == ["pid-key", "doc-key"])
   }
 
-  @Test("Completing onboarding is persisted")
+  @Test("Completing onboarding persists its backend reset baseline")
   func completeOnboarding() async throws {
     let container = try Self.inMemoryContainer()
+    let timestamp = Date(timeIntervalSince1970: 100)
 
     let before = try await UserStore(modelContainer: container).getOrCreate()
-    _ = try await UserStore(modelContainer: container).completeOnboarding()
+    let completed = try await UserStore(modelContainer: container)
+      .completeOnboarding(backendResetAt: timestamp)
     let after = try await UserStore(modelContainer: container).getOrCreate()
 
     #expect(!before.isOnboardingCompleted)
+    #expect(before.backendResetAt == nil)
+    #expect(completed.isOnboardingCompleted)
+    #expect(completed.backendResetAt == timestamp)
     #expect(after.isOnboardingCompleted)
+    #expect(after.backendResetAt == timestamp)
   }
 }
 

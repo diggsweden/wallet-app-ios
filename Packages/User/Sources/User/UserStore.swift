@@ -54,9 +54,17 @@ public actor UserStore: AccountIdProvider {
     return snapshot(from: user)
   }
 
-  public func completeOnboarding() throws -> UserSnapshot {
+  public func completeOnboarding(backendResetAt: Date) throws -> UserSnapshot {
     let user = try getOrCreateModel()
+    user.backendResetAt = backendResetAt
     user.isOnboardingCompleted = true
+    try save()
+    return snapshot(from: user)
+  }
+
+  public func saveBackendResetTimestamp(_ timestamp: Date?) throws -> UserSnapshot {
+    let user = try getOrCreateModel()
+    user.backendResetAt = timestamp
     try save()
     return snapshot(from: user)
   }
@@ -70,10 +78,10 @@ public actor UserStore: AccountIdProvider {
     if let existing = try fetchSession() {
       return existing
     }
-    return try createSessionModel()
+    return try createUserModel()
   }
 
-  private func createSessionModel() throws -> User {
+  private func createUserModel() throws -> User {
     let session = User()
     modelContext.insert(session)
     try save()
@@ -94,6 +102,8 @@ public actor UserStore: AccountIdProvider {
       credentials: model.credentials.map { $0.toDomain() },
       hsmServerParameters: model.hsmServerParameters?.toDomain(),
       isOnboardingCompleted: model.isOnboardingCompleted,
+      isReset: model.isReset,
+      backendResetAt: model.backendResetAt,
     )
   }
 
@@ -101,6 +111,7 @@ public actor UserStore: AccountIdProvider {
     do {
       try modelContext.save()
     } catch {
+      modelContext.rollback()
       throw UserStoreError.persistence(error)
     }
   }

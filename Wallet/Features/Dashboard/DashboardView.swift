@@ -51,7 +51,7 @@ struct DashboardView: View {
       }
       ToolbarItem(placement: .topBarTrailing) {
         Button {
-          router.isSettingsSheetPresented = true
+          router.presentedSheet = .settings
         } label: {
           Image(systemName: "gearshape")
             .accessibilityLabel("Inställningar")
