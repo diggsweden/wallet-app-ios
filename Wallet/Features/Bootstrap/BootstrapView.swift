@@ -9,24 +9,28 @@ struct BootstrapView: View {
 
   var body: some View {
     ZStack {
-      switch viewModel.state {
-        case .loading:
-          ProgressView()
-            .defaultScreenStyle
+      Group {
+        switch viewModel.state {
+          case .loading:
+            ProgressView()
+              .defaultScreenStyle
 
-        case let .accountReset(dependencies):
-          AccountResetView { viewModel.acknowledgeAccountReset(dependencies: dependencies) }
+          case let .accountReset(dependencies):
+            AccountResetView { viewModel.acknowledgeAccountReset(dependencies: dependencies) }
 
-        case let .ready(dependencies):
-          AppRootView(appDependencies: dependencies)
+          case let .ready(dependencies):
+            AppRootView(appDependencies: dependencies)
 
-        case let .error(caught):
-          errorView(caught: caught)
+          case let .error(caught):
+            errorView(caught: caught)
 
-        case let .backendCheckFailed(caught):
-          errorView(caught: caught, allowsSignOut: false)
+          case let .backendCheckFailed(caught):
+            errorView(caught: caught, allowsSignOut: false)
+        }
       }
+      .transition(.opacity)
     }
+    .animation(.default, value: viewModel.state.animationKey)
     .task { await viewModel.bootstrap() }
   }
 
