@@ -18,14 +18,6 @@ typealias Dependencies = (
 @MainActor
 @Observable
 final class BootstrapViewModel {
-  enum State {
-    case loading
-    case accountReset(AppDependencies)
-    case ready(AppDependencies)
-    case error(CaughtError)
-    case backendCheckFailed(CaughtError)
-  }
-
   private(set) var state: State = .loading
   private var isBootstrapping = false
   private let dependencies: Dependencies
@@ -44,8 +36,8 @@ final class BootstrapViewModel {
     do {
       let userSnapshot = try await dependencies.userStore.getOrCreate()
 
-      if userSnapshot.isReset || hasStaleDeviceKey(userSnapshot) {
-        state = try await signOut(isReset: userSnapshot.isReset)
+      if true || hasStaleDeviceKey(userSnapshot) {
+        state = try await signOut(isReset: true)
         return
       }
 
