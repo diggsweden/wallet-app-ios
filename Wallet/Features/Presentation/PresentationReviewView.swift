@@ -6,6 +6,7 @@ import DesignSystem
 import SwiftUI
 
 struct PresentationReviewView: View {
+  @Environment(\.theme) private var theme
   let requiredItems: [PresentationItem]
   @Binding var optionalItems: [PresentationItem]
   let onConfirm: () -> Void
@@ -36,6 +37,7 @@ struct PresentationReviewView: View {
           onConfirm()
         }
       }
+      .padding(.horizontal, theme.horizontalPadding)
     }
   }
 }

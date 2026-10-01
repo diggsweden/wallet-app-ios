@@ -3,10 +3,13 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import CredentialInterfaces
+import DesignSystem
 import SdJwt
 import SwiftUI
 
 struct CredentialDetailsView: View {
+  @Environment(\.theme) private var theme
+
   let credential: SavedCredential
 
   var body: some View {
@@ -17,6 +20,7 @@ struct CredentialDetailsView: View {
           CredentialView(claims: claims)
         }
       }
+      .padding(.horizontal, theme.horizontalPadding)
     }
     .navigationTitle("Attributsintyg")
     .navigationBarTitleDisplayMode(.inline)
