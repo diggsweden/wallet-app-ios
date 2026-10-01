@@ -8,5 +8,4 @@ import WalletGatewayInterface
 struct AppDependencies {
   let userViewModel: UserViewModel
   let gatewayApiClient: any GatewayApi & HSMTransport
-  let completeOnboarding: () async throws -> Void
 }

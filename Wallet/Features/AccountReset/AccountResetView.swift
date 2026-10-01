@@ -13,7 +13,7 @@ struct AccountResetView: View {
   var body: some View {
     ScrollView {
       VStack(alignment: .leading, spacing: 20) {
-        Text("Din plånbok har återställts")
+        Text("Din plånbok har återställts 🔥")
           .textStyle(.h2)
           .accessibilityAddTraits(.isHeader)
 
