@@ -115,19 +115,13 @@ final class BootstrapViewModel {
   }
 
   private func makeAppDependencies() async throws -> AppDependencies {
-    let userViewModel = UserViewModel(
-      user: try await dependencies.userStore.getOrCreate(),
-      userStore: dependencies.userStore,
-    )
-    let gatewayApiClient = dependencies.gatewayApiClient
-
-    return AppDependencies(
-      userViewModel: userViewModel,
-      gatewayApiClient: gatewayApiClient,
-      completeOnboarding: {
-        let timestamp = try await gatewayApiClient.getDatabaseUpdateTimestamp()
-        try await userViewModel.completeOnboarding(backendResetAt: timestamp)
-      },
+    AppDependencies(
+      userViewModel: UserViewModel(
+        user: try await dependencies.userStore.getOrCreate(),
+        userStore: dependencies.userStore,
+        gatewayApiClient: dependencies.gatewayApiClient,
+      ),
+      gatewayApiClient: dependencies.gatewayApiClient,
     )
   }
 

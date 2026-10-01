@@ -9,14 +9,12 @@ import WalletGatewayInterface
 
 struct AppRootView: View {
   private let gatewayApiClient: any GatewayApi & HSMTransport
-  private let completeOnboarding: () async throws -> Void
   @State private var userViewModel: UserViewModel
   @State private var router = Router()
 
   init(appDependencies: AppDependencies) {
     _userViewModel = State(wrappedValue: appDependencies.userViewModel)
     self.gatewayApiClient = appDependencies.gatewayApiClient
-    self.completeOnboarding = appDependencies.completeOnboarding
   }
 
   var body: some View {
@@ -56,7 +54,7 @@ private extension AppRootView {
           saveCredential: userViewModel.saveCredential,
           resetSession: userViewModel.signOut,
           saveHsmServerParameters: userViewModel.saveHsmServerParameters,
-          onComplete: completeOnboarding,
+          onComplete: userViewModel.completeOnboarding,
         ),
       )
     } else {
