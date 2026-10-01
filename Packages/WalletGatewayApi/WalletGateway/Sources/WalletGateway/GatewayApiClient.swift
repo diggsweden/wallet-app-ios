@@ -59,30 +59,23 @@ public struct GatewayApiClient: GatewayApi {
     }
   }
 
-  public func addAccountWalletKey(key: PublicKeyComponents) async throws {
-    let keyRequest = Components.Schemas.EcJwkRequest(
-      kty: key.kty,
-      kid: key.kid,
-      crv: key.crv,
-      x: key.x,
-      y: key.y,
-    )
-    let input = Operations.AddAccountWalletKey.Input(body: .json(keyRequest))
-
-    switch try await client.addAccountWalletKey(input) {
-      case .created:
-        break
-
-      case .`default`(let status, let response):
-        throw GatewayError.problem(ProblemDetails(status: status, response: response))
+  public func getKeyAttestation(
+    keys: [PublicKeyComponents],
+    nonce: String?,
+  ) async throws -> String {
+    let jwks = keys.map { key in
+      Components.Schemas.EcJwkRequest(
+        kty: key.kty,
+        kid: key.kid,
+        crv: key.crv,
+        x: key.x,
+        y: key.y,
+      )
     }
-  }
+    let bodyDto = Components.Schemas.KeyAttestationRequest(keys: jwks, nonce: nonce)
+    let input = Operations.CreateKeyAttestation.Input(body: .json(bodyDto))
 
-  public func getWalletUnitAttestation(nonce: String?) async throws -> String {
-    let nonceQuery = Operations.CreateWua.Input.Query(nonce: nonce)
-    let input = Operations.CreateWua.Input(query: nonceQuery)
-
-    switch try await client.createWua(input) {
+    switch try await client.createKeyAttestation(input) {
       case .created(let payload):
         guard let jwt = try? payload.body.json.jwt else {
           throw GatewayError.undecodableResponseBody
@@ -92,8 +85,8 @@ public struct GatewayApiClient: GatewayApi {
       case .unauthorized:
         throw GatewayError.unauthorized
 
-      case .`default`(let status, let response):
-        throw GatewayError.problem(ProblemDetails(status: status, response: response))
+      case .`default`(let statusCode, let response):
+        throw GatewayError.problem(ProblemDetails(status: statusCode, response: response))
     }
   }
 }

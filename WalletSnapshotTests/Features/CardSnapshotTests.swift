@@ -36,6 +36,7 @@ struct CardSnapshotTests {
     claimsCount: 15,
     issuedAt: issuedAt,
     type: "",
+    keyId: "snapshot-key",
     displayData: nil,
   )
 
@@ -46,6 +47,7 @@ struct CardSnapshotTests {
     claimsCount: 15,
     issuedAt: issuedAt,
     type: "",
+    keyId: "snapshot-key",
     displayData: CredentialDisplayData(name: "Körkort"),
   )
 }

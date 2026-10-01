@@ -11,11 +11,7 @@ extension Error {
   }
 
   var isWebAuthCancellation: Bool {
-    if let webAuthError = self as? ASWebAuthenticationSessionError {
-      return webAuthError.code == .canceledLogin
-    }
-
-    return (self as? URLError)?.code == .cancelled
+    (self as? ASWebAuthenticationSessionError)?.code == .canceledLogin
   }
 
   func toErrorEvent() -> ErrorEvent {

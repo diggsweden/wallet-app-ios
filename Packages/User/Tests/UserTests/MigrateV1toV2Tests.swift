@@ -63,7 +63,7 @@ private extension MigrateV1toV2Tests {
 
     return try ModelContainer(
       for: SchemaV2.User.self,
-      migrationPlan: SwiftDataMigrationPlan.self,
+      migrationPlan: MigrationPlanV1toV2.self,
       configurations: ModelConfiguration(url: url),
     )
   }
@@ -123,4 +123,16 @@ private extension MigrateV1toV2Tests {
     type: CredentialType.pid.rawValue,
     displayData: SchemaV2.CredentialDisplayData(name: "PID"),
   )
+}
+
+/// The production plan ends at the latest schema, so a container targeting V2 needs a plan that
+/// stops there.
+private enum MigrationPlanV1toV2: SchemaMigrationPlan {
+  static var schemas: [any VersionedSchema.Type] {
+    [SchemaV1.self, SchemaV2.self]
+  }
+
+  static var stages: [MigrationStage] {
+    [MigrateV1toV2.stage]
+  }
 }

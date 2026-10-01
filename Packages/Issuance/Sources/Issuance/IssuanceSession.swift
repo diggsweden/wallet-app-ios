@@ -79,6 +79,7 @@ public actor IssuanceSession: IssuanceFlow {
   }
 
   public func createProof(
+    proofKey: ProofKey,
     signer: any ProofSigner,
     attestations: any KeyAttestationProviding,
   ) async throws {
@@ -97,24 +98,25 @@ public actor IssuanceSession: IssuanceFlow {
         nil
       }
 
-    let keyAttestation: String? =
-      switch proofTypeJwt.keyAttestationRequirement {
-        case .required, .requiredNoConstraints:
-          try await attestations.keyAttestation(nonce: nonce)
-
-        case .notRequired, nil:
-          nil
-      }
+    let keyAttestation = try await Self.keyAttestation(
+      requirement: proofTypeJwt.keyAttestationRequirement,
+      proofKey: proofKey,
+      nonce: nonce,
+      attestations: attestations,
+    )
 
     proof = try await Self.buildProof(
       issuerId: metadata.credentialIssuerIdentifier.url.absoluteString,
       nonce: nonce,
       keyAttestation: keyAttestation,
       signer: signer,
+      proofKey: proofKey,
     )
   }
 
-  public func fetchCredential() async throws -> OpenId4VCInterface.IssuedCredential {
+  public func fetchCredential(
+    proofKey: ProofKey
+  ) async throws -> OpenId4VCInterface.IssuedCredential {
     let offer = try loadedOffer()
     guard let authorizedRequest, let proof else {
       throw IssuanceError.authRequestFailed
@@ -140,7 +142,23 @@ public actor IssuanceSession: IssuanceFlow {
       configuration: credentialConfig,
       issuer: metadata.display.first,
       claimDisplayNames: offer.claimDisplayNames,
+      keyId: proofKey.id.rawValue,
     )
+  }
+
+  static func keyAttestation(
+    requirement: KeyAttestationRequirement?,
+    proofKey: ProofKey,
+    nonce: String?,
+    attestations: any KeyAttestationProviding,
+  ) async throws -> String? {
+    switch requirement {
+      case .required, .requiredNoConstraints:
+        try await attestations.keyAttestation(for: [proofKey.publicKey], nonce: nonce)
+
+      case .notRequired, nil:
+        nil
+    }
   }
 
   // The proof must be signed by the key in the *first* element of the WUA's
@@ -152,10 +170,11 @@ public actor IssuanceSession: IssuanceFlow {
     nonce: String?,
     keyAttestation: String?,
     signer: any ProofSigner,
+    proofKey: ProofKey,
   ) async throws -> String {
     let attested = keyAttestation != nil
     let header = WalletKeyAttestationHeader(
-      jwk: attested ? nil : try await signer.publicKey(),
+      jwk: attested ? nil : proofKey.publicKey,
       keyID: attested ? "0" : nil,
       keyAttestation: keyAttestation,
     )
@@ -164,7 +183,7 @@ public actor IssuanceSession: IssuanceFlow {
       payload: JwtProofPayload(aud: issuerId, nonce: nonce),
       header: header,
     ) { signingInput in
-      try await signer.sign(signingInput)
+      try await signer.sign(signingInput, keyId: proofKey.id)
     }
   }
 

@@ -30,10 +30,14 @@ enum Fixtures {
   static func offer(
     configurationIds: [String] = [sdJwtConfigurationId],
     requestEncryption: RequestEncryption? = nil,
+    keyAttestationsRequired: String? = nil,
   ) throws -> CredentialOffer {
     try CredentialOffer(
       credentialIssuerIdentifier: CredentialIssuerId(issuerId),
-      credentialIssuerMetadata: issuerMetadata(requestEncryption: requestEncryption),
+      credentialIssuerMetadata: issuerMetadata(
+        requestEncryption: requestEncryption,
+        keyAttestationsRequired: keyAttestationsRequired,
+      ),
       credentialConfigurationIdentifiers: configurationIds.map { id in
         try CredentialConfigurationIdentifier(value: id)
       },
@@ -41,8 +45,11 @@ enum Fixtures {
     )
   }
 
+  /// `keyAttestationsRequired` is the raw JSON of the SD-JWT configuration's
+  /// `key_attestations_required` member; `nil` omits it.
   static func issuerMetadata(
-    requestEncryption: RequestEncryption? = nil
+    requestEncryption: RequestEncryption? = nil,
+    keyAttestationsRequired: String? = nil,
   ) throws -> CredentialIssuerMetadata {
     let encryptionMember = try requestEncryption.map { try getEncryptionMember($0) } ?? ""
 
@@ -54,7 +61,7 @@ enum Fixtures {
         "nonce_endpoint": "\#(nonceEndpoint)",
         \#(encryptionMember)
         "credential_configurations_supported": {
-          "\#(sdJwtConfigurationId)": \#(sdJwtConfiguration),
+          "\#(sdJwtConfigurationId)": \#(sdJwtConfiguration(keyAttestationsRequired)),
           "\#(mdocConfigurationId)": \#(mdocConfiguration)
         }
       }
@@ -95,15 +102,26 @@ enum Fixtures {
       """#
   }
 
-  private static let sdJwtConfiguration = #"""
-    {
-      "format": "dc+sd-jwt",
-      "vct": "\#(SampleCredential.pidType)",
-      "cryptographic_binding_methods_supported": ["jwk"],
-      "credential_signing_alg_values_supported": ["ES256"],
-      "proof_types_supported": {"jwt": {"proof_signing_alg_values_supported": ["ES256"]}}
-    }
-    """#
+  private static func sdJwtConfiguration(_ keyAttestationsRequired: String?) -> String {
+    let keyAttestationsMember =
+      keyAttestationsRequired.map { member in
+        #", "key_attestations_required": \#(member)"#
+      } ?? ""
+
+    return #"""
+      {
+        "format": "dc+sd-jwt",
+        "vct": "\#(SampleCredential.pidType)",
+        "cryptographic_binding_methods_supported": ["jwk"],
+        "credential_signing_alg_values_supported": ["ES256"],
+        "proof_types_supported": {
+          "jwt": {
+            "proof_signing_alg_values_supported": ["ES256"]\#(keyAttestationsMember)
+          }
+        }
+      }
+      """#
+  }
 
   private static let mdocConfiguration = #"""
     {

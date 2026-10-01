@@ -44,6 +44,7 @@ private extension CredentialDetailsSnapshotTests {
       claimsCount: 5,
       issuedAt: issuedAt,
       type: "",
+      keyId: "snapshot-key",
       displayData: nil,
     )
   }

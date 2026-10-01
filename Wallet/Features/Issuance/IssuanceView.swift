@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
+import AuthenticationServices
 import CredentialInterfaces
 import DesignSystem
 import OpenId4VCInterface
@@ -13,133 +14,138 @@ import WalletGatewayInterface
 struct IssuanceView: View {
   @State private var viewModel: IssuanceViewModel
   @Environment(\.theme) private var theme
-  @Environment(\.authPresentationAnchor) private var anchor
+  @Environment(Router.self) private var router
+  @Environment(\.webAuthenticationSession) private var webAuthSession
 
   init(
     credentialOfferUri: String,
     gatewayApiClient: any GatewayApi & HSMTransport,
     hsmServerParameters: HsmServerParameters?,
-    onSaveCredential: @escaping (SavedCredential) async throws -> Void,
+    actions: IssuanceActions,
   ) {
     _viewModel = State(
       wrappedValue: .init(
         credentialOfferUri: credentialOfferUri,
         gatewayApiClient: gatewayApiClient,
         hsmServerParameters: hsmServerParameters,
-        onSaveCredential: onSaveCredential,
+        actions: actions,
       )
     )
   }
 
   var body: some View {
-    ZStack {
-      if case .readyToSign = viewModel.phase {
-        ConfirmPinView { pin in
-          Task { await viewModel.createProof(with: pin) }
-        }
-        .transition(.opacity)
-        // Remount to clear the entered digits after a failed attempt: the alert
-        // keeps the PIN screen mounted, so PinView's state would otherwise persist.
-        .id(viewModel.pinAttempt)
-      } else {
-        VStack(spacing: 30) {
-          if let display = viewModel.issuerDisplayData,
-            !viewModel.phase.isError
-          {
-            IssuerDisplayView(issuerDisplayData: display)
-          }
+    VStack {
+      switch viewModel.state {
+        case .idle:
+          EmptyView()
 
-          if case let .done(_, displayClaims) = viewModel.phase {
-            CredentialView(claims: displayClaims)
-          }
+        case .step(let step):
+          issuanceStepView(step)
 
-          if case let .error(_, caught) = viewModel.phase {
-            errorPhaseView(caught: caught)
-          }
-
-          Spacer()
-
-          button
-        }
-        .transition(.opacity)
+        case .failed(_, let error):
+          ErrorView(
+            model: .init(
+              caughtError: error,
+              primaryButton: .init(
+                label: "Försök igen",
+                accessibilityHint: "Välj för att försöka igen.",
+                asyncAction: {
+                  await viewModel.retry()
+                },
+              ),
+            )
+          )
       }
     }
-    .animation(.easeInOut(duration: 0.2), value: viewModel.phase.animationKey)
-    .task {
-      await viewModel.start()
-    }
-    .alert("Kunde inte verifiera pinkoden", isPresented: $viewModel.pinError) {
-      Button("Försök igen") {}
-    }
-    .alert("Kunde inte spara attributsintyget", isPresented: $viewModel.saveError) {
-      Button("Försök igen") {
-        Task { await viewModel.retrySave() }
-      }
-      Button("Avbryt", role: .cancel) {}
-    }
+    .task { await viewModel.start() }
+    .toolbar { issuanceToolbar }
   }
 }
 
-// MARK: - Child Views
 private extension IssuanceView {
-  @ViewBuilder
-  private var button: some View {
-    switch viewModel.phase {
-      case .fetchingIssuer, .authorizing, .fetchingCredential:
-        ProgressView()
+  @ContentBuilder
+  var issuanceToolbar: some ToolbarContent {
+    if case .step(let step) = viewModel.state {
+      ToolbarItem(placement: .bottomBar) {
+        issuanceBottomToolbarButton(for: step)
+      }
+      .sharedBackgroundVisibilityHiddenIfPossible()
+    }
 
-      case .readyToAuthorize:
-        PrimaryButton("Logga in", icon: "arrow.right.circle.fill") {
+    if shouldShowDismissButton {
+      ToolbarItem(placement: .destructiveAction) {
+        Button {
           Task {
-            guard let anchor else { return }
-            await viewModel.beginAuthorization(anchor: anchor)
+            await viewModel.dismiss()
+          }
+        } label: {
+          Image(systemName: "xmark")
+            .accessibilityLabel("Avbryt")
+        }
+      }
+    }
+  }
+
+  @ContentBuilder
+  func issuanceBottomToolbarButton(for step: IssuanceStep) -> some View {
+    switch step {
+      case .preparingToAuthorize:
+        PrimaryButton("Logga in", maxWidth: .infinity) {
+          Task {
+            await viewModel.login(authenticate: webAuthSession.authenticator)
           }
         }
 
-      case .readyToFetch:
-        PrimaryButton("Försök igen") {
-          Task { await viewModel.fetchCredential() }
+      case .awaitingCompletion, .complete:
+        PrimaryButton("Fortsätt", maxWidth: .infinity) {
+          Task {
+            await viewModel.completeIssuance()
+          }
         }
 
-      case .done(let savedCredential, _):
-        PrimaryButton("Godkänn", icon: "checkmark.circle") {
-          Task { await viewModel.saveCredential(savedCredential) }
-        }
-
-      case .readyToSign, .error:
+      default:
         EmptyView()
     }
   }
 
-  private func errorPhaseView(caught: CaughtError) -> some View {
-    ErrorView(
-      model: .init(
-        caughtError: caught,
-        primaryButton: .init(
-          label: "Försök igen",
-          accessibilityHint: "Använd knapen för att försöka igen",
-          action: {
-            Task { @MainActor in
-              viewModel.retry(anchor: anchor)
-            }
-          },
-        ),
-      )
-    )
+  var shouldShowDismissButton: Bool {
+    guard case .step(let step) = viewModel.state else {
+      return true
+    }
+
+    switch step {
+      case .awaitingCompletion, .complete:
+        return false
+
+      default:
+        return true
+    }
   }
-}
 
-private struct ConfirmPinView: View {
-  let onComplete: (String) -> Void
+  @ContentBuilder
+  func issuanceStepView(_ step: IssuanceStep) -> some View {
+    VStack(spacing: 12) {
+      if let issuerDisplayData = viewModel.issuerDisplayData, step != .awaitingPin {
+        IssuerDisplayView(issuerDisplayData: issuerDisplayData)
+      }
 
-  var body: some View {
-    VStack(spacing: 24) {
-      Text("Skriv in din PIN-kod för att begära hämtning av dina personuppgifter")
-        .textStyle(.bodyLarge)
-        .multilineTextAlignment(.leading)
-        .frame(maxWidth: .infinity, alignment: .leading)
+      switch step {
+        case .preparingToAuthorize:
+          EmptyView()
 
-      PinView(onComplete: onComplete)
+        case .awaitingPin:
+          ConfirmPinView { pin in
+            Task { await viewModel.enterPin(pin) }
+          }
+
+        case let .savingCredential(credential, _, _),
+          let .awaitingCompletion(credential),
+          let .complete(credential):
+          CredentialView(claims: credential.claims)
+
+        default:
+          ProgressView()
+      }
     }
   }
 }

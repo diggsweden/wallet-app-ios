@@ -37,6 +37,7 @@ struct OnboardingRootView: View {
         signIn: actions.signIn,
         onReset: actions.resetSession,
         saveHsmServerParameters: actions.saveHsmServerParameters,
+        onComplete: actions.onComplete,
       )
     )
   }
@@ -185,9 +186,12 @@ struct OnboardingRootView: View {
             credentialOfferUri: uri,
             gatewayApiClient: gatewayApiClient,
             hsmServerParameters: userSnapshot.hsmServerParameters,
-          ) { credential in
-            try await viewModel.saveCredential(credential)
-          }
+            actions: .init(
+              onSaveCredential: viewModel.saveCredential,
+              onComplete: viewModel.onCompleteOnboarding,
+              onDismiss: { await viewModel.reset() },
+            ),
+          )
         } else {
           PidSetupView { credentialOfferUri in
             viewModel.setCredentialOfferUri(credentialOfferUri)
@@ -196,7 +200,7 @@ struct OnboardingRootView: View {
     }
   }
 
-  @ToolbarContentBuilder
+  @ContentBuilder
   private var toolbarContent: some ToolbarContent {
     if viewModel.canGoBack() {
       ToolbarItem(placement: .navigation) {
@@ -218,7 +222,7 @@ struct OnboardingRootView: View {
             .accessibilityLabel("Inställningar")
         }
       }
-    } else {
+    } else if viewModel.step != .issueCredential {
       ToolbarItem(placement: .destructiveAction) {
         Button {
           resetOnboarding()

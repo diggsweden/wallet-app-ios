@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
+import Jose
+
 public protocol KeyAttestationProviding: Sendable {
-  func keyAttestation(nonce: String?) async throws -> String
+  func keyAttestation(for publicKeys: [WalletJoseJWK], nonce: String?) async throws -> String
 }

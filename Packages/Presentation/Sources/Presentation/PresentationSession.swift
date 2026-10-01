@@ -56,8 +56,8 @@ public struct PresentationSession: PresentationFlow {
 
     return ResolvedPresentation(
       candidates: matches.map(\.candidate),
-      disclosedSdJwts: matches.reduce(into: [:]) { dict, match in
-        dict[match.candidate.id] = match.serialisation
+      disclosedCredentials: matches.reduce(into: [:]) { dict, match in
+        dict[match.candidate.id] = match.disclosedCredential
       },
       responseUrl: data.responseUrl,
       clientId: data.clientId,
@@ -74,14 +74,16 @@ public struct PresentationSession: PresentationFlow {
   ) async throws -> PresentationOutcome {
     var vpTokenEntries: [String: [String]] = [:]
     for id in selectedIds {
-      guard let sdJwt = resolved.disclosedSdJwts[id] else {
+      guard let disclosedCredential = resolved.disclosedCredentials[id] else {
         throw PresentationError.noMatchingCredential
       }
+      let sdJwt = disclosedCredential.serialisation
       let keyBindingJwt = try await Self.createKeyBinding(
         for: sdJwt,
         aud: resolved.clientId,
         nonce: resolved.nonce,
         signer: signer,
+        keyId: disclosedCredential.bindingKeyId,
       )
       vpTokenEntries[id] = [sdJwt + keyBindingJwt]
     }
@@ -117,7 +119,7 @@ public struct PresentationSession: PresentationFlow {
 
   private struct MatchedCredential {
     let candidate: PresentationCandidate
-    let serialisation: String
+    let disclosedCredential: DisclosedCredential
   }
 
   private static func matchClaims(
@@ -140,7 +142,11 @@ public struct PresentationSession: PresentationFlow {
         required: query.required,
         claims: disclosed.claims,
       ),
-      serialisation: disclosed.compactSerialized,
+      disclosedCredential: DisclosedCredential(
+        serialisation: disclosed.compactSerialized,
+        bindingKeyId: ProofKey.ID(credential.keyId),
+      ),
+
     )
   }
 
@@ -149,6 +155,7 @@ public struct PresentationSession: PresentationFlow {
     aud: String,
     nonce: String,
     signer: any ProofSigner,
+    keyId: ProofKey.ID,
   ) async throws -> String {
     guard let sdJwtData = sdJwt.data(using: .ascii) else {
       throw PresentationError.keyBindingEncodingFailed
@@ -161,7 +168,7 @@ public struct PresentationSession: PresentationFlow {
       payload: payload,
       header: WalletJWSDefaultHeader(algorithm: .ES256, type: "kb+jwt"),
     ) { signingInput in
-      try await signer.sign(signingInput)
+      try await signer.sign(signingInput, keyId: keyId)
     }
   }
 

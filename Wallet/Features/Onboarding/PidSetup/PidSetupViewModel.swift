@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
-import AuthenticationServices
 import Foundation
 import WalletMacros
 import WalletNetworking
@@ -11,9 +10,8 @@ import WalletNetworking
 @Observable
 final class PidSetupViewModel {
   private let onSubmit: (String) -> Void
-  private let oAuthCoordinator = OauthCoordinator()
-
   private(set) var caughtError: CaughtError?
+  private(set) var isLoading = false
 
   var hasError: Bool {
     caughtError != nil
@@ -23,30 +21,40 @@ final class PidSetupViewModel {
     self.onSubmit = onSubmit
   }
 
-  func fetchPid(_ authAnchor: ASPresentationAnchor?) async {
+  func fetchPid(authenticate: WebAuthenticator) async {
+    guard !isLoading else {
+      return
+    }
+
+    isLoading = true
+    defer { isLoading = false }
     caughtError = nil
     do {
       let credentialOffer =
         if let offer = await generateCredentialOffer() {
           offer
         } else {
-          try await generateOfferInBrowser(authAnchor)
+          try await generateOfferInBrowser(authenticate)
         }
+
+      guard let credentialOffer else {
+        return
+      }
 
       onSubmit(credentialOffer)
     } catch {
-      if !error.isWebAuthCancellation {
-        caughtError = CaughtError(error)
-      }
+      caughtError = CaughtError(error)
     }
   }
 
-  private func generateOfferInBrowser(_ authAnchor: ASPresentationAnchor?) async throws -> String {
-    let credentialOfferUri = try await oAuthCoordinator.start(
-      url: AppConfig.pidIssuerUrl,
-      callbackScheme: "openid-credential-offer",
-      anchor: authAnchor,
-    )
+  private func generateOfferInBrowser(_ authenticate: WebAuthenticator) async throws -> String? {
+    guard
+      let credentialOfferUri = try await authenticate(
+        WebAuthRequest(url: AppConfig.pidIssuerUrl, callbackScheme: "openid-credential-offer")
+      )
+    else {
+      return nil
+    }
 
     guard credentialOfferUri.queryItemValue(for: "credential_offer") != nil
     else {

@@ -37,6 +37,7 @@ let package = Package(
       name: "OpenId4VCInterfaceTestSupport",
       dependencies: [
         "OpenId4VCInterface",
+        .product(name: "CredentialInterfacesTestSupport", package: "CredentialInterfaces"),
         .product(name: "Jose", package: "Jose"),
       ],
     ),

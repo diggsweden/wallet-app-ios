@@ -64,19 +64,7 @@ final class WalletSetupViewModel {
         return .registerPin
 
       case .registerPin:
-        let stretched = try await service.registerPin(pin: pin)
-        return .authenticate(stretched)
-
-      case .authenticate(let stretched):
-        try await service.authenticate(pin: stretched)
-        return .generateHSMKey
-
-      case .generateHSMKey:
-        let key = try await service.generateHSMKey()
-        return .saveKey(key)
-
-      case .saveKey(let key):
-        try await service.saveKey(key: key)
+        _ = try await service.registerPin(pin: pin)
         return nil
     }
   }

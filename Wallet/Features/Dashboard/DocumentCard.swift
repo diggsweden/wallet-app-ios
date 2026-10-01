@@ -41,6 +41,7 @@ struct DocumentCard: View {
     claimsCount: 15,
     issuedAt: Date(),
     type: "",
+    keyId: "Cred",
     displayData: CredentialDisplayData(name: "Körkort"),
   )
 
