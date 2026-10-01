@@ -124,7 +124,7 @@ struct BootstrapViewModelTests {
     await viewModel.bootstrap()
     let dependencies = try #require(loadedDependencies(viewModel))
 
-    let completion = Task { try await dependencies.completeOnboarding() }
+    let completion = Task { try await dependencies.userViewModel.completeOnboarding() }
     await gate.reached()
     defer { gate.open() }
     #expect(!dependencies.userViewModel.isOnboardingCompleted)
@@ -151,13 +151,13 @@ struct BootstrapViewModelTests {
     let dependencies = try #require(loadedDependencies(viewModel))
 
     await #expect(throws: GatewayError.self) {
-      try await dependencies.completeOnboarding()
+      try await dependencies.userViewModel.completeOnboarding()
     }
     #expect(dependencies.userViewModel.user == originalUser)
     #expect(try await store.getOrCreate() == originalUser)
 
     await gateway.allowRequests()
-    try await dependencies.completeOnboarding()
+    try await dependencies.userViewModel.completeOnboarding()
     #expect(dependencies.userViewModel.isOnboardingCompleted)
     #expect(dependencies.userViewModel.user.backendResetAt == DatabaseUpdateGateway.timestamp)
     #expect(await gateway.calls == 2)
@@ -170,7 +170,7 @@ struct BootstrapViewModelTests {
     let viewModel = makeViewModel(store: store, gateway: gateway)
     await viewModel.bootstrap()
     let dependencies = try #require(loadedDependencies(viewModel))
-    try await dependencies.completeOnboarding()
+    try await dependencies.userViewModel.completeOnboarding()
 
     await gateway.setTimestamp(Date(timeIntervalSince1970: 200))
     let reopenedStore = UserStore(modelContainer: store.modelContainer)
@@ -203,7 +203,7 @@ struct BootstrapViewModelTests {
     try await userViewModel.saveCredential(credential)
     let newTimestamp = Date(timeIntervalSince1970: 200)
     await gateway.setTimestamp(newTimestamp)
-    try await dependencies.completeOnboarding()
+    try await userViewModel.completeOnboarding()
 
     #expect(userViewModel.isOnboardingCompleted)
     #expect(userViewModel.user.accountId == "new-account")
