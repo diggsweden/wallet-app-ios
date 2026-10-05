@@ -54,17 +54,17 @@ public actor UserStore: AccountIdProvider {
     return snapshot(from: user)
   }
 
-  public func completeOnboarding(backendResetAt: Date) throws -> UserSnapshot {
+  public func completeOnboarding(backendGeneration: Int) throws -> UserSnapshot {
     let user = try getOrCreateModel()
-    user.backendResetAt = backendResetAt
+    user.backendGeneration = backendGeneration
     user.isOnboardingCompleted = true
     try save()
     return snapshot(from: user)
   }
 
-  public func saveBackendResetTimestamp(_ timestamp: Date?) throws -> UserSnapshot {
+  public func saveBackendGeneration(_ generation: Int?) throws -> UserSnapshot {
     let user = try getOrCreateModel()
-    user.backendResetAt = timestamp
+    user.backendGeneration = generation
     try save()
     return snapshot(from: user)
   }
@@ -103,7 +103,7 @@ public actor UserStore: AccountIdProvider {
       hsmServerParameters: model.hsmServerParameters?.toDomain(),
       isOnboardingCompleted: model.isOnboardingCompleted,
       isReset: model.isReset,
-      backendResetAt: model.backendResetAt,
+      backendGeneration: model.backendGeneration,
     )
   }
 

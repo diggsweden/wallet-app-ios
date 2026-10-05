@@ -49,8 +49,8 @@ final class UserViewModel {
   }
 
   func completeOnboarding() async throws {
-    let timestamp = try await gatewayApiClient.getDatabaseUpdateTimestamp()
-    let updated = try await userStore.completeOnboarding(backendResetAt: timestamp)
+    let generation = try await gatewayApiClient.getDatabaseGeneration()
+    let updated = try await userStore.completeOnboarding(backendGeneration: generation)
     user = updated
   }
 }

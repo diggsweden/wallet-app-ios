@@ -8,8 +8,8 @@ import WalletGatewayInterface
 public struct GatewayApiMock: GatewayApi {
   public init() {}
 
-  public func getDatabaseUpdateTimestamp() throws -> Date {
-    Date(timeIntervalSince1970: 0)
+  public func getDatabaseGeneration() throws -> Int {
+    0
   }
 
   public func createAccount(publicKey: PublicKeyComponents) throws -> String { "" }

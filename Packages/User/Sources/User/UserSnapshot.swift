@@ -11,7 +11,7 @@ public struct UserSnapshot: Equatable, Sendable {
   public let hsmServerParameters: HsmServerParameters?
   public let isOnboardingCompleted: Bool
   public let isReset: Bool
-  public let backendResetAt: Date?
+  public let backendGeneration: Int?
 
   public var hasPid: Bool {
     credentials.first != nil

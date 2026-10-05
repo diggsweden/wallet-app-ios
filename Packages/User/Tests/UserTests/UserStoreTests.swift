@@ -36,19 +36,19 @@ struct UserStoreTests {
   @Test("Completing onboarding persists its backend reset baseline")
   func completeOnboarding() async throws {
     let container = try Self.inMemoryContainer()
-    let timestamp = Date(timeIntervalSince1970: 100)
+    let generation = 100
 
     let before = try await UserStore(modelContainer: container).getOrCreate()
     let completed = try await UserStore(modelContainer: container)
-      .completeOnboarding(backendResetAt: timestamp)
+      .completeOnboarding(backendGeneration: generation)
     let after = try await UserStore(modelContainer: container).getOrCreate()
 
     #expect(!before.isOnboardingCompleted)
-    #expect(before.backendResetAt == nil)
+    #expect(before.backendGeneration == nil)
     #expect(completed.isOnboardingCompleted)
-    #expect(completed.backendResetAt == timestamp)
+    #expect(completed.backendGeneration == generation)
     #expect(after.isOnboardingCompleted)
-    #expect(after.backendResetAt == timestamp)
+    #expect(after.backendGeneration == generation)
   }
 }
 
