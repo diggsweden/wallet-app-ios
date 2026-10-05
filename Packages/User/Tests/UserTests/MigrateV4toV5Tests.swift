@@ -49,6 +49,8 @@ struct MigrateV4toV5Tests {
         #expect(user.id == 1)
         #expect(user.accountId == "account")
         #expect(!user.isOnboardingCompleted)
+        #expect(!user.isReset)
+        #expect(user.backendResetAt == nil)
         #expect(user.hsmServerParameters?.serverJwsPublicKey.kid == "server-key")
         #expect(user.hsmServerParameters?.opaqueContext == parameters.opaqueContext)
         #expect(
@@ -71,6 +73,9 @@ struct MigrateV4toV5Tests {
         try ModelContext(reopened).fetch(FetchDescriptor<SchemaV5.User>()).first
       )
       #expect(user.credentials.map(\.keyId) == ["pid-key", "pid-key"])
+      #expect(!user.isOnboardingCompleted)
+      #expect(!user.isReset)
+      #expect(user.backendResetAt == nil)
     }
   }
 
@@ -84,6 +89,8 @@ struct MigrateV4toV5Tests {
       )
       #expect(user.credentials.isEmpty)
       #expect(!user.isOnboardingCompleted)
+      #expect(!user.isReset)
+      #expect(user.backendResetAt == nil)
     }
   }
 
