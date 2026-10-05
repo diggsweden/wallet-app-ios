@@ -7,5 +7,5 @@ import Foundation
 public protocol GatewayApi: Sendable {
   func createAccount(publicKey: PublicKeyComponents) async throws -> String
   func getKeyAttestation(keys: [PublicKeyComponents], nonce: String?) async throws -> String
-  func getDatabaseUpdateTimestamp() async throws -> Date
+  func getDatabaseGeneration() async throws -> Int
 }

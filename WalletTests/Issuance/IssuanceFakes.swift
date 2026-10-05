@@ -161,8 +161,8 @@ actor FakeProofKeyManager: ProofSigner, ProofKeyStore {
 }
 
 struct FakeGateway: GatewayApi, HSMTransport {
-  func getDatabaseUpdateTimestamp() throws -> Date {
-    Date(timeIntervalSince1970: 0)
+  func getDatabaseGeneration() throws -> Int {
+    0
   }
 
   func createAccount(publicKey: PublicKeyComponents) throws -> String { "" }

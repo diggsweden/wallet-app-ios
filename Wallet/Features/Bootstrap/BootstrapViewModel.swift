@@ -36,7 +36,7 @@ final class BootstrapViewModel {
     do {
       let userSnapshot = try await dependencies.userStore.getOrCreate()
 
-      if true || hasStaleDeviceKey(userSnapshot) {
+      if userSnapshot.isReset || hasStaleDeviceKey(userSnapshot) {
         state = try await signOut(isReset: true)
         return
       }
@@ -85,21 +85,21 @@ final class BootstrapViewModel {
     for initialSnapshot: UserSnapshot
   ) async throws -> BootstrapViewModel.State {
     let userStore = dependencies.userStore
-    let timestamp: Date
+    let generation: Int
 
     do {
-      timestamp = try await dependencies.gatewayApiClient.getDatabaseUpdateTimestamp()
+      generation = try await dependencies.gatewayApiClient.getDatabaseGeneration()
     } catch {
       return .backendCheckFailed(CaughtError(error))
     }
 
-    guard let previousTimestamp = initialSnapshot.backendResetAt else {
-      _ = try await userStore.saveBackendResetTimestamp(timestamp)
+    guard let previousGeneration = initialSnapshot.backendGeneration else {
+      _ = try await userStore.saveBackendGeneration(generation)
       let appDependencies = try await makeAppDependencies()
       return .ready(appDependencies)
     }
 
-    guard timestamp > previousTimestamp else {
+    guard generation > previousGeneration else {
       let appDependencies = try await makeAppDependencies()
       return .ready(appDependencies)
     }

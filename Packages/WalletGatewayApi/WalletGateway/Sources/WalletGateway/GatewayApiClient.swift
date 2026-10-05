@@ -59,7 +59,7 @@ public struct GatewayApiClient: GatewayApi {
     }
   }
 
-  public func getDatabaseUpdateTimestamp() throws -> Date {
+  public func getDatabaseGeneration() throws -> Int {
     throw CocoaError(.featureUnsupported)
   }
 

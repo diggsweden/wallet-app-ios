@@ -21,15 +21,15 @@ struct BootstrapViewModelTests {
 
     #expect(user.hasCompletedOnboarding)
     #expect(!user.isReset)
-    #expect(user.backendResetAt == DatabaseUpdateGateway.timestamp)
+    #expect(user.backendGeneration == DatabaseUpdateGateway.generation)
     #expect(user.accountId == "account")
     #expect(try await UserStore(modelContainer: store.modelContainer).getOrCreate() == user)
     #expect(await gateway.calls == 1)
   }
 
-  @Test("An unchanged or older backend timestamp keeps the wallet", arguments: [100.0, 200.0])
-  func existingBaseline(timestamp: TimeInterval) async throws {
-    let baseline = Date(timeIntervalSince1970: timestamp)
+  @Test("An unchanged or older backend generation keeps the wallet", arguments: [100, 200])
+  func existingBaseline(generation: Int) async throws {
+    let baseline = generation
     let store = try makeStore(baseline: baseline)
     let viewModel = makeViewModel(store: store, gateway: DatabaseUpdateGateway())
 
@@ -39,7 +39,7 @@ struct BootstrapViewModelTests {
     #expect(user.hasCompletedOnboarding)
     #expect(!user.isReset)
     #expect(user.accountId == "account")
-    #expect(user.backendResetAt == baseline)
+    #expect(user.backendGeneration == baseline)
   }
 
   @Test("A backend failure prevents handoff until a successful retry")
@@ -73,7 +73,7 @@ struct BootstrapViewModelTests {
     let user = try #require(loadedUser(viewModel))
 
     #expect(!user.hasCompletedOnboarding)
-    #expect(user.backendResetAt == nil)
+    #expect(user.backendGeneration == nil)
     #expect(await gateway.calls == 0)
   }
 
@@ -97,9 +97,9 @@ struct BootstrapViewModelTests {
     #expect(loadedUser(viewModel) == dependencies.userViewModel.user)
   }
 
-  @Test("A newer timestamp resets the wallet")
+  @Test("A newer generation resets the wallet")
   func backendReset() async throws {
-    let store = try makeStore(baseline: Date(timeIntervalSince1970: 50))
+    let store = try makeStore(baseline: 50)
     let gateway = DatabaseUpdateGateway()
     let viewModel = makeViewModel(store: store, gateway: gateway)
 
@@ -111,7 +111,7 @@ struct BootstrapViewModelTests {
 
     #expect(dependencies.userViewModel.user.accountId == nil)
     #expect(dependencies.userViewModel.user.credentials.isEmpty)
-    #expect(dependencies.userViewModel.user.backendResetAt == nil)
+    #expect(dependencies.userViewModel.user.backendGeneration == nil)
     #expect(await gateway.calls == 1)
   }
 
@@ -130,13 +130,13 @@ struct BootstrapViewModelTests {
     #expect(!dependencies.userViewModel.isOnboardingCompleted)
     let pendingUser = try await store.getOrCreate()
     #expect(!pendingUser.isOnboardingCompleted)
-    #expect(pendingUser.backendResetAt == nil)
+    #expect(pendingUser.backendGeneration == nil)
 
     gate.open()
     try await completion.value
     let user = dependencies.userViewModel.user
     #expect(user.hasCompletedOnboarding)
-    #expect(user.backendResetAt == DatabaseUpdateGateway.timestamp)
+    #expect(user.backendGeneration == DatabaseUpdateGateway.generation)
     #expect(try await UserStore(modelContainer: store.modelContainer).getOrCreate() == user)
     #expect(await gateway.calls == 1)
   }
@@ -159,7 +159,7 @@ struct BootstrapViewModelTests {
     await gateway.allowRequests()
     try await dependencies.userViewModel.completeOnboarding()
     #expect(dependencies.userViewModel.isOnboardingCompleted)
-    #expect(dependencies.userViewModel.user.backendResetAt == DatabaseUpdateGateway.timestamp)
+    #expect(dependencies.userViewModel.user.backendGeneration == DatabaseUpdateGateway.generation)
     #expect(await gateway.calls == 2)
   }
 
@@ -172,7 +172,7 @@ struct BootstrapViewModelTests {
     let dependencies = try #require(loadedDependencies(viewModel))
     try await dependencies.userViewModel.completeOnboarding()
 
-    await gateway.setTimestamp(Date(timeIntervalSince1970: 200))
+    await gateway.setGeneration(200)
     let reopenedStore = UserStore(modelContainer: store.modelContainer)
     let relaunched = makeViewModel(store: reopenedStore, gateway: gateway)
     await relaunched.bootstrap()
@@ -188,7 +188,7 @@ struct BootstrapViewModelTests {
 
   @Test("Signing out clears the baseline and onboarding establishes a new one")
   func onboardingAfterSignOut() async throws {
-    let store = try makeStore(baseline: DatabaseUpdateGateway.timestamp)
+    let store = try makeStore(baseline: DatabaseUpdateGateway.generation)
     let gateway = DatabaseUpdateGateway()
     let viewModel = makeViewModel(store: store, gateway: gateway)
     await viewModel.bootstrap()
@@ -197,17 +197,17 @@ struct BootstrapViewModelTests {
     let credential = try #require(userViewModel.user.credentials.first)
 
     try await userViewModel.signOut()
-    #expect(userViewModel.user.backendResetAt == nil)
+    #expect(userViewModel.user.backendGeneration == nil)
     #expect(!userViewModel.isOnboardingCompleted)
     try await userViewModel.signIn("new-account")
     try await userViewModel.saveCredential(credential)
-    let newTimestamp = Date(timeIntervalSince1970: 200)
-    await gateway.setTimestamp(newTimestamp)
+    let newGeneration = 200
+    await gateway.setGeneration(newGeneration)
     try await userViewModel.completeOnboarding()
 
     #expect(userViewModel.isOnboardingCompleted)
     #expect(userViewModel.user.accountId == "new-account")
-    #expect(userViewModel.user.backendResetAt == newTimestamp)
+    #expect(userViewModel.user.backendGeneration == newGeneration)
     #expect(try await store.getOrCreate() == userViewModel.user)
   }
 
@@ -240,16 +240,16 @@ private extension BootstrapViewModelTests {
 
   func makeStore(
     onboarded: Bool = true,
-    baseline: Date? = nil,
+    baseline: Int? = nil,
     isReset: Bool = false,
   ) throws -> UserStore {
     let container = try ModelContainer(
-      for: SchemaV6.User.self,
+      for: SchemaV5.User.self,
       configurations: ModelConfiguration(isStoredInMemoryOnly: true),
     )
     let context = ModelContext(container)
     context.insert(
-      SchemaV6.User(
+      SchemaV5.User(
         accountId: "account",
         credentials: [
           .init(
@@ -265,7 +265,7 @@ private extension BootstrapViewModelTests {
         ],
         isOnboardingCompleted: onboarded,
         isReset: isReset,
-        backendResetAt: baseline,
+        backendGeneration: baseline,
       )
     )
     try context.save()
@@ -281,8 +281,8 @@ private extension BootstrapViewModelTests {
 }
 
 private actor DatabaseUpdateGateway: GatewayApi, HSMTransport {
-  static let timestamp = Date(timeIntervalSince1970: 100)
-  private var responseTimestamp = DatabaseUpdateGateway.timestamp
+  static let generation = 100
+  private var responseGeneration = DatabaseUpdateGateway.generation
   private var fails: Bool
   private let gate: Gate?
   private(set) var calls = 0
@@ -296,15 +296,15 @@ private actor DatabaseUpdateGateway: GatewayApi, HSMTransport {
     fails = false
   }
 
-  func setTimestamp(_ timestamp: Date) {
-    responseTimestamp = timestamp
+  func setGeneration(_ generation: Int) {
+    responseGeneration = generation
   }
 
-  func getDatabaseUpdateTimestamp() async throws -> Date {
+  func getDatabaseGeneration() async throws -> Int {
     calls += 1
     await gate?.pass()
     if fails { throw GatewayError.invalidResponse }
-    return responseTimestamp
+    return responseGeneration
   }
 
   func createAccount(publicKey: PublicKeyComponents) -> String { "" }
