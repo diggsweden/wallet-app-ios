@@ -244,12 +244,12 @@ private extension BootstrapViewModelTests {
     isReset: Bool = false,
   ) throws -> UserStore {
     let container = try ModelContainer(
-      for: SchemaV6.User.self,
+      for: SchemaV5.User.self,
       configurations: ModelConfiguration(isStoredInMemoryOnly: true),
     )
     let context = ModelContext(container)
     context.insert(
-      SchemaV6.User(
+      SchemaV5.User(
         accountId: "account",
         credentials: [
           .init(

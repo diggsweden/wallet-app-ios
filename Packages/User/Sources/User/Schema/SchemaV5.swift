@@ -21,6 +21,8 @@ extension SchemaV5 {
     var credentials: [SavedCredential]
     var hsmServerParameters: HsmServerParameters?
     var isOnboardingCompleted: Bool = false
+    var isReset: Bool = false
+    var backendResetAt: Date?
 
     init(
       id: Int = 0,
@@ -28,12 +30,16 @@ extension SchemaV5 {
       credentials: [SavedCredential] = [],
       hsmServerParameters: HsmServerParameters? = nil,
       isOnboardingCompleted: Bool = false,
+      isReset: Bool = false,
+      backendResetAt: Date? = nil,
     ) {
       self.id = id
       self.accountId = accountId
       self.credentials = credentials
       self.hsmServerParameters = hsmServerParameters
       self.isOnboardingCompleted = isOnboardingCompleted
+      self.isReset = isReset
+      self.backendResetAt = backendResetAt
     }
   }
 }
