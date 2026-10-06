@@ -98,7 +98,7 @@ EOF
 
 PKG_NAME="$name" perl -0pi -e '
   my $n = $ENV{PKG_NAME};
-  s/\n\ntargets:\n/\n  $n:\n    path: Packages\/$n\n\ntargets:\n/;
+  s/^targets:\n/  $n:\n    path: Packages\/$n\n\ntargets:\n/m;
 ' "$root/project.yml"
 
 PKG_NAME="$name" perl -0pi -e '
