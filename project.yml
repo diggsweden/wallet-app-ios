@@ -78,6 +78,8 @@ packages:
     path: Packages/Presentation
   Issuance:
     path: Packages/Issuance
+  QRScanner:
+    path: Packages/QRScanner
 targets:
   WalletDemo:
     type: application
@@ -264,4 +266,4 @@ schemes:
         - package: Presentation/PresentationTests
         - package: Issuance/IssuanceTests
         - package: User/UserTests
-
+        - package: QRScanner/QRScannerTests
