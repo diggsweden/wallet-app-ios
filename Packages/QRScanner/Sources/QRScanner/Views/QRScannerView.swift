@@ -17,12 +17,12 @@ public struct QRScannerView: View {
   public var body: some View {
     NavigationStack {
       content
-        .statusBarHidden()
         .sheet(isPresented: $isInfoSheetPresented) { infoSheetContent }
         .task { await session.requestAuthorization() }
         .toolbar { topToolbar }
         .scrollEdgeEffectHiddenIfPossible(for: .top)
     }
+    .hiddenStatusBar()
   }
 }
 

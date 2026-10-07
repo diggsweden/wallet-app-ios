@@ -13,4 +13,13 @@ extension View {
       self
     }
   }
+
+  @ContentBuilder
+  func hiddenStatusBar() -> some View {
+    if #available(iOS 27.0, *) {
+      self.toolbarVisibility(.hidden, for: .statusBar)
+    } else {
+      self.statusBarHidden()
+    }
+  }
 }

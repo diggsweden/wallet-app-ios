@@ -45,6 +45,7 @@ struct CameraScannerView: View {
       switch viewModel.state {
         case .scanning, .openingURL, .failed:
           cameraScannerPreview()
+            .ignoresSafeArea()
 
         case .unavailable:
           // TODO: Vår error-vy
