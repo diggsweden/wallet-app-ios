@@ -14,7 +14,7 @@ final class CameraScannerViewModel {
 
   init(
     scanner: any CodeScanner,
-    supportedSchemes: Set<String> = Bundle.main.urlSchemes,
+    supportedSchemes: Set<String> = Bundle.urlSchemes(in: Bundle.main.infoDictionary),
   ) {
     self.scanner = scanner
     self.supportedSchemes = supportedSchemes
