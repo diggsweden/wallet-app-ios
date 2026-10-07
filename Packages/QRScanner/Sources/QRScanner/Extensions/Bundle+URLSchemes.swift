@@ -5,7 +5,7 @@
 import Foundation
 
 extension Bundle {
-  var urlSchemes: Set<String> {
+  static func urlSchemes(in infoDictionary: [String: Any]?) -> Set<String> {
     let types = infoDictionary?["CFBundleURLTypes"] as? [[String: Any]] ?? []
     return Set(
       types
