@@ -18,6 +18,7 @@ let package = Package(
     )
   ],
   dependencies: [
+    .package(url: "https://github.com/apple/swift-http-types", from: "1.5.1"),
     .package(url: "https://github.com/apple/swift-openapi-runtime", from: "1.12.1"),
     .package(url: "https://github.com/apple/swift-openapi-urlsession", from: "1.3.1"),
     .package(url: "https://github.com/apple/swift-openapi-generator", from: "1.13.1"),
@@ -42,7 +43,10 @@ let package = Package(
     ),
     .testTarget(
       name: "WalletGatewayTests",
-      dependencies: ["WalletGateway"],
+      dependencies: [
+        "WalletGateway",
+        .product(name: "HTTPTypes", package: "swift-http-types"),
+      ],
     ),
   ],
 )

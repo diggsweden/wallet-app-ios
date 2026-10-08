@@ -14,19 +14,18 @@ struct WalletSetupView: View {
   init(
     pin: String,
     gatewayApi: GatewayApi & HSMTransport,
-    onAccountCreated: @escaping @Sendable (String) async throws -> Void,
-    onServerParameters: @escaping @Sendable (ServerParameters) async throws -> Void,
-    onComplete: @escaping () -> Void,
+    actions: WalletSetupActions,
   ) {
     _viewModel = State(
       wrappedValue: WalletSetupViewModel(
         service: BFFWalletSetupService(
           gatewayApi: gatewayApi,
-          onAccountCreated: onAccountCreated,
-          onServerParameters: onServerParameters,
+          onAccountCreated: actions.onAccountCreated,
+          onServerParameters: actions.onServerParameters,
+          onBackendGeneration: actions.onBackendGeneration,
         ),
         pin: pin,
-        onComplete: onComplete,
+        onComplete: actions.onComplete,
       )
     )
   }

@@ -2,25 +2,19 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
-import AuthenticationServices
-import SDWebImageWebPCoder
 import SwiftAccessMechanism
-import SwiftData
 import SwiftUI
 import User
-import WalletGateway
+import WalletGatewayInterface
 
 struct AppRootView: View {
-  private let gatewayApiClient: GatewayApiClient
-  @State private var userSessionViewModel: UserSessionViewModel
+  private let gatewayApiClient: any GatewayApi & HSMTransport
+  @State private var userViewModel: UserViewModel
   @State private var router = Router()
-  @State private var isLogoutErrorAlertPresented = false
-  @State private var isFirstError: Bool = true
 
-  init(userStore: UserStore, gatewayApiClient: GatewayApiClient) {
-    _userSessionViewModel = State(wrappedValue: .init(userStore: userStore))
-    self.gatewayApiClient = gatewayApiClient
-    SDImageCodersManager.shared.addCoder(SDImageAWebPCoder.shared)
+  init(appDependencies: AppDependencies) {
+    _userViewModel = State(wrappedValue: appDependencies.userViewModel)
+    self.gatewayApiClient = appDependencies.gatewayApiClient
   }
 
   var body: some View {
@@ -32,21 +26,17 @@ struct AppRootView: View {
             .defaultScreenStyle
         }
     }
-    .sheet(isPresented: $router.isSettingsSheetPresented) {
-      SettingsView(
-        showsLogout: userSessionViewModel.isOnboardingCompleted,
-        onLogout: userSessionViewModel.signOut,
-      )
+    .sheet(item: $router.presentedSheet) { sheet in
+      switch sheet {
+        case .settings:
+          SettingsView(
+            showsLogout: userViewModel.isOnboardingCompleted,
+            onLogout: userViewModel.signOut,
+          )
+      }
     }
     .environment(router)
     .onOpenURL(perform: handleOpenURL)
-    .task {
-      await userSessionViewModel.initUser()
-    }
-    .alert("Kunde inte logga ut", isPresented: $isLogoutErrorAlertPresented) {
-      Button("Försök igen") { signOutFromErrorState() }
-      Button("Avbryt", role: .cancel) {}
-    }
   }
 }
 
@@ -54,58 +44,18 @@ struct AppRootView: View {
 private extension AppRootView {
   @ViewBuilder
   var rootView: some View {
-    ZStack {
-      switch userSessionViewModel.user {
-        case .ready(let user):
-          userStateReadyView(user)
-            .transition(.blurReplace)
-
-        case .loading:
-          ProgressView()
-            .transition(.blurReplace)
-
-        case let .error(caught):
-          errorView(caught: caught)
-            .transition(.blurReplace)
-      }
-    }
-    .animation(.default, value: userSessionViewModel.user)
-  }
-
-  func errorView(caught: CaughtError) -> some View {
-    ErrorView(
-      model: .init(
-        caughtError: caught,
-        primaryButton: .init(
-          label: "Försök igen",
-          accessibilityHint: "Använd knappen för att försöka igen",
-          asyncAction: userSessionViewModel.retryInitUser,
-        ),
-        secondaryButton: .init(
-          label: "Logga ut",
-          accessibilityHint: "Använd knappen för att logga ut",
-          action: {
-            Task { @MainActor in
-              signOutFromErrorState()
-            }
-          },
-        ),
-      )
-    )
-  }
-
-  @ViewBuilder
-  func userStateReadyView(_ user: UserSnapshot) -> some View {
-    if !userSessionViewModel.isOnboardingCompleted {
+    let user = userViewModel.user
+    if !userViewModel.isOnboardingCompleted {
       OnboardingRootView(
         gatewayApiClient: gatewayApiClient,
         userSnapshot: user,
         actions: OnboardingActions(
-          signIn: userSessionViewModel.signIn,
-          saveCredential: userSessionViewModel.saveCredential,
-          resetSession: userSessionViewModel.signOut,
-          saveHsmServerParameters: userSessionViewModel.saveHsmServerParameters,
-          onComplete: userSessionViewModel.completeOnboarding,
+          signIn: userViewModel.signIn,
+          saveCredential: userViewModel.saveCredential,
+          resetSession: userViewModel.signOut,
+          saveHsmServerParameters: userViewModel.saveHsmServerParameters,
+          saveBackendGeneration: userViewModel.saveBackendGeneration,
+          onComplete: userViewModel.completeOnboarding,
         ),
       )
     } else {
@@ -113,19 +63,6 @@ private extension AppRootView {
         pid: user.credentials.first,
         credentials: Array(user.credentials.dropFirst()),
       )
-    }
-  }
-}
-
-// MARK: - Actions
-private extension AppRootView {
-  func signOutFromErrorState() {
-    Task {
-      do {
-        try await userSessionViewModel.signOut()
-      } catch {
-        isLogoutErrorAlertPresented = true
-      }
     }
   }
 }
@@ -138,18 +75,18 @@ private extension AppRootView {
       case .presentation(let url):
         PresentationView(
           url: url,
-          credentials: userSessionViewModel.userSnapshot?.credentials ?? [],
+          credentials: userViewModel.user.credentials,
           hsmTransport: gatewayApiClient,
-          hsmServerParameters: userSessionViewModel.userSnapshot?.hsmServerParameters,
+          hsmServerParameters: userViewModel.user.hsmServerParameters,
         )
 
       case .issuance(let url):
         IssuanceViewWrapper(
           credentialOfferUri: url,
           gatewayApiClient: gatewayApiClient,
-          hsmServerParameters: userSessionViewModel.userSnapshot?.hsmServerParameters,
+          hsmServerParameters: userViewModel.user.hsmServerParameters,
           actions: .init(
-            onSaveCredential: userSessionViewModel.saveCredential,
+            onSaveCredential: userViewModel.saveCredential,
             onComplete: { router.pop() },
             onDismiss: { router.pop() },
           ),
