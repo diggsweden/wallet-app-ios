@@ -9,6 +9,7 @@ extension BootstrapViewModel {
     case ready(AppDependencies)
     case error(CaughtError)
     case backendCheckFailed(CaughtError)
+    case databaseInitializationFailed(CaughtError)
 
     // swiftlint:disable:next nesting
     enum AnimationKey: Equatable {
@@ -17,6 +18,7 @@ extension BootstrapViewModel {
       case ready
       case error
       case backendCheckFailed
+      case databaseInitializationFailed
     }
 
     var animationKey: AnimationKey {
@@ -35,6 +37,9 @@ extension BootstrapViewModel {
 
         case .backendCheckFailed:
           .backendCheckFailed
+
+        case .databaseInitializationFailed:
+          .databaseInitializationFailed
       }
     }
   }

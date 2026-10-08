@@ -28,9 +28,7 @@ final class UserViewModel {
   }
 
   func signOut() async throws {
-    try await userStore.deleteAll()
-    try SecKeyStore.deleteAll()
-    try SigningKeyStore.deleteAll()
+    try await userStore.deleteWallet()
     let newUser = try await userStore.getOrCreate()
     user = newUser
   }
@@ -53,5 +51,13 @@ final class UserViewModel {
   func completeOnboarding() async throws {
     let updated = try await userStore.completeOnboarding()
     user = updated
+  }
+}
+
+extension UserStore {
+  func deleteWallet() throws {
+    try deleteAll()
+    try SecKeyStore.deleteAll()
+    try SigningKeyStore.deleteAll()
   }
 }

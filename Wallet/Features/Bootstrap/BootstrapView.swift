@@ -26,6 +26,16 @@ struct BootstrapView: View {
 
           case let .backendCheckFailed(caught):
             errorView(caught: caught, allowsSignOut: false)
+
+          case let .databaseInitializationFailed(caught):
+            errorView(
+              caught: caught,
+              allowsSignOut: false,
+              title: "Det gick inte att öppna plånboken",
+              subtitle: "Vi kunde inte öppna appens lagrade data. Försök igen. "
+                + "Om problemet kvarstår kan du prova att installera om appen. "
+                + "Då tas din lokala plånbok bort och du behöver lägga till dina handlingar igen.",
+            )
         }
       }
       .transition(.opacity)
@@ -34,11 +44,18 @@ struct BootstrapView: View {
     .task { await viewModel.bootstrap() }
   }
 
-  private func errorView(caught: CaughtError, allowsSignOut: Bool = true) -> some View {
+  private func errorView(
+    caught: CaughtError,
+    allowsSignOut: Bool = true,
+    title: String = "Hoppsan! Nånting gick fel",
+    subtitle: String = "Vi kunde inte visa innehållet just nu, försök gärna igen senare.",
+  ) -> some View {
     NavigationStack {
       ErrorView(
         model: .init(
           caughtError: caught,
+          title: title,
+          subtitle: subtitle,
           primaryButton: .init(
             label: "Försök igen",
             accessibilityHint: "Använd knappen för att försöka igen",

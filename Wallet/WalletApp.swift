@@ -2,10 +2,17 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
+import DesignSystem
+import SDWebImageWebPCoder
 import SwiftUI
 
 @main
 struct WalletApp: App {
+  init() {
+    DesignSystem.registerFonts()
+    SDImageCodersManager.shared.addCoder(SDImageAWebPCoder.shared)
+  }
+
   var body: some Scene {
     WindowGroup {
       BootstrapView()
