@@ -28,10 +28,16 @@ final class BootstrapViewModel {
   }
 
   func bootstrap() async {
-    guard !isBootstrapping else { return }
+    guard !isBootstrapping else {
+      return
+    }
+
     isBootstrapping = true
     state = .loading
-    defer { isBootstrapping = false }
+
+    defer {
+      isBootstrapping = false
+    }
 
     do {
       let userSnapshot = try await dependencies.userStore.getOrCreate()
@@ -111,7 +117,6 @@ final class BootstrapViewModel {
       userViewModel: UserViewModel(
         user: try await dependencies.userStore.getOrCreate(),
         userStore: dependencies.userStore,
-        gatewayApiClient: dependencies.gatewayApiClient,
       ),
       gatewayApiClient: dependencies.gatewayApiClient,
     )

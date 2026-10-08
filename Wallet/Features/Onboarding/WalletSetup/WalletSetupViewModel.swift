@@ -57,6 +57,10 @@ final class WalletSetupViewModel {
     switch step {
       case .createAccount:
         try await service.createAccount()
+        return .setInitialBackendGeneration
+
+      case .setInitialBackendGeneration:
+        try await service.setInitialBackendGeneration()
         return .initHSMState
 
       case .initHSMState:

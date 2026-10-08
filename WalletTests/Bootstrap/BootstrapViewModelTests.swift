@@ -115,51 +115,92 @@ struct BootstrapViewModelTests {
     #expect(await gateway.calls == 1)
   }
 
-  @Test("Onboarding completes only after its baseline has been fetched and saved")
-  func onboardingWaitsForBaseline() async throws {
+  @Test("Wallet setup saves its baseline before onboarding completes")
+  func onboardingSavesBaselineDuringSetup() async throws {
     let store = try makeStore(onboarded: false)
-    let gate = Gate()
-    let gateway = DatabaseUpdateGateway(gate: gate)
-    let viewModel = makeViewModel(store: store, gateway: gateway)
-    await viewModel.bootstrap()
-    let dependencies = try #require(loadedDependencies(viewModel))
-
-    let completion = Task { try await dependencies.userViewModel.completeOnboarding() }
-    await gate.reached()
-    defer { gate.open() }
-    #expect(!dependencies.userViewModel.isOnboardingCompleted)
-    let pendingUser = try await store.getOrCreate()
-    #expect(!pendingUser.isOnboardingCompleted)
-    #expect(pendingUser.backendGeneration == nil)
-
-    gate.open()
-    try await completion.value
-    let user = dependencies.userViewModel.user
-    #expect(user.hasCompletedOnboarding)
-    #expect(user.backendGeneration == DatabaseUpdateGateway.generation)
-    #expect(try await UserStore(modelContainer: store.modelContainer).getOrCreate() == user)
-    #expect(await gateway.calls == 1)
-  }
-
-  @Test("A failed baseline fetch leaves onboarding incomplete and can be retried")
-  func onboardingBaselineFailure() async throws {
-    let store = try makeStore(onboarded: false)
-    let originalUser = try await store.getOrCreate()
     let gateway = DatabaseUpdateGateway(fails: true)
     let viewModel = makeViewModel(store: store, gateway: gateway)
     await viewModel.bootstrap()
     let dependencies = try #require(loadedDependencies(viewModel))
+    let userViewModel = dependencies.userViewModel
+
+    try await userViewModel.saveBackendGeneration(DatabaseUpdateGateway.generation)
+    #expect(!userViewModel.isOnboardingCompleted)
+    #expect(userViewModel.user.backendGeneration == DatabaseUpdateGateway.generation)
+    #expect(try await store.getOrCreate() == userViewModel.user)
+
+    try await userViewModel.completeOnboarding()
+    #expect(userViewModel.isOnboardingCompleted)
+    #expect(userViewModel.user.backendGeneration == DatabaseUpdateGateway.generation)
+    #expect(
+      try await UserStore(modelContainer: store.modelContainer).getOrCreate() == userViewModel.user
+    )
+    #expect(await gateway.calls == 0)
+  }
+
+  @Test("Wallet setup fetches and saves the baseline through onboarding actions")
+  func walletSetupSavesBaseline() async throws {
+    let store = try makeStore(onboarded: false)
+    let gate = Gate()
+    let gateway = DatabaseUpdateGateway(gate: gate)
+    let userViewModel = UserViewModel(user: try await store.getOrCreate(), userStore: store)
+    let onboarding = OnboardingViewModel(
+      actions: .init(
+        signIn: userViewModel.signIn,
+        saveCredential: userViewModel.saveCredential,
+        resetSession: userViewModel.signOut,
+        saveHsmServerParameters: userViewModel.saveHsmServerParameters,
+        saveBackendGeneration: userViewModel.saveBackendGeneration,
+        onComplete: userViewModel.completeOnboarding,
+      )
+    )
+    let service = BFFWalletSetupService(
+      gatewayApi: gateway,
+      onAccountCreated: { _ in },
+      onServerParameters: { _ in },
+      onBackendGeneration: { generation in
+        try await onboarding.saveBackendGeneration(generation)
+      },
+    )
+
+    let setup = Task { try await service.setInitialBackendGeneration() }
+    await gate.reached()
+    defer { gate.open() }
+    #expect(userViewModel.user.backendGeneration == nil)
+
+    gate.open()
+    try await setup.value
+    #expect(userViewModel.user.backendGeneration == DatabaseUpdateGateway.generation)
+    #expect(!userViewModel.isOnboardingCompleted)
+    #expect(try await store.getOrCreate() == userViewModel.user)
+    #expect(await gateway.calls == 1)
+  }
+
+  @Test("A failed setup baseline fetch leaves the stored user unchanged and can be retried")
+  func walletSetupBaselineFailure() async throws {
+    let store = try makeStore(onboarded: false)
+    let original = try await store.getOrCreate()
+    let gateway = DatabaseUpdateGateway(fails: true)
+    let userViewModel = UserViewModel(user: original, userStore: store)
+    let service = BFFWalletSetupService(
+      gatewayApi: gateway,
+      onAccountCreated: { _ in },
+      onServerParameters: { _ in },
+      onBackendGeneration: { generation in
+        try await userViewModel.saveBackendGeneration(generation)
+      },
+    )
 
     await #expect(throws: GatewayError.self) {
-      try await dependencies.userViewModel.completeOnboarding()
+      try await service.setInitialBackendGeneration()
     }
-    #expect(dependencies.userViewModel.user == originalUser)
-    #expect(try await store.getOrCreate() == originalUser)
+    #expect(userViewModel.user == original)
+    #expect(try await store.getOrCreate() == original)
 
     await gateway.allowRequests()
-    try await dependencies.userViewModel.completeOnboarding()
-    #expect(dependencies.userViewModel.isOnboardingCompleted)
-    #expect(dependencies.userViewModel.user.backendGeneration == DatabaseUpdateGateway.generation)
+    try await service.setInitialBackendGeneration()
+    #expect(userViewModel.user.backendGeneration == DatabaseUpdateGateway.generation)
+    #expect(!userViewModel.isOnboardingCompleted)
     #expect(await gateway.calls == 2)
   }
 
@@ -170,6 +211,9 @@ struct BootstrapViewModelTests {
     let viewModel = makeViewModel(store: store, gateway: gateway)
     await viewModel.bootstrap()
     let dependencies = try #require(loadedDependencies(viewModel))
+    try await dependencies.userViewModel.saveBackendGeneration(
+      try await gateway.getDatabaseGeneration()
+    )
     try await dependencies.userViewModel.completeOnboarding()
 
     await gateway.setGeneration(200)
@@ -203,6 +247,7 @@ struct BootstrapViewModelTests {
     try await userViewModel.saveCredential(credential)
     let newGeneration = 200
     await gateway.setGeneration(newGeneration)
+    try await userViewModel.saveBackendGeneration(try await gateway.getDatabaseGeneration())
     try await userViewModel.completeOnboarding()
 
     #expect(userViewModel.isOnboardingCompleted)
