@@ -54,6 +54,7 @@ private extension AppRootView {
           saveCredential: userViewModel.saveCredential,
           resetSession: userViewModel.signOut,
           saveHsmServerParameters: userViewModel.saveHsmServerParameters,
+          saveBackendGeneration: userViewModel.saveBackendGeneration,
           onComplete: userViewModel.completeOnboarding,
         ),
       )

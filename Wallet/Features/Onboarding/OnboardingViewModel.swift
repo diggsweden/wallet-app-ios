@@ -13,11 +13,7 @@ final class OnboardingViewModel {
     case start, forward, back
   }
 
-  private let saveCredential: (SavedCredential) async throws -> Void
-  private let signInAction: (String) async throws -> Void
-  private let resetSessionAction: () async throws -> Void
-  private let saveHsmServerParametersAction: (ServerParameters) async throws -> Void
-  private let onComplete: () async throws -> Void
+  private let actions: OnboardingActions
 
   private(set) var context = OnboardingContext()
   private(set) var step: OnboardingStep = .intro
@@ -27,18 +23,10 @@ final class OnboardingViewModel {
 
   init(
     step: OnboardingStep = .intro,
-    saveCredential: @escaping (SavedCredential) async throws -> Void,
-    signIn: @escaping (String) async throws -> Void,
-    onReset: @escaping () async throws -> Void,
-    saveHsmServerParameters: @escaping (ServerParameters) async throws -> Void,
-    onComplete: @escaping () async throws -> Void,
+    actions: OnboardingActions,
   ) {
     self.step = step
-    self.saveCredential = saveCredential
-    self.signInAction = signIn
-    self.resetSessionAction = onReset
-    self.saveHsmServerParametersAction = saveHsmServerParameters
-    self.onComplete = onComplete
+    self.actions = actions
   }
 
   var currentStepNumber: Int? {
@@ -65,15 +53,19 @@ final class OnboardingViewModel {
   }
 
   func signIn(accountId: String) async throws {
-    try await signInAction(accountId)
+    try await actions.signIn(accountId)
   }
 
   func saveCredential(_ credential: SavedCredential) async throws {
-    try await saveCredential(credential)
+    try await actions.saveCredential(credential)
   }
 
   func saveHsmServerParameters(_ parameters: ServerParameters) async throws {
-    try await saveHsmServerParametersAction(parameters)
+    try await actions.saveHsmServerParameters(parameters)
+  }
+
+  func saveBackendGeneration(_ generation: Int) async throws {
+    try await actions.saveBackendGeneration(generation)
   }
 
   func confirmPin(_ pin: String) throws {
@@ -89,7 +81,7 @@ final class OnboardingViewModel {
   }
 
   func onCompleteOnboarding() async throws {
-    try await onComplete()
+    try await actions.onComplete()
   }
 
   func next(from step: OnboardingStep) {
@@ -116,7 +108,7 @@ final class OnboardingViewModel {
     hadResetError = false
 
     do {
-      try await resetSessionAction()
+      try await actions.resetSession()
       context = OnboardingContext()
       stepTransition = .start
       step = .intro

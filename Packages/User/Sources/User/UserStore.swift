@@ -54,9 +54,8 @@ public actor UserStore: AccountIdProvider {
     return snapshot(from: user)
   }
 
-  public func completeOnboarding(backendGeneration: Int) throws -> UserSnapshot {
+  public func completeOnboarding() throws -> UserSnapshot {
     let user = try getOrCreateModel()
-    user.backendGeneration = backendGeneration
     user.isOnboardingCompleted = true
     try save()
     return snapshot(from: user)

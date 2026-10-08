@@ -11,5 +11,6 @@ struct OnboardingActions {
   let saveCredential: (SavedCredential) async throws -> Void
   let resetSession: () async throws -> Void
   let saveHsmServerParameters: (ServerParameters) async throws -> Void
+  let saveBackendGeneration: (Int) async throws -> Void
   let onComplete: () async throws -> Void
 }

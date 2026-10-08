@@ -6,19 +6,16 @@ import CredentialInterfaces
 import SwiftAccessMechanism
 import SwiftUI
 import User
-import WalletGatewayInterface
 
 @MainActor
 @Observable
 final class UserViewModel {
   private(set) var user: UserSnapshot
   private let userStore: UserStore
-  private let gatewayApiClient: any GatewayApi
 
-  init(user: UserSnapshot, userStore: UserStore, gatewayApiClient: any GatewayApi) {
+  init(user: UserSnapshot, userStore: UserStore) {
     self.user = user
     self.userStore = userStore
-    self.gatewayApiClient = gatewayApiClient
   }
 
   var isOnboardingCompleted: Bool {
@@ -48,9 +45,13 @@ final class UserViewModel {
     user = updated
   }
 
+  func saveBackendGeneration(_ generation: Int) async throws {
+    let updated = try await userStore.saveBackendGeneration(generation)
+    user = updated
+  }
+
   func completeOnboarding() async throws {
-    let generation = try await gatewayApiClient.getDatabaseGeneration()
-    let updated = try await userStore.completeOnboarding(backendGeneration: generation)
+    let updated = try await userStore.completeOnboarding()
     user = updated
   }
 }

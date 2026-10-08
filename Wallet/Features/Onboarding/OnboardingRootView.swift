@@ -33,11 +33,7 @@ struct OnboardingRootView: View {
     _viewModel = State(
       wrappedValue: .init(
         step: initialStep,
-        saveCredential: actions.saveCredential,
-        signIn: actions.signIn,
-        onReset: actions.resetSession,
-        saveHsmServerParameters: actions.saveHsmServerParameters,
-        onComplete: actions.onComplete,
+        actions: actions,
       )
     )
   }
@@ -161,15 +157,20 @@ struct OnboardingRootView: View {
         WalletSetupView(
           pin: viewModel.context.pin,
           gatewayApi: gatewayApiClient,
-          onAccountCreated: { accountId in
-            try await viewModel.signIn(accountId: accountId)
-          },
-          onServerParameters: { parameters in
-            try await viewModel.saveHsmServerParameters(parameters)
-          },
-          onComplete: {
-            viewModel.next(from: .walletSetup)
-          },
+          actions: .init(
+            onAccountCreated: { accountId in
+              try await viewModel.signIn(accountId: accountId)
+            },
+            onServerParameters: { parameters in
+              try await viewModel.saveHsmServerParameters(parameters)
+            },
+            onBackendGeneration: { generation in
+              try await viewModel.saveBackendGeneration(generation)
+            },
+            onComplete: {
+              viewModel.next(from: .walletSetup)
+            },
+          ),
         )
         .padding(.top, 30)
 
