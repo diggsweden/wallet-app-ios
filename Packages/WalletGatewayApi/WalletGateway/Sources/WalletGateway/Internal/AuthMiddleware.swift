@@ -7,6 +7,11 @@ import HTTPTypes
 import OpenAPIRuntime
 
 struct AuthenticationMiddleware: ClientMiddleware {
+  private static let sessionlessOperations: Set<String> = [
+    Operations.CreateAccount.id,
+    Operations.GetClientConfig.id,
+  ]
+
   let sessionManager: SessionManager
   let apiKey: String
 
@@ -20,7 +25,7 @@ struct AuthenticationMiddleware: ClientMiddleware {
     var request = request
     request.setHeader("X-API-KEY", apiKey)
 
-    if operationID == "createAccount" {
+    if Self.sessionlessOperations.contains(operationID) {
       return try await next(request, body, baseURL)
     }
 
