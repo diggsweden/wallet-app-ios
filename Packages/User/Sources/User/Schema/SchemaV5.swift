@@ -22,7 +22,7 @@ extension SchemaV5 {
     var hsmServerParameters: HsmServerParameters?
     var isOnboardingCompleted: Bool = false
     var isReset: Bool = false
-    var backendResetAt: Date?
+    var backendGeneration: Int?
 
     init(
       id: Int = 0,
@@ -31,7 +31,7 @@ extension SchemaV5 {
       hsmServerParameters: HsmServerParameters? = nil,
       isOnboardingCompleted: Bool = false,
       isReset: Bool = false,
-      backendResetAt: Date? = nil,
+      backendGeneration: Int? = nil,
     ) {
       self.id = id
       self.accountId = accountId
@@ -39,7 +39,7 @@ extension SchemaV5 {
       self.hsmServerParameters = hsmServerParameters
       self.isOnboardingCompleted = isOnboardingCompleted
       self.isReset = isReset
-      self.backendResetAt = backendResetAt
+      self.backendGeneration = backendGeneration
     }
   }
 }
@@ -90,7 +90,6 @@ extension SchemaV5.SavedCredential {
     claimsCount = try container.decode(Int.self, forKey: .claimsCount)
     issuedAt = try container.decode(Date.self, forKey: .issuedAt)
     type = try container.decode(String.self, forKey: .type)
-    // V4 values have no key ID. The custom migration fills it from the PID before saving.
     keyId = try container.decodeIfPresent(String.self, forKey: .keyId) ?? ""
     displayData = try container.decodeIfPresent(
       SchemaV5.CredentialDisplayData.self,

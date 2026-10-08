@@ -11,16 +11,14 @@ import Testing
 
 @Suite("V4 to V5 migration", .serialized)
 struct MigrateV4toV5Tests {
-  @Test("The PID key ID is persisted for every credential and user data survives migration")
+  @Test("Existing users are marked for reset and the flag survives reopening the store")
   // swiftlint:disable:next function_body_length
-  func populatesAttestedKeyId() throws {
+  func marksExistingUserForReset() throws {
     let credentials = [
       Self.credential(type: "Document", compactSerialized: "document"),
       Self.credential(
         type: CredentialType.pid.rawValue,
-        compactSerialized: Self.pid(
-          payload: #"{"cnf":{"jwk":{"kid":"pid-key"}}}"#
-        ),
+        compactSerialized: "legacy-pid",
       ),
     ]
     let parameters = SchemaV4.HsmServerParameters(
@@ -49,14 +47,14 @@ struct MigrateV4toV5Tests {
         #expect(user.id == 1)
         #expect(user.accountId == "account")
         #expect(!user.isOnboardingCompleted)
-        #expect(!user.isReset)
-        #expect(user.backendResetAt == nil)
+        #expect(user.isReset)
+        #expect(user.backendGeneration == nil)
         #expect(user.hsmServerParameters?.serverJwsPublicKey.kid == "server-key")
         #expect(user.hsmServerParameters?.opaqueContext == parameters.opaqueContext)
         #expect(
           user.hsmServerParameters?.opaqueServerIdentifier == parameters.opaqueServerIdentifier
         )
-        #expect(user.credentials.map(\.keyId) == ["pid-key", "pid-key"])
+        #expect(user.credentials.map(\.keyId) == ["", ""])
         // Decoding as V4 ignores the new field and checks every original credential field.
         let originalValues = try JSONDecoder()
           .decode(
@@ -72,10 +70,10 @@ struct MigrateV4toV5Tests {
       let user = try #require(
         try ModelContext(reopened).fetch(FetchDescriptor<SchemaV5.User>()).first
       )
-      #expect(user.credentials.map(\.keyId) == ["pid-key", "pid-key"])
+      #expect(user.credentials.map(\.keyId) == ["", ""])
       #expect(!user.isOnboardingCompleted)
-      #expect(!user.isReset)
-      #expect(user.backendResetAt == nil)
+      #expect(user.isReset)
+      #expect(user.backendGeneration == nil)
     }
   }
 
@@ -89,35 +87,62 @@ struct MigrateV4toV5Tests {
       )
       #expect(user.credentials.isEmpty)
       #expect(!user.isOnboardingCompleted)
-      #expect(!user.isReset)
-      #expect(user.backendResetAt == nil)
+      #expect(user.isReset)
+      #expect(user.backendGeneration == nil)
     }
   }
 
   @Test(
-    "An unusable PID fails migration without changing the V4 credentials",
-    arguments: [
-      "invalid",
-      "e30.!.signature~",
-      pid(payload: "not-json"),
-      pid(payload: "{}"),
-      pid(payload: #"{"cnf":{}}"#),
-      pid(payload: #"{"cnf":{"jwk":{}}}"#),
-      pid(payload: #"{"cnf":{"jwk":{"kid":""}}}"#),
-      pid(payload: #"{"cnf":{"jwk":{"kid":123}}}"#),
-    ],
+    "Legacy credentials migrate without requiring a valid PID",
+    arguments: [CredentialType.pid.rawValue, "Document"],
   )
-  func invalidPid(compactSerialized: String) throws {
-    try assertFailedMigrationPreservesCredentials([
-      Self.credential(type: CredentialType.pid.rawValue, compactSerialized: compactSerialized)
-    ])
+  func legacyCredentials(type: String) throws {
+    try withStore { url in
+      try createV4Store(at: url) { context in
+        context.insert(
+          SchemaV4.User(credentials: [
+            Self.credential(type: type, compactSerialized: "invalid")
+          ])
+        )
+      }
+      let container = try migrateStore(at: url)
+      let user = try #require(
+        try ModelContext(container).fetch(FetchDescriptor<SchemaV5.User>()).first
+      )
+      #expect(user.isReset)
+      #expect(user.credentials.first?.compactSerialized == "invalid")
+    }
   }
 
-  @Test("Credentials without a PID fail migration without losing data")
-  func missingPid() throws {
-    try assertFailedMigrationPreservesCredentials([
-      Self.credential(type: "Document", compactSerialized: "document")
-    ])
+  @Test("New V5 users do not need a reset")
+  func newUser() throws {
+    try withStore { url in
+      let container = try migrateStore(at: url)
+      let context = ModelContext(container)
+      let user = SchemaV5.User()
+      context.insert(user)
+      try context.save()
+      #expect(!user.isReset)
+      #expect(user.backendGeneration == nil)
+    }
+  }
+
+  @Test("The integer backend generation survives reopening", arguments: [0, 42])
+  func backendGenerationIsPersisted(generation: Int) throws {
+    try withStore { url in
+      do {
+        let container = try migrateStore(at: url)
+        let context = ModelContext(container)
+        context.insert(SchemaV5.User(backendGeneration: generation))
+        try context.save()
+      }
+      let reopened = try migrateStore(at: url)
+      let user = try #require(
+        try ModelContext(reopened).fetch(FetchDescriptor<SchemaV5.User>()).first
+      )
+      #expect(user.backendGeneration == generation)
+      #expect(!user.isReset)
+    }
   }
 }
 
@@ -147,21 +172,6 @@ private extension MigrateV4toV5Tests {
     )
   }
 
-  func assertFailedMigrationPreservesCredentials(_ credentials: [SchemaV4.SavedCredential]) throws {
-    try withStore { url in
-      try createV4Store(at: url) { $0.insert(SchemaV4.User(credentials: credentials)) }
-      #expect(throws: (any Error).self) { try migrateStore(at: url) }
-      let container = try ModelContainer(
-        for: SchemaV4.User.self,
-        configurations: ModelConfiguration(url: url),
-      )
-      let user = try #require(
-        try ModelContext(container).fetch(FetchDescriptor<SchemaV4.User>()).first
-      )
-      #expect(user.credentials == credentials)
-    }
-  }
-
   static func credential(type: String, compactSerialized: String) -> SchemaV4.SavedCredential {
     SchemaV4.SavedCredential(
       issuer: .init(
@@ -176,20 +186,5 @@ private extension MigrateV4toV5Tests {
       type: type,
       displayData: .init(name: "Credential"),
     )
-  }
-
-  static func pid(payload: String) -> String {
-    // Different header and attestation keys ensure the migration reads cnf.jwk.kid.
-    let attestationPayload = #"{"attested_keys":[{"kid":"attestation-key"}]}"#
-    let attestation = "e30.\(base64Url(attestationPayload)).signature"
-    let header = #"{"alg":"ES256","kid":"issuer-key","key_attestation":"\#(attestation)"}"#
-    return "\(base64Url(header)).\(base64Url(payload)).signature~disclosure~"
-  }
-
-  static func base64Url(_ value: String) -> String {
-    Data(value.utf8).base64EncodedString()
-      .replacingOccurrences(of: "+", with: "-")
-      .replacingOccurrences(of: "/", with: "_")
-      .replacingOccurrences(of: "=", with: "")
   }
 }
