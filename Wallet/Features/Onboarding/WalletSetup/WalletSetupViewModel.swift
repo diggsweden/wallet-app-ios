@@ -11,18 +11,15 @@ final class WalletSetupViewModel {
   private let pin: String
   private(set) var state: WalletSetupState = .idle
   private let onComplete: () -> Void
-  private let sleepProvider: any SleepProviding
 
   init(
     service: any WalletSetupService,
     pin: String,
     onComplete: @escaping () -> Void,
-    sleepProvider: any SleepProviding = SleepProvider(),
   ) {
     self.service = service
     self.pin = pin
     self.onComplete = onComplete
-    self.sleepProvider = sleepProvider
   }
 
   func setup() async {
@@ -41,7 +38,6 @@ final class WalletSetupViewModel {
     while let step = current {
       state = .working(step)
       do {
-        await sleepProvider.sleep(for: .random(in: Constants.randomStepDelayInSeconds))
         current = try await perform(step)
       } catch {
         state = .failed(at: step, CaughtError(error))
@@ -49,7 +45,6 @@ final class WalletSetupViewModel {
       }
     }
     state = .complete
-    await sleepProvider.sleep(for: Constants.onCompleteDelayInSeconds)
     onComplete()
   }
 
@@ -71,12 +66,5 @@ final class WalletSetupViewModel {
         _ = try await service.registerPin(pin: pin)
         return nil
     }
-  }
-}
-
-private extension WalletSetupViewModel {
-  enum Constants {
-    static let onCompleteDelayInSeconds: Double = 1
-    static let randomStepDelayInSeconds: ClosedRange<Double> = 0.5 ... 0.8
   }
 }

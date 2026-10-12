@@ -50,10 +50,6 @@ enum MockError: Error {
   case intentional
 }
 
-struct MockSleepProvider: SleepProviding {
-  func sleep(for seconds: Double) {}
-}
-
 // MARK: - Tests
 
 @MainActor
@@ -65,7 +61,6 @@ struct WalletSetupViewModelTests {
       service: service,
       pin: "1234",
       onComplete: {},
-      sleepProvider: MockSleepProvider(),
     )
     await vm.setup()
     #expect(vm.state == .complete)
@@ -86,7 +81,6 @@ struct WalletSetupViewModelTests {
       service: service,
       pin: "1234",
       onComplete: { called = true },
-      sleepProvider: MockSleepProvider(),
     )
     await vm.setup()
     #expect(called)
@@ -101,7 +95,6 @@ struct WalletSetupViewModelTests {
       service: service,
       pin: "1234",
       onComplete: { called = true },
-      sleepProvider: MockSleepProvider(),
     )
     await vm.setup()
     #expect(!called)
@@ -115,7 +108,6 @@ struct WalletSetupViewModelTests {
       service: service,
       pin: "1234",
       onComplete: {},
-      sleepProvider: MockSleepProvider(),
     )
     await vm.setup()
     #expect(vm.state == .failed(at: .registerPin, CaughtError(MockError.intentional)))
@@ -129,7 +121,6 @@ struct WalletSetupViewModelTests {
       service: service,
       pin: "1234",
       onComplete: {},
-      sleepProvider: MockSleepProvider(),
     )
     await vm.setup()
 
@@ -152,7 +143,6 @@ struct WalletSetupViewModelTests {
       service: service,
       pin: "1234",
       onComplete: { completed = true },
-      sleepProvider: MockSleepProvider(),
     )
     await vm.setup()
 
@@ -182,7 +172,6 @@ struct WalletSetupViewModelTests {
       service: service,
       pin: "1234",
       onComplete: {},
-      sleepProvider: MockSleepProvider(),
     )
     await vm.setup()
     await vm.retry()

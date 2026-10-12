@@ -12,7 +12,7 @@ struct Bootstrapper {
     let user = try await services.userStore.getOrCreate()
 
     if user.isReset || hasStaleDeviceKey(user) {
-      return try await signOut(isReset: true)
+      return try await signOut(isReset: user.isReset)
     }
 
     if user.hasCompletedOnboarding {
