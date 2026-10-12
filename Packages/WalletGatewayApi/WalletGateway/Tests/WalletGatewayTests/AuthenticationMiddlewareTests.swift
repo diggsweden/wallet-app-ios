@@ -19,15 +19,16 @@ struct AuthenticationMiddlewareTests {
     let accountIds = CountingAccountIdProvider()
     var forwarded: HTTPRequest?
 
-    _ = try await makeMiddleware(accountIdProvider: accountIds).intercept(
-      makeRequest(),
-      body: nil,
-      baseURL: baseURL,
-      operationID: operationID,
-    ) { request, body, _ in
-      forwarded = request
-      return (HTTPResponse(status: .ok), body)
-    }
+    _ = try await makeMiddleware(accountIdProvider: accountIds)
+      .intercept(
+        makeRequest(),
+        body: nil,
+        baseURL: baseURL,
+        operationID: operationID,
+      ) { request, body, _ in
+        forwarded = request
+        return (HTTPResponse(status: .ok), body)
+      }
 
     let request = try #require(forwarded)
     #expect(request.headerFields[try #require(HTTPField.Name("X-API-KEY"))] == "api-key")
@@ -41,15 +42,16 @@ struct AuthenticationMiddlewareTests {
     var forwarded = false
 
     do {
-      _ = try await makeMiddleware(accountIdProvider: accountIds).intercept(
-        makeRequest(),
-        body: nil,
-        baseURL: baseURL,
-        operationID: Operations.GetApiInfo.id,
-      ) { _, body, _ in
-        forwarded = true
-        return (HTTPResponse(status: .ok), body)
-      }
+      _ = try await makeMiddleware(accountIdProvider: accountIds)
+        .intercept(
+          makeRequest(),
+          body: nil,
+          baseURL: baseURL,
+          operationID: Operations.GetApiInfo.id,
+        ) { _, body, _ in
+          forwarded = true
+          return (HTTPResponse(status: .ok), body)
+        }
       Issue.record("Expected the session manager to reject a missing account")
     } catch SessionError.noAccountId {}
 
