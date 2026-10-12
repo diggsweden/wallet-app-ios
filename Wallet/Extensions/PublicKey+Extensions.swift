@@ -9,21 +9,9 @@ import WalletGatewayInterface
 
 extension P256.Signing.PublicKey {
   func toPublicKeyComponents() throws -> PublicKeyComponents {
-    let jwk = WalletJoseJWK(self)
-    guard
-      let curve = jwk.curve?.rawValue,
-      let x = jwk.x?.base64UrlEncodedString(),
-      let y = jwk.y?.base64UrlEncodedString()
-    else {
-      throw AppError(reason: "Invalid key format")
-    }
-    return PublicKeyComponents(
-      kty: jwk.keyType.rawValue,
-      kid: try jwk.thumbprint(),
-      crv: curve,
-      x: x,
-      y: y,
-    )
+    var jwk = WalletJoseJWK(self)
+    jwk.keyID = try jwk.thumbprint()
+    return try jwk.toPublicKeyComponents()
   }
 }
 

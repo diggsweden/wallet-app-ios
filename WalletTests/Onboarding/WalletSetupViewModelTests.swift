@@ -5,8 +5,6 @@
 import Foundation
 import SwiftAccessMechanism
 import Testing
-import WalletGateway
-import WalletGatewayInterface
 
 @testable import WalletDemo
 
@@ -19,9 +17,6 @@ final class MockWalletSetupService: WalletSetupService {
   private(set) var createAccountCallCount = 0
   private(set) var initHSMStateCallCount = 0
   private(set) var registerPinCallCount = 0
-  private(set) var authenticateCallCount = 0
-  private(set) var generateHSMKeyCallCount = 0
-  private(set) var saveKeyCallCount = 0
 
   func createAccount() throws {
     createAccountCallCount += 1
@@ -37,22 +32,6 @@ final class MockWalletSetupService: WalletSetupService {
     registerPinCallCount += 1
     if let failAt, case .registerPin = failAt { throw MockError.intentional }
     return try PINStretch().stretch(input: Data(pin.utf8))
-  }
-
-  func authenticate(pin: StretchedPIN) throws {
-    authenticateCallCount += 1
-    if let failAt, case .authenticate = failAt { throw MockError.intentional }
-  }
-
-  func generateHSMKey() throws -> PublicKeyComponents {
-    generateHSMKeyCallCount += 1
-    if let failAt, case .generateHSMKey = failAt { throw MockError.intentional }
-    return PublicKeyComponents(kty: "EC", kid: "mock-kid", crv: "P-256", x: "mock-x", y: "mock-y")
-  }
-
-  func saveKey(key: PublicKeyComponents) throws {
-    saveKeyCallCount += 1
-    if let failAt, case .saveKey = failAt { throw MockError.intentional }
   }
 }
 
@@ -79,6 +58,9 @@ struct WalletSetupViewModelTests {
     )
     await vm.setup()
     #expect(vm.state == .complete)
+    #expect(service.createAccountCallCount == 1)
+    #expect(service.initHSMStateCallCount == 1)
+    #expect(service.registerPinCallCount == 1)
   }
 
   @Test
@@ -111,10 +93,9 @@ struct WalletSetupViewModelTests {
   }
 
   @Test
-  func setsCorrectStateOnFailure() async throws {
+  func setsCorrectStateOnFailure() async {
     let service = MockWalletSetupService()
-    let stretched = try PINStretch().stretch(input: Data("1234".utf8))
-    service.failAt = .authenticate(stretched)
+    service.failAt = .registerPin
     let vm = WalletSetupViewModel(
       service: service,
       pin: "1234",
@@ -122,14 +103,13 @@ struct WalletSetupViewModelTests {
       sleepProvider: MockSleepProvider(),
     )
     await vm.setup()
-    #expect(vm.state == .failed(at: .authenticate(stretched), CaughtError(MockError.intentional)))
+    #expect(vm.state == .failed(at: .registerPin, CaughtError(MockError.intentional)))
   }
 
   @Test
-  func retryResumesFromFailedStep() async throws {
+  func retryResumesFromFailedStep() async {
     let service = MockWalletSetupService()
-    let stretched = try PINStretch().stretch(input: Data("1234".utf8))
-    service.failAt = .authenticate(stretched)
+    service.failAt = .registerPin
     let vm = WalletSetupViewModel(
       service: service,
       pin: "1234",
@@ -144,8 +124,7 @@ struct WalletSetupViewModelTests {
     #expect(vm.state == .complete)
     #expect(service.createAccountCallCount == 1)
     #expect(service.initHSMStateCallCount == 1)
-    #expect(service.registerPinCallCount == 1)
-    #expect(service.authenticateCallCount == 2)
+    #expect(service.registerPinCallCount == 2)
   }
 
   @Test

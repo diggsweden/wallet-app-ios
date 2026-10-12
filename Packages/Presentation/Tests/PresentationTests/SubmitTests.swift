@@ -105,7 +105,7 @@ struct SubmitTests {
     let submission = try await submit(resolved, signer: signer)
 
     let presentation = try #require(try vpToken(of: submission.request)["pid"]?.first)
-    let disclosed = try #require(resolved.disclosedSdJwts["pid"])
+    let disclosed = try #require(resolved.disclosedCredentials["pid"]?.serialisation)
     #expect(presentation.hasPrefix(disclosed))
 
     let keyBinding = try DecodedJwt(compact: String(presentation.dropFirst(disclosed.count)))
@@ -117,6 +117,39 @@ struct SubmitTests {
         == Data(SHA256.hash(data: Data(disclosed.utf8))).base64UrlEncodedString()
     )
     #expect(try keyBinding.verifies(with: signer.key.publicKey))
+  }
+
+  @Test func `the key binding is signed with the credential's binding key`() async throws {
+    let signer = FakeProofSigner()
+    let resolved = try PresentationSession.match(
+      Fixtures.request([Fixtures.query(id: "pid")]),
+      credentials: [SampleCredential.saved(keyId: "hsm-key-1")],
+    )
+
+    _ = try await submit(resolved, signer: signer)
+
+    #expect(await signer.signedKeyIds == [ProofKey.ID("hsm-key-1")])
+  }
+
+  @Test func `each selected credential is key-bound with its own key`() async throws {
+    let signer = FakeProofSigner()
+    let resolved = try PresentationSession.match(
+      Fixtures.request([
+        Fixtures.query(id: "pid"),
+        Fixtures.query(id: "other", vctValues: ["urn:other"]),
+      ]),
+      credentials: [
+        SampleCredential.saved(keyId: "pid-key"),
+        SampleCredential.saved(type: "urn:other", keyId: "other-key"),
+      ],
+    )
+
+    let submission = try await submit(resolved, selectedIds: ["pid", "other"], signer: signer)
+
+    #expect(try vpToken(of: submission.request).keys.sorted() == ["other", "pid"])
+    #expect(
+      Set(await signer.signedKeyIds) == [ProofKey.ID("pid-key"), ProofKey.ID("other-key")]
+    )
   }
 
   @Test func `only the selected credentials are presented`() async throws {
@@ -202,7 +235,7 @@ struct SubmitTests {
     #expect(response.state == state)
     #expect(response.vpToken.keys.sorted() == ["pid"])
     let presentation = try #require(response.vpToken["pid"]?.first)
-    let disclosed = try #require(resolved.disclosedSdJwts["pid"])
+    let disclosed = try #require(resolved.disclosedCredentials["pid"]?.serialisation)
     #expect(presentation.hasPrefix(disclosed))
     let keyBinding = try DecodedJwt(compact: String(presentation.dropFirst(disclosed.count)))
     #expect(keyBinding.headerString("typ") == "kb+jwt")

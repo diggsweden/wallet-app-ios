@@ -9,7 +9,8 @@ public struct GatewayApiMock: GatewayApi {
 
   public func createAccount(publicKey: PublicKeyComponents) throws -> String { "" }
 
-  public func addAccountWalletKey(key: PublicKeyComponents) throws {}
-
-  public func getWalletUnitAttestation(nonce: String?) throws -> String { "" }
+  public func getKeyAttestation(
+    keys: [PublicKeyComponents],
+    nonce: String?,
+  ) throws -> String { "" }
 }

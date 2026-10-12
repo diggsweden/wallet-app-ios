@@ -118,6 +118,7 @@ private extension SavedCredential {
     claimsCount: 2,
     issuedAt: .now,
     type: CredentialType.pid.rawValue,
+    keyId: "kid",
     displayData: nil,
   )
 
@@ -129,6 +130,7 @@ private extension SavedCredential {
       claimsCount: 4,
       issuedAt: .now,
       type: "preview.\(name.lowercased())",
+      keyId: "nyckel",
       displayData: CredentialDisplayData(name: name),
     )
   }

@@ -10,9 +10,6 @@ protocol WalletSetupService: Sendable {
   func createAccount() async throws
   func initHSMState() async throws
   func registerPin(pin: String) async throws -> StretchedPIN
-  func authenticate(pin: StretchedPIN) async throws
-  func generateHSMKey() async throws -> PublicKeyComponents
-  func saveKey(key: PublicKeyComponents) async throws
 }
 
 actor BFFWalletSetupService: WalletSetupService {
@@ -56,41 +53,8 @@ actor BFFWalletSetupService: WalletSetupService {
     }
 
     let stretched = try PINStretch().stretch(input: Data(pin.utf8))
-    let response = try await client.registration(password: stretched)
-    print("DEBUG: Registration response: \(response)")
+    _ = try await client.registration(password: stretched)
     return stretched
-  }
-
-  func authenticate(pin: StretchedPIN) async throws {
-    guard let client = bffClient else {
-      throw WalletSetupError.missingBFFClient
-    }
-
-    let result = try await client.authenticate(password: pin)
-    print("DEBUG: Auth session key: \(result.sessionKey.count) bytes")
-  }
-
-  func generateHSMKey() async throws -> PublicKeyComponents {
-    guard let client = bffClient else {
-      throw WalletSetupError.missingBFFClient
-    }
-
-    let keys = try await client.listKeys()
-
-    guard
-      let key = keys.keyInfo.first,
-      let kid = key.kid
-    else {
-      throw WalletSetupError.missingKeyId
-    }
-
-    let jwk = key.publicKey
-
-    return PublicKeyComponents(kty: jwk.kty, kid: kid, crv: jwk.crv, x: jwk.x, y: jwk.y)
-  }
-
-  func saveKey(key: PublicKeyComponents) async throws {
-    try await gatewayApi.addAccountWalletKey(key: key)
   }
 }
 

@@ -23,6 +23,7 @@ struct KeyBindingTests {
       aud: "https://verifier.example",
       nonce: "nonce-1",
       signer: signer,
+      keyId: signer.keyId,
     )
     let decoded = try DecodedJwt(compact: jwt)
 
@@ -43,6 +44,7 @@ struct KeyBindingTests {
       aud: "aud",
       nonce: "nonce",
       signer: FakeProofSigner(),
+      keyId: ProofKey.ID(SampleCredential.keyId),
     )
     let decoded = try DecodedJwt(compact: jwt)
 
@@ -57,6 +59,7 @@ struct KeyBindingTests {
       aud: "aud",
       nonce: "nonce",
       signer: signer,
+      keyId: signer.keyId,
     )
     let decoded = try DecodedJwt(compact: jwt)
 
@@ -71,7 +74,22 @@ struct KeyBindingTests {
         aud: "aud",
         nonce: "nonce",
         signer: FakeProofSigner(),
+        keyId: ProofKey.ID(SampleCredential.keyId),
       )
     }
+  }
+
+  @Test func `asks the signer to sign with the given binding key`() async throws {
+    let signer = FakeProofSigner()
+
+    _ = try await PresentationSession.createKeyBinding(
+      for: SampleCredential.compactSdJwt,
+      aud: "aud",
+      nonce: "nonce",
+      signer: signer,
+      keyId: ProofKey.ID("hsm-key-1"),
+    )
+
+    #expect(await signer.signedKeyIds == [ProofKey.ID("hsm-key-1")])
   }
 }

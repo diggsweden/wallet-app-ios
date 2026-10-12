@@ -10,4 +10,6 @@ public enum IssuanceError: LocalizedError, Equatable {
   case issuerNotFound
   case authRequestFailed
   case credentialNotSupported
+  case noKeyId
+  case noAuthAnchor
 }

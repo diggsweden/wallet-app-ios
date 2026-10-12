@@ -85,7 +85,7 @@ private extension MigrateV3toV4Tests {
 
     return try ModelContainer(
       for: SchemaV4.User.self,
-      migrationPlan: SwiftDataMigrationPlan.self,
+      migrationPlan: MigrationPlanV3toV4.self,
       configurations: ModelConfiguration(url: url),
     )
   }
@@ -145,4 +145,16 @@ private extension MigrateV3toV4Tests {
     type: CredentialType.pid.rawValue,
     displayData: SchemaV4.CredentialDisplayData(name: "PID"),
   )
+}
+
+/// The production plan ends at the latest schema, so a container targeting V4 needs a plan that
+/// stops there.
+private enum MigrationPlanV3toV4: SchemaMigrationPlan {
+  static var schemas: [any VersionedSchema.Type] {
+    [SchemaV3.self, SchemaV4.self]
+  }
+
+  static var stages: [MigrationStage] {
+    [MigrateV3toV4.stage]
+  }
 }

@@ -7,6 +7,7 @@ import Foundation
 
 public enum SampleCredential {
   public static let pidType = CredentialType.pid.rawValue
+  public static let keyId = "sample-key"
 
   public static let compactSdJwt = [
     "eyJhbGciOiAiRVMyNTYiLCAidHlwIjogImV4YW1wbGUrc2Qtand0In0.eyJfc2QiOiBbIkczU0laclAzWmZl",
@@ -35,6 +36,7 @@ public enum SampleCredential {
   public static func saved(
     type: String = pidType,
     claimDisplayNames: [String: String] = ["given_name": "Förnamn"],
+    keyId: String = keyId,
   ) -> SavedCredential {
     SavedCredential(
       issuer: IssuerDisplay(name: "Issuer", info: nil, imageUrl: nil),
@@ -43,6 +45,7 @@ public enum SampleCredential {
       claimsCount: 5,
       issuedAt: Date(timeIntervalSince1970: 0),
       type: type,
+      keyId: keyId,
       displayData: nil,
     )
   }

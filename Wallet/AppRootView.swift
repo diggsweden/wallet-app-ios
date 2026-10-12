@@ -34,7 +34,7 @@ struct AppRootView: View {
     }
     .sheet(isPresented: $router.isSettingsSheetPresented) {
       SettingsView(
-        showsLogout: userSessionViewModel.isEnrolled,
+        showsLogout: userSessionViewModel.isOnboardingCompleted,
         onLogout: userSessionViewModel.signOut,
       )
     }
@@ -96,7 +96,7 @@ private extension AppRootView {
 
   @ViewBuilder
   func userStateReadyView(_ user: UserSnapshot) -> some View {
-    if !userSessionViewModel.isEnrolled {
+    if !userSessionViewModel.isOnboardingCompleted {
       OnboardingRootView(
         gatewayApiClient: gatewayApiClient,
         userSnapshot: user,
@@ -105,6 +105,7 @@ private extension AppRootView {
           saveCredential: userSessionViewModel.saveCredential,
           resetSession: userSessionViewModel.signOut,
           saveHsmServerParameters: userSessionViewModel.saveHsmServerParameters,
+          onComplete: userSessionViewModel.completeOnboarding,
         ),
       )
     } else {
@@ -147,10 +148,12 @@ private extension AppRootView {
           credentialOfferUri: url,
           gatewayApiClient: gatewayApiClient,
           hsmServerParameters: userSessionViewModel.userSnapshot?.hsmServerParameters,
-        ) { credential in
-          try await userSessionViewModel.saveCredential(credential)
-          router.pop()
-        }
+          actions: .init(
+            onSaveCredential: userSessionViewModel.saveCredential,
+            onComplete: { router.pop() },
+            onDismiss: { router.pop() },
+          ),
+        )
 
       case .credentialDetails(let credential):
         CredentialDetailsView(credential: credential)

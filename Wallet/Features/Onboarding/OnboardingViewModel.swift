@@ -17,6 +17,7 @@ final class OnboardingViewModel {
   private let signInAction: (String) async throws -> Void
   private let resetSessionAction: () async throws -> Void
   private let saveHsmServerParametersAction: (ServerParameters) async throws -> Void
+  private let onComplete: () async throws -> Void
 
   private(set) var context = OnboardingContext()
   private(set) var step: OnboardingStep = .intro
@@ -30,12 +31,14 @@ final class OnboardingViewModel {
     signIn: @escaping (String) async throws -> Void,
     onReset: @escaping () async throws -> Void,
     saveHsmServerParameters: @escaping (ServerParameters) async throws -> Void,
+    onComplete: @escaping () async throws -> Void,
   ) {
     self.step = step
     self.saveCredential = saveCredential
     self.signInAction = signIn
     self.resetSessionAction = onReset
     self.saveHsmServerParametersAction = saveHsmServerParameters
+    self.onComplete = onComplete
   }
 
   var currentStepNumber: Int? {
@@ -83,6 +86,10 @@ final class OnboardingViewModel {
 
   func setCredentialOfferUri(_ credentialOfferUri: String) {
     context.credentialOfferUri = credentialOfferUri
+  }
+
+  func onCompleteOnboarding() async throws {
+    try await onComplete()
   }
 
   func next(from step: OnboardingStep) {

@@ -13,7 +13,8 @@ enum HsmSignerError: Error {
   case noKey
 }
 
-actor HsmProofSigner: ProofSigner {
+actor HsmProofSigner: ProofSigner, ProofKeyStore {
+  private var client: BFFHttpClient?
   private let transport: any HSMTransport
   private let parameters: HsmServerParameters?
   private let pin: String
@@ -24,16 +25,39 @@ actor HsmProofSigner: ProofSigner {
     self.pin = pin
   }
 
-  func sign(_ signingInput: Data) async throws -> String {
-    let session = try await authenticatedSession()
-    return try await session.client.sign(hsmKeyId: session.keyId, data: signingInput).signature
+  func sign(_ signingInput: Data, keyId: ProofKey.ID) async throws -> String {
+    try await getClient().sign(hsmKeyId: keyId.rawValue, data: signingInput).signature
   }
 
-  func publicKey() async throws -> WalletJoseJWK {
-    try await authenticatedSession().publicKey
+  func authenticate() async throws {
+    client = try await makeAuthenticatedClient()
   }
 
-  private func authenticatedSession() async throws -> HsmSession {
+  func createKey() async throws -> ProofKey {
+    let key = try await getClient().createHsmKey().public_key
+
+    guard let keyId = key.kid else {
+      throw IssuanceError.noKeyId
+    }
+
+    let walletJoseJwk = try WalletJoseJWK(key)
+
+    return ProofKey(id: .init(keyId), publicKey: walletJoseJwk)
+  }
+
+  func deleteKey(id: ProofKey.ID) async throws {
+    try await getClient().deleteKey(hsmKeyId: id.rawValue)
+  }
+
+  private func getClient() async throws -> BFFHttpClient {
+    if let client = client.take() {
+      return client
+    }
+
+    return try await makeAuthenticatedClient()
+  }
+
+  private func makeAuthenticatedClient() async throws -> BFFHttpClient {
     guard let parameters else {
       throw HsmSignerError.missingConfig
     }
@@ -45,18 +69,7 @@ actor HsmProofSigner: ProofSigner {
     )
     _ = try await client.authenticate(password: PINStretch().stretch(input: Data(pin.utf8)))
 
-    guard
-      let key = try await client.listKeys().keyInfo.first,
-      let keyId = key.kid
-    else {
-      throw HsmSignerError.noKey
-    }
-
-    return HsmSession(
-      client: client,
-      keyId: keyId,
-      publicKey: try WalletJoseJWK(secKey: key.publicKey.toSecKey()),
-    )
+    return client
   }
 }
 

@@ -57,6 +57,7 @@ private extension OnboardingSnapshotTests {
         accountId: nil,
         credentials: [],
         hsmServerParameters: nil,
+        isOnboardingCompleted: false,
       ),
       initialStep: step,
       actions: OnboardingActions(
@@ -64,6 +65,7 @@ private extension OnboardingSnapshotTests {
         saveCredential: { _ in },
         resetSession: {},
         saveHsmServerParameters: { _ in },
+        onComplete: {},
       ),
     )
   }
@@ -71,8 +73,7 @@ private extension OnboardingSnapshotTests {
 
 private struct SnapshotGateway: GatewayApi, HSMTransport {
   func createAccount(publicKey: PublicKeyComponents) throws -> String { "" }
-  func addAccountWalletKey(key: PublicKeyComponents) throws {}
-  func getWalletUnitAttestation(nonce: String?) throws -> String { "" }
+  func getKeyAttestation(keys: [PublicKeyComponents], nonce: String?) throws -> String { "" }
 
   func registerState(
     publicKey: JwkKey,

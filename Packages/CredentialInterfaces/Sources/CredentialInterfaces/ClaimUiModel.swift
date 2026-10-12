@@ -4,7 +4,7 @@
 
 import Foundation
 
-public enum ClaimValue: Sendable {
+public enum ClaimValue: Sendable, Equatable {
   case string(String)
   case date(Date)
   case int(Int)
@@ -16,7 +16,7 @@ public enum ClaimValue: Sendable {
   case imageData(Data)
 }
 
-public struct ClaimUiModel: Identifiable, Sendable {
+public struct ClaimUiModel: Identifiable, Sendable, Equatable {
   public let id: String
   public let displayName: String?
   public let value: ClaimValue

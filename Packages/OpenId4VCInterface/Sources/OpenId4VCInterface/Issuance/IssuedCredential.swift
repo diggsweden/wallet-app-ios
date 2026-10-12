@@ -4,7 +4,7 @@
 
 import CredentialInterfaces
 
-public struct IssuedCredential: Sendable {
+public struct IssuedCredential: Equatable, Sendable {
   public let credential: SavedCredential
   public let claims: [ClaimUiModel]
 

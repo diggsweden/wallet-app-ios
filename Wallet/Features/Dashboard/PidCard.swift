@@ -52,6 +52,7 @@ struct PidCard: View {
     claimsCount: 15,
     issuedAt: Date(),
     type: "",
+    keyId: "",
     displayData: nil,
   )
 

@@ -21,7 +21,8 @@ struct CandidateMatchingTests {
     #expect(resolved.candidates[0].claims.map(\.id) == ["given_name"])
     #expect(resolved.candidates[0].claims[0].displayName == "Förnamn")
 
-    #expect(resolved.disclosedSdJwts["pid"]?.hasPrefix(SampleCredential.issuerJwt) == true)
+    let disclosed = try #require(resolved.disclosedCredentials["pid"])
+    #expect(disclosed.serialisation.hasPrefix(SampleCredential.issuerJwt))
   }
 
   @Test func `the disclosed SD-JWT carries only the requested disclosures`() throws {
@@ -30,7 +31,7 @@ struct CandidateMatchingTests {
       credentials: [SampleCredential.saved()],
     )
 
-    let disclosed = try #require(resolved.disclosedSdJwts["pid"])
+    let disclosed = try #require(resolved.disclosedCredentials["pid"]?.serialisation)
     let disclosures = disclosed.split(separator: "~", omittingEmptySubsequences: false).dropFirst()
     #expect(disclosed.hasSuffix("~"))
     #expect(disclosures.filter { !$0.isEmpty }.count == 2)
@@ -142,6 +143,36 @@ struct CandidateMatchingTests {
     #expect(resolved.candidates.map(\.id) == ["a", "b"])
     #expect(resolved.candidates[0].claims.map(\.id) == ["given_name"])
     #expect(resolved.candidates[1].claims.map(\.id) == ["family_name"])
-    #expect(resolved.disclosedSdJwts["a"] != resolved.disclosedSdJwts["b"])
+    #expect(
+      resolved.disclosedCredentials["a"]?.serialisation
+        != resolved.disclosedCredentials["b"]?.serialisation
+    )
+  }
+
+  @Test func `the disclosed credential is bound to the key the stored credential was issued for`()
+    throws
+  {
+    let resolved = try PresentationSession.match(
+      Fixtures.request([Fixtures.query(id: "pid")]),
+      credentials: [SampleCredential.saved(keyId: "hsm-key-1")],
+    )
+
+    #expect(resolved.disclosedCredentials["pid"]?.bindingKeyId == ProofKey.ID("hsm-key-1"))
+  }
+
+  @Test func `each query keeps the binding key of the credential it matched`() throws {
+    let resolved = try PresentationSession.match(
+      Fixtures.request([
+        Fixtures.query(id: "pid"),
+        Fixtures.query(id: "other", vctValues: ["urn:other"]),
+      ]),
+      credentials: [
+        SampleCredential.saved(keyId: "pid-key"),
+        SampleCredential.saved(type: "urn:other", keyId: "other-key"),
+      ],
+    )
+
+    #expect(resolved.disclosedCredentials["pid"]?.bindingKeyId == ProofKey.ID("pid-key"))
+    #expect(resolved.disclosedCredentials["other"]?.bindingKeyId == ProofKey.ID("other-key"))
   }
 }
