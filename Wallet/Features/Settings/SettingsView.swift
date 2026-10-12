@@ -7,6 +7,7 @@ import SwiftUI
 
 struct SettingsView: View {
   private let showsLogout: Bool
+  @Environment(\.dismiss) private var dismiss
   @Environment(Router.self) private var router
   @Environment(\.openURL) private var openURL
   @Environment(\.theme) private var theme
@@ -21,6 +22,7 @@ struct SettingsView: View {
   }
 
   var body: some View {
+    // swiftlint:disable:next closure_body_length
     NavigationStack {
       List {
         appInfoSection
@@ -42,6 +44,17 @@ struct SettingsView: View {
       .alert("Kunde inte logga ut", isPresented: $settingsViewModel.hadLogoutError) {
         Button("Försök igen") { onLogoutTap() }
         Button("Avbryt", role: .cancel) {}
+      }
+      .toolbar {
+        ToolbarItem(placement: .cancellationAction) {
+          Button {
+            dismiss()
+          } label: {
+            Image(systemName: "xmark")
+          }
+          .accessibilityLabel("Stäng")
+          .accessibilityHint("Välj för att stänga inställningar")
+        }
       }
     }
   }

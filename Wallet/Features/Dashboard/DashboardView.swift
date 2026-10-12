@@ -35,6 +35,7 @@ struct DashboardView: View {
           }
         }
       }
+      .padding(.horizontal, theme.horizontalPadding)
     }
     .toolbar {
       ToolbarItem(placement: .topBarTrailing) {

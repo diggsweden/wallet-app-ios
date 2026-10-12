@@ -13,7 +13,6 @@ struct DefaultScreenStyleModifier: ViewModifier {
 
   func body(content: Content) -> some View {
     content
-      .padding(.horizontal, theme.horizontalPadding)
       .safeAreaPadding(.bottom, hasBottomSafeArea ? 0 : minimumBottomPadding)
       .frame(maxWidth: .infinity, maxHeight: .infinity)
       .background {

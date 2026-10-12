@@ -56,6 +56,7 @@ struct OnboardingRootView: View {
           )
       }
       .animation(.easeInOut, value: viewModel.step)
+      .padding(.horizontal, theme.horizontalPadding)
     }
     .toolbar {
       toolbarContent

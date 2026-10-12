@@ -6,6 +6,7 @@ import DesignSystem
 import SwiftUI
 
 struct PresentationPinView: View {
+  @Environment(\.theme) private var theme
   let isLoading: Bool
   let onPinEntered: (String) -> Void
 
@@ -30,6 +31,7 @@ struct PresentationPinView: View {
             onPinEntered(pin)
           }
         }
+        .padding(.horizontal, theme.horizontalPadding)
       }
     }
   }

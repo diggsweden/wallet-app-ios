@@ -3,12 +3,15 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import CredentialInterfaces
+import DesignSystem
 import SwiftAccessMechanism
 import SwiftUI
 import User
 import WalletGatewayInterface
 
 struct IssuanceViewWrapper: View {
+  @Environment(\.theme) private var theme
+
   let credentialOfferUri: String
   let gatewayApiClient: any GatewayApi & HSMTransport
   let hsmServerParameters: HsmServerParameters?
