@@ -11,6 +11,12 @@ import WalletGatewayInterface
 
 @Suite("AuthenticationMiddleware")
 struct AuthenticationMiddlewareTests {
+  private let baseURL: URL
+
+  init() throws {
+    baseURL = try #require(URL(string: "https://gateway.example"))
+  }
+
   @Test(
     "Sessionless operations are sent with the API key and no session",
     arguments: [Operations.CreateAccount.id, Operations.GetClientConfig.id],
@@ -19,7 +25,7 @@ struct AuthenticationMiddlewareTests {
     let accountIds = CountingAccountIdProvider()
     var forwarded: HTTPRequest?
 
-    _ = try await makeMiddleware(accountIdProvider: accountIds)
+    _ = try await makeMiddleware(accountIdProvider: accountIds, baseURL: baseURL)
       .intercept(
         makeRequest(),
         body: nil,
@@ -42,7 +48,7 @@ struct AuthenticationMiddlewareTests {
     var forwarded = false
 
     do {
-      _ = try await makeMiddleware(accountIdProvider: accountIds)
+      _ = try await makeMiddleware(accountIdProvider: accountIds, baseURL: baseURL)
         .intercept(
           makeRequest(),
           body: nil,
@@ -60,14 +66,13 @@ struct AuthenticationMiddlewareTests {
   }
 }
 
-private let baseURL = URL(string: "https://gateway.example")!
-
 private func makeRequest() -> HTTPRequest {
   HTTPRequest(method: .get, scheme: "https", authority: "gateway.example", path: "/")
 }
 
 private func makeMiddleware(
-  accountIdProvider: CountingAccountIdProvider
+  accountIdProvider: CountingAccountIdProvider,
+  baseURL: URL,
 ) -> AuthenticationMiddleware {
   AuthenticationMiddleware(
     sessionManager: SessionManager(
