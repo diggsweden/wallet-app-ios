@@ -9,14 +9,14 @@ import Foundation
 final class CameraScannerViewModel {
   private let scanner: any CodeScanner
   private let supportedSchemes: Set<String>
-  private let onSuccess: (String) -> Void
+  private let onSuccess: (URL) -> Void
 
   private(set) var state: State = .scanning
 
   init(
     scanner: any CodeScanner,
     supportedSchemes: Set<String> = Bundle.urlSchemes(in: Bundle.main.infoDictionary),
-    onSuccess: @escaping (String) -> Void,
+    onSuccess: @escaping (URL) -> Void,
   ) {
     self.scanner = scanner
     self.supportedSchemes = supportedSchemes
@@ -39,11 +39,13 @@ final class CameraScannerViewModel {
     for await event in scanning {
       switch event {
         case let .scanned(payload):
-          if isCodeSupported(payload) {
-            onSuccess(payload)
-          } else {
+          guard let url = parseUrl(from: payload) else {
             state = .failed(.unsupportedCode)
+            return
           }
+          state = .openingURL
+          onSuccess(url)
+          return
 
         case .unavailable:
           state = .unavailable
@@ -63,12 +65,15 @@ final class CameraScannerViewModel {
     }
   }
 
-  private func isCodeSupported(_ payload: String) -> Bool {
-    guard let urlScheme = URL(string: payload)?.scheme?.lowercased() else {
-      return false
+  private func parseUrl(from payload: String) -> URL? {
+    guard let url = URL(string: payload),
+      let scheme = url.scheme?.lowercased(),
+      supportedSchemes.contains(scheme)
+    else {
+      return nil
     }
 
-    return supportedSchemes.contains(urlScheme)
+    return url
   }
 }
 

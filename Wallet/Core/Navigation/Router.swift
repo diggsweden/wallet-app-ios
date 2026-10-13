@@ -26,6 +26,12 @@ class Router {
   func reset() {
     navigationPath = NavigationPath()
     presentedSheet = nil
+    presentedFullScreenCover = nil
+  }
+
+  func dismiss() {
+    presentedSheet = nil
+    presentedFullScreenCover = nil
   }
 }
 

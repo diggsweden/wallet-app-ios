@@ -15,7 +15,7 @@ struct CameraScannerView<CameraErrorView: View>: View {
   init(
     session: DataScannerSession,
     isPaused: Bool,
-    onSuccess: @escaping (String) -> Void,
+    onSuccess: @escaping (URL) -> Void,
     @ContentBuilder cameraErrorView: () -> CameraErrorView
   ) {
     self.session = session

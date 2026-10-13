@@ -12,11 +12,11 @@ public struct QRScannerView<CameraErrorView: View>: View {
   @State private var session = DataScannerSession()
   @State private var isInfoSheetPresented = false
 
-  private let onSuccess: (String) -> Void
+  private let onSuccess: (URL) -> Void
   private let cameraErrorView: CameraErrorView
 
   public init(
-    onSuccess: @escaping (String) -> Void,
+    onSuccess: @escaping (URL) -> Void,
     @ContentBuilder cameraErrorView: () -> CameraErrorView,
   ) {
     self.onSuccess = onSuccess
