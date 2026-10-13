@@ -20,7 +20,7 @@ let package = Package(
   dependencies: [
     .package(
       url: "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-openid4vp-swift.git",
-      exact: "0.41.0",
+      exact: "0.43.2",
     ),
     .package(name: "CredentialInterfaces", path: "../CredentialInterfaces"),
     .package(name: "Jose", path: "../Jose"),
