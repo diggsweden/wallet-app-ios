@@ -37,10 +37,13 @@ jobs:
         id: generate
         env:
           BUILD_NUMBER: ${{ needs.build-number.outputs.value }}
+          XCODE_VERSION: ${{ vars.XCODE_VERSION }}
+          MACOS_VERSION: ${{ vars.MACOS_VERSION }}
         run: |
           {
             echo "config<<GITHUB_OUTPUT_EOF"
-            envsubst "${BUILD_NUMBER}" < .github/artifacts-config-template.yml
+            # shellcheck disable=SC2016 # envsubst needs the literal variable names
+            envsubst '${BUILD_NUMBER} ${XCODE_VERSION} ${MACOS_VERSION}' < .github/artifacts-config-template.yml
             echo "GITHUB_OUTPUT_EOF"
           } >> "$GITHUB_OUTPUT"
 
