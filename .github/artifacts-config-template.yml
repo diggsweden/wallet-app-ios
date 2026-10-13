@@ -5,12 +5,12 @@ artifacts:
     build-type: application
     publish-to: []
     config:
-      xcode-version: "26.2"
+      xcode-version: "${XCODE_VERSION}"
       scheme: "Wallet Demo"
       workspace: "Wallet.xcworkspace"
       configuration: Release
       enable-code-signing: true
       export-options-var: EXPORT_OPTIONS_BASE64
-      macos-version: macos-26
+      macos-version: "${MACOS_VERSION}"
       build-number: ${BUILD_NUMBER}
       use-xcodegen: true
