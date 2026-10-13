@@ -57,6 +57,16 @@ struct DashboardView: View {
             .accessibilityLabel("Inställningar")
         }
       }
+
+      ToolbarItem(placement: .bottomBar) {
+        PrimaryButton(
+          "Skanna QR-Kod",
+          icon: "qrcode.viewfinder",
+          maxWidth: .infinity,
+        ) {
+          router.presentedFullScreenCover = .camera
+        }
+      }
     }
     .background(.clear)
     .navigationBarTitleDisplayMode(.inline)

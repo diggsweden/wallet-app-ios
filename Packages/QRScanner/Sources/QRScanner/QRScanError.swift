@@ -6,15 +6,11 @@ import Foundation
 
 enum QRScanError: LocalizedError {
   case unsupportedCode
-  case openingFailed
 
   var errorDescription: String? {
     switch self {
       case .unsupportedCode:
         "Den skannade QR-koden stödjs inte av appen"
-
-      case .openingFailed:
-        "Kunde inte öppna QR-kod"
     }
   }
 }

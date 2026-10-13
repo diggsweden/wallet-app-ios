@@ -2,12 +2,16 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
+import QRScanner
 import SwiftAccessMechanism
 import SwiftUI
 import User
 import WalletGatewayInterface
 
 struct AppRootView: View {
+  @Environment(\.dismiss) private var dismiss
+  @Environment(\.openURL) private var openURL
+
   private let gatewayApiClient: any GatewayApi & HSMTransport
   @State private var userViewModel: UserViewModel
   @State private var router = Router()
@@ -33,6 +37,50 @@ struct AppRootView: View {
             showsLogout: userViewModel.isOnboardingCompleted,
             onLogout: userViewModel.signOut,
           )
+      }
+    }
+    // swiftlint:disable:next closure_body_length
+    .fullScreenCover(item: $router.presentedFullScreenCover) { fullScreenCover in
+      switch fullScreenCover {
+        case .camera:
+          QRScannerView { urlString in
+            guard let url = URL(string: urlString) else { return }
+            openURL(url) { accepted in
+              if accepted {
+                dismiss()
+              }
+            }
+          } cameraErrorView: {
+            ErrorView(
+              model: .init(
+                imageReference: "cameraPermissionError",
+                title: "Kameran är inte tillgänglig",
+                subtitle: "Kameran behövs för att skanna. Kontrollera att kameraåtkomst är"
+                  + " på i Inställningar. Om den redan är på kan Skärmtid eller en begränsning på"
+                  + " enheten blockera den.",
+                primaryButton: .init(
+                  label: "Öppna inställningar",
+                  accessibilityHint: "Tryck här för att öppna kamera-inställningarna för appen",
+                  action: {
+                    Task { @MainActor in
+                      if let url = URL(string: UIApplication.openSettingsURLString) {
+                        UIApplication.shared.open(url)
+                      }
+                    }
+                  },
+                ),
+                secondaryButton: .init(
+                  label: "Inte nu",
+                  accessibilityHint: "Tryck här för att stänga",
+                  action: {
+                    Task { @MainActor in
+                      router.presentedFullScreenCover = nil
+                    }
+                  },
+                ),
+              )
+            )
+          }
       }
     }
     .environment(router)

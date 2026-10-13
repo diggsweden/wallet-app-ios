@@ -6,13 +6,22 @@ import AVFoundation
 import SwiftUI
 import VisionKit
 
-public struct QRScannerView: View {
+public struct QRScannerView<CameraErrorView: View>: View {
   @Environment(\.dismiss) private var dismiss
 
   @State private var session = DataScannerSession()
   @State private var isInfoSheetPresented = false
 
-  public init() {}
+  private let onSuccess: (String) -> Void
+  private let cameraErrorView: CameraErrorView
+
+  public init(
+    onSuccess: @escaping (String) -> Void,
+    @ContentBuilder cameraErrorView: () -> CameraErrorView,
+  ) {
+    self.onSuccess = onSuccess
+    self.cameraErrorView = cameraErrorView()
+  }
 
   public var body: some View {
     NavigationStack {
@@ -29,25 +38,27 @@ public struct QRScannerView: View {
 private extension QRScannerView {
   @ContentBuilder
   private var content: some View {
-    if !DataScannerViewController.isSupported {
-      // TODO: Vår error-vy
-      EmptyView()
-    } else {
+    if DataScannerViewController.isAvailable {
       switch session.authorization {
         case .notDetermined:
           ProgressView()
 
         case .authorized:
-          CameraScannerView(session: session, isPaused: isInfoSheetPresented)
+          CameraScannerView(
+            session: session,
+            isPaused: isInfoSheetPresented,
+            onSuccess: onSuccess,
+            cameraErrorView: { cameraErrorView },
+          )
 
         case .denied, .restricted:
-          // TODO: Vår error-vy
-          EmptyView()
+          cameraErrorView
 
         @unknown default:
-          // TODO: Vår error-vy
-          EmptyView()
+          cameraErrorView
       }
+    } else {
+      cameraErrorView
     }
   }
 
@@ -76,5 +87,8 @@ private extension QRScannerView {
 }
 
 #Preview {
-  QRScannerView()
+  QRScannerView(
+    onSuccess: { _ in },
+    cameraErrorView: { EmptyView() },
+  )
 }

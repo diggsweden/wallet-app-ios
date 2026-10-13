@@ -9,43 +9,46 @@ import Foundation
 final class CameraScannerViewModel {
   private let scanner: any CodeScanner
   private let supportedSchemes: Set<String>
+  private let onSuccess: (String) -> Void
 
   private(set) var state: State = .scanning
 
   init(
     scanner: any CodeScanner,
     supportedSchemes: Set<String> = Bundle.urlSchemes(in: Bundle.main.infoDictionary),
+    onSuccess: @escaping (String) -> Void,
   ) {
     self.scanner = scanner
     self.supportedSchemes = supportedSchemes
+    self.onSuccess = onSuccess
   }
 
-  func scan() async -> URL? {
-    guard case .scanning = state else { return nil }
+  func scan() async {
+    guard case .scanning = state else { return }
 
     defer { scanner.stop() }
 
+    let scanning: AsyncStream<ScanEvent>
     do {
-      for await event in try scanner.start() {
-        switch event {
-          case let .scanned(payload):
-            return resolve(payload)
-
-          case .unavailable:
-            state = .unavailable
-            return nil
-        }
-      }
+      scanning = try scanner.start()
     } catch {
       state = .unavailable
+      return
     }
 
-    return nil
-  }
+    for await event in scanning {
+      switch event {
+        case let .scanned(payload):
+          if isCodeSupported(payload) {
+            onSuccess(payload)
+          } else {
+            state = .failed(.unsupportedCode)
+          }
 
-  func didFailToOpenURL() {
-    guard case .openingURL = state else { return }
-    state = .failed(.openingFailed)
+        case .unavailable:
+          state = .unavailable
+      }
+    }
   }
 
   func retry() {
@@ -60,18 +63,12 @@ final class CameraScannerViewModel {
     }
   }
 
-  private func resolve(_ payload: String) -> URL? {
-    guard
-      let url = URL(string: payload),
-      let scheme = url.scheme?.lowercased(),
-      supportedSchemes.contains(scheme)
-    else {
-      state = .failed(.unsupportedCode)
-      return nil
+  private func isCodeSupported(_ payload: String) -> Bool {
+    guard let urlScheme = URL(string: payload)?.scheme?.lowercased() else {
+      return false
     }
 
-    state = .openingURL
-    return url
+    return supportedSchemes.contains(urlScheme)
   }
 }
 

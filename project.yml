@@ -136,6 +136,8 @@ targets:
         product: Presentation
       - package: Issuance
         product: Issuance
+      - package: QRScanner
+        product: QRScanner
     preBuildScripts:
       - name: SwiftLint
         path: scripts/swiftlint.sh

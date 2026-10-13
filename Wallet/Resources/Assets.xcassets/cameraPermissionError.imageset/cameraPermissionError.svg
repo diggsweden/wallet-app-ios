@@ -1,0 +1,32 @@
+<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M87.048 166.835C126.812 166.835 159.048 134.599 159.048 94.8348C159.048 55.071 126.812 22.8348 87.048 22.8348C47.2842 22.8348 15.048 55.071 15.048 94.8348C15.048 134.599 47.2842 166.835 87.048 166.835Z" fill="#D4D9D3"/>
+<!-- Camera with slash (disabled) -->
+<g transform="translate(122 46) rotate(8)">
+<rect x="-32" y="-29" width="10" height="5" rx="1.5" fill="white" stroke="#2B2A28" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M-15 -25L-10 -32H10L15 -25" fill="#E6BCB6" stroke="#2B2A28" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="-38" y="-25" width="76" height="52" rx="8" fill="#E6BCB6" stroke="#2B2A28" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="24" y="-19" width="8" height="5" rx="1.5" fill="white" stroke="#2B2A28" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="0" cy="2" r="17" fill="white" stroke="#2B2A28" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="0" cy="2" r="10" fill="#E6BCB6" stroke="#2B2A28" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="-3.5" cy="-1.5" r="2.5" fill="white"/>
+<line x1="-42" y1="-33" x2="42" y2="33" stroke="#2B2A28" stroke-width="7" stroke-linecap="round"/>
+<line x1="-42" y1="-33" x2="42" y2="33" stroke="white" stroke-width="5" stroke-linecap="round"/>
+</g>
+<path d="M93.78 123.989C110.014 113.504 120.512 95.661 121.4 73.5" stroke="#2B2A28" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="2 3"/>
+<!-- Phone -->
+<path d="M96.7537 156.744C97.1973 158.535 96.9112 160.43 95.9583 162.01C95.0054 163.591 93.4636 164.728 91.6723 165.172L56.6515 173.839C54.8605 174.282 52.9669 173.995 51.3872 173.042C49.8074 172.089 48.6708 170.548 48.2275 168.757L29.6389 93.6504C29.4187 92.7636 29.3756 91.8421 29.5119 90.9386C29.6482 90.0351 29.9612 89.1674 30.4332 88.385C30.9051 87.6026 31.5267 86.9209 32.2623 86.3789C32.9979 85.8369 33.8332 85.4453 34.7203 85.2264L69.7411 76.5576C71.5319 76.1155 73.425 76.4023 75.0046 77.3551C76.5841 78.3079 77.7208 79.8487 78.1651 81.639L96.7537 156.744Z" fill="white"/>
+<path d="M96.7537 156.744C97.1973 158.535 96.9112 160.43 95.9583 162.01C95.0054 163.591 93.4636 164.728 91.6723 165.172L56.6515 173.839C54.8605 174.282 52.967 173.995 51.3872 173.042C49.8074 172.089 48.6708 170.548 48.2275 168.757L29.6389 93.6504C29.4187 92.7636 29.3756 91.8421 29.5119 90.9386C29.6482 90.0351 29.9612 89.1674 30.4332 88.385C30.9051 87.6026 31.5267 86.9209 32.2623 86.3789C32.9979 85.8369 33.8332 85.4453 34.7203 85.2264L69.7411 76.5576C71.5319 76.1155 73.425 76.4023 75.0046 77.3551C76.5841 78.3079 77.7208 79.8487 78.1651 81.639L96.7537 156.744Z" stroke="#2B2A28" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M75.4074 88.5888L35.3214 98.5122L50.7258 160.751L90.8118 150.829L75.4074 88.5888Z" fill="#E6BCB6"/>
+<path d="M75.4074 88.5888L35.3214 98.5122L50.7258 160.751L90.8118 150.829L75.4074 88.5888Z" stroke="#2B2A28" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M51.687 87.7446L63.2916 84.8718" stroke="#2B2A28" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M46.6668 88.9866C46.7093 89.1588 46.7176 89.3377 46.691 89.5131C46.6644 89.6885 46.6035 89.8569 46.5118 90.0087C46.4202 90.1606 46.2995 90.2929 46.1567 90.3981C46.0138 90.5033 45.8517 90.5794 45.6795 90.6219C45.5073 90.6645 45.3284 90.6727 45.153 90.6461C44.9776 90.6195 44.8092 90.5586 44.6574 90.4669C44.5055 90.3753 44.3732 90.2546 44.268 90.1118C44.1628 89.9689 44.0867 89.8068 44.0442 89.6346C43.9583 89.2868 44.014 88.9192 44.1992 88.6125C44.3843 88.3058 44.6837 88.0852 45.0315 87.9993C45.3793 87.9134 45.7469 87.9691 46.0536 88.1543C46.3603 88.3394 46.5809 88.6388 46.6668 88.9866Z" fill="#2B2A28"/>
+<path d="M72.4662 166.451C73.475 166.451 74.4424 166.051 75.1557 165.337C75.8689 164.624 76.2696 163.657 76.2696 162.648C76.2696 161.639 75.8689 160.672 75.1557 159.959C74.4424 159.245 73.475 158.845 72.4662 158.845C71.4575 158.845 70.4901 159.245 69.7768 159.959C69.0636 160.672 68.6628 161.639 68.6628 162.648C68.6628 163.657 69.0636 164.624 69.7768 165.337C70.4901 166.051 71.4575 166.451 72.4662 166.451Z" fill="white" stroke="#2B2A28" stroke-linecap="round" stroke-linejoin="round"/>
+<!-- Screen: camera icon + toggle switched off -->
+<g transform="translate(63.05 124.66) rotate(-13.87)">
+<rect x="-4" y="-21.5" width="8" height="4" rx="1" fill="white" stroke="#2B2A28" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="-10" y="-18" width="20" height="14" rx="3" fill="white" stroke="#2B2A28" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="0" cy="-11" r="4" fill="#E6BCB6" stroke="#2B2A28" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="-12" y="5" width="24" height="12" rx="6" fill="#D4D9D3" stroke="#2B2A28" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="-6" cy="11" r="4.2" fill="white" stroke="#2B2A28" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</svg>

@@ -106,17 +106,6 @@ struct CameraScannerViewModelTests {
   }
 
   @Test
-  func `shows an error when the URL fails to open`() async {
-    let scanner = FakeCodeScanner(scripts: [.events([.scanned("scheme-a://open")])])
-    let viewModel = makeViewModel(scanner)
-    _ = await viewModel.scan()
-
-    viewModel.didFailToOpenURL()
-
-    #expect(viewModel.state.failure == .openingFailed)
-  }
-
-  @Test
   func `ignores a failed URL opening while scanning`() {
     let viewModel = makeViewModel(FakeCodeScanner())
 

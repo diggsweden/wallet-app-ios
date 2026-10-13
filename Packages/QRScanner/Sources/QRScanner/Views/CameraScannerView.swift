@@ -4,19 +4,29 @@
 
 import SwiftUI
 
-struct CameraScannerView: View {
-  @Environment(\.openURL) private var openURL
-  @Environment(\.dismiss) private var dismiss
-
+struct CameraScannerView<CameraErrorView: View>: View {
   @State private var viewModel: CameraScannerViewModel
 
   private let session: DataScannerSession
+  private let cameraErrorView: CameraErrorView
+
   let isPaused: Bool
 
-  init(session: DataScannerSession, isPaused: Bool) {
+  init(
+    session: DataScannerSession,
+    isPaused: Bool,
+    onSuccess: @escaping (String) -> Void,
+    @ContentBuilder cameraErrorView: () -> CameraErrorView
+  ) {
     self.session = session
     self.isPaused = isPaused
-    _viewModel = State(wrappedValue: CameraScannerViewModel(scanner: session))
+    self.cameraErrorView = cameraErrorView()
+    _viewModel = State(
+      wrappedValue: CameraScannerViewModel(
+        scanner: session,
+        onSuccess: onSuccess
+      )
+    )
   }
 
   private var shouldScan: Bool {
@@ -48,8 +58,7 @@ struct CameraScannerView: View {
             .ignoresSafeArea()
 
         case .unavailable:
-          // TODO: Vår error-vy
-          EmptyView()
+          cameraErrorView
       }
     }
     .task(id: shouldScan) { await scan() }
@@ -72,14 +81,7 @@ private extension CameraScannerView {
 
   func scan() async {
     guard shouldScan else { return }
-    guard let url = await viewModel.scan(), !Task.isCancelled else { return }
-
-    openURL(url) { accepted in
-      if accepted {
-        dismiss()
-      } else {
-        viewModel.didFailToOpenURL()
-      }
-    }
+    guard !Task.isCancelled else { return }
+    await viewModel.scan()
   }
 }
