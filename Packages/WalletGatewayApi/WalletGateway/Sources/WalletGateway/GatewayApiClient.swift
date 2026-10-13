@@ -59,6 +59,22 @@ public struct GatewayApiClient: GatewayApi {
     }
   }
 
+  public func getDatabaseGeneration() async throws -> Int {
+    switch try await client.getClientConfig() {
+      case .ok(let response):
+        guard let generation = try? Int(response.body.json.cacheGeneration) else {
+          throw GatewayError.undecodableResponseBody
+        }
+        return generation
+
+      case .notModified:
+        throw GatewayError.invalidResponse
+
+      case .default(let statusCode, let response):
+        throw GatewayError.problem(ProblemDetails(status: statusCode, response: response))
+    }
+  }
+
   public func getKeyAttestation(
     keys: [PublicKeyComponents],
     nonce: String?,

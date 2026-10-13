@@ -161,6 +161,10 @@ actor FakeProofKeyManager: ProofSigner, ProofKeyStore {
 }
 
 struct FakeGateway: GatewayApi, HSMTransport {
+  func getDatabaseGeneration() throws -> Int {
+    0
+  }
+
   func createAccount(publicKey: PublicKeyComponents) throws -> String { "" }
   func getKeyAttestation(keys: [PublicKeyComponents], nonce: String?) throws -> String { "" }
 

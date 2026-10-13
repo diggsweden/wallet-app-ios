@@ -2,10 +2,15 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
+import Foundation
 import WalletGatewayInterface
 
 public struct GatewayApiMock: GatewayApi {
   public init() {}
+
+  public func getDatabaseGeneration() throws -> Int {
+    0
+  }
 
   public func createAccount(publicKey: PublicKeyComponents) throws -> String { "" }
 

@@ -15,20 +15,31 @@ final class MockWalletSetupService: WalletSetupService {
   var failAt: WalletSetupStep?
 
   private(set) var createAccountCallCount = 0
+  private(set) var setInitialBackendGenerationCallCount = 0
   private(set) var initHSMStateCallCount = 0
+  private(set) var calls: [WalletSetupStep] = []
   private(set) var registerPinCallCount = 0
 
   func createAccount() throws {
+    calls.append(.createAccount)
     createAccountCallCount += 1
     if let failAt, case .createAccount = failAt { throw MockError.intentional }
   }
 
+  func setInitialBackendGeneration() throws {
+    calls.append(.setInitialBackendGeneration)
+    setInitialBackendGenerationCallCount += 1
+    if let failAt, case .setInitialBackendGeneration = failAt { throw MockError.intentional }
+  }
+
   func initHSMState() throws {
+    calls.append(.initHSMState)
     initHSMStateCallCount += 1
     if let failAt, case .initHSMState = failAt { throw MockError.intentional }
   }
 
   func registerPin(pin: String) throws -> StretchedPIN {
+    calls.append(.registerPin)
     registerPinCallCount += 1
     if let failAt, case .registerPin = failAt { throw MockError.intentional }
     return try PINStretch().stretch(input: Data(pin.utf8))
@@ -37,10 +48,6 @@ final class MockWalletSetupService: WalletSetupService {
 
 enum MockError: Error {
   case intentional
-}
-
-struct MockSleepProvider: SleepProviding {
-  func sleep(for seconds: Double) {}
 }
 
 // MARK: - Tests
@@ -54,13 +61,16 @@ struct WalletSetupViewModelTests {
       service: service,
       pin: "1234",
       onComplete: {},
-      sleepProvider: MockSleepProvider(),
     )
     await vm.setup()
     #expect(vm.state == .complete)
     #expect(service.createAccountCallCount == 1)
+    #expect(service.setInitialBackendGenerationCallCount == 1)
     #expect(service.initHSMStateCallCount == 1)
     #expect(service.registerPinCallCount == 1)
+    #expect(
+      service.calls == [.createAccount, .setInitialBackendGeneration, .initHSMState, .registerPin]
+    )
   }
 
   @Test
@@ -71,7 +81,6 @@ struct WalletSetupViewModelTests {
       service: service,
       pin: "1234",
       onComplete: { called = true },
-      sleepProvider: MockSleepProvider(),
     )
     await vm.setup()
     #expect(called)
@@ -86,7 +95,6 @@ struct WalletSetupViewModelTests {
       service: service,
       pin: "1234",
       onComplete: { called = true },
-      sleepProvider: MockSleepProvider(),
     )
     await vm.setup()
     #expect(!called)
@@ -100,7 +108,6 @@ struct WalletSetupViewModelTests {
       service: service,
       pin: "1234",
       onComplete: {},
-      sleepProvider: MockSleepProvider(),
     )
     await vm.setup()
     #expect(vm.state == .failed(at: .registerPin, CaughtError(MockError.intentional)))
@@ -114,7 +121,6 @@ struct WalletSetupViewModelTests {
       service: service,
       pin: "1234",
       onComplete: {},
-      sleepProvider: MockSleepProvider(),
     )
     await vm.setup()
 
@@ -123,8 +129,40 @@ struct WalletSetupViewModelTests {
 
     #expect(vm.state == .complete)
     #expect(service.createAccountCallCount == 1)
+    #expect(service.setInitialBackendGenerationCallCount == 1)
     #expect(service.initHSMStateCallCount == 1)
     #expect(service.registerPinCallCount == 2)
+  }
+
+  @Test
+  func generationFailureRetriesWithoutRecreatingAccount() async {
+    let service = MockWalletSetupService()
+    service.failAt = .setInitialBackendGeneration
+    var completed = false
+    let vm = WalletSetupViewModel(
+      service: service,
+      pin: "1234",
+      onComplete: { completed = true },
+    )
+    await vm.setup()
+
+    #expect(
+      vm.state == .failed(at: .setInitialBackendGeneration, CaughtError(MockError.intentional))
+    )
+    #expect(service.calls == [.createAccount, .setInitialBackendGeneration])
+    #expect(!completed)
+
+    service.failAt = nil
+    await vm.retry()
+
+    #expect(vm.state == .complete)
+    #expect(completed)
+    #expect(
+      service.calls == [
+        .createAccount, .setInitialBackendGeneration, .setInitialBackendGeneration,
+        .initHSMState, .registerPin,
+      ]
+    )
   }
 
   @Test
@@ -134,7 +172,6 @@ struct WalletSetupViewModelTests {
       service: service,
       pin: "1234",
       onComplete: {},
-      sleepProvider: MockSleepProvider(),
     )
     await vm.setup()
     await vm.retry()

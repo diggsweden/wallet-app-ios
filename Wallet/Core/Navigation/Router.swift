@@ -7,8 +7,14 @@ import SwiftUI
 
 @Observable
 class Router {
+  enum Sheet: String, Identifiable {
+    case settings
+
+    var id: Self { self }
+  }
+
   var navigationPath = NavigationPath()
-  var isSettingsSheetPresented = false
+  var presentedSheet: Sheet?
 
   func go(to route: Route) {
     navigationPath.append(route)
@@ -24,6 +30,6 @@ class Router {
 
   func reset() {
     navigationPath = NavigationPath()
-    isSettingsSheetPresented = false
+    presentedSheet = nil
   }
 }

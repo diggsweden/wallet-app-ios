@@ -8,6 +8,7 @@ import WalletGatewayInterface
 
 protocol WalletSetupService: Sendable {
   func createAccount() async throws
+  func setInitialBackendGeneration() async throws
   func initHSMState() async throws
   func registerPin(pin: String) async throws -> StretchedPIN
 }
@@ -16,16 +17,19 @@ actor BFFWalletSetupService: WalletSetupService {
   private let gatewayApi: any GatewayApi & HSMTransport
   private let onAccountCreated: @Sendable (String) async throws -> Void
   private let onServerParameters: @Sendable (ServerParameters) async throws -> Void
+  private let onBackendGeneration: @Sendable (Int) async throws -> Void
   private var bffClient: BFFHttpClient?
 
   init(
     gatewayApi: any GatewayApi & HSMTransport,
     onAccountCreated: @Sendable @escaping (String) async throws -> Void,
     onServerParameters: @Sendable @escaping (ServerParameters) async throws -> Void,
+    onBackendGeneration: @Sendable @escaping (Int) async throws -> Void,
   ) {
     self.gatewayApi = gatewayApi
     self.onAccountCreated = onAccountCreated
     self.onServerParameters = onServerParameters
+    self.onBackendGeneration = onBackendGeneration
   }
 
   func createAccount() async throws {
@@ -34,6 +38,11 @@ actor BFFWalletSetupService: WalletSetupService {
       publicKey: try key.publicKey.toPublicKeyComponents()
     )
     try await onAccountCreated(accountId)
+  }
+
+  func setInitialBackendGeneration() async throws {
+    let generation = try await gatewayApi.getDatabaseGeneration()
+    try await onBackendGeneration(generation)
   }
 
   func initHSMState() async throws {
