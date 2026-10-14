@@ -7,8 +7,8 @@ import Foundation
 extension ErrorView {
   struct ViewModel: Sendable {
     let imageReference: String
-    let title: String
-    let subtitle: String
+    let title: LocalizedStringResource
+    let subtitle: LocalizedStringResource
     let primaryButton: ButtonModel
     let secondaryButton: ButtonModel?
     let linkButton: ButtonModel?
@@ -17,8 +17,9 @@ extension ErrorView {
 
     init(
       imageReference: String = "phoneError",
-      title: String = "Hoppsan! Nånting gick fel",
-      subtitle: String = "Vi kunde inte visa innehållet just nu, försök gärna igen senare.",
+      title: LocalizedStringResource = "Hoppsan! Nånting gick fel",
+      subtitle: LocalizedStringResource =
+        "Vi kunde inte visa innehållet just nu, försök gärna igen senare.",
       primaryButton: ButtonModel,
       secondaryButton: ButtonModel? = nil,
       linkButton: ButtonModel? = nil,
@@ -37,16 +38,16 @@ extension ErrorView {
   }
 
   struct ButtonModel: Sendable {
-    let label: String
-    let accessibilityHint: String
+    let label: LocalizedStringResource
+    let accessibilityHint: LocalizedStringResource
     let action: @Sendable () -> Void
   }
 }
 
 extension ErrorView.ButtonModel {
   init(
-    label: String,
-    accessibilityHint: String,
+    label: LocalizedStringResource,
+    accessibilityHint: LocalizedStringResource,
     asyncAction: (@Sendable () async -> Void)?,
   ) {
     self.init(
@@ -61,8 +62,8 @@ extension ErrorView.ButtonModel {
   }
 
   init(
-    label: String,
-    accessibilityHint: String,
+    label: LocalizedStringResource,
+    accessibilityHint: LocalizedStringResource,
     asyncThrowingAction: (@Sendable () async throws -> Void)?,
     onError: @escaping @Sendable () -> Void,
   ) {
@@ -82,8 +83,8 @@ extension ErrorView.ButtonModel {
   }
 
   init(
-    label: String,
-    accessibilityHint: String,
+    label: LocalizedStringResource,
+    accessibilityHint: LocalizedStringResource,
     throwingAction: (@Sendable () throws -> Void)?,
     onError: @escaping @Sendable (Error) -> Void,
   ) {
