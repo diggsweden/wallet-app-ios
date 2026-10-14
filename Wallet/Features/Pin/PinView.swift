@@ -7,7 +7,7 @@ import SwiftUI
 
 struct PinView: View {
   let maxDigits: Int = 6
-  let buttonText: String
+  let buttonText: LocalizedStringResource
   let onComplete: (String) throws -> Void
   @Environment(\.theme) private var theme
   @Environment(\.dynamicTypeSize) private var dynamicType
@@ -19,7 +19,7 @@ struct PinView: View {
   @State private var gridWidth: CGFloat = 0
 
   init(
-    buttonText: String = "Begär personuppgifter",
+    buttonText: LocalizedStringResource = "Begär personuppgifter",
     onComplete: @escaping (String) throws -> Void,
   ) {
     self.buttonText = buttonText

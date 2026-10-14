@@ -6,7 +6,7 @@ import DesignSystem
 import SwiftUI
 
 struct PrimaryButton: View {
-  let text: String
+  let text: LocalizedStringResource
   let icon: String?
   let maxWidth: CGFloat
   let onClick: () -> Void
@@ -15,7 +15,7 @@ struct PrimaryButton: View {
   @Environment(\.orientation) private var orientation
 
   init(
-    _ text: String,
+    _ text: LocalizedStringResource,
     icon: String? = nil,
     maxWidth: CGFloat = 360,
     onClick: @escaping () -> Void,
@@ -31,7 +31,7 @@ struct PrimaryButton: View {
       onClick()
     } label: {
       HStack(alignment: .firstTextBaseline, spacing: 4) {
-        Text(LocalizedStringKey(text))
+        Text(text)
         if let icon {
           Image(systemName: icon)
             .accessibilityHidden(true)
