@@ -29,11 +29,6 @@ struct CameraScannerView<CameraErrorView: View>: View {
     )
   }
 
-  private var shouldScan: Bool {
-    guard case .scanning = viewModel.state else { return false }
-    return !isPaused
-  }
-
   private var scanError: QRScanError? {
     guard case let .failed(error) = viewModel.state else { return nil }
     return error
@@ -53,7 +48,7 @@ struct CameraScannerView<CameraErrorView: View>: View {
   var body: some View {
     Group {
       switch viewModel.state {
-        case .scanning, .openingURL, .failed:
+        case .scanning, .scanned, .failed:
           cameraScannerPreview()
             .ignoresSafeArea()
 
@@ -61,7 +56,8 @@ struct CameraScannerView<CameraErrorView: View>: View {
           cameraErrorView
       }
     }
-    .task(id: shouldScan) { await scan() }
+    .task { await viewModel.scan() }
+    .onChange(of: isPaused, initial: true) { viewModel.isPaused = isPaused }
   }
 }
 
@@ -77,11 +73,5 @@ private extension CameraScannerView {
       } message: { error in
         Text(error.errorDescription ?? "")
       }
-  }
-
-  func scan() async {
-    guard shouldScan else { return }
-    guard !Task.isCancelled else { return }
-    await viewModel.scan()
   }
 }

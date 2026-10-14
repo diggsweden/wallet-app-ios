@@ -12,6 +12,7 @@ final class CameraScannerViewModel {
   private let onSuccess: (URL) -> Void
 
   private(set) var state: State = .scanning
+  var isPaused = false
 
   init(
     scanner: any CodeScanner,
@@ -24,45 +25,46 @@ final class CameraScannerViewModel {
   }
 
   func scan() async {
-    guard case .scanning = state else { return }
+    defer {
+      scanner.stop()
+    }
 
-    defer { scanner.stop() }
-
-    let scanning: AsyncStream<ScanEvent>
+    let events: AsyncStream<ScanEvent>
     do {
-      scanning = try scanner.start()
+      events = try scanner.start()
     } catch {
       state = .unavailable
       return
     }
 
-    for await event in scanning {
+    for await event in events {
       switch event {
         case let .scanned(payload):
+          guard case .scanning = state, !isPaused else {
+            continue
+          }
+
           guard let url = parseUrl(from: payload) else {
             state = .failed(.unsupportedCode)
-            return
+            continue
           }
-          state = .openingURL
+
+          state = .scanned
           onSuccess(url)
-          return
 
         case .unavailable:
           state = .unavailable
+          return
       }
     }
   }
 
   func retry() {
-    switch state {
-      case .scanning,
-        .openingURL:
-        break
-
-      case .failed,
-        .unavailable:
-        state = .scanning
+    guard case .failed = state else {
+      return
     }
+
+    state = .scanning
   }
 
   private func parseUrl(from payload: String) -> URL? {
@@ -80,7 +82,7 @@ final class CameraScannerViewModel {
 extension CameraScannerViewModel {
   enum State {
     case scanning
-    case openingURL
+    case scanned
     case failed(QRScanError)
     case unavailable
   }
