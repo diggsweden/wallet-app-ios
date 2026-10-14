@@ -17,9 +17,15 @@ let package = Package(
       targets: ["QRScanner"],
     )
   ],
+  dependencies: [
+    .package(name: "DesignSystem", path: "../DesignSystem")
+  ],
   targets: [
     .target(
-      name: "QRScanner"
+      name: "QRScanner",
+      dependencies: [
+        .product(name: "DesignSystem", package: "DesignSystem")
+      ],
     ),
     .testTarget(
       name: "QRScannerTests",

@@ -15,7 +15,7 @@ final class DataScannerSession: NSObject, CodeScanner, DataScannerViewController
     isHighFrameRateTrackingEnabled: false,
     isPinchToZoomEnabled: true,
     isGuidanceEnabled: false,
-    isHighlightingEnabled: false,
+    isHighlightingEnabled: true,
   )
 
   private(set) var authorization = AVCaptureDevice.authorizationStatus(for: .video)

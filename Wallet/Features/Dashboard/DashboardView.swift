@@ -37,6 +37,7 @@ struct DashboardView: View {
       }
       .padding(.horizontal, theme.horizontalPadding)
     }
+    .softScrollEdgeEffectIfPossible(for: .all)
     .toolbar {
       ToolbarItem(placement: .topBarTrailing) {
         Button {
@@ -57,15 +58,14 @@ struct DashboardView: View {
             .accessibilityLabel("Inställningar")
         }
       }
-
-      ToolbarItem(placement: .bottomBar) {
-        PrimaryButton(
-          "Skanna QR-Kod",
-          icon: "qrcode.viewfinder",
-          maxWidth: .infinity,
-        ) {
-          router.presentedFullScreenCover = .camera
-        }
+    }
+    .safeAreaBarIfPossible(edge: .bottom) {
+      PrimaryButton(
+        "Skanna QR-Kod",
+        icon: "qrcode.viewfinder",
+        maxWidth: .infinity,
+      ) {
+        router.presentedFullScreenCover = .camera
       }
     }
     .background(.clear)

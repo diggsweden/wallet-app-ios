@@ -3,14 +3,15 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import AVFoundation
+import DesignSystem
 import SwiftUI
 import VisionKit
 
 public struct QRScannerView<CameraErrorView: View>: View {
+  @Environment(\.theme) private var theme
   @Environment(\.dismiss) private var dismiss
 
   @State private var session = DataScannerSession()
-  @State private var isInfoSheetPresented = false
 
   private let onSuccess: (URL) -> Void
   private let cameraErrorView: CameraErrorView
@@ -26,7 +27,6 @@ public struct QRScannerView<CameraErrorView: View>: View {
   public var body: some View {
     NavigationStack {
       content
-        .sheet(isPresented: $isInfoSheetPresented) { infoSheetContent }
         .task { await session.requestAuthorization() }
         .toolbar { topToolbar }
         .scrollEdgeEffectHiddenIfPossible(for: .top)
@@ -46,19 +46,21 @@ private extension QRScannerView {
         case .authorized:
           CameraScannerView(
             session: session,
-            isPaused: isInfoSheetPresented,
             onSuccess: onSuccess,
             cameraErrorView: { cameraErrorView },
           )
 
         case .denied, .restricted:
           cameraErrorView
+            .padding(.horizontal, theme.horizontalPadding)
 
         @unknown default:
           cameraErrorView
+            .padding(.horizontal, theme.horizontalPadding)
       }
     } else {
       cameraErrorView
+        .padding(.horizontal, theme.horizontalPadding)
     }
   }
 
@@ -71,18 +73,6 @@ private extension QRScannerView {
         Image(systemName: "xmark")
       }
     }
-
-    ToolbarItem(placement: .topBarTrailing) {
-      Button {
-        isInfoSheetPresented.toggle()
-      } label: {
-        Image(systemName: "questionmark")
-      }
-    }
-  }
-
-  var infoSheetContent: some View {
-    Text("Användarinfo går här...")
   }
 }
 

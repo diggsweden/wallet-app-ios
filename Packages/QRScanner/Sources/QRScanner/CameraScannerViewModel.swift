@@ -12,7 +12,14 @@ final class CameraScannerViewModel {
   private let onSuccess: (URL) -> Void
 
   private(set) var state: State = .scanning
+
+  var isInfoSheetPresented = false
   var isPaused = false
+
+  var scanError: QRScanError? {
+    guard case let .failed(error) = state else { return nil }
+    return error
+  }
 
   init(
     scanner: any CodeScanner,
@@ -65,6 +72,11 @@ final class CameraScannerViewModel {
     }
 
     state = .scanning
+  }
+
+  func presentIsInfoSheet() {
+    guard !isInfoSheetPresented else { return }
+    isInfoSheetPresented.toggle()
   }
 
   private func parseUrl(from payload: String) -> URL? {

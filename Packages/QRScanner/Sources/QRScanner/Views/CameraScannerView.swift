@@ -2,46 +2,28 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
+import DesignSystem
 import SwiftUI
 
 struct CameraScannerView<CameraErrorView: View>: View {
+  @Environment(\.theme) private var theme
   @State private var viewModel: CameraScannerViewModel
 
   private let session: DataScannerSession
   private let cameraErrorView: CameraErrorView
 
-  let isPaused: Bool
-
   init(
     session: DataScannerSession,
-    isPaused: Bool,
     onSuccess: @escaping (URL) -> Void,
     @ContentBuilder cameraErrorView: () -> CameraErrorView
   ) {
     self.session = session
-    self.isPaused = isPaused
     self.cameraErrorView = cameraErrorView()
     _viewModel = State(
       wrappedValue: CameraScannerViewModel(
         scanner: session,
         onSuccess: onSuccess
       )
-    )
-  }
-
-  private var scanError: QRScanError? {
-    guard case let .failed(error) = viewModel.state else { return nil }
-    return error
-  }
-
-  private var isShowingScanError: Binding<Bool> {
-    Binding(
-      get: { scanError != nil },
-      set: { isPresented in
-        if !isPresented, scanError != nil {
-          viewModel.retry()
-        }
-      },
     )
   }
 
@@ -54,10 +36,12 @@ struct CameraScannerView<CameraErrorView: View>: View {
 
         case .unavailable:
           cameraErrorView
+            .padding(.horizontal, theme.horizontalPadding)
       }
     }
+    .toolbar { topToolbar }
+    .sheet(isPresented: $viewModel.isInfoSheetPresented) { ScannerInfoView() }
     .task { await viewModel.scan() }
-    .onChange(of: isPaused, initial: true) { viewModel.isPaused = isPaused }
   }
 }
 
@@ -66,12 +50,25 @@ private extension CameraScannerView {
     CameraScannerPreview(controller: session.controller)
       .alert(
         "Kunde inte skanna QR-kod",
-        isPresented: isShowingScanError,
-        presenting: scanError,
+        isPresented: .constant(viewModel.scanError != nil),
+        presenting: viewModel.scanError,
       ) { _ in
-        Button("Försök igen") {}
+        Button("Försök igen") {
+          viewModel.retry()
+        }
       } message: { error in
         Text(error.errorDescription ?? "")
       }
+  }
+
+  @ContentBuilder
+  var topToolbar: some ToolbarContent {
+    ToolbarItem(placement: .topBarTrailing) {
+      Button {
+        viewModel.presentIsInfoSheet()
+      } label: {
+        Image(systemName: "questionmark")
+      }
+    }
   }
 }
