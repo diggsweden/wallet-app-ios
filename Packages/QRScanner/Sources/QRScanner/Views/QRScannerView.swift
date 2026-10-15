@@ -29,7 +29,6 @@ public struct QRScannerView<CameraErrorView: View>: View {
       content
         .task { await session.requestAuthorization() }
         .toolbar { topToolbar }
-        .toolbarBackground(.hidden, for: .navigationBar)
     }
     .hiddenStatusBar()
   }
@@ -49,6 +48,7 @@ private extension QRScannerView {
             onSuccess: onSuccess,
             cameraErrorView: { cameraErrorView },
           )
+          .toolbarBackground(.hidden, for: .navigationBar)
 
         case .denied, .restricted:
           cameraErrorView
