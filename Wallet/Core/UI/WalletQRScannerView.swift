@@ -10,14 +10,17 @@ struct WalletQRScannerView: View {
   let onDismiss: () -> Void
 
   var body: some View {
+    // swiftlint:disable:next closure_body_length
     QRScannerView(onSuccess: onSuccess) {
       ErrorView(
         model: .init(
           imageReference: "cameraPermissionError",
           title: "Kameran är inte tillgänglig",
-          subtitle: "Kameran behövs för att skanna. Kontrollera att kameraåtkomst är"
-            + " på i Inställningar. Om den redan är på kan Skärmtid eller en begränsning på"
-            + " enheten blockera den.",
+          subtitle: """
+            Kameran behövs för att skanna. Kontrollera att kameraåtkomst är \
+            på i Inställningar. Om den redan är på kan Skärmtid eller en begränsning på \
+            enheten blockera den.
+            """,
           primaryButton: .init(
             label: "Öppna inställningar",
             accessibilityHint: "Tryck här för att öppna kamera-inställningarna för appen",
