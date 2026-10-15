@@ -32,9 +32,11 @@ struct BootstrapView: View {
               caught: caught,
               allowsSignOut: false,
               title: "Det gick inte att öppna plånboken",
-              subtitle: "Vi kunde inte öppna appens lagrade data. Försök igen. "
-                + "Om problemet kvarstår kan du prova att installera om appen. "
-                + "Då tas din lokala plånbok bort och du behöver lägga till dina handlingar igen.",
+              subtitle: """
+                Vi kunde inte öppna appens lagrade data. Försök igen. \
+                Om problemet kvarstår kan du prova att installera om appen. \
+                Då tas din lokala plånbok bort och du behöver lägga till dina handlingar igen.
+                """,
             )
         }
       }
@@ -47,8 +49,9 @@ struct BootstrapView: View {
   private func errorView(
     caught: CaughtError,
     allowsSignOut: Bool = true,
-    title: String = "Hoppsan! Nånting gick fel",
-    subtitle: String = "Vi kunde inte visa innehållet just nu, försök gärna igen senare.",
+    title: LocalizedStringResource = "Hoppsan! Nånting gick fel",
+    subtitle: LocalizedStringResource =
+      "Vi kunde inte visa innehållet just nu, försök gärna igen senare.",
   ) -> some View {
     NavigationStack {
       ErrorView(

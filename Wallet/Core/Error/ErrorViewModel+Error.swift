@@ -8,8 +8,9 @@ extension ErrorView.ViewModel {
   init(
     caughtError: CaughtError,
     imageReference: String = "phoneError",
-    title: String = "Hoppsan! Nånting gick fel",
-    subtitle: String = "Vi kunde inte visa innehållet just nu, försök gärna igen senare.",
+    title: LocalizedStringResource = "Hoppsan! Nånting gick fel",
+    subtitle: LocalizedStringResource =
+      "Vi kunde inte visa innehållet just nu, försök gärna igen senare.",
     primaryButton: ErrorView.ButtonModel,
     secondaryButton: ErrorView.ButtonModel? = nil,
     linkButton: ErrorView.ButtonModel? = nil,
