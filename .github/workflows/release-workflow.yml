@@ -59,11 +59,10 @@ jobs:
       actions: read
     secrets: inherit
     with:
-      reusable-ci-ref: d31c989acd139c3e8754e116496c826af8dbbca0
+      reusable-ci-ref: 617cb32268cb6aefdfa4117b4159d37e3b47d7b3
       artifacts-config: ${{ needs.generate-artifacts-config.outputs.config }}
       release-publisher: github-cli
       release.attachartifacts: |
         build/export/*.ipa
       release.signartifacts: false
-      release.generatesbom: true
 
