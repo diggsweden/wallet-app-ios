@@ -49,7 +49,7 @@ jobs:
 
   release:
     needs: generate-artifacts-config
-    uses: diggsweden/reusable-ci/.github/workflows/release-orchestrator.yml@617cb32268cb6aefdfa4117b4159d37e3b47d7b3 # v2.8.3
+    uses: diggsweden/reusable-ci/.github/workflows/release-orchestrator.yml@997d7dc2238b40c79798fda309d8061b0707a3e5 # v3.0.0
     permissions:
       contents: write
       packages: write
@@ -57,9 +57,21 @@ jobs:
       attestations: write
       security-events: write
       actions: read
-    secrets: inherit
+      pull-requests: read
+    secrets:
+      RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+      RELEASE_GPG_PRIVATE_KEY: ${{ secrets.RELEASE_GPG_PRIVATE_KEY }}
+      RELEASE_GPG_PASSPHRASE: ${{ secrets.RELEASE_GPG_PASSPHRASE }}
+      RELEASE_GPG_PUBLIC_KEY: ${{ secrets.RELEASE_GPG_PUBLIC_KEY }}
+      AUTHORIZED_RELEASE_DEVELOPERS: ${{ secrets.AUTHORIZED_RELEASE_DEVELOPERS }}
+      CODE_SCANNING_TOKEN: ${{ secrets.CODE_SCANNING_TOKEN }}
+      CERTIFICATE_BASE64: ${{ secrets.CERTIFICATE_BASE64 }}
+      CERTIFICATE_PASSPHRASE: ${{ secrets.CERTIFICATE_PASSPHRASE }}
+      PROVISIONING_PROFILE_BASE64: ${{ secrets.PROVISIONING_PROFILE_BASE64 }}
+      KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+      XCCONFIG_BASE64: ${{ secrets.XCCONFIG_BASE64 }}
     with:
-      reusable-ci-ref: 617cb32268cb6aefdfa4117b4159d37e3b47d7b3
+      reusable-ci-ref: 997d7dc2238b40c79798fda309d8061b0707a3e5
       artifacts-config: ${{ needs.generate-artifacts-config.outputs.config }}
       release-publisher: github-cli
       release.attachartifacts: |
