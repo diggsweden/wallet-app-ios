@@ -60,7 +60,7 @@ private extension AppRootView {
   @ViewBuilder
   var rootView: some View {
     let user = userViewModel.user
-    if userViewModel.isOnboardingCompleted {
+    if !userViewModel.isOnboardingCompleted {
       OnboardingRootView(
         gatewayApiClient: gatewayApiClient,
         userSnapshot: user,

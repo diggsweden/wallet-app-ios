@@ -6,15 +6,6 @@ import SwiftUI
 
 extension View {
   @ContentBuilder
-  func scrollEdgeEffectHiddenIfPossible(for edge: Edge.Set) -> some View {
-    if #available(iOS 26.0, *) {
-      self.scrollEdgeEffectHidden(for: edge)
-    } else {
-      self
-    }
-  }
-
-  @ContentBuilder
   func hiddenStatusBar() -> some View {
     if #available(iOS 27.0, *) {
       self.toolbarVisibility(.hidden, for: .statusBar)

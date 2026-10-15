@@ -15,14 +15,14 @@ struct CameraScannerView<CameraErrorView: View>: View {
   init(
     session: DataScannerSession,
     onSuccess: @escaping (URL) -> Void,
-    @ContentBuilder cameraErrorView: () -> CameraErrorView
+    @ContentBuilder cameraErrorView: () -> CameraErrorView,
   ) {
     self.session = session
     self.cameraErrorView = cameraErrorView()
     _viewModel = State(
       wrappedValue: CameraScannerViewModel(
         scanner: session,
-        onSuccess: onSuccess
+        onSuccess: onSuccess,
       )
     )
   }

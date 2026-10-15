@@ -29,7 +29,7 @@ public struct QRScannerView<CameraErrorView: View>: View {
       content
         .task { await session.requestAuthorization() }
         .toolbar { topToolbar }
-        .scrollEdgeEffectHiddenIfPossible(for: .top)
+        .toolbarBackground(.hidden, for: .navigationBar)
     }
     .hiddenStatusBar()
   }
