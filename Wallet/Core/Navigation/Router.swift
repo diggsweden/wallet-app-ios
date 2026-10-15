@@ -7,14 +7,9 @@ import SwiftUI
 
 @Observable
 class Router {
-  enum Sheet: String, Identifiable {
-    case settings
-
-    var id: Self { self }
-  }
-
   var navigationPath = NavigationPath()
   var presentedSheet: Sheet?
+  var presentedFullScreenCover: FullScreenCover?
 
   func go(to route: Route) {
     navigationPath.append(route)
@@ -31,5 +26,25 @@ class Router {
   func reset() {
     navigationPath = NavigationPath()
     presentedSheet = nil
+    presentedFullScreenCover = nil
+  }
+
+  func dismiss() {
+    presentedSheet = nil
+    presentedFullScreenCover = nil
+  }
+}
+
+extension Router {
+  enum Sheet: String, Identifiable {
+    case settings
+
+    var id: Self { self }
+  }
+
+  enum FullScreenCover: String, Identifiable {
+    case camera
+
+    var id: Self { self }
   }
 }

@@ -78,6 +78,8 @@ packages:
     path: Packages/Presentation
   Issuance:
     path: Packages/Issuance
+  QRScanner:
+    path: Packages/QRScanner
 targets:
   WalletDemo:
     type: application
@@ -134,6 +136,8 @@ targets:
         product: Presentation
       - package: Issuance
         product: Issuance
+      - package: QRScanner
+        product: QRScanner
     preBuildScripts:
       - name: SwiftLint
         path: scripts/swiftlint.sh
@@ -264,4 +268,4 @@ schemes:
         - package: Presentation/PresentationTests
         - package: Issuance/IssuanceTests
         - package: User/UserTests
-
+        - package: QRScanner/QRScannerTests

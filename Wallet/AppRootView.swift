@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
+import QRScanner
 import SwiftAccessMechanism
 import SwiftUI
 import User
@@ -32,6 +33,20 @@ struct AppRootView: View {
           SettingsView(
             showsLogout: userViewModel.isOnboardingCompleted,
             onLogout: userViewModel.signOut,
+          )
+      }
+    }
+    .fullScreenCover(item: $router.presentedFullScreenCover) { fullScreenCover in
+      switch fullScreenCover {
+        case .camera:
+          WalletQRScannerView(
+            onSuccess: { url in
+              router.dismiss()
+              handleOpenURL(url)
+            },
+            onDismiss: {
+              router.dismiss()
+            },
           )
       }
     }

@@ -16,7 +16,10 @@ struct DashboardView: View {
 
   var body: some View {
     ScrollView {
-      VStack(alignment: .center, spacing: 30) {
+      VStack(
+        alignment: .center,
+        spacing: Constants.parentStackPadding,
+      ) {
         WalletTitleView()
           .padding(.top, 20)
 
@@ -26,7 +29,10 @@ struct DashboardView: View {
         }
 
         if !credentials.isEmpty {
-          VStack(alignment: .leading, spacing: 20) {
+          VStack(
+            alignment: .leading,
+            spacing: Constants.credentialsStackPadding,
+          ) {
             Text("Handlingar")
               .textStyle(.h2)
             ForEach(credentials, id: \.self) { credential in
@@ -37,6 +43,7 @@ struct DashboardView: View {
       }
       .padding(.horizontal, theme.horizontalPadding)
     }
+    .softScrollEdgeEffectIfPossible(for: .all)
     .toolbar {
       ToolbarItem(placement: .topBarTrailing) {
         Button {
@@ -58,8 +65,26 @@ struct DashboardView: View {
         }
       }
     }
+    .safeAreaBarIfPossible(edge: .bottom) {
+      PrimaryButton(
+        "Skanna QR-Kod",
+        icon: "qrcode.viewfinder",
+        maxWidth: .infinity,
+      ) {
+        router.presentedFullScreenCover = .camera
+      }
+      .padding(.horizontal, Constants.qrCodeButtonPadding)
+    }
     .background(.clear)
     .navigationBarTitleDisplayMode(.inline)
+  }
+}
+
+private extension DashboardView {
+  enum Constants {
+    static let parentStackPadding: CGFloat = 30
+    static let credentialsStackPadding: CGFloat = 20
+    static let qrCodeButtonPadding: CGFloat = 68
   }
 }
 
