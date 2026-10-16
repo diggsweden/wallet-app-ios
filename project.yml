@@ -80,6 +80,9 @@ packages:
     path: Packages/Issuance
   QRScanner:
     path: Packages/QRScanner
+  Trust:
+    path: Packages/Trust
+
 targets:
   WalletDemo:
     type: application
@@ -269,3 +272,4 @@ schemes:
         - package: Issuance/IssuanceTests
         - package: User/UserTests
         - package: QRScanner/QRScannerTests
+        - package: Trust/TrustTests
