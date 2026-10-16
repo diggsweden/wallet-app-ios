@@ -82,6 +82,14 @@ public enum JwtUtil {
     return try JSONDecoder().decode(T.self, from: payload)
   }
 
+  public static func parseJwt<T: Decodable>(
+    from compactString: String,
+    decoder: JSONDecoder = JSONDecoder(),
+  ) throws -> T {
+    let jwt = try JWT(jwtString: compactString)
+    return try decoder.decode(T.self, from: jwt.payload)
+  }
+
   public static func base64UrlDecode(_ base64url: String) -> Data? {
     Data(base64UrlEncoded: base64url)
   }

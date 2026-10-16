@@ -17,9 +17,17 @@ let package = Package(
       targets: ["Trust"],
     )
   ],
+  dependencies: [
+    .package(name: "WalletGatewayInterface", path: "../WalletGatewayApi/WalletGatewayInterface"),
+    .package(name: "Jose", path: "../Jose"),
+  ],
   targets: [
     .target(
-      name: "Trust"
+      name: "Trust",
+      dependencies: [
+        .product(name: "Jose", package: "Jose"),
+        .product(name: "WalletGatewayInterface", package: "WalletGatewayInterface"),
+      ],
     ),
     .testTarget(
       name: "TrustTests",

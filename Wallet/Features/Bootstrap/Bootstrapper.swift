@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
+import Trust
 import User
 
 @MainActor
@@ -16,6 +17,8 @@ struct Bootstrapper {
     }
 
     if user.hasCompletedOnboarding {
+      let trustStore = TrustStore(walletGatewayApi: services.gatewayApiClient)
+      try await trustStore.create()
       return try await checkForBackendReset(user)
     }
 

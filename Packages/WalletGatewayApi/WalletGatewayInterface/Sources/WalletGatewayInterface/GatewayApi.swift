@@ -8,4 +8,5 @@ public protocol GatewayApi: Sendable {
   func createAccount(publicKey: PublicKeyComponents) async throws -> String
   func getKeyAttestation(keys: [PublicKeyComponents], nonce: String?) async throws -> String
   func getDatabaseGeneration() async throws -> Int
+  func fetchTrustedListProviders() async throws -> [URL]
 }
