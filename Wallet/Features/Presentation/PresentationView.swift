@@ -7,6 +7,7 @@ import DesignSystem
 import OpenId4VCInterface
 import SwiftAccessMechanism
 import SwiftUI
+import Trust
 import User
 
 struct PresentationView: View {
@@ -20,6 +21,7 @@ struct PresentationView: View {
     credentials: [SavedCredential],
     hsmTransport: any HSMTransport,
     hsmServerParameters: HsmServerParameters?,
+    trustStore: any TrustStoreInterface,
   ) {
     _viewModel = State(
       wrappedValue: .init(
@@ -27,6 +29,7 @@ struct PresentationView: View {
         credentials: credentials,
         hsmTransport: hsmTransport,
         hsmServerParameters: hsmServerParameters,
+        trustStore: trustStore,
       )
     )
   }

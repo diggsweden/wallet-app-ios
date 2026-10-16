@@ -5,17 +5,20 @@
 import QRScanner
 import SwiftAccessMechanism
 import SwiftUI
+import Trust
 import User
 import WalletGatewayInterface
 
 struct AppRootView: View {
   private let gatewayApiClient: any GatewayApi & HSMTransport
+  private let trustStore: any TrustStoreInterface
   @State private var userViewModel: UserViewModel
   @State private var router = Router()
 
   init(appDependencies: AppDependencies) {
     _userViewModel = State(wrappedValue: appDependencies.userViewModel)
     self.gatewayApiClient = appDependencies.gatewayApiClient
+    self.trustStore = appDependencies.trustStore
   }
 
   var body: some View {
@@ -93,6 +96,7 @@ private extension AppRootView {
           credentials: userViewModel.user.credentials,
           hsmTransport: gatewayApiClient,
           hsmServerParameters: userViewModel.user.hsmServerParameters,
+          trustStore: trustStore,
         )
 
       case .issuance(let url):

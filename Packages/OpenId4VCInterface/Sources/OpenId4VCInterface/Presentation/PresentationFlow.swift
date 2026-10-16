@@ -6,7 +6,11 @@ import CredentialInterfaces
 import Foundation
 
 public protocol PresentationFlow: Sendable {
-  func resolve(url: URL, credentials: [SavedCredential]) async throws -> ResolvedPresentation
+  func resolve(
+    url: URL,
+    credentials: [SavedCredential],
+    trustAnchors: [SecCertificate],
+  ) async throws -> ResolvedPresentation
   func submit(
     _ resolved: ResolvedPresentation,
     selectedIds: [String],

@@ -26,6 +26,22 @@ public struct GatewayApiClient: GatewayApi {
     )
   }
 
+  public func fetchTrustedListProviders() async throws -> [URL] {
+    switch try await client.getLoteProviders() {
+      case .ok(let payload):
+        guard let providers = try? payload.body.json.items else {
+          throw GatewayError.undecodableResponseBody
+        }
+
+        return providers.compactMap { provider in
+          URL(string: provider.url)
+        }
+
+      case .`default`(let status, let response):
+        throw GatewayError.problem(ProblemDetails(status: status, response: response))
+    }
+  }
+
   public func createAccount(publicKey: PublicKeyComponents) async throws -> String {
     let jwkDto = Components.Schemas.EcJwkRequest(
       kty: publicKey.kty,

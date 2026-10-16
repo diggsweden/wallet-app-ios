@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
+import Trust
 import User
 
 @MainActor
@@ -57,6 +58,7 @@ struct Bootstrapper {
     AppDependencies(
       userViewModel: UserViewModel(user: user, userStore: services.userStore),
       gatewayApiClient: services.gatewayApiClient,
+      trustStore: TrustStore(walletGatewayApi: services.gatewayApiClient),
     )
   }
 }

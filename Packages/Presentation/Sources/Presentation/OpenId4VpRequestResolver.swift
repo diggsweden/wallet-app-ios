@@ -10,9 +10,19 @@ import OpenID4VP
 import OpenId4VCInterface
 
 struct OpenId4VpRequestResolver {
-  func resolve(url: URL) async throws -> PresentationRequestData {
-    // TODO: Replace with real x509 trust evaluation before production use.
-    let certificateTrustMock: CertificateTrust = { _ in true }
+  func resolve(
+    url: URL,
+    validateTrust: @escaping ([SecCertificate]) -> Bool,
+  ) async throws -> PresentationRequestData {
+    let certificateTrust: CertificateTrust = { certificateChain in
+      let certificates: [SecCertificate] = certificateChain.compactMap { cert in
+        guard let data = Data(base64UrlEncoded: cert) else {
+          return nil
+        }
+        return SecCertificateCreateWithData(nil, data as CFData)
+      }
+      return validateTrust(certificates)
+    }
     let ephemeralKey = P256.Signing.PrivateKey()
     let secKey = try ephemeralKey.toSecKey()
     let rawRep = ephemeralKey.publicKey.rawRepresentation
@@ -35,7 +45,7 @@ struct OpenId4VpRequestResolver {
     let config = OpenId4VPConfiguration(
       privateKey: secKey,
       publicWebKeySet: WebKeySet(keys: [webKey]),
-      supportedClientIdSchemes: [.x509SanDns(trust: certificateTrustMock)],
+      supportedClientIdSchemes: [.x509SanDns(trust: certificateTrust)],
       responseEncryptionConfiguration:
         .supported(supportedAlgorithms: [.init(.ECDH_ES)], supportedMethods: [.init(.A128GCM)]),
     )

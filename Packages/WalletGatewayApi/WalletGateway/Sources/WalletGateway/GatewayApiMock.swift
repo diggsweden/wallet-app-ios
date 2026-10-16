@@ -18,4 +18,6 @@ public struct GatewayApiMock: GatewayApi {
     keys: [PublicKeyComponents],
     nonce: String?,
   ) throws -> String { "" }
+
+  public func fetchTrustedListProviders() throws -> [URL] { [] }
 }
