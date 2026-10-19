@@ -21,19 +21,22 @@ struct SoftEdgeScrollView<Content: View>: View {
   }
 
   var body: some View {
-    ScrollView(.vertical, showsIndicators: showsIndicators) {
-      if fillsHeight {
+    if fillsHeight {
+      ScrollView(.vertical, showsIndicators: showsIndicators) {
         content
           .frame(maxWidth: .infinity, minHeight: minHeight, alignment: .top)
-      } else {
+      }
+      .onGeometryChange(for: CGFloat.self) { proxy in
+        proxy.size.height
+      } action: { newHeight in
+        minHeight = newHeight
+      }
+      .softScrollEdgeEffectIfPossible(for: .all)
+    } else {
+      ScrollView(.vertical, showsIndicators: showsIndicators) {
         content
       }
+      .softScrollEdgeEffectIfPossible(for: .all)
     }
-    .onGeometryChange(for: CGFloat.self) { proxy in
-      proxy.size.height
-    } action: { newHeight in
-      minHeight = newHeight
-    }
-    .softScrollEdgeEffectIfPossible(for: .all)
   }
 }
