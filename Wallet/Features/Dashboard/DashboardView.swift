@@ -15,7 +15,7 @@ struct DashboardView: View {
   @Environment(\.theme) private var theme
 
   var body: some View {
-    ScrollView {
+    SoftEdgeScrollView {
       VStack(
         alignment: .center,
         spacing: Constants.parentStackPadding,
@@ -43,7 +43,6 @@ struct DashboardView: View {
       }
       .padding(.horizontal, theme.horizontalPadding)
     }
-    .softScrollEdgeEffectIfPossible(for: .all)
     .toolbar {
       ToolbarItem(placement: .topBarTrailing) {
         Button {

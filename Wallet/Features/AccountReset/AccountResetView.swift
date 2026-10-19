@@ -17,7 +17,7 @@ struct AccountResetView: View {
   var body: some View {
     // swiftlint:disable:next closure_body_length
     NavigationStack {
-      ScrollView {
+      SoftEdgeScrollView {
         VStack(spacing: Constants.parentStackSpacing) {
           illustration
             .padding(.vertical, Constants.illustrationVerticalPadding)

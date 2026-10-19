@@ -13,7 +13,7 @@ struct CredentialDetailsView: View {
   let credential: SavedCredential
 
   var body: some View {
-    ScrollView {
+    SoftEdgeScrollView {
       VStack(spacing: 30) {
         IssuerDisplayView(issuerDisplayData: credential.issuer)
         if let claims = try? credential.getClaimUiModels() {

@@ -12,7 +12,7 @@ struct PresentationReviewView: View {
   let onConfirm: () -> Void
 
   var body: some View {
-    FullHeightScrollView {
+    SoftEdgeScrollView(fillsHeight: true) {
       VStack(spacing: 30) {
         Text("Dela uppgifter")
           .textStyle(.h1)

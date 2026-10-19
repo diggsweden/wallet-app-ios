@@ -66,7 +66,7 @@ struct CredentialView: View {
     ),
   ]
 
-  ScrollView {
+  SoftEdgeScrollView {
     CredentialView(claims: claims)
   }
   .padding()

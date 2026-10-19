@@ -9,8 +9,7 @@ struct ScrollInLandscapeModifier: ViewModifier {
 
   func body(content: Content) -> some View {
     if orientation.isLandscape {
-      ScrollView { content }
-        .scrollIndicators(.hidden)
+      SoftEdgeScrollView(showsIndicators: false) { content }
     } else {
       content
     }

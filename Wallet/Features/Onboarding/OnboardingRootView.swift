@@ -39,7 +39,7 @@ struct OnboardingRootView: View {
   }
 
   var body: some View {
-    FullHeightScrollView {
+    SoftEdgeScrollView(fillsHeight: true) {
       adaptiveStack {
         if viewModel.step != .intro {
           header
