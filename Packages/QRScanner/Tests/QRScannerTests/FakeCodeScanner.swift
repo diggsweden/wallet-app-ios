@@ -31,12 +31,15 @@ final class FakeCodeScanner: CodeScanner {
     startCount += 1
     onStart()
 
-    let script = scripts.isEmpty ? .events([]) : scripts.removeFirst()
-    guard case let .events(events) = script else { throw StartFailure() }
+    let script = scripts.isEmpty ? nil : scripts.removeFirst()
+    if case .throwsOnStart = script { throw StartFailure() }
 
     let (stream, continuation) = AsyncStream.makeStream(of: ScanEvent.self)
     self.continuation = continuation
-    for event in events { continuation.yield(event) }
+    if case let .events(events) = script {
+      for event in events { continuation.yield(event) }
+      continuation.finish()
+    }
     return stream
   }
 

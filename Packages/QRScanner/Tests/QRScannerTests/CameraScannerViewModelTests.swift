@@ -11,19 +11,27 @@ import Testing
 struct CameraScannerViewModelTests {
   private static let supportedSchemes: Set<String> = ["scheme-a", "scheme-b"]
 
-  private func makeViewModel(_ scanner: FakeCodeScanner) -> CameraScannerViewModel {
-    CameraScannerViewModel(scanner: scanner, supportedSchemes: Self.supportedSchemes)
+  private func makeViewModel(
+    _ scanner: FakeCodeScanner,
+    onSuccess: @escaping (URL) -> Void = { _ in },
+  ) -> CameraScannerViewModel {
+    CameraScannerViewModel(
+      scanner: scanner,
+      supportedSchemes: Self.supportedSchemes,
+      onSuccess: onSuccess,
+    )
   }
 
   @Test(arguments: ["scheme-a://open", "SCHEME-A://open", "scheme-b://?request_uri=x"])
-  func `opens a code with a supported scheme`(_ payload: String) async {
+  func `reports a code with a supported scheme`(_ payload: String) async {
     let scanner = FakeCodeScanner(scripts: [.events([.scanned(payload)])])
-    let viewModel = makeViewModel(scanner)
+    var urls: [URL] = []
+    let viewModel = makeViewModel(scanner) { urls.append($0) }
 
-    let url = await viewModel.scan()
+    await viewModel.scan()
 
-    #expect(url == URL(string: payload))
-    #expect(viewModel.state.isOpeningURL)
+    #expect(urls == [URL(string: payload)!])
+    #expect(viewModel.state.isScanned)
     #expect(scanner.startCount == 1)
     #expect(scanner.stopCount == 1)
   }
@@ -31,36 +39,39 @@ struct CameraScannerViewModelTests {
   @Test(arguments: ["https://example.com", "other-scheme://open", "not a url", ""])
   func `rejects a code with an unsupported scheme`(_ payload: String) async {
     let scanner = FakeCodeScanner(scripts: [.events([.scanned(payload)])])
-    let viewModel = makeViewModel(scanner)
+    var urls: [URL] = []
+    let viewModel = makeViewModel(scanner) { urls.append($0) }
 
-    let url = await viewModel.scan()
+    await viewModel.scan()
 
-    #expect(url == nil)
-    #expect(viewModel.state.failure == .unsupportedCode)
+    #expect(urls.isEmpty)
+    #expect(viewModel.scanError == .unsupportedCode)
     #expect(scanner.stopCount == 1)
   }
 
   @Test
-  func `the first scanned code decides the outcome`() async {
+  func `the first scanned code decides the outcome until retry`() async {
     let scanner = FakeCodeScanner(scripts: [
       .events([.scanned("other-scheme://first"), .scanned("scheme-a://second")])
     ])
-    let viewModel = makeViewModel(scanner)
+    var urls: [URL] = []
+    let viewModel = makeViewModel(scanner) { urls.append($0) }
 
-    let url = await viewModel.scan()
+    await viewModel.scan()
 
-    #expect(url == nil)
-    #expect(viewModel.state.failure == .unsupportedCode)
+    #expect(urls.isEmpty)
+    #expect(viewModel.scanError == .unsupportedCode)
   }
 
   @Test
   func `becomes unavailable when the scanner reports it`() async {
     let scanner = FakeCodeScanner(scripts: [.events([.unavailable])])
-    let viewModel = makeViewModel(scanner)
+    var urls: [URL] = []
+    let viewModel = makeViewModel(scanner) { urls.append($0) }
 
-    let url = await viewModel.scan()
+    await viewModel.scan()
 
-    #expect(url == nil)
+    #expect(urls.isEmpty)
     #expect(viewModel.state.isUnavailable)
     #expect(scanner.stopCount == 1)
   }
@@ -68,11 +79,12 @@ struct CameraScannerViewModelTests {
   @Test
   func `becomes unavailable when the scanner fails to start`() async {
     let scanner = FakeCodeScanner(scripts: [.throwsOnStart])
-    let viewModel = makeViewModel(scanner)
+    var urls: [URL] = []
+    let viewModel = makeViewModel(scanner) { urls.append($0) }
 
-    let url = await viewModel.scan()
+    await viewModel.scan()
 
-    #expect(url == nil)
+    #expect(urls.isEmpty)
     #expect(viewModel.state.isUnavailable)
     #expect(scanner.stopCount == 1, "the scanner is stopped even when starting it fails")
   }
@@ -87,56 +99,63 @@ struct CameraScannerViewModelTests {
     let scan = Task { await viewModel.scan() }
     for await _ in started { break }
     scan.cancel()
+    await scan.value
 
-    #expect(await scan.value == nil)
     #expect(viewModel.state.isScanning, "pausing must not leave the scanning state")
     #expect(scanner.stopCount == 1)
   }
 
   @Test
-  func `ignores scanning while opening a URL`() async {
-    let scanner = FakeCodeScanner(scripts: [.events([.scanned("scheme-a://open")])])
-    let viewModel = makeViewModel(scanner)
-    _ = await viewModel.scan()
+  func `reports only the first supported code`() async {
+    let scanner = FakeCodeScanner(scripts: [
+      .events([.scanned("scheme-a://first"), .scanned("scheme-b://second")])
+    ])
+    var urls: [URL] = []
+    let viewModel = makeViewModel(scanner) { urls.append($0) }
 
-    let url = await viewModel.scan()
+    await viewModel.scan()
 
-    #expect(url == nil)
+    #expect(urls == [URL(string: "scheme-a://first")!])
+    #expect(viewModel.state.isScanned)
     #expect(scanner.startCount == 1)
+    #expect(scanner.stopCount == 1)
   }
 
   @Test
-  func `ignores a failed URL opening while scanning`() {
-    let viewModel = makeViewModel(FakeCodeScanner())
+  func `retry resumes scanning after an unsupported code`() async {
+    let scanner = FakeCodeScanner(scripts: [.events([.scanned("other-scheme://open")])])
+    let viewModel = makeViewModel(scanner)
+    await viewModel.scan()
+    #expect(viewModel.scanError == .unsupportedCode)
 
-    viewModel.didFailToOpenURL()
+    viewModel.retry()
 
     #expect(viewModel.state.isScanning)
+    #expect(viewModel.scanError == nil)
   }
 
   @Test(arguments: [
-    FakeCodeScanner.Script.events([.scanned("other-scheme://open")]),
-    .events([.unavailable]),
+    FakeCodeScanner.Script.events([.unavailable]),
     .throwsOnStart,
   ])
-  func `retry resumes scanning after a failure`(_ script: FakeCodeScanner.Script) async {
+  func `retry is ignored when unavailable`(_ script: FakeCodeScanner.Script) async {
     let viewModel = makeViewModel(FakeCodeScanner(scripts: [script]))
-    _ = await viewModel.scan()
+    await viewModel.scan()
 
     viewModel.retry()
 
-    #expect(viewModel.state.isScanning)
+    #expect(viewModel.state.isUnavailable)
   }
 
   @Test
-  func `retry is ignored while opening a URL`() async {
+  func `retry is ignored after a successful scan`() async {
     let scanner = FakeCodeScanner(scripts: [.events([.scanned("scheme-a://open")])])
     let viewModel = makeViewModel(scanner)
-    _ = await viewModel.scan()
+    await viewModel.scan()
 
     viewModel.retry()
 
-    #expect(viewModel.state.isOpeningURL)
+    #expect(viewModel.state.isScanned)
   }
 
   @Test
@@ -145,17 +164,50 @@ struct CameraScannerViewModelTests {
       .events([.scanned("other-scheme://open")]),
       .events([.scanned("scheme-a://open")]),
     ])
-    let viewModel = makeViewModel(scanner)
+    var urls: [URL] = []
+    let viewModel = makeViewModel(scanner) { urls.append($0) }
 
-    let first = await viewModel.scan()
+    await viewModel.scan()
+    #expect(urls.isEmpty)
     viewModel.retry()
-    let second = await viewModel.scan()
+    await viewModel.scan()
 
-    #expect(first == nil)
-    #expect(second == URL(string: "scheme-a://open"))
-    #expect(viewModel.state.isOpeningURL)
+    #expect(urls == [URL(string: "scheme-a://open")!])
+    #expect(viewModel.state.isScanned)
     #expect(scanner.startCount == 2)
     #expect(scanner.stopCount == 2)
+  }
+
+  @Test(arguments: ["scheme-a://open", "other-scheme://open"])
+  func `ignores codes while paused`(_ payload: String) async {
+    let scanner = FakeCodeScanner(scripts: [.events([.scanned(payload)])])
+    var urls: [URL] = []
+    let viewModel = makeViewModel(scanner) { urls.append($0) }
+    viewModel.isPaused = true
+
+    await viewModel.scan()
+
+    #expect(urls.isEmpty)
+    #expect(viewModel.state.isScanning)
+    #expect(scanner.stopCount == 1)
+  }
+
+  @Test
+  func `resumes scanning after a pause`() async {
+    let scanner = FakeCodeScanner(scripts: [
+      .events([.scanned("scheme-a://paused")]),
+      .events([.scanned("scheme-b://resumed")]),
+    ])
+    var urls: [URL] = []
+    let viewModel = makeViewModel(scanner) { urls.append($0) }
+    viewModel.isPaused = true
+    await viewModel.scan()
+
+    viewModel.isPaused = false
+    await viewModel.scan()
+
+    #expect(urls == [URL(string: "scheme-b://resumed")!])
+    #expect(viewModel.state.isScanned)
   }
 }
 
@@ -164,15 +216,11 @@ private extension CameraScannerViewModel.State {
     if case .scanning = self { true } else { false }
   }
 
-  var isOpeningURL: Bool {
-    if case .openingURL = self { true } else { false }
+  var isScanned: Bool {
+    if case .scanned = self { true } else { false }
   }
 
   var isUnavailable: Bool {
     if case .unavailable = self { true } else { false }
-  }
-
-  var failure: QRScanError? {
-    if case let .failed(error) = self { error } else { nil }
   }
 }
