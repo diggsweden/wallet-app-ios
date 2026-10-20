@@ -14,7 +14,7 @@ struct PresentationPinView: View {
     if isLoading {
       ProgressView()
     } else {
-      FullHeightScrollView {
+      SoftEdgeScrollView(fillsHeight: true) {
         VStack(spacing: 20) {
           Text("Godkänn och identifiera")
             .textStyle(.h1)

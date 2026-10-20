@@ -18,13 +18,14 @@ struct IssuanceViewWrapper: View {
   let actions: IssuanceActions
 
   var body: some View {
-    ScrollView {
+    SoftEdgeScrollView {
       IssuanceView(
         credentialOfferUri: credentialOfferUri,
         gatewayApiClient: gatewayApiClient,
         hsmServerParameters: hsmServerParameters,
         actions: actions,
       )
+      .padding(.horizontal, theme.horizontalPadding)
     }
     .navigationTitle("Begär attributsintyg")
     .navigationBarTitleDisplayMode(.inline)

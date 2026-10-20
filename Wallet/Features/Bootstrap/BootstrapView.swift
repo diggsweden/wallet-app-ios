@@ -2,9 +2,11 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
+import DesignSystem
 import SwiftUI
 
 struct BootstrapView: View {
+  @Environment(\.theme) private var theme
   @State private var viewModel = BootstrapViewModel()
 
   var body: some View {
@@ -76,6 +78,7 @@ struct BootstrapView: View {
             ) : nil,
         )
       )
+      .padding(.horizontal, theme.horizontalPadding)
       .defaultScreenStyle
     }
   }

@@ -116,7 +116,7 @@ struct ClaimView: View {
     ),
   ]
 
-  ScrollView {
+  SoftEdgeScrollView {
     VStack(spacing: 26) {
       ForEach(claims) { claim in
         ClaimView(claim: claim)

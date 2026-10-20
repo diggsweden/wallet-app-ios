@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import CredentialInterfaces
+import DesignSystem
 import OpenId4VCInterface
 import SwiftAccessMechanism
 import SwiftUI
@@ -12,6 +13,7 @@ struct PresentationView: View {
   @State private var viewModel: PresentationViewModel
   @Environment(Router.self) private var router
   @Environment(\.openURL) private var openURL
+  @Environment(\.theme) private var theme
 
   init(
     url: URL,
@@ -96,6 +98,7 @@ struct PresentationView: View {
             ),
           )
         )
+        .padding(.horizontal, theme.horizontalPadding)
 
       case .ready:
         PresentationReviewView(
