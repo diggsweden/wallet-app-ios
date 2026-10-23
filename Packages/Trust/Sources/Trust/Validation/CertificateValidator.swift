@@ -8,7 +8,7 @@ public enum CertificateValidator {
   public static func validate(
     certChain: [SecCertificate],
     with trustAnchors: [SecCertificate],
-  ) throws {
+  ) throws -> SecKey {
     if certChain.isEmpty {
       throw ValidationError.emptyCertificateChain
     }
@@ -33,5 +33,10 @@ public enum CertificateValidator {
     guard SecTrustEvaluateWithError(trust, &error) else {
       throw (error as Error?) ?? ValidationError.evaluationFailed
     }
+    
+    guard let key = SecTrustCopyKey(trust) else {
+      throw ValidationError.noPublicKey
+    }
+    return key
   }
 }

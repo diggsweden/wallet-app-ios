@@ -8,6 +8,7 @@ import Foundation
 import Jose
 import OpenID4VP
 import OpenId4VCInterface
+import Trust
 
 struct OpenId4VpRequestResolver {
   func resolve(
@@ -67,6 +68,35 @@ struct OpenId4VpRequestResolver {
       }
 
     return try Self.requestData(from: resolvedRequest.request)
+  }
+
+  private func extractRegistrationCertificates(
+    verifierInfo: [VerifierInfo],
+    trustAnchors: [SecCertificate],
+  ) throws -> [RegistrationCertificate] {
+    let verifierData = verifierInfo.compactMap { verifier in
+      switch VerifierInfoFormat(rawValue: verifier.format) {
+        case .registrationCert, .jwt:
+          return verifier.data.string
+
+        case nil:
+          return nil
+      }
+    }
+
+    let regCertList: [RegistrationCertificate] = try verifierData.compactMap { data in
+      try JwtUtil.parseJws(
+        from: data,
+        validateCertChain: { certChain in
+          try CertificateValidator.validate(
+            certChain: certChain,
+            with: trustAnchors,
+          )
+        },
+      )
+    }
+
+    return regCertList
   }
 
   static func requestData(
