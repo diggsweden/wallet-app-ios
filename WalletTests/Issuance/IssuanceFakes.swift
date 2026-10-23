@@ -167,6 +167,7 @@ struct FakeGateway: GatewayApi, HSMTransport {
 
   func createAccount(publicKey: PublicKeyComponents) throws -> String { "" }
   func getKeyAttestation(keys: [PublicKeyComponents], nonce: String?) throws -> String { "" }
+  func fetchTrustedListProviders() throws -> [URL] { [] }
 
   func registerState(
     publicKey: JwkKey,

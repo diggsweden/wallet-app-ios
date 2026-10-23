@@ -8,6 +8,7 @@ import Foundation
 import Jose
 import OpenId4VCInterface
 import SdJwt
+import Trust
 import WalletNetworking
 
 public struct PresentationSession: PresentationFlow {
@@ -24,15 +25,34 @@ public struct PresentationSession: PresentationFlow {
   public func resolve(
     url: URL,
     credentials: [SavedCredential],
+    trustAnchors: [SecCertificate],
   ) async throws -> ResolvedPresentation {
     guard !credentials.isEmpty else {
       throw PresentationError.noCredential
     }
 
     return try Self.match(
-      try await OpenId4VpRequestResolver().resolve(url: url),
+      try await OpenId4VpRequestResolver()
+        .resolve(
+          url: url,
+          validateTrust: { cert in
+            Self.validate(certChain: cert, with: trustAnchors)
+          },
+        ),
       credentials: credentials,
     )
+  }
+
+  private static func validate(
+    certChain: [SecCertificate],
+    with trustAnchors: [SecCertificate],
+  ) -> Bool {
+    do {
+      try CertificateValidator.validate(certChain: certChain, with: trustAnchors)
+      return true
+    } catch {
+      return false
+    }
   }
 
   static func match(

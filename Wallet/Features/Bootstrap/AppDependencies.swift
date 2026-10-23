@@ -3,9 +3,11 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import SwiftAccessMechanism
+import Trust
 import WalletGatewayInterface
 
 struct AppDependencies {
   let userViewModel: UserViewModel
   let gatewayApiClient: any GatewayApi & HSMTransport
+  let trustStore: any TrustStoreInterface
 }

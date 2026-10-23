@@ -7,6 +7,7 @@ import Foundation
 import OpenId4VCInterface
 import Presentation
 import SwiftAccessMechanism
+import Trust
 import User
 
 @MainActor
@@ -17,6 +18,7 @@ final class PresentationViewModel {
   private let flow = PresentationSession()
   private let hsmTransport: any HSMTransport
   private let hsmServerParameters: HsmServerParameters?
+  private let trustStore: any TrustStoreInterface
   private var resolved: ResolvedPresentation?
   private(set) var phase: PresentationPhase = .loading
   private(set) var requiredItems: [PresentationItem] = []
@@ -29,16 +31,22 @@ final class PresentationViewModel {
     credentials: [SavedCredential],
     hsmTransport: any HSMTransport,
     hsmServerParameters: HsmServerParameters?,
+    trustStore: any TrustStoreInterface,
   ) {
     self.url = url
     self.credentials = credentials
     self.hsmTransport = hsmTransport
     self.hsmServerParameters = hsmServerParameters
+    self.trustStore = trustStore
   }
 
   func resolveAndMatchClaims() async {
     do {
-      let resolved = try await flow.resolve(url: url, credentials: credentials)
+      let resolved = try await flow.resolve(
+        url: url,
+        credentials: credentials,
+        trustAnchors: await trustStore.getTrustAnchors(for: ServiceType.wrpacIssuance.rawValue),
+      )
       self.resolved = resolved
 
       let items = resolved.candidates.map { candidate in
