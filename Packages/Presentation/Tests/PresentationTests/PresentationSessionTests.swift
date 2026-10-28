@@ -18,7 +18,8 @@ struct PresentationSessionTests {
       try await session.resolve(
         url: #URL("openid4vp://authorize?request_uri=https://verifier.example/request"),
         credentials: [],
-        trustAnchors: [],
+        accessTrustAnchors: [],
+        registrationTrustAnchors: [],
       )
     }
   }

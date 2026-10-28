@@ -7,6 +7,7 @@ import Foundation
 import JSONWebAlgorithms
 import JSONWebEncryption
 import JSONWebKey
+import JSONWebSignature
 import JSONWebToken
 
 enum JwtSigningError: Error {
@@ -88,6 +89,33 @@ public enum JwtUtil {
   ) throws -> T {
     let jwt = try JWT(jwtString: compactString)
     return try decoder.decode(T.self, from: jwt.payload)
+  }
+
+  public static func parseJws<T: Decodable>(
+    from compactString: String,
+    decoder: JSONDecoder = JSONDecoder(),
+    validateCertChain: ([SecCertificate]) throws -> SecKey,
+  ) throws -> T {
+    let jws = try JWS(jwsString: compactString)
+
+    guard let certificateChain = jws.protectedHeader.x509CertificateChain else {
+      throw JwsError.noCertificateChain
+    }
+
+    let certificates: [SecCertificate] = certificateChain.compactMap { cert in
+      guard let data = Data(base64UrlEncoded: cert) else {
+        return nil
+      }
+
+      return SecCertificateCreateWithData(nil, data as CFData)
+    }
+
+    let publicKey = try validateCertChain(certificates)
+    guard try jws.verify(key: publicKey) else {
+      throw JwsError.invalidCertificate
+    }
+
+    return try decoder.decode(T.self, from: jws.payload)
   }
 
   public static func base64UrlDecode(_ base64url: String) -> Data? {

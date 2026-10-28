@@ -22,6 +22,7 @@ final class PresentationViewModel {
   private var resolved: ResolvedPresentation?
   private(set) var phase: PresentationPhase = .loading
   private(set) var requiredItems: [PresentationItem] = []
+  private(set) var verifierUiModel: VerifierUiModel?
   private(set) var isSending = false
   var optionalItems: [PresentationItem] = []
   var sendError = false
@@ -45,7 +46,12 @@ final class PresentationViewModel {
       let resolved = try await flow.resolve(
         url: url,
         credentials: credentials,
-        trustAnchors: await trustStore.getTrustAnchors(for: ServiceType.wrpacIssuance.rawValue),
+        accessTrustAnchors: await trustStore.getTrustAnchors(
+          for: ServiceType.access.rawValue
+        ),
+        registrationTrustAnchors: await trustStore.getTrustAnchors(
+          for: ServiceType.registration.rawValue
+        )
       )
       self.resolved = resolved
 
@@ -54,6 +60,7 @@ final class PresentationViewModel {
       }
       requiredItems = items.filter(\.required)
       optionalItems = items.filter { !$0.required }
+      verifierUiModel = resolved.verifierUiModel
       phase = .ready
     } catch {
       phase = .error(CaughtError(error))

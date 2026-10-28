@@ -43,6 +43,7 @@ struct CandidateMatchingTests {
       Fixtures.request([
         CredentialQuery(
           id: "pid",
+          format: "dc+sd-jwt",
           claimPaths: [ClaimPath([.claim(name: "address"), .claim(name: "street_address")])],
           required: true,
           vctValues: [SampleCredential.pidType],

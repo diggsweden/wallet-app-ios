@@ -12,6 +12,12 @@ public enum PresentationError: LocalizedError, Equatable {
   case unsupportedQuery
   case unsupportedResponseMode
   case keyBindingEncodingFailed
+  case noRegistrationCertificate
+  case noVerifierUiModel
+  case missingCredentialType(queryId: String)
+  case formatNotRegistered(queryId: String)
+  case credentialTypeNotRegistered(queryId: String)
+  case claimsNotRegistered(queryId: String)
 
   public var errorDescription: String? {
     switch self {

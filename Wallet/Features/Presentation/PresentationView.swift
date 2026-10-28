@@ -35,14 +35,50 @@ struct PresentationView: View {
   }
 
   var body: some View {
-    rootView
-      .navigationDestination(for: PresentationRoute.self) { route in
-        destination(for: route)
-          .defaultScreenStyle
-          .alert("Kunde inte dela uppgifterna", isPresented: $viewModel.sendError) {
-            Button("Försök igen") {}
-          }
+    // swiftlint:disable:next closure_body_length
+    Group {
+      switch viewModel.phase {
+        case .loading:
+          ProgressView()
+            .task {
+              await viewModel.resolveAndMatchClaims()
+            }
+
+        case let .error(caught):
+          ErrorView(
+            model: .init(
+              caughtError: caught,
+              primaryButton: .init(
+                label: "Försök igen",
+                accessibilityHint: "Använd knappen för att försöka igen",
+                action: {
+                  Task {
+                    await viewModel.resolveAndMatchClaims()
+                  }
+                },
+              ),
+            )
+          )
+          .padding(.horizontal, theme.horizontalPadding)
+
+        case .ready:
+          PresentationReviewView(
+            requiredItems: viewModel.requiredItems,
+            optionalItems: $viewModel.optionalItems,
+            verifierName: viewModel.verifierUiModel?.name ?? "",
+            onConfirm: {
+              router.navigationPath.append(PresentationRoute.pin)
+            },
+          )
       }
+    }
+    .navigationDestination(for: PresentationRoute.self) { route in
+      destination(for: route)
+        .defaultScreenStyle
+        .alert("Kunde inte dela uppgifterna", isPresented: $viewModel.sendError) {
+          Button("Försök igen") {}
+        }
+    }
   }
 
   private func submitPresentation(_ pin: String) {
@@ -74,43 +110,6 @@ struct PresentationView: View {
         PresentationSuccessView {
           router.popToRoot()
         }
-    }
-  }
-
-  @ViewBuilder
-  private var rootView: some View {
-    switch viewModel.phase {
-      case .loading:
-        ProgressView()
-          .task {
-            await viewModel.resolveAndMatchClaims()
-          }
-
-      case let .error(caught):
-        ErrorView(
-          model: .init(
-            caughtError: caught,
-            primaryButton: .init(
-              label: "Försök igen",
-              accessibilityHint: "Använd knappen för att försöka igen",
-              action: {
-                Task {
-                  await viewModel.resolveAndMatchClaims()
-                }
-              },
-            ),
-          )
-        )
-        .padding(.horizontal, theme.horizontalPadding)
-
-      case .ready:
-        PresentationReviewView(
-          requiredItems: viewModel.requiredItems,
-          optionalItems: $viewModel.optionalItems,
-          onConfirm: {
-            router.navigationPath.append(PresentationRoute.pin)
-          },
-        )
     }
   }
 }

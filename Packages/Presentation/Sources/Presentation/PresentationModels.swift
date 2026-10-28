@@ -5,6 +5,8 @@
 import CredentialInterfaces
 import Foundation
 import Jose
+import OpenId4VCInterface
+import Trust
 
 struct RedirectUrl: Decodable {
   let redirectUri: String?
@@ -35,9 +37,10 @@ struct VerifiablePresentationToken: Codable {
 
 struct CredentialQuery {
   let id: String
+  let format: String
   let claimPaths: Set<ClaimPath>
   let required: Bool
-  let vctValues: [String]
+  let vctValues: Set<String>
 }
 
 struct PresentationRequestData {
@@ -47,4 +50,11 @@ struct PresentationRequestData {
   let nonce: String
   let state: String?
   let encryption: CryptoSpec?
+  let registrationCertificates: [RegistrationCertificate]
+  let legalName: String?
+}
+
+struct ParsedRegistrationCertificate {
+  let requestableCredentials: [RequestableCredential]
+  let verifierUiModel: VerifierUiModel
 }

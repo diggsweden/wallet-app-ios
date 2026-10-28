@@ -18,12 +18,14 @@ enum Fixtures {
 
   static func query(
     id: String,
+    format: String,
     claims: [String] = ["given_name"],
     required: Bool = true,
     vctValues: [String] = [SampleCredential.pidType],
   ) -> Presentation.CredentialQuery {
     CredentialQuery(
       id: id,
+      format: format,
       claimPaths: Set(claims.map { CredentialInterfaces.ClaimPath([.claim(name: $0)]) }),
       required: required,
       vctValues: vctValues,

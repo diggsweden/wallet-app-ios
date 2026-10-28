@@ -13,6 +13,7 @@ public struct ResolvedPresentation: Sendable {
   public let nonce: String
   public let state: String?
   public let encryption: CryptoSpec?
+  public let verifierUiModel: VerifierUiModel
 
   public init(
     candidates: [PresentationCandidate],
@@ -22,6 +23,7 @@ public struct ResolvedPresentation: Sendable {
     nonce: String,
     state: String?,
     encryption: CryptoSpec? = nil,
+    verifierUiModel: VerifierUiModel
   ) {
     self.candidates = candidates
     self.disclosedCredentials = disclosedCredentials
@@ -30,5 +32,6 @@ public struct ResolvedPresentation: Sendable {
     self.nonce = nonce
     self.state = state
     self.encryption = encryption
+    self.verifierUiModel = verifierUiModel
   }
 }

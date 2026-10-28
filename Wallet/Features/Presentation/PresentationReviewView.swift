@@ -9,12 +9,13 @@ struct PresentationReviewView: View {
   @Environment(\.theme) private var theme
   let requiredItems: [PresentationItem]
   @Binding var optionalItems: [PresentationItem]
+  let verifierName: String
   let onConfirm: () -> Void
 
   var body: some View {
     SoftEdgeScrollView(fillsHeight: true) {
       VStack(spacing: 30) {
-        Text("Dela uppgifter")
+        Text("Dela uppgifter med \(verifierName)")
           .textStyle(.h1)
 
         ForEach(requiredItems) { item in
