@@ -21,6 +21,8 @@ actor FakeGatewayApi: GatewayApi {
 
   func getKeyAttestation(keys: [PublicKeyComponents], nonce: String?) throws -> String { "" }
 
+  func getWalletInstanceAttestation(key: PublicKeyComponents) throws -> String { "" }
+
   func getDatabaseGeneration() throws -> Int { 0 }
 
   func fetchTrustedListProviders() throws -> [URL] {

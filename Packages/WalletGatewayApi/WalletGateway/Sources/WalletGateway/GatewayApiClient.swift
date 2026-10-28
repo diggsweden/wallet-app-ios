@@ -43,14 +43,7 @@ public struct GatewayApiClient: GatewayApi {
   }
 
   public func createAccount(publicKey: PublicKeyComponents) async throws -> String {
-    let jwkDto = Components.Schemas.EcJwkRequest(
-      kty: publicKey.kty,
-      kid: publicKey.kid,
-      crv: publicKey.crv,
-      x: publicKey.x,
-      y: publicKey.y,
-    )
-    let bodyDto = Components.Schemas.CreateAccountRequest(deviceKey: jwkDto)
+    let bodyDto = Components.Schemas.CreateAccountRequest(deviceKey: .init(publicKey))
     let input = Operations.CreateAccount.Input(body: .json(bodyDto))
 
     switch try await client.createAccount(input) {
@@ -95,15 +88,7 @@ public struct GatewayApiClient: GatewayApi {
     keys: [PublicKeyComponents],
     nonce: String?,
   ) async throws -> String {
-    let jwks = keys.map { key in
-      Components.Schemas.EcJwkRequest(
-        kty: key.kty,
-        kid: key.kid,
-        crv: key.crv,
-        x: key.x,
-        y: key.y,
-      )
-    }
+    let jwks = keys.map(Components.Schemas.EcJwkRequest.init)
     let bodyDto = Components.Schemas.KeyAttestationRequest(keys: jwks, nonce: nonce)
     let input = Operations.CreateKeyAttestation.Input(body: .json(bodyDto))
 
@@ -120,5 +105,30 @@ public struct GatewayApiClient: GatewayApi {
       case .`default`(let statusCode, let response):
         throw GatewayError.problem(ProblemDetails(status: statusCode, response: response))
     }
+  }
+
+  public func getWalletInstanceAttestation(key: PublicKeyComponents) async throws -> String {
+    let bodyDto = Components.Schemas.WalletInstanceAttestationRequest(key: .init(key))
+    let input = Operations.CreateWalletInstanceAttestation.Input(body: .json(bodyDto))
+
+    switch try await client.createWalletInstanceAttestation(input) {
+      case .created(let payload):
+        guard let jwt = try? payload.body.json.jwt else {
+          throw GatewayError.undecodableResponseBody
+        }
+        return jwt
+
+      case .unauthorized:
+        throw GatewayError.unauthorized
+
+      case .`default`(let statusCode, let response):
+        throw GatewayError.problem(ProblemDetails(status: statusCode, response: response))
+    }
+  }
+}
+
+private extension Components.Schemas.EcJwkRequest {
+  init(_ key: PublicKeyComponents) {
+    self.init(kty: key.kty, kid: key.kid, crv: key.crv, x: key.x, y: key.y)
   }
 }

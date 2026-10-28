@@ -118,7 +118,7 @@ struct OpenId4VpRequestResolver {
       }
     }
 
-    let regCertList: [RegistrationCertificate] = try verifierData.compactMap { data in
+    return try verifierData.compactMap { data in
       try JwtUtil.parseJws(
         from: data,
         validateCertChain: { certChain in
@@ -129,9 +129,6 @@ struct OpenId4VpRequestResolver {
         },
       )
     }
-    print(regCertList)
-
-    return regCertList
   }
 
   static func requestData(
