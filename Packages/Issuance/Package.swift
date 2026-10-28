@@ -22,6 +22,7 @@ let package = Package(
       url: "https://github.com/eu-digital-identity-wallet/eudi-lib-ios-openid4vci-swift.git",
       exact: "0.53.1",
     ),
+    .package(url: "https://github.com/airsidemobile/JOSESwift.git", exact: "3.0.0"),
     .package(name: "CredentialInterfaces", path: "../CredentialInterfaces"),
     .package(name: "Jose", path: "../Jose"),
     .package(name: "OpenId4VCInterface", path: "../OpenId4VCInterface"),
@@ -35,6 +36,7 @@ let package = Package(
       dependencies: [
         .product(name: "OpenID4VCI", package: "eudi-lib-ios-openid4vci-swift"),
         .product(name: "CredentialInterfaces", package: "CredentialInterfaces"),
+        .product(name: "JOSESwift", package: "JOSESwift"),
         .product(name: "Jose", package: "Jose"),
         .product(name: "OpenId4VCInterface", package: "OpenId4VCInterface"),
         .product(name: "SdJwt", package: "SdJwt"),

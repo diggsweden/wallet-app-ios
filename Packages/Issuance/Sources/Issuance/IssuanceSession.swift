@@ -12,18 +12,28 @@ public actor IssuanceSession: IssuanceFlow {
   private let config: IssuanceConfig
   private let dpopProofBuilder = DpopProofBuilder()
   private let credentialEndpointClient: CredentialEndpointClient
+  private let walletAttestation: WalletAttestationProvisioner
   private var credentialOffer: CredentialOffer?
   private var issuer: Issuer?
   private var preparedRequest: AuthorizationRequested?
   private var authorizedRequest: AuthorizedRequest?
   private var proof: String?
 
-  public init(config: IssuanceConfig) {
-    self.init(config: config, networkClient: URLSessionNetworkClient())
+  public init(config: IssuanceConfig, walletAttestations: any WalletInstanceAttestationProviding) {
+    self.init(
+      config: config,
+      walletAttestations: walletAttestations,
+      networkClient: URLSessionNetworkClient(),
+    )
   }
 
-  init(config: IssuanceConfig, networkClient: any NetworkClient) {
+  init(
+    config: IssuanceConfig,
+    walletAttestations: any WalletInstanceAttestationProviding,
+    networkClient: any NetworkClient,
+  ) {
     self.config = config
+    self.walletAttestation = WalletAttestationProvisioner(attestations: walletAttestations)
     self.credentialEndpointClient = CredentialEndpointClient(networkClient: networkClient)
   }
 
@@ -189,13 +199,17 @@ public actor IssuanceSession: IssuanceFlow {
 
   private func createIssuer(from credentialOffer: CredentialOffer) throws -> Issuer {
     let authorizationServerMetadata = credentialOffer.authorizationServerMetadata
+    let attested = authorizationServerMetadata.supportsWalletAttestation
 
     return try Issuer(
       authorizationServerMetadata: authorizationServerMetadata,
       issuerMetadata: credentialOffer.credentialIssuerMetadata,
       config: OpenId4VCIConfig(
-        client: .init(public: config.clientId),
+        client: attested
+          ? try walletAttestation.client(id: config.clientId)
+          : .init(public: config.clientId),
         authFlowRedirectionURI: config.redirectUri,
+        clientAttestationPoPBuilder: attested ? DefaultClientAttestationPoPBuilder.default : nil,
         requireDpop: authorizationServerMetadata.supportsDpop,
       ),
       dpopConstructor: dpopProofBuilder,

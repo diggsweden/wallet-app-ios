@@ -29,18 +29,21 @@ final class IssuanceViewModel {
     gatewayApiClient: any GatewayApi & HSMTransport,
     hsmServerParameters: HsmServerParameters?,
     actions: IssuanceActions,
-    issuanceFlow: any IssuanceFlow = IssuanceSession(
-      config: IssuanceConfig(
-        clientId: "wallet-dev",
-        redirectUri: #URL("wallet-app://authorize"),
-      )
-    ),
+    issuanceFlow: (any IssuanceFlow)? = nil,
     makeSigner: ((_ pin: String) -> any ProofKeyManager)? = nil,
   ) {
     self.credentialOfferUri = credentialOfferUri
     self.gatewayApiClient = gatewayApiClient
     self.actions = actions
-    self.flow = issuanceFlow
+    self.flow =
+      issuanceFlow
+      ?? IssuanceSession(
+        config: IssuanceConfig(
+          clientId: "wallet-dev",
+          redirectUri: #URL("wallet-app://authorize"),
+        ),
+        walletAttestations: WalletInstanceAttestationProvider(gatewayApiClient: gatewayApiClient),
+      )
     self.makeSigner =
       makeSigner ?? { pin in
         HsmProofSigner(transport: gatewayApiClient, parameters: hsmServerParameters, pin: pin)

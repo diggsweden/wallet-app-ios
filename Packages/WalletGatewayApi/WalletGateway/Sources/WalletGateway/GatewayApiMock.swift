@@ -19,5 +19,7 @@ public struct GatewayApiMock: GatewayApi {
     nonce: String?,
   ) throws -> String { "" }
 
+  public func getWalletInstanceAttestation(key: PublicKeyComponents) throws -> String { "" }
+
   public func fetchTrustedListProviders() throws -> [URL] { [] }
 }

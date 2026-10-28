@@ -103,6 +103,7 @@ actor DatabaseUpdateGateway: GatewayApi, HSMTransport {
 
   func createAccount(publicKey: PublicKeyComponents) -> String { "" }
   func getKeyAttestation(keys: [PublicKeyComponents], nonce: String?) -> String { "" }
+  func getWalletInstanceAttestation(key: PublicKeyComponents) -> String { "" }
   func fetchTrustedListProviders() -> [URL] { [] }
 
   func registerState(
