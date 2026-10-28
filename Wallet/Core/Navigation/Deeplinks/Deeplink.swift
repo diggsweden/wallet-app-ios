@@ -20,10 +20,10 @@ enum Deeplink {
 
   init(from url: URL) throws {
     switch url.scheme {
-      case "openid-credential-offer", "haip-vci":
+      case "openid-credential-offer", "haip-vci", "eu-eaa-offer":
         self = .issuance
 
-      case "openid4vp", "eudi-openid4vp", "haip-vp":
+      case "openid4vp", "eudi-openid4vp", "haip-vp", "eu-eaap":
         self = .presentation
 
       default:

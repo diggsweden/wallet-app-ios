@@ -31,6 +31,8 @@
 				<string>eudi-openid4vp</string>
 				<string>haip-vp</string>
 				<string>haip-vci</string>
+				<string>eu-eaa-offer</string>
+				<string>eu-eaap</string>
 			</array>
 		</dict>
 	</array>
