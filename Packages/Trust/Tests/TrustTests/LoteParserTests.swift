@@ -10,10 +10,10 @@ import Testing
 struct LoteParserTests {
   private let services = [
     Fixtures.Service(
-      type: ServiceType.wrpacIssuance.rawValue,
+      type: ServiceType.access.rawValue,
       certificates: ["cert-a", "cert-b"],
     ),
-    Fixtures.Service(type: ServiceType.wrprcIssuance.rawValue, certificates: ["cert-c"]),
+    Fixtures.Service(type: ServiceType.registration.rawValue, certificates: ["cert-c"]),
   ]
 
   @Test func `a json list is decoded with its services and certificates`() throws {

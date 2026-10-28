@@ -25,39 +25,81 @@ public struct PresentationSession: PresentationFlow {
   public func resolve(
     url: URL,
     credentials: [SavedCredential],
-    trustAnchors: [SecCertificate],
+    accessTrustAnchors: [SecCertificate],
+    registrationTrustAnchors: [SecCertificate],
   ) async throws -> ResolvedPresentation {
     guard !credentials.isEmpty else {
       throw PresentationError.noCredential
     }
+    let resolvedData = try await OpenId4VpRequestResolver()
+      .resolve(
+        url: url,
+        accessTrustAnchors: accessTrustAnchors,
+        registrationTrustAnchors: registrationTrustAnchors,
+      )
+
+    let parsedRegistrationCertificate = try parseRegistrationCertificate(
+      certificates: resolvedData.registrationCertificates
+    )
+
+    for parsed in parsedRegistrationCertificate {
+      try validateQuery(
+        requestableCredential: parsed.requestableCredentials,
+        credentialQuery: resolvedData.credentialQueries,
+      )
+    }
 
     return try Self.match(
-      try await OpenId4VpRequestResolver()
-        .resolve(
-          url: url,
-          validateTrust: { cert in
-            Self.validate(certChain: cert, with: trustAnchors)
-          },
-        ),
+      resolvedData,
       credentials: credentials,
+      verifierUiModels: parsedRegistrationCertificate.map(\.verifierUiModel),
     )
   }
 
-  private static func validate(
-    certChain: [SecCertificate],
-    with trustAnchors: [SecCertificate],
-  ) -> Bool {
-    do {
-      try CertificateValidator.validate(certChain: certChain, with: trustAnchors)
-      return true
-    } catch {
-      return false
+  private func parseRegistrationCertificate(
+    certificates: [RegistrationCertificate]
+  ) throws -> [ParsedRegistrationCertificate] {
+    if certificates.isEmpty {
+      throw PresentationError.noRegistrationCertificate
+    }
+
+    return certificates.map { cert in
+      ParsedRegistrationCertificate(
+        requestableCredentials: cert.requestableCredentials,
+        verifierUiModel: cert.verifierUiModel,
+      )
+    }
+  }
+
+  private func validateQuery(
+    requestableCredential: [RequestableCredential],
+    credentialQuery: [CredentialQuery],
+  ) throws {
+    for query in credentialQuery {
+      if query.vctValues.isEmpty {
+        throw PresentationError.missingCredentialType(queryId: query.id)
+      }
+
+      let matchingFormat = requestableCredential.filter { $0.format == query.format }
+      guard !matchingFormat.isEmpty else {
+        throw PresentationError.formatNotRegistered(queryId: query.id)
+      }
+
+      let matchingType = matchingFormat.filter { query.vctValues.isSubset(of: $0.vctValues) }
+      guard !matchingType.isEmpty else {
+        throw PresentationError.credentialTypeNotRegistered(queryId: query.id)
+      }
+
+      guard matchingType.contains(where: { query.claimPaths.isSubset(of: $0.claimPaths) }) else {
+        throw PresentationError.claimsNotRegistered(queryId: query.id)
+      }
     }
   }
 
   static func match(
     _ data: PresentationRequestData,
     credentials: [SavedCredential],
+    verifierUiModels: [VerifierUiModel],
   ) throws -> ResolvedPresentation {
     let storedTypes: [String: SavedCredential] = credentials.reduce(into: [:]) { dict, credential in
       dict[credential.type] = credential
@@ -74,6 +116,10 @@ public struct PresentationSession: PresentationFlow {
       throw PresentationError.noMatchingClaims
     }
 
+    guard let verifierUiModel = verifierUiModels.first else {
+      throw PresentationError.noVerifierUiModel
+    }
+
     return ResolvedPresentation(
       candidates: matches.map(\.candidate),
       disclosedCredentials: matches.reduce(into: [:]) { dict, match in
@@ -84,6 +130,7 @@ public struct PresentationSession: PresentationFlow {
       nonce: data.nonce,
       state: data.state,
       encryption: data.encryption,
+      verifierUiModel: verifierUiModel,
     )
   }
 

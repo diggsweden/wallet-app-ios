@@ -8,40 +8,21 @@ import Foundation
 import Jose
 import OpenID4VP
 import OpenId4VCInterface
+import Trust
 
 struct OpenId4VpRequestResolver {
   func resolve(
     url: URL,
-    validateTrust: @escaping ([SecCertificate]) -> Bool,
+    accessTrustAnchors: [SecCertificate],
+    registrationTrustAnchors: [SecCertificate],
   ) async throws -> PresentationRequestData {
     let certificateTrust: CertificateTrust = { certificateChain in
-      let certificates: [SecCertificate] = certificateChain.compactMap { cert in
-        guard let data = Data(base64UrlEncoded: cert) else {
-          return nil
-        }
-        return SecCertificateCreateWithData(nil, data as CFData)
-      }
-      return validateTrust(certificates)
+      validateAccessCertificates(
+        certificateChain: certificateChain,
+        trustAnchors: accessTrustAnchors,
+      )
     }
-    let ephemeralKey = P256.Signing.PrivateKey()
-    let secKey = try ephemeralKey.toSecKey()
-    let rawRep = ephemeralKey.publicKey.rawRepresentation
-    let x = rawRep.prefix(32)
-    let y = rawRep.suffix(32)
-
-    let webKey = WebKeySet.Key(
-      kty: "EC",
-      use: nil,
-      kid: nil,
-      iat: nil,
-      crv: "P-256",
-      x: x.base64UrlEncodedString(),
-      y: y.base64UrlEncodedString(),
-      exponent: nil,
-      modulus: nil,
-      alg: "ECDH-ES",
-    )
-
+    let (secKey, webKey) = try generateKey()
     let config = OpenId4VPConfiguration(
       privateKey: secKey,
       publicWebKeySet: WebKeySet(keys: [webKey]),
@@ -66,11 +47,96 @@ struct OpenId4VpRequestResolver {
           throw PresentationError.resolutionFailed("\(error)")
       }
 
-    return try Self.requestData(from: resolvedRequest.request)
+    let certs: [RegistrationCertificate] =
+      if let verifierInfo = resolvedRequest.request.verifierInfo {
+        try extractRegistrationCertificates(
+          verifierInfo: verifierInfo,
+          trustAnchors: registrationTrustAnchors,
+        )
+      } else {
+        []
+      }
+
+    return try Self.requestData(
+      from: resolvedRequest.request,
+      registrationCertificates: certs,
+    )
+  }
+
+  private func generateKey() throws -> (SecKey, WebKeySet.Key) {
+    let ephemeralKey = P256.Signing.PrivateKey()
+    let secKey = try ephemeralKey.toSecKey()
+    let rawRep = ephemeralKey.publicKey.rawRepresentation
+    let x = rawRep.prefix(32)
+    let y = rawRep.suffix(32)
+
+    let webKey = WebKeySet.Key(
+      kty: "EC",
+      use: nil,
+      kid: nil,
+      iat: nil,
+      crv: "P-256",
+      x: x.base64UrlEncodedString(),
+      y: y.base64UrlEncodedString(),
+      exponent: nil,
+      modulus: nil,
+      alg: "ECDH-ES",
+    )
+    return (secKey, webKey)
+  }
+
+  private func validateAccessCertificates(
+    certificateChain: [Base64Certificate],
+    trustAnchors: [SecCertificate],
+  ) -> Bool {
+    let certificates: [SecCertificate] = certificateChain.compactMap { cert in
+      guard let data = Data(base64UrlEncoded: cert) else {
+        return nil
+      }
+      return SecCertificateCreateWithData(nil, data as CFData)
+    }
+
+    do {
+      _ = try CertificateValidator.validate(certChain: certificates, with: trustAnchors)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  private func extractRegistrationCertificates(
+    verifierInfo: [VerifierInfo],
+    trustAnchors: [SecCertificate],
+  ) throws -> [RegistrationCertificate] {
+    let verifierData = verifierInfo.compactMap { verifier in
+      switch VerifierInfoFormat(rawValue: verifier.format) {
+        case .registrationCert, .jwt:
+          return verifier.data.string
+
+        case nil:
+          return nil
+      }
+    }
+
+    let regCertList: [RegistrationCertificate] = try verifierData.compactMap { data in
+      try JwtUtil.parseJws(
+        from: data,
+        validateCertChain: { certChain in
+          try CertificateValidator.validate(
+            certChain: certChain,
+            with: trustAnchors,
+          )
+        },
+      )
+    }
+    print(regCertList)
+
+    return regCertList
   }
 
   static func requestData(
-    from data: ResolvedRequestData.VpTokenData
+    from data: ResolvedRequestData.VpTokenData,
+    registrationCertificates: [RegistrationCertificate],
   ) throws
     -> PresentationRequestData
   {
@@ -94,6 +160,8 @@ struct OpenId4VpRequestResolver {
       nonce: data.nonce,
       state: data.state,
       encryption: try data.responseEncryptionSpecification.map { try Self.cryptoSpec(from: $0) },
+      registrationCertificates: registrationCertificates,
+      legalName: data.client.legalName,
     )
   }
 
@@ -135,9 +203,10 @@ struct OpenId4VpRequestResolver {
 
       return CredentialQuery(
         id: credential.id.value,
+        format: credential.format.format,
         claimPaths: Set(claimPaths),
         required: isRequired(credential.id, in: dcql.credentialSets),
-        vctValues: credential.meta["vct_values"].arrayValue.compactMap(\.string),
+        vctValues: Set(credential.meta["vct_values"].arrayValue.compactMap(\.string)),
       )
     }
   }

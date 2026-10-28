@@ -11,8 +11,8 @@ import WalletMacros
 struct TrustStoreTests {
   private let first = #URL("https://first.example.com/lote")
   private let second = #URL("https://second.example.com/lote")
-  private let wrpac = ServiceType.wrpacIssuance.rawValue
-  private let wrprc = ServiceType.wrprcIssuance.rawValue
+  private let wrpac = ServiceType.access.rawValue
+  private let wrprc = ServiceType.registration.rawValue
 
   private func makeStore(
     providerUrls: [URL]?,
@@ -134,7 +134,7 @@ struct TrustStoreTests {
     )
 
     await #expect(throws: TrustStoreError.self) {
-      try await store.getTrustAnchors(for: ServiceType.wrpacRevocation.rawValue)
+      try await store.getTrustAnchors(for: ServiceType.registration.rawValue)
     }
   }
 
