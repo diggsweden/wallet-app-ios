@@ -7,6 +7,7 @@ import Foundation
 import Issuance
 import OpenId4VCInterface
 import SwiftAccessMechanism
+import Trust
 import User
 import WalletGatewayInterface
 import WalletMacros
@@ -28,6 +29,7 @@ final class IssuanceViewModel {
     credentialOfferUri: String,
     gatewayApiClient: any GatewayApi & HSMTransport,
     hsmServerParameters: HsmServerParameters?,
+    trustStore: any TrustStoreInterface,
     actions: IssuanceActions,
     issuanceFlow: (any IssuanceFlow)? = nil,
     makeSigner: ((_ pin: String) -> any ProofKeyManager)? = nil,
@@ -43,6 +45,7 @@ final class IssuanceViewModel {
           redirectUri: #URL("wallet-app://authorize"),
         ),
         walletAttestations: WalletInstanceAttestationProvider(gatewayApiClient: gatewayApiClient),
+        trustStore: trustStore,
       )
     self.makeSigner =
       makeSigner ?? { pin in

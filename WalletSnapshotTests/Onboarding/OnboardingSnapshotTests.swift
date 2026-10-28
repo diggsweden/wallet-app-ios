@@ -5,6 +5,7 @@
 import Foundation
 import SwiftAccessMechanism
 import Testing
+import Trust
 import WalletGatewayInterface
 
 @testable import User
@@ -61,6 +62,7 @@ private extension OnboardingSnapshotTests {
         isReset: false,
         backendGeneration: nil,
       ),
+      trustStore: SnapshotTrustStore(),
       initialStep: step,
       actions: OnboardingActions(
         signIn: { _ in },
@@ -72,6 +74,10 @@ private extension OnboardingSnapshotTests {
       ),
     )
   }
+}
+
+private struct SnapshotTrustStore: TrustStoreInterface {
+  func getTrustAnchors(for serviceType: String) -> [SecCertificate] { [] }
 }
 
 private struct SnapshotGateway: GatewayApi, HSMTransport {

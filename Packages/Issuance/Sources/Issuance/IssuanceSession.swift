@@ -6,6 +6,7 @@ import Foundation
 import Jose
 import OpenID4VCI
 import OpenId4VCInterface
+import Trust
 import WalletNetworking
 
 public actor IssuanceSession: IssuanceFlow {
@@ -13,16 +14,22 @@ public actor IssuanceSession: IssuanceFlow {
   private let dpopProofBuilder = DpopProofBuilder()
   private let credentialEndpointClient: CredentialEndpointClient
   private let walletAttestation: WalletAttestationProvisioner
+  private let trustStore: any TrustStoreInterface
   private var credentialOffer: CredentialOffer?
   private var issuer: Issuer?
   private var preparedRequest: AuthorizationRequested?
   private var authorizedRequest: AuthorizedRequest?
   private var proof: String?
 
-  public init(config: IssuanceConfig, walletAttestations: any WalletInstanceAttestationProviding) {
+  public init(
+    config: IssuanceConfig,
+    walletAttestations: any WalletInstanceAttestationProviding,
+    trustStore: any TrustStoreInterface,
+  ) {
     self.init(
       config: config,
       walletAttestations: walletAttestations,
+      trustStore: trustStore,
       networkClient: URLSessionNetworkClient(),
     )
   }
@@ -30,10 +37,12 @@ public actor IssuanceSession: IssuanceFlow {
   init(
     config: IssuanceConfig,
     walletAttestations: any WalletInstanceAttestationProviding,
+    trustStore: any TrustStoreInterface,
     networkClient: any NetworkClient,
   ) {
     self.config = config
     self.walletAttestation = WalletAttestationProvisioner(attestations: walletAttestations)
+    self.trustStore = trustStore
     self.credentialEndpointClient = CredentialEndpointClient(networkClient: networkClient)
   }
 
@@ -41,9 +50,12 @@ public actor IssuanceSession: IssuanceFlow {
     let result = await CredentialOfferRequestResolver()
       .resolve(
         source: try .init(urlString: offerUri),
-        policy: .ignoreSigned,
+        policy: .preferSigned(trustStore: trustStore),
       )
     let offer = try result.get()
+    try await offer.credentialIssuerMetadata.validateRegistrationCertificates(
+      trustStore: trustStore
+    )
     let issuer = try createIssuer(from: offer)
 
     credentialOffer = offer

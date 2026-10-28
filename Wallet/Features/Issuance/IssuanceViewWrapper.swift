@@ -6,6 +6,7 @@ import CredentialInterfaces
 import DesignSystem
 import SwiftAccessMechanism
 import SwiftUI
+import Trust
 import User
 import WalletGatewayInterface
 
@@ -15,6 +16,7 @@ struct IssuanceViewWrapper: View {
   let credentialOfferUri: String
   let gatewayApiClient: any GatewayApi & HSMTransport
   let hsmServerParameters: HsmServerParameters?
+  let trustStore: any TrustStoreInterface
   let actions: IssuanceActions
 
   var body: some View {
@@ -23,6 +25,7 @@ struct IssuanceViewWrapper: View {
         credentialOfferUri: credentialOfferUri,
         gatewayApiClient: gatewayApiClient,
         hsmServerParameters: hsmServerParameters,
+        trustStore: trustStore,
         actions: actions,
       )
       .padding(.horizontal, theme.horizontalPadding)

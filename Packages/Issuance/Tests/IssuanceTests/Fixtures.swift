@@ -46,12 +46,15 @@ enum Fixtures {
   }
 
   /// `keyAttestationsRequired` is the raw JSON of the SD-JWT configuration's
-  /// `key_attestations_required` member; `nil` omits it.
+  /// `key_attestations_required` member; `nil` omits it. `issuerInfo` is the raw JSON
+  /// of the `issuer_info` member; `nil` omits it.
   static func issuerMetadata(
     requestEncryption: RequestEncryption? = nil,
     keyAttestationsRequired: String? = nil,
+    issuerInfo: String? = nil,
   ) throws -> CredentialIssuerMetadata {
     let encryptionMember = try requestEncryption.map { try getEncryptionMember($0) } ?? ""
+    let issuerInfoMember = issuerInfo.map { #""issuer_info": \#($0),"# } ?? ""
 
     let json = #"""
       {
@@ -60,6 +63,7 @@ enum Fixtures {
         "credential_endpoint": "\#(credentialEndpoint)",
         "nonce_endpoint": "\#(nonceEndpoint)",
         \#(encryptionMember)
+        \#(issuerInfoMember)
         "credential_configurations_supported": {
           "\#(sdJwtConfigurationId)": \#(sdJwtConfiguration(keyAttestationsRequired)),
           "\#(mdocConfigurationId)": \#(mdocConfiguration)

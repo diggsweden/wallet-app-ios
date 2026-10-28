@@ -7,6 +7,7 @@ import DesignSystem
 import SwiftAccessMechanism
 import SwiftData
 import SwiftUI
+import Trust
 import User
 import WalletGatewayInterface
 import WalletMacros
@@ -14,6 +15,7 @@ import WalletMacros
 struct OnboardingRootView: View {
   private let gatewayApiClient: any GatewayApi & HSMTransport
   private let userSnapshot: UserSnapshot
+  private let trustStore: any TrustStoreInterface
 
   @Environment(Router.self) private var router
   @Environment(\.theme) private var theme
@@ -25,11 +27,13 @@ struct OnboardingRootView: View {
   init(
     gatewayApiClient: any GatewayApi & HSMTransport,
     userSnapshot: UserSnapshot,
+    trustStore: any TrustStoreInterface,
     initialStep: OnboardingStep = .intro,
     actions: OnboardingActions,
   ) {
     self.gatewayApiClient = gatewayApiClient
     self.userSnapshot = userSnapshot
+    self.trustStore = trustStore
     _viewModel = State(
       wrappedValue: .init(
         step: initialStep,
@@ -188,6 +192,7 @@ struct OnboardingRootView: View {
             credentialOfferUri: uri,
             gatewayApiClient: gatewayApiClient,
             hsmServerParameters: userSnapshot.hsmServerParameters,
+            trustStore: trustStore,
             actions: .init(
               onSaveCredential: viewModel.saveCredential,
               onComplete: viewModel.onCompleteOnboarding,
