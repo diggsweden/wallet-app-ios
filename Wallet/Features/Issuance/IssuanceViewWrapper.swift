@@ -6,6 +6,7 @@ import CredentialInterfaces
 import DesignSystem
 import SwiftAccessMechanism
 import SwiftUI
+import Trust
 import UIComponents
 import User
 import WalletGatewayInterface
@@ -18,6 +19,7 @@ struct IssuanceViewWrapper: View {
     credentialOfferUri: String,
     gatewayApiClient: any GatewayApi & HSMTransport,
     hsmServerParameters: HsmServerParameters?,
+    trustStore: any TrustStoreInterface,
     actions: IssuanceActions,
   ) {
     _viewModel = State(
@@ -25,6 +27,7 @@ struct IssuanceViewWrapper: View {
         credentialOfferUri: credentialOfferUri,
         gatewayApiClient: gatewayApiClient,
         hsmServerParameters: hsmServerParameters,
+        trustStore: trustStore,
         actions: actions,
       )
     )

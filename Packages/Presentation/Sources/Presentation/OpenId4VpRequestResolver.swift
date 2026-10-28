@@ -89,19 +89,8 @@ struct OpenId4VpRequestResolver {
     certificateChain: [Base64Certificate],
     trustAnchors: [SecCertificate],
   ) -> Bool {
-    let certificates: [SecCertificate] = certificateChain.compactMap { cert in
-      guard let data = Data(base64UrlEncoded: cert) else {
-        return nil
-      }
-      return SecCertificateCreateWithData(nil, data as CFData)
-    }
-
-    do {
-      _ = try CertificateValidator.validate(certChain: certificates, with: trustAnchors)
-      return true
-    } catch {
-      return false
-    }
+    (try? CertificateValidator.validate(base64CertChain: certificateChain, with: trustAnchors))
+      != nil
   }
 
   private func extractRegistrationCertificates(

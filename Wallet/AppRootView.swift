@@ -68,6 +68,7 @@ private extension AppRootView {
       OnboardingRootView(
         gatewayApiClient: gatewayApiClient,
         userSnapshot: user,
+        trustStore: trustStore,
         actions: OnboardingActions(
           signIn: userViewModel.signIn,
           saveCredential: userViewModel.saveCredential,
@@ -105,6 +106,7 @@ private extension AppRootView {
           credentialOfferUri: url,
           gatewayApiClient: gatewayApiClient,
           hsmServerParameters: userViewModel.user.hsmServerParameters,
+          trustStore: trustStore,
           actions: .init(
             onSaveCredential: userViewModel.saveCredential,
             onComplete: { router.pop() },

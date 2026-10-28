@@ -25,4 +25,27 @@ struct CertificateValidatorTests {
       try CertificateValidator.validate(certChain: [leaf], with: [other])
     }
   }
+
+  // x5c carries standard base64, which must decode the same as base64url.
+  @Test func `a base64 x5c chain issued by a trust anchor is valid`() throws {
+    let root = try Fixtures.certificate(Fixtures.rootCertificate)
+
+    #expect(throws: Never.self) {
+      try CertificateValidator.validate(
+        base64CertChain: [Fixtures.leafCertificate],
+        with: [root],
+      )
+    }
+  }
+
+  @Test func `a chain with an undecodable certificate is rejected`() throws {
+    let root = try Fixtures.certificate(Fixtures.rootCertificate)
+
+    #expect(throws: ValidationError.invalidCertificate) {
+      try CertificateValidator.validate(
+        base64CertChain: [Fixtures.leafCertificate, "not a certificate"],
+        with: [root],
+      )
+    }
+  }
 }

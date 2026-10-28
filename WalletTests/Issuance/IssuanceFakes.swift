@@ -8,6 +8,7 @@ import Foundation
 import Jose
 import OpenId4VCInterface
 import SwiftAccessMechanism
+import Trust
 import WalletGatewayInterface
 import WalletMacros
 
@@ -158,6 +159,10 @@ actor FakeProofKeyManager: ProofSigner, ProofKeyStore {
       throw FakeError.intentional
     }
   }
+}
+
+struct FakeTrustStore: TrustStoreInterface {
+  func getTrustAnchors(for serviceType: String) -> [SecCertificate] { [] }
 }
 
 struct FakeGateway: GatewayApi, HSMTransport {
