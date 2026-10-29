@@ -118,9 +118,10 @@ struct OpenId4VpRequestResolver {
       }
     }
 
-    let regCertList: [RegistrationCertificate] = try verifierData.compactMap { data in
-      try JwtUtil.parseJws(
+    return try verifierData.map { data in
+      let certificate: RegistrationCertificate = try JwtUtil.parseJws(
         from: data,
+        expectedType: .registrationCertificate,
         validateCertChain: { certChain in
           try CertificateValidator.validate(
             certChain: certChain,
@@ -128,10 +129,13 @@ struct OpenId4VpRequestResolver {
           )
         },
       )
-    }
-    print(regCertList)
 
-    return regCertList
+      guard !certificate.isExpired(at: .now) else {
+        throw PresentationError.registrationCertificateExpired
+      }
+
+      return certificate
+    }
   }
 
   static func requestData(

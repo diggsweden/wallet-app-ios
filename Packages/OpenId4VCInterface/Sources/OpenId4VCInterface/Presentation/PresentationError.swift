@@ -13,6 +13,7 @@ public enum PresentationError: LocalizedError, Equatable {
   case unsupportedResponseMode
   case keyBindingEncodingFailed
   case noRegistrationCertificate
+  case registrationCertificateExpired
   case noVerifierUiModel
   case missingCredentialType(queryId: String)
   case formatNotRegistered(queryId: String)

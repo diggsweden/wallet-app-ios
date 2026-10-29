@@ -51,7 +51,7 @@ final class PresentationViewModel {
         ),
         registrationTrustAnchors: await trustStore.getTrustAnchors(
           for: ServiceType.registration.rawValue
-        )
+        ),
       )
       self.resolved = resolved
 

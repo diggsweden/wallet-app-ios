@@ -109,6 +109,34 @@ enum Fixtures {
     return Data("\(header).\(payload).\(signature)".utf8)
   }
 
+  static func registrationCertificate(exp: Int) -> RegistrationCertificate {
+    RegistrationCertificate(
+      name: "Verifier",
+      sub: "sub",
+      country: "SE",
+      iat: 0,
+      exp: exp,
+      registryURI: "https://registry.example",
+      srvDescription: [],
+      entitlements: [],
+      purpose: [],
+      credentials: [],
+      serviceIdentifier: "service",
+      intendedUseID: "intended-use",
+      privacyPolicy: "https://example.com/privacy",
+      infoURI: "https://example.com/info",
+      supportURI: "https://example.com/support",
+      supervisoryAuthority: SupervisoryAuthority(
+        name: "IMY",
+        country: "SE",
+        email: "imy@example.com",
+      ),
+      policyID: [],
+      certificatePolicy: "policy",
+      status: Status(statusList: StatusList(uri: "https://example.com/status", idx: 0)),
+    )
+  }
+
   private static func service(_ service: Service) -> [String: Any] {
     [
       "ServiceInformation": [

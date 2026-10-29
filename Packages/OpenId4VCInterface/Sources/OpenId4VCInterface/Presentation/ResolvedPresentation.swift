@@ -23,7 +23,7 @@ public struct ResolvedPresentation: Sendable {
     nonce: String,
     state: String?,
     encryption: CryptoSpec? = nil,
-    verifierUiModel: VerifierUiModel
+    verifierUiModel: VerifierUiModel,
   ) {
     self.candidates = candidates
     self.disclosedCredentials = disclosedCredentials
