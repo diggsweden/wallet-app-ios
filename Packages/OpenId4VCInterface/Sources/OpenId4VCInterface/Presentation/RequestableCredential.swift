@@ -12,7 +12,7 @@ public struct RequestableCredential: Equatable, Sendable {
   public init(
     format: String,
     vctValues: Set<String>,
-    claimPaths: Set<ClaimPath>
+    claimPaths: Set<ClaimPath>,
   ) {
     self.format = format
     self.vctValues = vctValues

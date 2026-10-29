@@ -1,12 +1,13 @@
 // SPDX-FileCopyrightText: 2026 Digg - Agency for digital government
 //
-// SPDX-License-Identifier: EUPL-1.2ˆ
+// SPDX-License-Identifier: EUPL-1.2
 
 import Foundation
 
-enum JwsError: LocalizedError {
+enum JwsError: LocalizedError, Equatable {
   case noCertificateChain
   case invalidCertificate
+  case unexpectedType(expected: String, actual: String?)
 
   var errorDescription: String? {
     switch self {
@@ -15,6 +16,9 @@ enum JwsError: LocalizedError {
 
       case .invalidCertificate:
         "The JWS certificate was invalid"
+
+      case let .unexpectedType(expected, actual):
+        "Expected JWS type \(expected) but got \(actual ?? "none")"
     }
   }
 }

@@ -11,7 +11,7 @@ extension RegistrationCertificate {
       name: name,
       country: country,
       descriptions: srvDescription.stringDict,
-      purpose: purpose.stringDict
+      purpose: purpose.stringDict,
     )
   }
 }

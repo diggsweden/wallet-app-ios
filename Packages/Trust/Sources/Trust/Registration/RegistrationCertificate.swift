@@ -48,6 +48,10 @@ public struct RegistrationCertificate: Codable {
     case certificatePolicy = "certificate_policy"
     case status = "status"
   }
+
+  public func isExpired(at date: Date) -> Bool {
+    date >= Date(timeIntervalSince1970: TimeInterval(exp))
+  }
 }
 
 // MARK: - Credential

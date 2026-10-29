@@ -94,9 +94,21 @@ public enum JwtUtil {
   public static func parseJws<T: Decodable>(
     from compactString: String,
     decoder: JSONDecoder = JSONDecoder(),
+    expectedType: JwtType? = nil,
     validateCertChain: ([SecCertificate]) throws -> SecKey,
   ) throws -> T {
     let jws = try JWS(jwsString: compactString)
+
+    if let expectedType {
+      guard let actualType = jws.protectedHeader.type,
+        normalizedType(actualType) == expectedType.rawValue
+      else {
+        throw JwsError.unexpectedType(
+          expected: expectedType.rawValue,
+          actual: jws.protectedHeader.type,
+        )
+      }
+    }
 
     guard let certificateChain = jws.protectedHeader.x509CertificateChain else {
       throw JwsError.noCertificateChain
@@ -116,6 +128,12 @@ public enum JwtUtil {
     }
 
     return try decoder.decode(T.self, from: jws.payload)
+  }
+
+  private static func normalizedType(_ type: String) -> String {
+    let lowercased = type.lowercased()
+    let prefix = "application/"
+    return lowercased.hasPrefix(prefix) ? String(lowercased.dropFirst(prefix.count)) : lowercased
   }
 
   public static func base64UrlDecode(_ base64url: String) -> Data? {
