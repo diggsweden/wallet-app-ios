@@ -6,6 +6,7 @@ import CredentialInterfaces
 import DesignSystem
 import SdJwt
 import SwiftUI
+import UIComponents
 
 struct CredentialDetailsView: View {
   @Environment(\.theme) private var theme

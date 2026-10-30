@@ -6,6 +6,7 @@ import QRScanner
 import SwiftAccessMechanism
 import SwiftUI
 import Trust
+import UIComponents
 import User
 import WalletGatewayInterface
 

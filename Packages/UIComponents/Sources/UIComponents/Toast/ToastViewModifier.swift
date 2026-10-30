@@ -1,0 +1,44 @@
+// SPDX-FileCopyrightText: 2026 Digg - Agency for digital government
+//
+// SPDX-License-Identifier: EUPL-1.2
+
+import SwiftUI
+
+struct ToastModifier: ViewModifier {
+  @State private var toastViewModel = ToastViewModel()
+
+  func body(content: Content) -> some View {
+    content
+      .environment(toastViewModel)
+      .overlay {
+        if let toast = toastViewModel.current {
+          ZStack {
+            Color.clear
+              .ignoresSafeArea()
+              .contentShape(Rectangle())
+              .onTapGesture {
+                toastViewModel.hide()
+              }
+
+            VStack {
+              ToastView(toast) {
+                toastViewModel.hide()
+              }
+              .padding(.top, 12)
+              .padding(.horizontal, 12)
+              Spacer()
+            }
+          }
+          .frame(maxWidth: .infinity, maxHeight: .infinity)
+          .transition(
+            .move(edge: .top)
+              .combined(with: .blurReplace)
+          )
+        }
+      }
+  }
+}
+
+extension View {
+  public var withToast: some View { modifier(ToastModifier()) }
+}

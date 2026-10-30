@@ -4,6 +4,7 @@
 
 import Testing
 
+@testable import UIComponents
 @testable import WalletDemo
 
 @MainActor

@@ -5,6 +5,7 @@
 import CredentialInterfaces
 import SwiftUI
 import Testing
+import UIComponents
 
 @testable import WalletDemo
 

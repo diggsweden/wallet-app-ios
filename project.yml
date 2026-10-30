@@ -83,6 +83,9 @@ packages:
   Trust:
     path: Packages/Trust
 
+  UIComponents:
+    path: Packages/UIComponents
+
 targets:
   WalletDemo:
     type: application
@@ -141,6 +144,8 @@ targets:
         product: Issuance
       - package: QRScanner
         product: QRScanner
+      - package: UIComponents
+        product: UIComponents
       - package: Trust
         product: Trust
     preBuildScripts:
@@ -275,3 +280,4 @@ schemes:
         - package: User/UserTests
         - package: QRScanner/QRScannerTests
         - package: Trust/TrustTests
+        - package: UIComponents/UIComponentsTests

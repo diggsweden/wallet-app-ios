@@ -4,6 +4,7 @@
 
 import DesignSystem
 import SwiftUI
+import UIComponents
 import WalletMacros
 
 struct WelcomeScreen: View {

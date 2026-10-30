@@ -6,6 +6,7 @@ import CredentialInterfaces
 import DesignSystem
 import SwiftAccessMechanism
 import SwiftUI
+import UIComponents
 import User
 import WalletGatewayInterface
 

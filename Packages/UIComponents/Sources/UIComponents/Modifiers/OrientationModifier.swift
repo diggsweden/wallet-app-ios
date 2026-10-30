@@ -1,0 +1,21 @@
+// SPDX-FileCopyrightText: 2026 Digg - Agency for digital government
+//
+// SPDX-License-Identifier: EUPL-1.2
+
+import SwiftUI
+
+private struct OrientationModifier: ViewModifier {
+  func body(content: Content) -> some View {
+    GeometryReader { g in
+      let isLandscape = g.size.width > g.size.height
+      content
+        .environment(\.orientation, isLandscape ? .landscape : .portrait)
+    }
+  }
+}
+
+extension View {
+  public var withOrientation: some View {
+    modifier(OrientationModifier())
+  }
+}

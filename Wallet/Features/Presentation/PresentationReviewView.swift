@@ -4,6 +4,7 @@
 
 import DesignSystem
 import SwiftUI
+import UIComponents
 
 struct PresentationReviewView: View {
   @Environment(\.theme) private var theme

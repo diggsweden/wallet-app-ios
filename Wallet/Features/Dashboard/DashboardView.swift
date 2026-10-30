@@ -6,6 +6,7 @@ import CredentialInterfaces
 import DesignSystem
 import SwiftAccessMechanism
 import SwiftUI
+import UIComponents
 
 struct DashboardView: View {
   let pid: SavedCredential?

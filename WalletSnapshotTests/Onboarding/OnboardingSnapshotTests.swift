@@ -5,6 +5,7 @@
 import Foundation
 import SwiftAccessMechanism
 import Testing
+import UIComponents
 import WalletGatewayInterface
 
 @testable import User
