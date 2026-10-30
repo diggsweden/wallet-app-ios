@@ -44,17 +44,11 @@ struct AccountResetView: View {
         .padding(.horizontal, theme.horizontalPadding)
         .padding(.vertical, Constants.contentVerticalPadding)
       }
-      .toolbar {
-        ToolbarItem(placement: .bottomBar) {
-          PrimaryButton(
-            "Jag förstår",
-            maxWidth: .infinity,
-            onClick: onAcknowledge,
-          )
-          .accessibilityHint("Fortsätt till registreringen")
-        }
-        .sharedBackgroundVisibilityHiddenIfPossible()
-      }
+      .primaryActionBar(
+        "Jag förstår",
+        accessibilityHint: "Fortsätt till registreringen",
+        action: onAcknowledge,
+      )
       .background(theme.colors.background.ignoresSafeArea())
       .onAppear {
         withAnimation(
