@@ -20,6 +20,7 @@ struct OnboardingRootView: View {
   @Environment(\.orientation) private var orientation
   @Environment(\.openURL) private var openURL
   @State private var viewModel: OnboardingViewModel
+  @State private var issuanceViewModel: IssuanceViewModel?
   @State private var isResetErrorAlertPresented = false
 
   init(
@@ -57,6 +58,7 @@ struct OnboardingRootView: View {
     .toolbar {
       toolbarContent
     }
+    .issuanceActionBar(viewModel.step == .issueCredential ? issuanceViewModel : nil)
     .backGesture(isEnabled: viewModel.canGoBack()) {
       viewModel.back()
     }
@@ -177,26 +179,17 @@ struct OnboardingRootView: View {
 
       case .pid:
         PidSetupView { credentialOfferUri in
-          viewModel.setCredentialOfferUri(credentialOfferUri)
+          startIssuance(with: credentialOfferUri)
           viewModel.next(from: .pid)
         }
         .padding(.top, 30)
 
       case .issueCredential:
-        if let uri = viewModel.context.credentialOfferUri {
-          IssuanceView(
-            credentialOfferUri: uri,
-            gatewayApiClient: gatewayApiClient,
-            hsmServerParameters: userSnapshot.hsmServerParameters,
-            actions: .init(
-              onSaveCredential: viewModel.saveCredential,
-              onComplete: viewModel.onCompleteOnboarding,
-              onDismiss: { await viewModel.reset() },
-            ),
-          )
+        if let issuanceViewModel {
+          IssuanceView(viewModel: issuanceViewModel)
         } else {
           PidSetupView { credentialOfferUri in
-            viewModel.setCredentialOfferUri(credentialOfferUri)
+            startIssuance(with: credentialOfferUri)
           }
         }
     }
@@ -234,6 +227,19 @@ struct OnboardingRootView: View {
         }
       }
     }
+  }
+
+  private func startIssuance(with credentialOfferUri: String) {
+    issuanceViewModel = IssuanceViewModel(
+      credentialOfferUri: credentialOfferUri,
+      gatewayApiClient: gatewayApiClient,
+      hsmServerParameters: userSnapshot.hsmServerParameters,
+      actions: .init(
+        onSaveCredential: viewModel.saveCredential,
+        onComplete: viewModel.onCompleteOnboarding,
+        onDismiss: { await viewModel.reset() },
+      ),
+    )
   }
 
   private func resetOnboarding() {
