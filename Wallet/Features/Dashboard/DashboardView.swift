@@ -64,15 +64,12 @@ struct DashboardView: View {
         }
       }
     }
-    .safeAreaBarIfPossible(edge: .bottom) {
-      PrimaryButton(
-        "Skanna QR-Kod",
-        icon: "qrcode.viewfinder",
-        maxWidth: .infinity,
-      ) {
-        router.presentedFullScreenCover = .camera
-      }
-      .padding(.horizontal, Constants.qrCodeButtonPadding)
+    .primaryActionBar(
+      "Skanna QR-Kod",
+      icon: "qrcode.viewfinder",
+      horizontalPadding: Constants.qrCodeButtonPadding,
+    ) {
+      router.presentedFullScreenCover = .camera
     }
     .background(.clear)
     .navigationBarTitleDisplayMode(.inline)
