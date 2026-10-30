@@ -8,6 +8,7 @@ import OpenId4VCInterface
 import SwiftAccessMechanism
 import SwiftUI
 import Trust
+import UIComponents
 import User
 
 struct PresentationView: View {

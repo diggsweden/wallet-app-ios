@@ -7,6 +7,7 @@ import CredentialInterfaces
 import DesignSystem
 import OpenId4VCInterface
 import SwiftUI
+import UIComponents
 
 struct IssuanceView: View {
   let viewModel: IssuanceViewModel
