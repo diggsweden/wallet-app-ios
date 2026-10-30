@@ -6,5 +6,4 @@ import Foundation
 
 struct OnboardingContext {
   var pin: String = ""
-  var credentialOfferUri: String?
 }
