@@ -6,6 +6,7 @@ import DesignSystem
 import SDWebImageSwiftUI
 import SwiftAccessMechanism
 import SwiftUI
+import UIComponents
 import WalletGatewayInterface
 
 struct WalletSetupView: View {

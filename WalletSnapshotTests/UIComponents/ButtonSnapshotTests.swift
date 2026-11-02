@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import Testing
+import UIComponents
 
 @testable import WalletDemo
 

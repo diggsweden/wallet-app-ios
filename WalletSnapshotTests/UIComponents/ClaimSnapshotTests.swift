@@ -7,6 +7,7 @@ import Foundation
 import Testing
 import UIKit
 
+@testable import UIComponents
 @testable import WalletDemo
 
 @MainActor

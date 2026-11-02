@@ -5,6 +5,7 @@
 import CredentialInterfaces
 import Foundation
 import Testing
+import UIComponents
 
 @testable import WalletDemo
 
@@ -14,12 +15,6 @@ struct DisplaySnapshotTests {
   @Test("Wallet title")
   func walletTitle() {
     assertThemedSnapshots(of: WalletTitleView())
-  }
-
-  @Test("Inline link")
-  func inlineLink() {
-    let url = URL(string: "https://www.digg.se")!
-    assertThemedSnapshots(of: InlineLink("Läs mer om din data", url: url))
   }
 
   @Test("Issuer display")

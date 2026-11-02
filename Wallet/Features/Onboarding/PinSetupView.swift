@@ -4,6 +4,7 @@
 
 import DesignSystem
 import SwiftUI
+import UIComponents
 
 struct PinSetupView: View {
   let bodyText: String

@@ -6,6 +6,7 @@ import SnapshotTesting
 import SwiftUI
 import Testing
 
+@testable import UIComponents
 @testable import WalletDemo
 
 @MainActor

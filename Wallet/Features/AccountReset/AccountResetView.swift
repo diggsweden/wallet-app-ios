@@ -4,6 +4,7 @@
 
 import DesignSystem
 import SwiftUI
+import UIComponents
 
 struct AccountResetView: View {
   @State private var rotateArrow: Bool = false

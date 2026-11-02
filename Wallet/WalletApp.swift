@@ -5,6 +5,7 @@
 import DesignSystem
 import SDWebImageWebPCoder
 import SwiftUI
+import UIComponents
 
 @main
 struct WalletApp: App {

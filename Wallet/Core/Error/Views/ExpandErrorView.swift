@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: EUPL-1.2
 
 import SwiftUI
+import UIComponents
 
 struct ExpandErrorView: View {
   let code: String

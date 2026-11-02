@@ -5,6 +5,7 @@
 import AuthenticationServices
 import DesignSystem
 import SwiftUI
+import UIComponents
 
 struct PidSetupView: View {
   @State private var viewModel: PidSetupViewModel
