@@ -13,6 +13,11 @@ struct ErrorReportView: View {
     NavigationStack {
       reportList
         .listStyle(.plain)
+        .softScrollEdgeEffectIfPossible(for: .bottom)
+        .primaryActionBar("Kopiera", icon: "document.on.clipboard") {
+          UIPasteboard.general.string = reportText
+          dismiss()
+        }
         .navigationTitle("Felrapport")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { toolbarContent }
@@ -72,21 +77,6 @@ private extension ErrorReportView {
           .accessibilityLabel("Dela felrapport")
       }
     }
-
-    ToolbarItem(placement: .bottomBar) {
-      HStack(spacing: .zero) {
-        PrimaryButton(
-          "Kopiera",
-          icon: "document.on.clipboard",
-          maxWidth: .infinity,
-          onClick: {
-            UIPasteboard.general.string = reportText
-            dismiss()
-          },
-        )
-      }
-    }
-    .sharedBackgroundVisibilityHiddenIfPossible()
   }
 
   func listRow(title: String, info: String) -> some View {
