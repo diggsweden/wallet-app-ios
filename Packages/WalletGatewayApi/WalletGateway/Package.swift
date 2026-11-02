@@ -21,7 +21,7 @@ let package = Package(
     .package(url: "https://github.com/apple/swift-http-types", from: "1.5.1"),
     .package(url: "https://github.com/apple/swift-openapi-runtime", from: "1.12.1"),
     .package(url: "https://github.com/apple/swift-openapi-urlsession", from: "1.3.1"),
-    .package(url: "https://github.com/apple/swift-openapi-generator", from: "1.13.1"),
+    .package(url: "https://github.com/apple/swift-openapi-generator", from: "1.14.3"),
     .package(
       url: "https://github.com/diggsweden/SwiftAccessMechanism.git",
       branch: "chore/spm-vendored-xcframework",
