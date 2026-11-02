@@ -7,6 +7,7 @@ import Foundation
 import JSONWebAlgorithms
 import JSONWebEncryption
 import JSONWebKey
+import JSONWebSignature
 import JSONWebToken
 
 enum JwtSigningError: Error {
@@ -88,6 +89,51 @@ public enum JwtUtil {
   ) throws -> T {
     let jwt = try JWT(jwtString: compactString)
     return try decoder.decode(T.self, from: jwt.payload)
+  }
+
+  public static func parseJws<T: Decodable>(
+    from compactString: String,
+    decoder: JSONDecoder = JSONDecoder(),
+    expectedType: JwtType? = nil,
+    validateCertChain: ([SecCertificate]) throws -> SecKey,
+  ) throws -> T {
+    let jws = try JWS(jwsString: compactString)
+
+    if let expectedType {
+      guard let actualType = jws.protectedHeader.type,
+        normalizedType(actualType) == expectedType.rawValue
+      else {
+        throw JwsError.unexpectedType(
+          expected: expectedType.rawValue,
+          actual: jws.protectedHeader.type,
+        )
+      }
+    }
+
+    guard let certificateChain = jws.protectedHeader.x509CertificateChain else {
+      throw JwsError.noCertificateChain
+    }
+
+    let certificates: [SecCertificate] = certificateChain.compactMap { cert in
+      guard let data = Data(base64UrlEncoded: cert) else {
+        return nil
+      }
+
+      return SecCertificateCreateWithData(nil, data as CFData)
+    }
+
+    let publicKey = try validateCertChain(certificates)
+    guard try jws.verify(key: publicKey) else {
+      throw JwsError.invalidCertificate
+    }
+
+    return try decoder.decode(T.self, from: jws.payload)
+  }
+
+  private static func normalizedType(_ type: String) -> String {
+    let lowercased = type.lowercased()
+    let prefix = "application/"
+    return lowercased.hasPrefix(prefix) ? String(lowercased.dropFirst(prefix.count)) : lowercased
   }
 
   public static func base64UrlDecode(_ base64url: String) -> Data? {

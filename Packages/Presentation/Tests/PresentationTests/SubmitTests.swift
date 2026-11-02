@@ -46,6 +46,7 @@ struct SubmitTests {
         encryption: encryption,
       ),
       credentials: [SampleCredential.saved()],
+      verifierUiModels: [Fixtures.verifierUiModel],
     )
   }
 
@@ -124,6 +125,7 @@ struct SubmitTests {
     let resolved = try PresentationSession.match(
       Fixtures.request([Fixtures.query(id: "pid")]),
       credentials: [SampleCredential.saved(keyId: "hsm-key-1")],
+      verifierUiModels: [Fixtures.verifierUiModel],
     )
 
     _ = try await submit(resolved, signer: signer)
@@ -142,6 +144,7 @@ struct SubmitTests {
         SampleCredential.saved(keyId: "pid-key"),
         SampleCredential.saved(type: "urn:other", keyId: "other-key"),
       ],
+      verifierUiModels: [Fixtures.verifierUiModel],
     )
 
     let submission = try await submit(resolved, selectedIds: ["pid", "other"], signer: signer)

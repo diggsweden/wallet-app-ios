@@ -7,6 +7,7 @@ import CredentialInterfacesTestSupport
 import Foundation
 import Jose
 import OpenID4VP
+import OpenId4VCInterface
 import WalletMacros
 
 @testable import Presentation
@@ -16,17 +17,26 @@ import WalletMacros
 enum Fixtures {
   static let responseUrl = #URL("https://verifier.example/response")
 
+  static let verifierUiModel = VerifierUiModel(
+    name: "Example Verifier",
+    country: "SE",
+    descriptions: [:],
+    purpose: [:],
+  )
+
   static func query(
     id: String,
+    format: String = "dc+sd-jwt",
     claims: [String] = ["given_name"],
     required: Bool = true,
     vctValues: [String] = [SampleCredential.pidType],
   ) -> Presentation.CredentialQuery {
     CredentialQuery(
       id: id,
+      format: format,
       claimPaths: Set(claims.map { CredentialInterfaces.ClaimPath([.claim(name: $0)]) }),
       required: required,
-      vctValues: vctValues,
+      vctValues: Set(vctValues),
     )
   }
 
@@ -42,6 +52,8 @@ enum Fixtures {
       nonce: "nonce-1",
       state: state,
       encryption: encryption,
+      registrationCertificates: [],
+      legalName: nil,
     )
   }
 
