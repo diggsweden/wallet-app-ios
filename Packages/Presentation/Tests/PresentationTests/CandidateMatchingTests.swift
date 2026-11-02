@@ -14,6 +14,7 @@ struct CandidateMatchingTests {
     let resolved = try PresentationSession.match(
       Fixtures.request([Fixtures.query(id: "pid")]),
       credentials: [SampleCredential.saved()],
+      verifierUiModels: [Fixtures.verifierUiModel],
     )
 
     #expect(resolved.candidates.count == 1)
@@ -29,6 +30,7 @@ struct CandidateMatchingTests {
     let resolved = try PresentationSession.match(
       Fixtures.request([Fixtures.query(id: "pid", claims: ["given_name", "birthdate"])]),
       credentials: [SampleCredential.saved()],
+      verifierUiModels: [Fixtures.verifierUiModel],
     )
 
     let disclosed = try #require(resolved.disclosedCredentials["pid"]?.serialisation)
@@ -50,6 +52,7 @@ struct CandidateMatchingTests {
         )
       ]),
       credentials: [SampleCredential.saved()],
+      verifierUiModels: [Fixtures.verifierUiModel],
     )
 
     #expect(resolved.candidates[0].claims.map(\.id) == ["address"])
@@ -65,6 +68,7 @@ struct CandidateMatchingTests {
     let resolved = try PresentationSession.match(
       Fixtures.request([Fixtures.query(id: "pid")]),
       credentials: [other, pid],
+      verifierUiModels: [Fixtures.verifierUiModel],
     )
 
     #expect(resolved.candidates[0].claims[0].displayName == "Pid")
@@ -76,6 +80,7 @@ struct CandidateMatchingTests {
         Fixtures.query(id: "must", required: true), Fixtures.query(id: "may", required: false),
       ]),
       credentials: [SampleCredential.saved()],
+      verifierUiModels: [Fixtures.verifierUiModel],
     )
 
     #expect(resolved.candidates.map(\.id) == ["must", "may"])
@@ -86,6 +91,7 @@ struct CandidateMatchingTests {
     let resolved = try PresentationSession.match(
       Fixtures.request([Fixtures.query(id: "pid")]),
       credentials: [SampleCredential.saved()],
+      verifierUiModels: [Fixtures.verifierUiModel],
     )
 
     #expect(resolved.responseUrl == Fixtures.responseUrl)
@@ -98,7 +104,11 @@ struct CandidateMatchingTests {
     let data = Fixtures.request([Fixtures.query(id: "pid", vctValues: ["urn:missing"])])
 
     #expect(throws: PresentationError.noMatchingCredential) {
-      try PresentationSession.match(data, credentials: [SampleCredential.saved()])
+      try PresentationSession.match(
+        data,
+        credentials: [SampleCredential.saved()],
+        verifierUiModels: [Fixtures.verifierUiModel],
+      )
     }
   }
 
@@ -108,7 +118,11 @@ struct CandidateMatchingTests {
     ])
 
     #expect(throws: PresentationError.noMatchingCredential) {
-      try PresentationSession.match(data, credentials: [SampleCredential.saved()])
+      try PresentationSession.match(
+        data,
+        credentials: [SampleCredential.saved()],
+        verifierUiModels: [Fixtures.verifierUiModel],
+      )
     }
   }
 
@@ -116,7 +130,11 @@ struct CandidateMatchingTests {
     let data = Fixtures.request([Fixtures.query(id: "pid", vctValues: [])])
 
     #expect(throws: PresentationError.noMatchingCredential) {
-      try PresentationSession.match(data, credentials: [SampleCredential.saved()])
+      try PresentationSession.match(
+        data,
+        credentials: [SampleCredential.saved()],
+        verifierUiModels: [Fixtures.verifierUiModel],
+      )
     }
   }
 
@@ -127,7 +145,11 @@ struct CandidateMatchingTests {
 
     withKnownIssue("eudi-lib-sdjwt-swift silently drops unsatisfiable claim paths") {
       #expect(throws: PresentationError.noMatchingClaims) {
-        try PresentationSession.match(data, credentials: [SampleCredential.saved()])
+        try PresentationSession.match(
+          data,
+          credentials: [SampleCredential.saved()],
+          verifierUiModels: [Fixtures.verifierUiModel],
+        )
       }
     }
   }
@@ -139,6 +161,7 @@ struct CandidateMatchingTests {
         Fixtures.query(id: "b", claims: ["family_name"]),
       ]),
       credentials: [SampleCredential.saved()],
+      verifierUiModels: [Fixtures.verifierUiModel],
     )
 
     #expect(resolved.candidates.map(\.id) == ["a", "b"])
@@ -156,6 +179,7 @@ struct CandidateMatchingTests {
     let resolved = try PresentationSession.match(
       Fixtures.request([Fixtures.query(id: "pid")]),
       credentials: [SampleCredential.saved(keyId: "hsm-key-1")],
+      verifierUiModels: [Fixtures.verifierUiModel],
     )
 
     #expect(resolved.disclosedCredentials["pid"]?.bindingKeyId == ProofKey.ID("hsm-key-1"))
@@ -171,6 +195,7 @@ struct CandidateMatchingTests {
         SampleCredential.saved(keyId: "pid-key"),
         SampleCredential.saved(type: "urn:other", keyId: "other-key"),
       ],
+      verifierUiModels: [Fixtures.verifierUiModel],
     )
 
     #expect(resolved.disclosedCredentials["pid"]?.bindingKeyId == ProofKey.ID("pid-key"))

@@ -34,7 +34,10 @@ struct RequestDataMappingTests {
   @Test func `a direct_post request is kept with its response url, client, nonce and state`()
     throws
   {
-    let data = try OpenId4VpRequestResolver.requestData(from: vpTokenData())
+    let data = try OpenId4VpRequestResolver.requestData(
+      from: vpTokenData(),
+      registrationCertificates: [],
+    )
 
     #expect(data.responseUrl == Fixtures.responseUrl)
     #expect(data.clientId == "verifier-1")
@@ -45,7 +48,10 @@ struct RequestDataMappingTests {
   }
 
   @Test func `a request without state is kept without one`() throws {
-    let data = try OpenId4VpRequestResolver.requestData(from: vpTokenData(state: nil))
+    let data = try OpenId4VpRequestResolver.requestData(
+      from: vpTokenData(state: nil),
+      registrationCertificates: [],
+    )
 
     #expect(data.state == nil)
   }
@@ -65,7 +71,8 @@ struct RequestDataMappingTests {
       from: vpTokenData(
         responseMode: .directPostJWT(responseURI: Fixtures.responseUrl),
         encryption: specification,
-      )
+      ),
+      registrationCertificates: [],
     )
 
     let encryption = try #require(data.encryption)
