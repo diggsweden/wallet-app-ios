@@ -9,18 +9,20 @@ import Trust
 
 @testable import Issuance
 
-/// Hands out no anchors and records which service types were asked for.
+/// Hands out no anchors and counts how often all anchors were asked for.
 private actor RecordingTrustStore: TrustStoreInterface {
-  private(set) var requestedServiceTypes: [String] = []
+  private(set) var allTrustAnchorsLookups = 0
 
-  func getTrustAnchors(for serviceType: String) -> [SecCertificate] {
-    requestedServiceTypes.append(serviceType)
+  func getTrustAnchors(for serviceType: String) -> [SecCertificate] { [] }
+
+  func getAllTrustAnchors() -> [SecCertificate] {
+    allTrustAnchorsLookups += 1
     return []
   }
 }
 
 struct IssuerTrustTests {
-  @Test func `signed metadata is preferred and checked against the access anchors`() throws {
+  @Test func `signed metadata is preferred and checked against the trust store`() {
     let policy = IssuerMetadataPolicy.preferSigned(trustStore: RecordingTrustStore())
 
     guard case .preferSigned(.byCertificateChain(let chainTrust)) = policy else {
@@ -28,16 +30,15 @@ struct IssuerTrustTests {
       return
     }
 
-    let trust = try #require(chainTrust as? TrustStoreCertificateChainTrust)
-    #expect(trust.serviceType == .access)
+    #expect(chainTrust is TrustStoreCertificateChainTrust)
   }
 
-  @Test func `a chain is not trusted without anchors for its service type`() async {
+  @Test func `a chain is not trusted without anchors`() async {
     let trustStore = RecordingTrustStore()
-    let trust = TrustStoreCertificateChainTrust(trustStore: trustStore, serviceType: .access)
+    let trust = TrustStoreCertificateChainTrust(trustStore: trustStore)
 
     #expect(await trust.isValid(chain: ["MIIB"]) == false)
-    #expect(await trustStore.requestedServiceTypes == [ServiceType.access.rawValue])
+    #expect(await trustStore.allTrustAnchorsLookups == 1)
   }
 
   @Test func `only registration certificate attestations are read from issuer_info`() throws {
@@ -64,7 +65,7 @@ struct IssuerTrustTests {
 
     try await Fixtures.issuerMetadata().validateRegistrationCertificates(trustStore: trustStore)
 
-    #expect(await trustStore.requestedServiceTypes.isEmpty)
+    #expect(await trustStore.allTrustAnchorsLookups == 0)
   }
 
   @Test func `an unverifiable registration certificate is rejected`() async throws {
@@ -76,6 +77,6 @@ struct IssuerTrustTests {
     await #expect(throws: (any Error).self) {
       try await metadata.validateRegistrationCertificates(trustStore: trustStore)
     }
-    #expect(await trustStore.requestedServiceTypes == [ServiceType.registration.rawValue])
+    #expect(await trustStore.allTrustAnchorsLookups == 1)
   }
 }

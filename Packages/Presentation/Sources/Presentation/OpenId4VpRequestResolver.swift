@@ -9,24 +9,27 @@ import Jose
 import OpenID4VP
 import OpenId4VCInterface
 import Trust
+import X509
 
 struct OpenId4VpRequestResolver {
   func resolve(
     url: URL,
-    accessTrustAnchors: [SecCertificate],
-    registrationTrustAnchors: [SecCertificate],
+    trustAnchors: [SecCertificate],
   ) async throws -> PresentationRequestData {
     let certificateTrust: CertificateTrust = { certificateChain in
-      validateAccessCertificates(
+      return validateAccessCertificates(
         certificateChain: certificateChain,
-        trustAnchors: accessTrustAnchors,
+        trustAnchors: trustAnchors,
       )
     }
     let (secKey, webKey) = try generateKey()
     let config = OpenId4VPConfiguration(
       privateKey: secKey,
       publicWebKeySet: WebKeySet(keys: [webKey]),
-      supportedClientIdSchemes: [.x509SanDns(trust: certificateTrust)],
+      supportedClientIdSchemes: [
+        .x509SanDns(trust: certificateTrust),
+        .x509Hash(trust: certificateTrust),
+      ],
       responseEncryptionConfiguration:
         .supported(supportedAlgorithms: [.init(.ECDH_ES)], supportedMethods: [.init(.A128GCM)]),
     )
@@ -47,20 +50,47 @@ struct OpenId4VpRequestResolver {
           throw PresentationError.resolutionFailed("\(error)")
       }
 
-    let certs: [RegistrationCertificate] =
-      if let verifierInfo = resolvedRequest.request.verifierInfo {
+    let registrationCertificates = try resolveCertificates(
+      from: resolvedRequest,
+      with: trustAnchors,
+    )
+
+    return try Self.requestData(
+      from: resolvedRequest.request,
+      registrationCertificates: registrationCertificates,
+    )
+  }
+
+  private func resolveCertificates(
+    from request: ResolvedRequestData,
+    with trustAnchors: [SecCertificate],
+  ) throws -> [RegistrationCertificate] {
+    let regCerts: [RegistrationCertificate] =
+      if let verifierInfo = request.request.verifierInfo {
         try extractRegistrationCertificates(
           verifierInfo: verifierInfo,
-          trustAnchors: registrationTrustAnchors,
+          trustAnchors: trustAnchors,
         )
       } else {
         []
       }
 
-    return try Self.requestData(
-      from: resolvedRequest.request,
-      registrationCertificates: certs,
-    )
+    let accessCert: Certificate? =
+      switch request.client {
+        case let .x509Hash(_, cert), let .x509SanDns(_, certificate: cert):
+          cert
+
+        default:
+          nil
+      }
+
+    for cert in regCerts {
+      guard cert.sub == accessCert?.subject.description else {
+        throw PresentationError.keyBindingEncodingFailed
+      }
+    }
+
+    return regCerts
   }
 
   private func generateKey() throws -> (SecKey, WebKeySet.Key) {

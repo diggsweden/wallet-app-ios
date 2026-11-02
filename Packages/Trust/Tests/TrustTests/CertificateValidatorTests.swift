@@ -38,6 +38,17 @@ struct CertificateValidatorTests {
     }
   }
 
+  @Test func `a pem chain issued by a trust anchor is valid`() throws {
+    let root = try Fixtures.certificate(Fixtures.rootCertificate)
+
+    #expect(throws: Never.self) {
+      try CertificateValidator.validate(
+        base64CertChain: [Fixtures.pem(of: Fixtures.leafCertificate)],
+        with: [root],
+      )
+    }
+  }
+
   @Test func `a chain with an undecodable certificate is rejected`() throws {
     let root = try Fixtures.certificate(Fixtures.rootCertificate)
 

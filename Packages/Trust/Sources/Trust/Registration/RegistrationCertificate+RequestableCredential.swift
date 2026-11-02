@@ -7,12 +7,13 @@ import OpenId4VCInterface
 
 extension RegistrationCertificate {
   public var requestableCredentials: [RequestableCredential] {
-    credentials.map { credential in
-      RequestableCredential(
-        format: credential.format,
-        vctValues: Set(credential.meta.vctValues),
-        claimPaths: Set(credential.claim.map(\.path)),
-      )
-    }
+    (credentials ?? [])
+      .map { credential in
+        RequestableCredential(
+          format: credential.format,
+          vctValues: Set(credential.meta.vctValues ?? []),
+          claimPaths: Set(credential.claim.map(\.path)),
+        )
+      }
   }
 }

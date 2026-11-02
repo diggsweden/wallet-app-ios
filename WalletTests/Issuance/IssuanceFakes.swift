@@ -163,6 +163,7 @@ actor FakeProofKeyManager: ProofSigner, ProofKeyStore {
 
 struct FakeTrustStore: TrustStoreInterface {
   func getTrustAnchors(for serviceType: String) -> [SecCertificate] { [] }
+  func getAllTrustAnchors() -> [SecCertificate] { [] }
 }
 
 struct FakeGateway: GatewayApi, HSMTransport {

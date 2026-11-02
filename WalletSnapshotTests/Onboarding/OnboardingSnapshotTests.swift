@@ -79,6 +79,7 @@ private extension OnboardingSnapshotTests {
 
 private struct SnapshotTrustStore: TrustStoreInterface {
   func getTrustAnchors(for serviceType: String) -> [SecCertificate] { [] }
+  func getAllTrustAnchors() -> [SecCertificate] { [] }
 }
 
 private struct SnapshotGateway: GatewayApi, HSMTransport {

@@ -6,4 +6,5 @@ import Foundation
 
 public protocol TrustStoreInterface: Sendable {
   func getTrustAnchors(for serviceType: String) async throws -> [SecCertificate]
+  func getAllTrustAnchors() async throws -> [SecCertificate]
 }

@@ -9,8 +9,6 @@ import Jose
 import OpenID4VCI
 import OpenId4VCInterface
 
-/// Provisions the Wallet Instance Attestation used for attestation-based client authentication,
-/// bound to an ephemeral key that also signs the attestation PoP.
 actor WalletAttestationProvisioner {
   private struct Expiry: Decodable {
     let exp: TimeInterval
@@ -52,14 +50,11 @@ actor WalletAttestationProvisioner {
     )
   }
 
-  // The library asks for the attestation more than once per request,
-  // so it is reused until it expires.
   func clientAttestation() async throws -> ClientAttestationJWT {
     if let cached, cached.expiresAt > .now {
       return cached.attestation
     }
 
-    // The gateway requires a key ID on the attested key.
     var publicKey = WalletJoseJWK(privateKey.publicKey)
     publicKey.keyID = try publicKey.thumbprint()
 
@@ -73,7 +68,6 @@ actor WalletAttestationProvisioner {
 }
 
 extension IdentityAndAccessManagementMetadata {
-  /// Whether the authorization server accepts a Wallet Instance Attestation signed with ES256.
   var supportsWalletAttestation: Bool {
     tokenEndpointAuthMethodsSupported.contains("attest_jwt_client_auth")
       && clientAttestationSigningAlgValuesSupported.contains { algorithm in

@@ -7,25 +7,25 @@ import Foundation
 
 // MARK: - Welcome
 public struct RegistrationCertificate: Codable {
-  let name: String
-  let sub: String
-  let country: String
-  let iat: Int
-  let exp: Int
-  let registryURI: String
-  let srvDescription: [Display]
-  let entitlements: [String]
-  let purpose: [Display]
-  let credentials: [Credential]
-  let serviceIdentifier: String
-  let intendedUseID: String
-  let privacyPolicy: String
-  let infoURI: String
-  let supportURI: String
-  let supervisoryAuthority: SupervisoryAuthority
-  let policyID: [String]
-  let certificatePolicy: String
-  let status: Status
+  let name: String?
+  public let sub: String?
+  let country: String?
+  let iat: Int?
+  let exp: Int?
+  let registryURI: String?
+  let srvDescription: [Display]?
+  let entitlements: [String]?
+  let purpose: [Display]?
+  let credentials: [Credential]?
+  let serviceIdentifier: String?
+  let intendedUseID: String?
+  let privacyPolicy: String?
+  let infoURI: String?
+  let supportURI: String?
+  let supervisoryAuthority: SupervisoryAuthority?
+  let policyID: [String]?
+  let certificatePolicy: String?
+  let status: Status?
 
   enum CodingKeys: String, CodingKey {
     case name = "name"
@@ -50,7 +50,10 @@ public struct RegistrationCertificate: Codable {
   }
 
   public func isExpired(at date: Date) -> Bool {
-    date >= Date(timeIntervalSince1970: TimeInterval(exp))
+    guard let exp else {
+      return false
+    }
+    return date >= Date(timeIntervalSince1970: TimeInterval(exp))
   }
 }
 
@@ -68,10 +71,12 @@ struct Claim: Codable {
 
 // MARK: - Meta
 struct Meta: Codable {
-  let vctValues: [String]
+  let vctValues: [String]?
+  let docTypeValue: String?
 
   enum CodingKeys: String, CodingKey {
     case vctValues = "vct_values"
+    case docTypeValue = "doctype_value"
   }
 }
 
@@ -98,7 +103,7 @@ struct StatusList: Codable {
 
 // MARK: - SupervisoryAuthority
 struct SupervisoryAuthority: Codable {
-  let name: String
-  let country: String
-  let email: String
+  let name: String?
+  let country: String?
+  let email: String?
 }

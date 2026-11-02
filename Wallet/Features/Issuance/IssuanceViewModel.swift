@@ -41,7 +41,7 @@ final class IssuanceViewModel {
       issuanceFlow
       ?? IssuanceSession(
         config: IssuanceConfig(
-          clientId: "wallet-dev",
+          clientId: "wallet-app",
           redirectUri: #URL("wallet-app://authorize"),
         ),
         walletAttestations: WalletInstanceAttestationProvider(gatewayApiClient: gatewayApiClient),

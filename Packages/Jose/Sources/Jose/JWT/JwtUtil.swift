@@ -97,7 +97,7 @@ public enum JwtUtil {
     expectedType: JwtType? = nil,
     validateCertChain: ([SecCertificate]) throws -> SecKey,
   ) throws -> T {
-    let jws = try JWS(jwsString: compactString)
+    let jws = try JWS(jwsString: compactSerialization(of: compactString))
 
     if let expectedType {
       guard let actualType = jws.protectedHeader.type,
@@ -115,7 +115,7 @@ public enum JwtUtil {
     }
 
     let certificates: [SecCertificate] = certificateChain.compactMap { cert in
-      guard let data = Data(base64UrlEncoded: cert) else {
+      guard let data = Data(encodedCertificate: cert) else {
         return nil
       }
 
@@ -138,5 +138,20 @@ public enum JwtUtil {
 
   public static func base64UrlDecode(_ base64url: String) -> Data? {
     Data(base64UrlEncoded: base64url)
+  }
+
+  private static func compactSerialization(of jws: String) throws -> String {
+    if jws.contains(".") {
+      return jws
+    }
+
+    guard
+      let data = Data(base64UrlEncoded: jws),
+      let decoded = String(data: data, encoding: .utf8)
+    else {
+      throw JwsError.invalidEncoding
+    }
+
+    return decoded
   }
 }

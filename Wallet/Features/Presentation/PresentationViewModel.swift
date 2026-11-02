@@ -46,12 +46,7 @@ final class PresentationViewModel {
       let resolved = try await flow.resolve(
         url: url,
         credentials: credentials,
-        accessTrustAnchors: await trustStore.getTrustAnchors(
-          for: ServiceType.access.rawValue
-        ),
-        registrationTrustAnchors: await trustStore.getTrustAnchors(
-          for: ServiceType.registration.rawValue
-        ),
+        trustAnchors: await trustStore.getAllTrustAnchors(),
       )
       self.resolved = resolved
 

@@ -12,7 +12,7 @@ public enum CertificateValidator {
   ) throws -> SecKey {
     let certificates = try base64CertChain.map { encoded in
       guard
-        let data = Data(base64UrlEncoded: encoded),
+        let data = Data(encodedCertificate: encoded),
         let certificate = SecCertificateCreateWithData(nil, data as CFData)
       else {
         throw ValidationError.invalidCertificate

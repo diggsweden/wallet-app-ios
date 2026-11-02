@@ -7,15 +7,12 @@ import Jose
 import OpenID4VCI
 import Trust
 
-/// Trusts a certificate chain that validates against the trust anchors of a service type.
-/// The anchors are only fetched once a chain needs checking.
 struct TrustStoreCertificateChainTrust: CertificateChainTrust {
   let trustStore: any TrustStoreInterface
-  let serviceType: ServiceType
 
   func isValid(chain: [String]) async -> Bool {
     do {
-      let trustAnchors = try await trustStore.getTrustAnchors(for: serviceType.rawValue)
+      let trustAnchors = try await trustStore.getAllTrustAnchors()
       _ = try CertificateValidator.validate(base64CertChain: chain, with: trustAnchors)
       return true
     } catch {
@@ -25,15 +22,10 @@ struct TrustStoreCertificateChainTrust: CertificateChainTrust {
 }
 
 extension IssuerMetadataPolicy {
-  /// Signed metadata is verified against the access certificate anchors; unsigned metadata is
-  /// still accepted.
   static func preferSigned(trustStore: any TrustStoreInterface) -> IssuerMetadataPolicy {
     .preferSigned(
       issuerTrust: .byCertificateChain(
-        certificateChainTrust: TrustStoreCertificateChainTrust(
-          trustStore: trustStore,
-          serviceType: .access,
-        )
+        certificateChainTrust: TrustStoreCertificateChainTrust(trustStore: trustStore)
       )
     )
   }
@@ -47,16 +39,12 @@ extension CredentialIssuerMetadata {
       .map(\.data) ?? []
   }
 
-  /// Verifies every registration certificate against the registration anchors.
-  /// An issuer without registration certificates passes without a trust store lookup.
   func validateRegistrationCertificates(trustStore: any TrustStoreInterface) async throws {
     guard !registrationCertificates.isEmpty else {
       return
     }
 
-    let trustAnchors = try await trustStore.getTrustAnchors(
-      for: ServiceType.registration.rawValue
-    )
+    let trustAnchors = try await trustStore.getAllTrustAnchors()
 
     for certificate in registrationCertificates {
       let _: VerifiedClaims = try JwtUtil.parseJws(from: certificate) { certificateChain in
@@ -66,5 +54,4 @@ extension CredentialIssuerMetadata {
   }
 }
 
-// Only the signature and chain are checked for now; the issuer's registration claims are not read.
 private struct VerifiedClaims: Decodable {}

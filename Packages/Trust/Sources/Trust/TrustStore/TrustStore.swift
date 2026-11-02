@@ -11,6 +11,7 @@ public actor TrustStore: TrustStoreInterface {
   private let walletGatewayApi: GatewayApi
   private let trustListFetcher: any TrustListFetching
   private var trustAnchorsTask: Task<TrustAnchorsByServiceType, Error>?
+  private var allTrustAnchors: [SecCertificate] = []
 
   public init(
     walletGatewayApi: GatewayApi,
@@ -40,6 +41,12 @@ public actor TrustStore: TrustStoreInterface {
     }
 
     return trustAnchors
+  }
+
+  public func getAllTrustAnchors() async throws -> [SecCertificate] {
+    _ = try await loadTrustAnchors()
+
+    return allTrustAnchors
   }
 
   private func loadTrustAnchors() async throws -> TrustAnchorsByServiceType {
@@ -94,6 +101,8 @@ public actor TrustStore: TrustStoreInterface {
     if trustAnchorsByServiceType.isEmpty {
       throw TrustStoreError.noTrustAnchorsLoaded
     }
+
+    allTrustAnchors = trustAnchorsByServiceType.values.flatMap(\.self)
 
     return trustAnchorsByServiceType
   }
