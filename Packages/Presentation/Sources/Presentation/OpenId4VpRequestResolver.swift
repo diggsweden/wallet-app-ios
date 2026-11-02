@@ -65,17 +65,16 @@ struct OpenId4VpRequestResolver {
     from request: ResolvedRequestData,
     with trustAnchors: [SecCertificate],
   ) throws -> [RegistrationCertificate] {
-    let regCerts: [RegistrationCertificate] =
-      if let verifierInfo = request.request.verifierInfo {
-        try extractRegistrationCertificates(
-          verifierInfo: verifierInfo,
-          trustAnchors: trustAnchors,
-        )
-      } else {
-        []
-      }
+    guard let verifierInfo = request.request.verifierInfo else {
+      return []
+    }
 
-    let accessCert: Certificate? =
+    let registrationCertificates = try extractRegistrationCertificates(
+      verifierInfo: verifierInfo,
+      trustAnchors: trustAnchors,
+    )
+
+    let accessCertificate: Certificate? =
       switch request.client {
         case let .x509Hash(_, cert), let .x509SanDns(_, certificate: cert):
           cert
@@ -84,13 +83,16 @@ struct OpenId4VpRequestResolver {
           nil
       }
 
-    for cert in regCerts {
-      guard cert.sub == accessCert?.subject.description else {
-        throw PresentationError.keyBindingEncodingFailed
-      }
+    guard
+      let organizationIdentifier = accessCertificate?.organizationIdentifier,
+      registrationCertificates.allSatisfy({ $0.sub == organizationIdentifier })
+    else {
+      throw PresentationError.resolutionFailed(
+        "Registration certificate subject does not match access certificate"
+      )
     }
 
-    return regCerts
+    return registrationCertificates
   }
 
   private func generateKey() throws -> (SecKey, WebKeySet.Key) {
@@ -244,5 +246,14 @@ struct OpenId4VpRequestResolver {
     }
 
     return matchingSets.contains { $0.required ?? true }
+  }
+}
+
+extension Certificate {
+  fileprivate var organizationIdentifier: String? {
+    subject
+      .joined()
+      .first { $0.type == [2, 5, 4, 97] }
+      .flatMap { String($0.value) }
   }
 }

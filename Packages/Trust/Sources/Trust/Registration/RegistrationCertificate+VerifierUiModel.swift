@@ -9,7 +9,7 @@ extension RegistrationCertificate {
   public var verifierUiModel: VerifierUiModel {
     VerifierUiModel(
       name: name ?? "",
-      country: country ?? "",
+      country: country,
       descriptions: [:],
       purpose: purpose?.stringDict ?? [:],
     )

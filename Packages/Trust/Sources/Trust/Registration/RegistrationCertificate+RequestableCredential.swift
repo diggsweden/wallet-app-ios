@@ -12,7 +12,7 @@ extension RegistrationCertificate {
         RequestableCredential(
           format: credential.format,
           vctValues: Set(credential.meta.vctValues ?? []),
-          claimPaths: Set(credential.claim.map(\.path)),
+          claimPaths: Set(credential.claim?.map(\.path) ?? []),
         )
       }
   }
