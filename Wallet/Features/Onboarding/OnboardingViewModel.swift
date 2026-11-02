@@ -76,10 +76,6 @@ final class OnboardingViewModel {
     }
   }
 
-  func setCredentialOfferUri(_ credentialOfferUri: String) {
-    context.credentialOfferUri = credentialOfferUri
-  }
-
   func onCompleteOnboarding() async throws {
     try await actions.onComplete()
   }

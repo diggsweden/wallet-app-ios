@@ -6,32 +6,10 @@ import AuthenticationServices
 import CredentialInterfaces
 import DesignSystem
 import OpenId4VCInterface
-import SwiftAccessMechanism
 import SwiftUI
-import User
-import WalletGatewayInterface
 
 struct IssuanceView: View {
-  @State private var viewModel: IssuanceViewModel
-  @Environment(\.theme) private var theme
-  @Environment(Router.self) private var router
-  @Environment(\.webAuthenticationSession) private var webAuthSession
-
-  init(
-    credentialOfferUri: String,
-    gatewayApiClient: any GatewayApi & HSMTransport,
-    hsmServerParameters: HsmServerParameters?,
-    actions: IssuanceActions,
-  ) {
-    _viewModel = State(
-      wrappedValue: .init(
-        credentialOfferUri: credentialOfferUri,
-        gatewayApiClient: gatewayApiClient,
-        hsmServerParameters: hsmServerParameters,
-        actions: actions,
-      )
-    )
-  }
+  let viewModel: IssuanceViewModel
 
   var body: some View {
     VStack {
@@ -65,13 +43,6 @@ struct IssuanceView: View {
 private extension IssuanceView {
   @ContentBuilder
   var issuanceToolbar: some ToolbarContent {
-    if case .step(let step) = viewModel.state {
-      ToolbarItem(placement: .bottomBar) {
-        issuanceBottomToolbarButton(for: step)
-      }
-      .sharedBackgroundVisibilityHiddenIfPossible()
-    }
-
     if shouldShowDismissButton {
       ToolbarItem(placement: .destructiveAction) {
         Button {
@@ -83,28 +54,6 @@ private extension IssuanceView {
             .accessibilityLabel("Avbryt")
         }
       }
-    }
-  }
-
-  @ContentBuilder
-  func issuanceBottomToolbarButton(for step: IssuanceStep) -> some View {
-    switch step {
-      case .preparingToAuthorize:
-        PrimaryButton("Logga in", maxWidth: .infinity) {
-          Task {
-            await viewModel.login(authenticate: webAuthSession.authenticator)
-          }
-        }
-
-      case .awaitingCompletion, .complete:
-        PrimaryButton("Fortsätt", maxWidth: .infinity) {
-          Task {
-            await viewModel.completeIssuance()
-          }
-        }
-
-      default:
-        EmptyView()
     }
   }
 

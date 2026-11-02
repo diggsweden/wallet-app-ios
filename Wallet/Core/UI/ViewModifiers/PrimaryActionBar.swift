@@ -24,7 +24,7 @@ struct PrimaryBarModel {
 }
 
 struct PrimaryActionBar: ViewModifier {
-  static let defaultHorizontalPadding: CGFloat = 16
+  static let defaultHorizontalPadding: CGFloat = 24
 
   let model: PrimaryBarModel?
   let horizontalPadding: CGFloat
@@ -55,7 +55,7 @@ extension View {
     action: @escaping () -> Void,
   ) -> some View {
     primaryActionBar(
-      PrimaryBarModel(
+      model: PrimaryBarModel(
         title,
         icon: icon,
         accessibilityHint: accessibilityHint,
@@ -65,8 +65,9 @@ extension View {
     )
   }
 
+  /// Overload that allows conditional rendering of the `PrimaryActionBar`
   func primaryActionBar(
-    _ model: PrimaryBarModel?,
+    model: PrimaryBarModel?,
     horizontalPadding: CGFloat = PrimaryActionBar.defaultHorizontalPadding,
   ) -> some View {
     modifier(PrimaryActionBar(model: model, horizontalPadding: horizontalPadding))

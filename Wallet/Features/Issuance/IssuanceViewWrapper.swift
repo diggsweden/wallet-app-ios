@@ -11,22 +11,34 @@ import WalletGatewayInterface
 
 struct IssuanceViewWrapper: View {
   @Environment(\.theme) private var theme
+  @State private var viewModel: IssuanceViewModel
 
-  let credentialOfferUri: String
-  let gatewayApiClient: any GatewayApi & HSMTransport
-  let hsmServerParameters: HsmServerParameters?
-  let actions: IssuanceActions
-
-  var body: some View {
-    SoftEdgeScrollView {
-      IssuanceView(
+  init(
+    credentialOfferUri: String,
+    gatewayApiClient: any GatewayApi & HSMTransport,
+    hsmServerParameters: HsmServerParameters?,
+    actions: IssuanceActions,
+  ) {
+    _viewModel = State(
+      wrappedValue: .init(
         credentialOfferUri: credentialOfferUri,
         gatewayApiClient: gatewayApiClient,
         hsmServerParameters: hsmServerParameters,
         actions: actions,
       )
-      .padding(.horizontal, theme.horizontalPadding)
+    )
+  }
+
+  var body: some View {
+    SoftEdgeScrollView {
+      IssuanceView(viewModel: viewModel)
+        .padding(.horizontal, theme.horizontalPadding)
     }
+    .issuanceActionBar(
+      step: viewModel.state.activeStep,
+      onLogin: { await viewModel.login(authenticate: $0) },
+      onComplete: { await viewModel.completeIssuance() },
+    )
     .navigationTitle("Begär attributsintyg")
     .navigationBarTitleDisplayMode(.inline)
     .navigationBarBackButtonHidden()
