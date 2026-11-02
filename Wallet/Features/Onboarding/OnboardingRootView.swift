@@ -58,7 +58,11 @@ struct OnboardingRootView: View {
     .toolbar {
       toolbarContent
     }
-    .issuanceActionBar(viewModel.step == .issueCredential ? issuanceViewModel : nil)
+    .issuanceActionBar(
+      step: viewModel.step == .issueCredential ? issuanceViewModel?.state.activeStep : nil,
+      onLogin: { await issuanceViewModel?.login(authenticate: $0) },
+      onComplete: { await issuanceViewModel?.completeIssuance() },
+    )
     .backGesture(isEnabled: viewModel.canGoBack()) {
       viewModel.back()
     }

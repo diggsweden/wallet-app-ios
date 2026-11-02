@@ -34,7 +34,11 @@ struct IssuanceViewWrapper: View {
       IssuanceView(viewModel: viewModel)
         .padding(.horizontal, theme.horizontalPadding)
     }
-    .issuanceActionBar(viewModel)
+    .issuanceActionBar(
+      step: viewModel.state.activeStep,
+      onLogin: { await viewModel.login(authenticate: $0) },
+      onComplete: { await viewModel.completeIssuance() },
+    )
     .navigationTitle("Begär attributsintyg")
     .navigationBarTitleDisplayMode(.inline)
     .navigationBarBackButtonHidden()

@@ -65,6 +65,7 @@ extension View {
     )
   }
 
+  /// Overload that allows conditional rendering of the `PrimaryActionBar`
   func primaryActionBar(
     model: PrimaryBarModel?,
     horizontalPadding: CGFloat = PrimaryActionBar.defaultHorizontalPadding,
