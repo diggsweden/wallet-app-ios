@@ -4,7 +4,7 @@
 
 import Foundation
 
-public enum VerifierInfoFormat: String {
+public enum RegistrationCertificateFormat: String {
   case registrationCert = "registration_cert"
   case jwt = "jwt"
 }

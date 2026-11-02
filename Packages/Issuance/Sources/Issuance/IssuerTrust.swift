@@ -32,11 +32,18 @@ extension IssuerMetadataPolicy {
 }
 
 extension CredentialIssuerMetadata {
-  /// The registration certificates the issuer publishes in `issuer_info`.
   var registrationCertificates: [String] {
-    issuerInfo?.attestations
-      .filter { $0.format == ETSI119472Part3.REGISTRATION_CERT }
-      .map(\.data) ?? []
+    guard let issuerInfo else {
+      return []
+    }
+
+    return issuerInfo.attestations
+      .compactMap { issuerInfo in
+        guard RegistrationCertificateFormat(rawValue: issuerInfo.format) != nil else {
+          return nil
+        }
+        return issuerInfo.data
+      }
   }
 
   func validateRegistrationCertificates(trustStore: any TrustStoreInterface) async throws {
@@ -47,11 +54,16 @@ extension CredentialIssuerMetadata {
     let trustAnchors = try await trustStore.getAllTrustAnchors()
 
     for certificate in registrationCertificates {
-      let _: VerifiedClaims = try JwtUtil.parseJws(from: certificate) { certificateChain in
+      let cert: RegistrationCertificate = try JwtUtil.parseJws(
+        from: certificate,
+        expectedType: .registrationCertificate,
+      ) { certificateChain in
         try CertificateValidator.validate(certChain: certificateChain, with: trustAnchors)
+      }
+
+      guard !cert.isExpired(at: .now) else {
+        throw ValidationError.expiredCertificate
       }
     }
   }
 }
-
-private struct VerifiedClaims: Decodable {}

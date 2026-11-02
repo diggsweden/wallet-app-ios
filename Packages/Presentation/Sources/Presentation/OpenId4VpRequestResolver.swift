@@ -17,7 +17,7 @@ struct OpenId4VpRequestResolver {
     trustAnchors: [SecCertificate],
   ) async throws -> PresentationRequestData {
     let certificateTrust: CertificateTrust = { certificateChain in
-      return validateAccessCertificates(
+      validateAccessCertificates(
         certificateChain: certificateChain,
         trustAnchors: trustAnchors,
       )
@@ -130,7 +130,7 @@ struct OpenId4VpRequestResolver {
     trustAnchors: [SecCertificate],
   ) throws -> [RegistrationCertificate] {
     let verifierData = verifierInfo.compactMap { verifier in
-      switch VerifierInfoFormat(rawValue: verifier.format) {
+      switch RegistrationCertificateFormat(rawValue: verifier.format) {
         case .registrationCert, .jwt:
           return verifier.data.string
 
@@ -152,7 +152,7 @@ struct OpenId4VpRequestResolver {
       )
 
       guard !certificate.isExpired(at: .now) else {
-        throw PresentationError.registrationCertificateExpired
+        throw ValidationError.expiredCertificate
       }
 
       return certificate

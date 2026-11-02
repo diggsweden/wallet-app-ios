@@ -69,7 +69,7 @@ actor WalletAttestationProvisioner {
 
 extension IdentityAndAccessManagementMetadata {
   var supportsWalletAttestation: Bool {
-    tokenEndpointAuthMethodsSupported.contains("attest_jwt_client_auth")
+    tokenEndpointAuthMethodsSupported.contains(AuthMethod.clientAttestation.rawValue)
       && clientAttestationSigningAlgValuesSupported.contains { algorithm in
         algorithm.name == JWSAlgorithm.AlgorithmType.ES256.rawValue
       }

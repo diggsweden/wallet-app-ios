@@ -21,14 +21,15 @@ struct SdJwtVcConfigurationTests {
     #expect(configuration.vct == SampleCredential.pidType)
   }
 
-  @Test func `an offer whose first configuration is not SD-JWT VC is unsupported`() throws {
-    let offer = try Fixtures.offer(
-      configurationIds: [Fixtures.mdocConfigurationId, Fixtures.sdJwtConfigurationId]
-    )
+  @Test func `skips offered configurations that are not SD-JWT VC`() throws {
+    let (id, configuration) =
+      try Fixtures.offer(
+        configurationIds: [Fixtures.mdocConfigurationId, Fixtures.sdJwtConfigurationId]
+      )
+      .sdJwtVcConfiguration()
 
-    #expect(throws: IssuanceError.credentialNotSupported) {
-      try offer.sdJwtVcConfiguration()
-    }
+    #expect(id.value == Fixtures.sdJwtConfigurationId)
+    #expect(configuration.vct == SampleCredential.pidType)
   }
 
   @Test func `an offer for a configuration the issuer does not advertise is unsupported`() throws {

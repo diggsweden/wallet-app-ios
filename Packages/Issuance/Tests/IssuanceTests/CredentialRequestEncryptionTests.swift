@@ -4,6 +4,7 @@
 
 import CryptoKit
 import Jose
+import OpenID4VCI
 import Testing
 
 @testable import Issuance
@@ -33,7 +34,9 @@ struct CredentialRequestEncryptionTests {
     #expect(try spec(nil) == nil)
   }
 
-  @Test func `an encryption method the wallet cannot produce yields no spec`() throws {
-    #expect(try spec(.init(key: issuerKey.publicKey, method: "A128CBC")) == nil)
+  @Test func `issuer metadata with an encryption method the wallet cannot produce is rejected`() {
+    #expect(throws: CredentialIssuerMetadataError.self) {
+      try spec(.init(key: issuerKey.publicKey, method: "A128CBC"))
+    }
   }
 }
