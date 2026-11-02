@@ -7,7 +7,9 @@ import SwiftUI
 import UIComponents
 
 struct IssuanceActionBar: ViewModifier {
-  let viewModel: IssuanceViewModel?
+  let step: IssuanceStep?
+  let onLogin: (_ authenticate: @escaping WebAuthenticator) async -> Void
+  let onComplete: () async -> Void
   @Environment(\.webAuthenticationSession) private var webAuthSession
 
   func body(content: Content) -> some View {
@@ -15,19 +17,15 @@ struct IssuanceActionBar: ViewModifier {
   }
 
   private var model: PrimaryBarModel? {
-    guard let viewModel, case let .step(step) = viewModel.state else {
-      return nil
-    }
-
     switch step {
       case .preparingToAuthorize:
         return PrimaryBarModel("Logga in") {
-          Task { await viewModel.login(authenticate: webAuthSession.authenticator) }
+          Task { await onLogin(webAuthSession.authenticator) }
         }
 
       case .awaitingCompletion, .complete:
         return PrimaryBarModel("Fortsätt") {
-          Task { await viewModel.completeIssuance() }
+          Task { await onComplete() }
         }
 
       default:
@@ -37,7 +35,11 @@ struct IssuanceActionBar: ViewModifier {
 }
 
 extension View {
-  func issuanceActionBar(_ viewModel: IssuanceViewModel?) -> some View {
-    modifier(IssuanceActionBar(viewModel: viewModel))
+  func issuanceActionBar(
+    step: IssuanceStep?,
+    onLogin: @escaping (_ authenticate: @escaping WebAuthenticator) async -> Void,
+    onComplete: @escaping () async -> Void,
+  ) -> some View {
+    modifier(IssuanceActionBar(step: step, onLogin: onLogin, onComplete: onComplete))
   }
 }
