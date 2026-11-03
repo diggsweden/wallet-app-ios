@@ -6,12 +6,12 @@ import CryptoKit
 import Foundation
 import Security
 
-enum KeyConversionError: Error {
+public enum KeyConversionError: Error {
   case conversionFailed
 }
 
 extension P256.Signing.PrivateKey {
-  func toSecKey() throws -> SecKey {
+  public func toSecKey() throws -> SecKey {
     var error: Unmanaged<CFError>?
     let keyData = x963Representation as CFData
     let attributes: [String: Any] = [

@@ -8,11 +8,15 @@ enum JwsError: LocalizedError, Equatable {
   case noCertificateChain
   case invalidCertificate
   case unexpectedType(expected: String, actual: String?)
+  case invalidEncoding
 
   var errorDescription: String? {
     switch self {
       case .noCertificateChain:
         "There was no certificate chain provided with the JWS"
+
+      case .invalidEncoding:
+        "The JWS was neither compact serialized nor base64url encoded"
 
       case .invalidCertificate:
         "The JWS certificate was invalid"

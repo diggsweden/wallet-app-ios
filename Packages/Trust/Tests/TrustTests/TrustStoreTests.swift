@@ -46,6 +46,27 @@ struct TrustStoreTests {
     #expect(wrprcAnchors.map(Fixtures.der) == [try Fixtures.der(of: Fixtures.otherCertificate)])
   }
 
+  @Test func `all anchors are returned across service types`() async throws {
+    let store = makeStore(
+      providerUrls: [first],
+      responses: [
+        first: try json([
+          Fixtures.Service(type: wrpac, certificates: [Fixtures.rootCertificate]),
+          Fixtures.Service(type: wrprc, certificates: [Fixtures.otherCertificate]),
+        ])
+      ],
+    )
+
+    let anchors = try await store.getAllTrustAnchors()
+
+    #expect(
+      Set(anchors.map(Fixtures.der)) == [
+        try Fixtures.der(of: Fixtures.rootCertificate),
+        try Fixtures.der(of: Fixtures.otherCertificate),
+      ]
+    )
+  }
+
   @Test func `anchors for the same service type are merged across providers`() async throws {
     let store = makeStore(
       providerUrls: [first, second],

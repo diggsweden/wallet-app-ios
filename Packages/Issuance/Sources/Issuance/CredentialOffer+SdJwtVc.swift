@@ -11,7 +11,11 @@ extension CredentialOffer {
     configuration: SdJwtVcFormat.CredentialConfiguration
   ) {
     guard
-      let configId = credentialConfigurationIdentifiers.first,
+      let configId = credentialConfigurationIdentifiers.first(
+        where: { id in
+          id.value.contains("jwt")
+        }
+      ),
       let supportedCredential = credentialIssuerMetadata.credentialsSupported[configId],
       case let .sdJwtVc(credentialConfig) = supportedCredential
     else {

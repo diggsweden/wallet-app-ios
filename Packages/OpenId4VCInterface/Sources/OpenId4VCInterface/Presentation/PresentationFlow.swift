@@ -9,8 +9,7 @@ public protocol PresentationFlow: Sendable {
   func resolve(
     url: URL,
     credentials: [SavedCredential],
-    accessTrustAnchors: [SecCertificate],
-    registrationTrustAnchors: [SecCertificate],
+    trustAnchors: [SecCertificate],
   ) async throws -> ResolvedPresentation
   func submit(
     _ resolved: ResolvedPresentation,

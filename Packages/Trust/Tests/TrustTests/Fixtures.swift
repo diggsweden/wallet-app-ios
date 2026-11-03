@@ -69,6 +69,11 @@ enum Fixtures {
     der(try certificate(base64))
   }
 
+  static func pem(of base64: String) throws -> String {
+    let body = try der(of: base64).base64EncodedString(options: .lineLength64Characters)
+    return "-----BEGIN CERTIFICATE-----\n\(body)\n-----END CERTIFICATE-----\n"
+  }
+
   static func loteJson(_ services: [Service]) throws -> Data {
     let list: [String: Any] = [
       "LoTE": [

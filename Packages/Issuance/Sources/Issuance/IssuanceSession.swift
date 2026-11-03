@@ -6,24 +6,43 @@ import Foundation
 import Jose
 import OpenID4VCI
 import OpenId4VCInterface
+import Trust
 import WalletNetworking
 
 public actor IssuanceSession: IssuanceFlow {
   private let config: IssuanceConfig
   private let dpopProofBuilder = DpopProofBuilder()
   private let credentialEndpointClient: CredentialEndpointClient
+  private let walletAttestation: WalletAttestationProvisioner
+  private let trustStore: any TrustStoreInterface
   private var credentialOffer: CredentialOffer?
   private var issuer: Issuer?
   private var preparedRequest: AuthorizationRequested?
   private var authorizedRequest: AuthorizedRequest?
   private var proof: String?
 
-  public init(config: IssuanceConfig) {
-    self.init(config: config, networkClient: URLSessionNetworkClient())
+  public init(
+    config: IssuanceConfig,
+    walletAttestations: any WalletInstanceAttestationProviding,
+    trustStore: any TrustStoreInterface,
+  ) {
+    self.init(
+      config: config,
+      walletAttestations: walletAttestations,
+      trustStore: trustStore,
+      networkClient: URLSessionNetworkClient(),
+    )
   }
 
-  init(config: IssuanceConfig, networkClient: any NetworkClient) {
+  init(
+    config: IssuanceConfig,
+    walletAttestations: any WalletInstanceAttestationProviding,
+    trustStore: any TrustStoreInterface,
+    networkClient: any NetworkClient,
+  ) {
     self.config = config
+    self.walletAttestation = WalletAttestationProvisioner(attestations: walletAttestations)
+    self.trustStore = trustStore
     self.credentialEndpointClient = CredentialEndpointClient(networkClient: networkClient)
   }
 
@@ -31,9 +50,12 @@ public actor IssuanceSession: IssuanceFlow {
     let result = await CredentialOfferRequestResolver()
       .resolve(
         source: try .init(urlString: offerUri),
-        policy: .ignoreSigned,
+        policy: .preferSigned(trustStore: trustStore),
       )
     let offer = try result.get()
+    try await offer.credentialIssuerMetadata.validateRegistrationCertificates(
+      trustStore: trustStore
+    )
     let issuer = try createIssuer(from: offer)
 
     credentialOffer = offer
@@ -189,13 +211,17 @@ public actor IssuanceSession: IssuanceFlow {
 
   private func createIssuer(from credentialOffer: CredentialOffer) throws -> Issuer {
     let authorizationServerMetadata = credentialOffer.authorizationServerMetadata
+    let attested = authorizationServerMetadata.supportsWalletAttestation
 
     return try Issuer(
       authorizationServerMetadata: authorizationServerMetadata,
       issuerMetadata: credentialOffer.credentialIssuerMetadata,
       config: OpenId4VCIConfig(
-        client: .init(public: config.clientId),
+        client: attested
+          ? try walletAttestation.client(id: config.clientId)
+          : .init(public: config.clientId),
         authFlowRedirectionURI: config.redirectUri,
+        clientAttestationPoPBuilder: attested ? DefaultClientAttestationPoPBuilder.default : nil,
         requireDpop: authorizationServerMetadata.supportsDpop,
       ),
       dpopConstructor: dpopProofBuilder,

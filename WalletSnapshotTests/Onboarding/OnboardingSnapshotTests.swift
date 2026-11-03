@@ -5,6 +5,7 @@
 import Foundation
 import SwiftAccessMechanism
 import Testing
+import Trust
 import UIComponents
 import WalletGatewayInterface
 
@@ -62,6 +63,7 @@ private extension OnboardingSnapshotTests {
         isReset: false,
         backendGeneration: nil,
       ),
+      trustStore: SnapshotTrustStore(),
       initialStep: step,
       actions: OnboardingActions(
         signIn: { _ in },
@@ -75,11 +77,17 @@ private extension OnboardingSnapshotTests {
   }
 }
 
+private struct SnapshotTrustStore: TrustStoreInterface {
+  func getTrustAnchors(for serviceType: String) -> [SecCertificate] { [] }
+  func getAllTrustAnchors() -> [SecCertificate] { [] }
+}
+
 private struct SnapshotGateway: GatewayApi, HSMTransport {
   func getDatabaseGeneration() throws -> Int { 0 }
 
   func createAccount(publicKey: PublicKeyComponents) throws -> String { "" }
   func getKeyAttestation(keys: [PublicKeyComponents], nonce: String?) throws -> String { "" }
+  func getWalletInstanceAttestation(key: PublicKeyComponents) throws -> String { "" }
   func fetchTrustedListProviders() throws -> [URL] { [] }
 
   func registerState(

@@ -4,10 +4,12 @@
 
 import Foundation
 
-public enum ValidationError: LocalizedError {
+public enum ValidationError: LocalizedError, Equatable {
   case trustCreationFailed(OSStatus)
   case evaluationFailed
   case noPublicKey
   case emptyTrustAnchors
   case emptyCertificateChain
+  case invalidCertificate
+  case expiredCertificate
 }

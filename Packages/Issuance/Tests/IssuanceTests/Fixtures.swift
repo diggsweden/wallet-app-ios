@@ -46,12 +46,15 @@ enum Fixtures {
   }
 
   /// `keyAttestationsRequired` is the raw JSON of the SD-JWT configuration's
-  /// `key_attestations_required` member; `nil` omits it.
+  /// `key_attestations_required` member; `nil` omits it. `issuerInfo` is the raw JSON
+  /// of the `issuer_info` member; `nil` omits it.
   static func issuerMetadata(
     requestEncryption: RequestEncryption? = nil,
     keyAttestationsRequired: String? = nil,
+    issuerInfo: String? = nil,
   ) throws -> CredentialIssuerMetadata {
     let encryptionMember = try requestEncryption.map { try getEncryptionMember($0) } ?? ""
+    let issuerInfoMember = issuerInfo.map { #""issuer_info": \#($0),"# } ?? ""
 
     let json = #"""
       {
@@ -60,6 +63,7 @@ enum Fixtures {
         "credential_endpoint": "\#(credentialEndpoint)",
         "nonce_endpoint": "\#(nonceEndpoint)",
         \#(encryptionMember)
+        \#(issuerInfoMember)
         "credential_configurations_supported": {
           "\#(sdJwtConfigurationId)": \#(sdJwtConfiguration(keyAttestationsRequired)),
           "\#(mdocConfigurationId)": \#(mdocConfiguration)
@@ -71,13 +75,23 @@ enum Fixtures {
   }
 
   static func authorizationServerMetadata(
-    dpop: Bool = true
+    dpop: Bool = true,
+    tokenEndpointAuthMethods: [String]? = nil,
+    clientAttestationAlgs: [String]? = nil,
   ) throws -> IdentityAndAccessManagementMetadata {
     let dpopMember = dpop ? #""dpop_signing_alg_values_supported": ["ES256"],"# : ""
+    let authMethodsMember = tokenEndpointAuthMethods.map { methods in
+      #""token_endpoint_auth_methods_supported": \#(jsonArray(methods)),"#
+    }
+    let attestationAlgsMember = clientAttestationAlgs.map { algs in
+      #""client_attestation_signing_alg_values_supported": \#(jsonArray(algs)),"#
+    }
     let json = #"""
       {
         "issuer": "\#(authorizationServer)",
         \#(dpopMember)
+        \#(authMethodsMember ?? "")
+        \#(attestationAlgsMember ?? "")
         "authorization_endpoint": "\#(authorizationServer)/authorize",
         "token_endpoint": "\#(authorizationServer)/token"
       }
@@ -86,6 +100,10 @@ enum Fixtures {
     return .oauth(
       try JSONDecoder().decode(AuthorizationServerMetadata.self, from: Data(json.utf8))
     )
+  }
+
+  private static func jsonArray(_ values: [String]) -> String {
+    "[" + values.map { #""\#($0)""# }.joined(separator: ", ") + "]"
   }
 
   private static func getEncryptionMember(_ encryption: RequestEncryption) throws -> String {

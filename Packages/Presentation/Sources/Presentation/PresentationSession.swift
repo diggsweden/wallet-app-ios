@@ -25,8 +25,7 @@ public struct PresentationSession: PresentationFlow {
   public func resolve(
     url: URL,
     credentials: [SavedCredential],
-    accessTrustAnchors: [SecCertificate],
-    registrationTrustAnchors: [SecCertificate],
+    trustAnchors: [SecCertificate],
   ) async throws -> ResolvedPresentation {
     guard !credentials.isEmpty else {
       throw PresentationError.noCredential
@@ -34,8 +33,7 @@ public struct PresentationSession: PresentationFlow {
     let resolvedData = try await OpenId4VpRequestResolver()
       .resolve(
         url: url,
-        accessTrustAnchors: accessTrustAnchors,
-        registrationTrustAnchors: registrationTrustAnchors,
+        trustAnchors: trustAnchors,
       )
 
     let parsedRegistrationCertificate = try parseRegistrationCertificate(
@@ -65,7 +63,9 @@ public struct PresentationSession: PresentationFlow {
 
     return certificates.map { cert in
       ParsedRegistrationCertificate(
-        requestableCredentials: cert.requestableCredentials,
+        requestableCredentials: cert.requestableCredentials.filter { cert in
+          cert.format != "mso_mdoc"
+        },
         verifierUiModel: cert.verifierUiModel,
       )
     }

@@ -8,10 +8,10 @@ import OpenId4VCInterface
 extension RegistrationCertificate {
   public var verifierUiModel: VerifierUiModel {
     VerifierUiModel(
-      name: name,
-      country: country,
-      descriptions: srvDescription.stringDict,
-      purpose: purpose.stringDict,
+      name: name ?? "",
+      country: country ?? "",
+      descriptions: [:],
+      purpose: purpose?.stringDict ?? [:],
     )
   }
 }

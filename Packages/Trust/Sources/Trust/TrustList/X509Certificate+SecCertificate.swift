@@ -7,7 +7,7 @@ import Jose
 
 extension X509Certificate {
   var secCertificate: SecCertificate? {
-    guard let data = Data(base64UrlEncoded: self.val) else {
+    guard let data = Data(encodedCertificate: self.val) else {
       return nil
     }
 

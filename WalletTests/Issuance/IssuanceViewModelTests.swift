@@ -42,6 +42,7 @@ struct IssuanceViewModelTests {
       credentialOfferUri: "openid-credential-offer://?credential_offer_uri=x",
       gatewayApiClient: FakeGateway(),
       hsmServerParameters: nil,
+      trustStore: FakeTrustStore(),
       actions: .init(
         onSaveCredential: { credential in
           recorder.savedCredentials.append(credential)
