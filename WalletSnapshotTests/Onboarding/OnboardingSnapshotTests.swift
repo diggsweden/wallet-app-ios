@@ -5,8 +5,8 @@
 import Foundation
 import SwiftAccessMechanism
 import Testing
-import UIComponents
 import Trust
+import UIComponents
 import WalletGatewayInterface
 
 @testable import User

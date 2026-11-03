@@ -9,23 +9,23 @@ import Foundation
 public struct RegistrationCertificate: Codable {
   let name: String?
   public let sub: String
-  let country: String
-  let iat: Int
+  let country: String?
+  let iat: Int?
   let exp: Int?
-  let registryURI: String
-  let srvDescription: [Display]
-  let entitlements: [String]
+  let registryURI: String?
+  let srvDescription: [Display]?
+  let entitlements: [String]?
   let purpose: [Display]?
   let credentials: [Credential]?
   let serviceIdentifier: String?
   let intendedUseID: String?
   let privacyPolicy: String?
   let infoURI: String?
-  let supportURI: String
-  let supervisoryAuthority: SupervisoryAuthority
-  let policyID: [String]
-  let certificatePolicy: String
-  let status: Status
+  let supportURI: String?
+  let supervisoryAuthority: SupervisoryAuthority?
+  let policyID: [String]?
+  let certificatePolicy: String?
+  let status: Status?
 
   enum CodingKeys: String, CodingKey {
     case name = "name"

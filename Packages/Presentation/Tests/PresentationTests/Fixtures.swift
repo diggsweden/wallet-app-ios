@@ -17,13 +17,6 @@ import WalletMacros
 enum Fixtures {
   static let responseUrl = #URL("https://verifier.example/response")
   static let verifierUiModel = VerifierUiModel(
-    name: "Verifier",
-    country: "SE",
-    descriptions: [:],
-    purpose: [:],
-  )
-
-  static let verifierUiModel = VerifierUiModel(
     name: "Example Verifier",
     country: "SE",
     descriptions: [:],

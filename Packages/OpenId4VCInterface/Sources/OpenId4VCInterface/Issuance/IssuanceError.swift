@@ -7,7 +7,6 @@ import Foundation
 public enum IssuanceError: LocalizedError, Equatable {
   case invalidAuth
   case invalidCredential
-  case invalidOffer
   case issuerNotFound
   case authRequestFailed
   case credentialNotSupported

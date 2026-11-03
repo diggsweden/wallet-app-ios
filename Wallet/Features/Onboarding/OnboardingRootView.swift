@@ -7,8 +7,8 @@ import DesignSystem
 import SwiftAccessMechanism
 import SwiftData
 import SwiftUI
-import UIComponents
 import Trust
+import UIComponents
 import User
 import WalletGatewayInterface
 import WalletMacros

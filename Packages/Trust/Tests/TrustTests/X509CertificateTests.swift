@@ -14,22 +14,22 @@ struct X509CertificateTests {
     #expect(Fixtures.der(certificate) == (try Fixtures.der(of: Fixtures.rootCertificate)))
   }
 
-//  @Test func `a pem value is parsed`() throws {
-//    let lines = stride(from: 0, to: Fixtures.rootCertificate.count, by: 64)
-//      .map {
-//        Fixtures.rootCertificate.dropFirst($0).prefix(64)
-//      }
-//    let pem = """
-//      -----BEGIN CERTIFICATE-----
-//      \(lines.joined(separator: "\n"))
-//      -----END CERTIFICATE-----
-//
-//      """
-//
-//    let certificate = try #require(X509Certificate(val: pem).secCertificate)
-//
-//    #expect(Fixtures.der(certificate) == (try Fixtures.der(of: Fixtures.rootCertificate)))
-//  }
+  //  @Test func `a pem value is parsed`() throws {
+  //    let lines = stride(from: 0, to: Fixtures.rootCertificate.count, by: 64)
+  //      .map {
+  //        Fixtures.rootCertificate.dropFirst($0).prefix(64)
+  //      }
+  //    let pem = """
+  //      -----BEGIN CERTIFICATE-----
+  //      \(lines.joined(separator: "\n"))
+  //      -----END CERTIFICATE-----
+  //
+  //      """
+  //
+  //    let certificate = try #require(X509Certificate(val: pem).secCertificate)
+  //
+  //    #expect(Fixtures.der(certificate) == (try Fixtures.der(of: Fixtures.rootCertificate)))
+  //  }
 
   @Test func `an invalid value is rejected`() {
     #expect(X509Certificate(val: "not a certificate").secCertificate == nil)
