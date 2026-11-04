@@ -49,7 +49,7 @@ jobs:
 
   release:
     needs: generate-artifacts-config
-    uses: diggsweden/reusable-ci/.github/workflows/release-orchestrator.yml@997d7dc2238b40c79798fda309d8061b0707a3e5 # v3.0.0
+    uses: diggsweden/reusable-ci/.github/workflows/release-orchestrator.yml@1a76b0c1a69952742ea663c8cfe77d8fe1d168ad # v3.1.0
     permissions:
       contents: write
       packages: write
@@ -71,7 +71,7 @@ jobs:
       KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
       XCCONFIG_BASE64: ${{ secrets.XCCONFIG_BASE64 }}
     with:
-      reusable-ci-ref: 997d7dc2238b40c79798fda309d8061b0707a3e5
+      reusable-ci-ref: 1a76b0c1a69952742ea663c8cfe77d8fe1d168ad
       artifacts-config: ${{ needs.generate-artifacts-config.outputs.config }}
       release-publisher: github-cli
       release.attachartifacts: |

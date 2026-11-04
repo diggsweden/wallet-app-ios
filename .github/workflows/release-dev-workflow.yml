@@ -37,7 +37,7 @@ jobs:
 
   build:
     needs: build-number
-    uses: diggsweden/reusable-ci/.github/workflows/build-xcode-ios.yml@997d7dc2238b40c79798fda309d8061b0707a3e5 # v3.0.0
+    uses: diggsweden/reusable-ci/.github/workflows/build-xcode-ios.yml@1a76b0c1a69952742ea663c8cfe77d8fe1d168ad # v3.1.0
     permissions:
       contents: read
     secrets:
@@ -47,7 +47,7 @@ jobs:
       KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
       XCCONFIG_BASE64: ${{ secrets.XCCONFIG_BASE64 }}
     with:
-      reusable-ci-ref: 997d7dc2238b40c79798fda309d8061b0707a3e5
+      reusable-ci-ref: 1a76b0c1a69952742ea663c8cfe77d8fe1d168ad
       xcode-version: ${{ vars.XCODE_VERSION }}
       macos-version: ${{ vars.MACOS_VERSION }}
       scheme: "Wallet Demo"
@@ -62,7 +62,7 @@ jobs:
 
   upload-testflight:
     needs: build
-    uses: diggsweden/reusable-ci/.github/workflows/publish-apple-appstore.yml@997d7dc2238b40c79798fda309d8061b0707a3e5 # v3.0.0
+    uses: diggsweden/reusable-ci/.github/workflows/publish-apple-appstore.yml@1a76b0c1a69952742ea663c8cfe77d8fe1d168ad # v3.1.0
 
     permissions:
       contents: read
@@ -71,7 +71,7 @@ jobs:
       APP_STORE_CONNECT_API_PRIVATE_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_API_PRIVATE_KEY_BASE64 }}
       APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
     with:
-      reusable-ci-ref: 997d7dc2238b40c79798fda309d8061b0707a3e5
+      reusable-ci-ref: 1a76b0c1a69952742ea663c8cfe77d8fe1d168ad
       ipa-artifact-name: wallet-ios-demo-dev
       submit-for-review: false
       skip-validation: false
