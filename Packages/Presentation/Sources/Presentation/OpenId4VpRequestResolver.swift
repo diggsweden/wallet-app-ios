@@ -69,11 +69,6 @@ struct OpenId4VpRequestResolver {
       return []
     }
 
-    let registrationCertificates = try extractRegistrationCertificates(
-      verifierInfo: verifierInfo,
-      trustAnchors: trustAnchors,
-    )
-
     let accessCertificate: Certificate? =
       switch request.client {
         case let .x509Hash(_, cert), let .x509SanDns(_, certificate: cert):
@@ -83,16 +78,15 @@ struct OpenId4VpRequestResolver {
           nil
       }
 
-    guard
-      let organizationIdentifier = accessCertificate?.organizationIdentifier,
-      registrationCertificates.allSatisfy({ $0.sub == organizationIdentifier })
-    else {
-      throw PresentationError.resolutionFailed(
-        "Registration certificate subject does not match access certificate"
-      )
+    guard let accessCertificate else {
+      throw PresentationError.missingAccessCertificate
     }
 
-    return registrationCertificates
+    return try extractRegistrationCertificates(
+      verifierInfo: verifierInfo,
+      trustAnchors: trustAnchors,
+      matchingAccessCertificate: accessCertificate,
+    )
   }
 
   private func generateKey() throws -> (SecKey, WebKeySet.Key) {
@@ -128,6 +122,7 @@ struct OpenId4VpRequestResolver {
   private func extractRegistrationCertificates(
     verifierInfo: [VerifierInfo],
     trustAnchors: [SecCertificate],
+    matchingAccessCertificate: Certificate,
   ) throws -> [RegistrationCertificate] {
     let verifierData = verifierInfo.compactMap { verifier in
       switch RegistrationCertificateFormat(rawValue: verifier.format) {
@@ -140,22 +135,8 @@ struct OpenId4VpRequestResolver {
     }
 
     return try verifierData.map { data in
-      let certificate: RegistrationCertificate = try JwtUtil.parseJws(
-        from: data,
-        expectedType: .registrationCertificate,
-        validateCertChain: { certChain in
-          try CertificateValidator.validate(
-            certChain: certChain,
-            with: trustAnchors,
-          )
-        },
-      )
-
-      guard !certificate.isExpired(at: .now) else {
-        throw ValidationError.expiredCertificate
-      }
-
-      return certificate
+      try RegistrationCertificateValidator
+        .validate(data, with: trustAnchors, matchingAccessCertificate: matchingAccessCertificate)
     }
   }
 
@@ -246,14 +227,5 @@ struct OpenId4VpRequestResolver {
     }
 
     return matchingSets.contains { $0.required ?? true }
-  }
-}
-
-extension Certificate {
-  fileprivate var organizationIdentifier: String? {
-    subject
-      .joined()
-      .first { $0.type == [2, 5, 4, 97] }
-      .flatMap { String($0.value) }
   }
 }

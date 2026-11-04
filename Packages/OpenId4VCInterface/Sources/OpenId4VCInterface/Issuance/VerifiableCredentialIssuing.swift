@@ -4,7 +4,7 @@
 
 import Foundation
 
-public protocol IssuanceFlow: Sendable {
+public protocol VerifiableCredentialIssuing: Sendable {
   func loadOffer(_ offerUri: String) async throws -> OfferedIssuance
   func authorizationUrl() async throws -> URL
   func exchangeAuthorizationCode(callbackUrl: URL) async throws

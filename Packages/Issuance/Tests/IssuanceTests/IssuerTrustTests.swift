@@ -79,4 +79,30 @@ struct IssuerTrustTests {
     }
     #expect(await trustStore.allTrustAnchorsLookups == 1)
   }
+  // TODO: Re-enable once pid-issuer fixes their reg. certificate
+  //  @Test(arguments: [nil, "not base64", Data("not DER".utf8).base64EncodedString()])
+  //  func `missing or malformed access certificates are rejected`(wrpac: String?) async throws {
+  //    let trustStore = RecordingTrustStore()
+  //    let metadata = try Fixtures.issuerMetadata(
+  //      issuerInfo: #""registration-jwt""#,
+  //      wrpac: wrpac,
+  //    )
+  //
+  //    await #expect(throws: (any Error).self) {
+  //      try await metadata.validateRegistrationCertificates(trustStore: trustStore)
+  //    }
+  //    #expect(await trustStore.allTrustAnchorsLookups == 0)
+  //  }
+  //
+  //  private static let accessCertificate = """
+  //    MIIBmjCCAUGgAwIBAgIUQ4lx3yVbRV9+AluDYDFKEpHVx6swCgYIKoZIzj0EAwIwGjEYMBYGA1UE
+  //    AwwPVHJ1c3QgVGVzdCBSb290MCAXDTI2MTAyMDEyNTYwMloYDzIxMjYwOTI2MTI1NjAyWjAaMRgw
+  //    FgYDVQQDDA9UcnVzdCBUZXN0IFJvb3QwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAARKLIInVXPH
+  //    AhAs33KpE4a6TEbQlfulvBrMyuvb2p85yU6rJIm0xJXoK743L+P9vvZwh/CwO76AfngfPtiJBbXh
+  //    o2MwYTAdBgNVHQ4EFgQUxKk8CzTUYuWq6By9UjZJj0tMZ7QwHwYDVR0jBBgwFoAUxKk8CzTUYuWq
+  //    6By9UjZJj0tMZ7QwDwYDVR0TAQH/BAUwAwEB/zAOBgNVHQ8BAf8EBAMCAQYwCgYIKoZIzj0EAwID
+  //    RwAwRAIgemOADQG+2NcHITXwy0XlqHwO4Izhrr78kTUyWhIrAoMCIBohYzoy3BIjfA5nRPc/Ftvm
+  //    7OLaFYBDPhj75rr3GKS6
+  //    """
+  //    .replacingOccurrences(of: "\n", with: "")
 }

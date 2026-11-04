@@ -12,4 +12,5 @@ public enum ValidationError: LocalizedError, Equatable {
   case emptyCertificateChain
   case invalidCertificate
   case expiredCertificate
+  case accessCertificateMismatch
 }

@@ -6,7 +6,7 @@ import Foundation
 import Jose
 
 public enum CertificateValidator {
-  public static func validate(
+  @discardableResult public static func validate(
     base64CertChain: [String],
     with trustAnchors: [SecCertificate],
   ) throws -> SecKey {
@@ -24,7 +24,7 @@ public enum CertificateValidator {
     return try validate(certChain: certificates, with: trustAnchors)
   }
 
-  public static func validate(
+  private static func validate(
     certChain: [SecCertificate],
     with trustAnchors: [SecCertificate],
   ) throws -> SecKey {
@@ -56,6 +56,7 @@ public enum CertificateValidator {
     guard let key = SecTrustCopyKey(trust) else {
       throw ValidationError.noPublicKey
     }
+
     return key
   }
 }

@@ -32,7 +32,7 @@ struct IssuanceViewModelTests {
   private let recorder = IssuanceRecorder()
 
   private func makeViewModel(
-    flow: FakeIssuanceFlow = FakeIssuanceFlow(),
+    credentialIssuer: FakeVerifiableCredentialIssuer = FakeVerifiableCredentialIssuer(),
     signerFailures: Set<FakeProofKeyManager.Operation> = [],
     onSave: ((SavedCredential) async throws -> Void)? = nil,
     onDismiss: @escaping @MainActor () -> Void = {},
@@ -51,7 +51,7 @@ struct IssuanceViewModelTests {
         onComplete: { recorder.completeCount += 1 },
         onDismiss: onDismiss,
       ),
-      issuanceFlow: flow,
+      credentialIssuer: credentialIssuer,
       makeSigner: { pin in
         // Only the first signer fails, so a retry with a new PIN can succeed.
         let signer = FakeProofKeyManager(
@@ -82,47 +82,47 @@ struct IssuanceViewModelTests {
 
   @Test
   func startLoadsTheOfferAndWaitsForLogin() async {
-    let flow = FakeIssuanceFlow()
-    let viewModel = makeViewModel(flow: flow)
+    let credentialIssuer = FakeVerifiableCredentialIssuer()
+    let viewModel = makeViewModel(credentialIssuer: credentialIssuer)
 
     await viewModel.start()
 
     #expect(viewModel.state.currentStep == .preparingToAuthorize)
     #expect(viewModel.issuerDisplayData?.name == "Issuer")
     #expect(viewModel.issuerDisplayData?.info == "Info")
-    #expect(await flow.calls == [.loadOffer])
+    #expect(await credentialIssuer.calls == [.loadOffer])
   }
 
   @Test
   func failedOfferLoadCanBeRetried() async {
-    let flow = FakeIssuanceFlow(failingOnce: [.loadOffer])
-    let viewModel = makeViewModel(flow: flow)
+    let credentialIssuer = FakeVerifiableCredentialIssuer(failingOnce: [.loadOffer])
+    let viewModel = makeViewModel(credentialIssuer: credentialIssuer)
 
     await viewModel.start()
     #expect(viewModel.state.failedStep == .loadingCredentialOffer)
 
     await viewModel.retry()
     #expect(viewModel.state.currentStep == .preparingToAuthorize)
-    #expect(await flow.calls == [.loadOffer, .loadOffer])
+    #expect(await credentialIssuer.calls == [.loadOffer, .loadOffer])
   }
 
   @Test
   func loginAuthorizesWithTheCallbackAndAsksForPin() async {
-    let flow = FakeIssuanceFlow()
-    let viewModel = makeViewModel(flow: flow)
+    let credentialIssuer = FakeVerifiableCredentialIssuer()
+    let viewModel = makeViewModel(credentialIssuer: credentialIssuer)
 
     await awaitingPin(viewModel)
 
     #expect(viewModel.state.currentStep == .awaitingPin)
-    #expect(recorder.authorizationUrls == [FakeIssuanceFlow.authorizationUrl])
-    #expect(await flow.callbackUrls == [Self.callbackUrl])
+    #expect(recorder.authorizationUrls == [FakeVerifiableCredentialIssuer.authorizationUrl])
+    #expect(await credentialIssuer.callbackUrls == [Self.callbackUrl])
     #expect(recorder.signers.isEmpty, "no HSM session is opened before the PIN is entered")
   }
 
   @Test
   func failedAuthorizationReturnsToLogin() async {
-    let flow = FakeIssuanceFlow(failingOnce: [.exchangeAuthorizationCode])
-    let viewModel = makeViewModel(flow: flow)
+    let credentialIssuer = FakeVerifiableCredentialIssuer(failingOnce: [.exchangeAuthorizationCode])
+    let viewModel = makeViewModel(credentialIssuer: credentialIssuer)
 
     await awaitingPin(viewModel)
     #expect(viewModel.state.failedStep == .authorizing(authenticate()))
@@ -133,33 +133,33 @@ struct IssuanceViewModelTests {
 
   @Test
   func cancelledLoginReturnsToLoginWithoutFailing() async {
-    let flow = FakeIssuanceFlow()
-    let viewModel = makeViewModel(flow: flow)
+    let credentialIssuer = FakeVerifiableCredentialIssuer()
+    let viewModel = makeViewModel(credentialIssuer: credentialIssuer)
     await viewModel.start()
 
     await viewModel.login { _ in nil }
 
     #expect(viewModel.state.currentStep == .preparingToAuthorize)
-    #expect(!(await flow.calls).contains(.exchangeAuthorizationCode))
+    #expect(!(await credentialIssuer.calls).contains(.exchangeAuthorizationCode))
   }
 
   @Test
   func loginIsIgnoredBeforeTheOfferIsLoaded() async {
-    let flow = FakeIssuanceFlow()
-    let viewModel = makeViewModel(flow: flow)
+    let credentialIssuer = FakeVerifiableCredentialIssuer()
+    let viewModel = makeViewModel(credentialIssuer: credentialIssuer)
 
     await viewModel.login(authenticate: authenticate())
 
     #expect(viewModel.state.currentStep == nil)
-    #expect(await flow.calls.isEmpty)
+    #expect(await credentialIssuer.calls.isEmpty)
   }
 
   // MARK: Key creation and credential
 
   @Test
   func pinCreatesANewKeyThatSignsTheProofAndBindsTheCredential() async throws {
-    let flow = FakeIssuanceFlow()
-    let viewModel = makeViewModel(flow: flow)
+    let credentialIssuer = FakeVerifiableCredentialIssuer()
+    let viewModel = makeViewModel(credentialIssuer: credentialIssuer)
     await awaitingPin(viewModel)
 
     await viewModel.enterPin("123456")
@@ -169,10 +169,12 @@ struct IssuanceViewModelTests {
     #expect(recorder.pins == ["123456"])
     #expect(await signer.authenticateCount == 1)
     #expect(await signer.createKeyCount == 1)
-    #expect(await flow.proofKeys == [key])
-    #expect(await flow.fetchKeys == [key])
-    let signedBySessionSigner = await flow.proofSigners.first.map { $0 as AnyObject } === signer
-    let attestsThroughGateway = await flow.attestationProviders.first is KeyAttestationProvider
+    #expect(await credentialIssuer.proofKeys == [key])
+    #expect(await credentialIssuer.fetchKeys == [key])
+    let signedBySessionSigner =
+      await credentialIssuer.proofSigners.first.map { $0 as AnyObject } === signer
+    let attestsThroughGateway =
+      await credentialIssuer.attestationProviders.first is KeyAttestationProvider
     #expect(signedBySessionSigner)
     #expect(attestsThroughGateway)
     #expect(recorder.savedCredentials.map(\.keyId) == [key.id.rawValue])
@@ -181,14 +183,14 @@ struct IssuanceViewModelTests {
 
   @Test
   func stepsRunInOrderAfterThePin() async {
-    let flow = FakeIssuanceFlow()
-    let viewModel = makeViewModel(flow: flow)
+    let credentialIssuer = FakeVerifiableCredentialIssuer()
+    let viewModel = makeViewModel(credentialIssuer: credentialIssuer)
     await awaitingPin(viewModel)
 
     await viewModel.enterPin("123456")
 
     #expect(
-      await flow.calls == [
+      await credentialIssuer.calls == [
         .loadOffer, .authorizationUrl, .exchangeAuthorizationCode, .createProof, .fetchCredential,
       ]
     )
@@ -196,8 +198,11 @@ struct IssuanceViewModelTests {
 
   @Test
   func wrongPinAsksForThePinAgainWithoutCreatingAKey() async throws {
-    let flow = FakeIssuanceFlow()
-    let viewModel = makeViewModel(flow: flow, signerFailures: [.authenticate])
+    let credentialIssuer = FakeVerifiableCredentialIssuer()
+    let viewModel = makeViewModel(
+      credentialIssuer: credentialIssuer,
+      signerFailures: [.authenticate],
+    )
     await awaitingPin(viewModel)
 
     await viewModel.enterPin("000000")
@@ -213,20 +218,20 @@ struct IssuanceViewModelTests {
     #expect(recorder.signers.count == 2)
     let signer = try #require(recorder.signers.last)
     let key = try #require(await signer.createdKeys.first)
-    #expect(await flow.proofKeys == [key])
+    #expect(await credentialIssuer.proofKeys == [key])
     #expect(recorder.savedCredentials.map(\.keyId) == [key.id.rawValue])
   }
 
   @Test
   func failedKeyCreationRetriesKeyCreationWithTheSameSession() async throws {
-    let flow = FakeIssuanceFlow()
-    let viewModel = makeViewModel(flow: flow, signerFailures: [.createKey])
+    let credentialIssuer = FakeVerifiableCredentialIssuer()
+    let viewModel = makeViewModel(credentialIssuer: credentialIssuer, signerFailures: [.createKey])
     await awaitingPin(viewModel)
 
     await viewModel.enterPin("123456")
     let signer = try #require(recorder.signers.first)
     #expect(viewModel.state.failedStep == .creatingKey(signer))
-    #expect(await flow.proofKeys.isEmpty)
+    #expect(await credentialIssuer.proofKeys.isEmpty)
 
     await viewModel.retry()
     #expect(recorder.signers.count == 1)
@@ -238,8 +243,8 @@ struct IssuanceViewModelTests {
 
   @Test
   func failedProofRetriesWithTheSameKey() async throws {
-    let flow = FakeIssuanceFlow(failingOnce: [.createProof])
-    let viewModel = makeViewModel(flow: flow)
+    let credentialIssuer = FakeVerifiableCredentialIssuer(failingOnce: [.createProof])
+    let viewModel = makeViewModel(credentialIssuer: credentialIssuer)
     await awaitingPin(viewModel)
 
     await viewModel.enterPin("123456")
@@ -249,15 +254,15 @@ struct IssuanceViewModelTests {
 
     await viewModel.retry()
     #expect(await signer.createKeyCount == 1)
-    #expect(await flow.proofKeys == [key, key])
-    #expect(await flow.fetchKeys == [key])
+    #expect(await credentialIssuer.proofKeys == [key, key])
+    #expect(await credentialIssuer.fetchKeys == [key])
     #expect(recorder.savedCredentials.map(\.keyId) == [key.id.rawValue])
   }
 
   @Test
   func failedFetchRecreatesProofWithTheSameKeyAndSigner() async throws {
-    let flow = FakeIssuanceFlow(failingOnce: [.fetchCredential])
-    let viewModel = makeViewModel(flow: flow)
+    let credentialIssuer = FakeVerifiableCredentialIssuer(failingOnce: [.fetchCredential])
+    let viewModel = makeViewModel(credentialIssuer: credentialIssuer)
     await awaitingPin(viewModel)
 
     await viewModel.enterPin("123456")
@@ -270,25 +275,25 @@ struct IssuanceViewModelTests {
     #expect(recorder.signers.count == 1)
     #expect(await signer.authenticateCount == 1)
     #expect(await signer.createKeyCount == 1)
-    #expect(await flow.proofKeys == [key, key])
-    let proofSigners = await flow.proofSigners
+    #expect(await credentialIssuer.proofKeys == [key, key])
+    let proofSigners = await credentialIssuer.proofSigners
     #expect(proofSigners.count == 2)
     #expect(proofSigners.allSatisfy { $0 as AnyObject === signer })
     #expect(
-      await flow.calls == [
+      await credentialIssuer.calls == [
         .loadOffer, .authorizationUrl, .exchangeAuthorizationCode,
         .createProof, .fetchCredential, .createProof, .fetchCredential,
       ]
     )
-    #expect(await flow.fetchKeys == [key, key])
+    #expect(await credentialIssuer.fetchKeys == [key, key])
     #expect(recorder.savedCredentials.map(\.keyId) == [key.id.rawValue])
   }
 
   @Test
   func failedSaveCanBeRetriedWithoutFetchingAgain() async throws {
-    let flow = FakeIssuanceFlow()
+    let credentialIssuer = FakeVerifiableCredentialIssuer()
     let recorder = recorder
-    let viewModel = makeViewModel(flow: flow) { _ in
+    let viewModel = makeViewModel(credentialIssuer: credentialIssuer) { _ in
       if recorder.savedCredentials.count == 1 {
         throw FakeError.intentional
       }
@@ -309,7 +314,7 @@ struct IssuanceViewModelTests {
 
     await viewModel.retry()
     #expect(viewModel.state.currentStep == .awaitingCompletion(.bound(to: key)))
-    #expect(await flow.fetchKeys == [key])
+    #expect(await credentialIssuer.fetchKeys == [key])
     #expect(recorder.savedCredentials.count == 2)
   }
 
@@ -408,8 +413,8 @@ struct IssuanceViewModelTests {
   @Test
   func dismissDuringFetchStopsBeforeSavingAndDeletesTheKey() async throws {
     let gate = Gate()
-    let flow = FakeIssuanceFlow(fetchGate: gate)
-    let viewModel = makeViewModel(flow: flow, onDismiss: gate.open)
+    let credentialIssuer = FakeVerifiableCredentialIssuer(fetchGate: gate)
+    let viewModel = makeViewModel(credentialIssuer: credentialIssuer, onDismiss: gate.open)
     await awaitingPin(viewModel)
 
     async let issuing: Void = viewModel.enterPin("123456")
