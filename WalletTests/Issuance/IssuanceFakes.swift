@@ -48,7 +48,7 @@ final class Gate {
   }
 }
 
-actor FakeIssuanceFlow: IssuanceFlow {
+actor FakeVerifiableCredentialIssuer: VerifiableCredentialIssuing {
   enum Operation: Hashable {
     case loadOffer
     case authorizationUrl

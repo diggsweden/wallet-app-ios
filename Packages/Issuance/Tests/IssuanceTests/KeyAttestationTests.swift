@@ -25,7 +25,7 @@ struct KeyAttestationTests {
   ) async throws {
     let attestations = FakeKeyAttestationProvider(attestation: "attestation-jwt")
 
-    let attestation = try await IssuanceSession.keyAttestation(
+    let attestation = try await VerifiableCredentialIssuer.keyAttestation(
       requirement: requirement,
       proofKey: proofKey,
       nonce: "nonce-1",
@@ -45,7 +45,7 @@ struct KeyAttestationTests {
   ) async throws {
     let attestations = FakeKeyAttestationProvider()
 
-    let attestation = try await IssuanceSession.keyAttestation(
+    let attestation = try await VerifiableCredentialIssuer.keyAttestation(
       requirement: requirement,
       proofKey: proofKey,
       nonce: "nonce-1",

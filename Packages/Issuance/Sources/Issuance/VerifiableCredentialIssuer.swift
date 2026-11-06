@@ -9,7 +9,7 @@ import OpenId4VCInterface
 import Trust
 import WalletNetworking
 
-public actor IssuanceSession: IssuanceFlow {
+public actor VerifiableCredentialIssuer: VerifiableCredentialIssuing {
   private let config: IssuanceConfig
   private let dpopProofBuilder = DpopProofBuilder()
   private let credentialEndpointClient: CredentialEndpointClient
@@ -196,7 +196,7 @@ public actor IssuanceSession: IssuanceFlow {
   ) async throws -> String {
     let attested = keyAttestation != nil
     let header = WalletKeyAttestationHeader(
-      jwk: attested ? nil : proofKey.publicKey,
+      jwk: proofKey.publicKey,
       keyID: attested ? "0" : nil,
       keyAttestation: keyAttestation,
     )

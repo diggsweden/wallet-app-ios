@@ -16,7 +16,7 @@ import WalletMacros
 @Observable
 final class IssuanceViewModel {
   private let credentialOfferUri: String
-  private var flow: any IssuanceFlow
+  private var credentialIssuer: any VerifiableCredentialIssuing
   private let gatewayApiClient: any GatewayApi & HSMTransport
   private let actions: IssuanceActions
   private(set) var state: IssuanceState = .idle
@@ -31,15 +31,15 @@ final class IssuanceViewModel {
     hsmServerParameters: HsmServerParameters?,
     trustStore: any TrustStoreInterface,
     actions: IssuanceActions,
-    issuanceFlow: (any IssuanceFlow)? = nil,
+    credentialIssuer: (any VerifiableCredentialIssuing)? = nil,
     makeSigner: ((_ pin: String) -> any ProofKeyManager)? = nil,
   ) {
     self.credentialOfferUri = credentialOfferUri
     self.gatewayApiClient = gatewayApiClient
     self.actions = actions
-    self.flow =
-      issuanceFlow
-      ?? IssuanceSession(
+    self.credentialIssuer =
+      credentialIssuer
+      ?? VerifiableCredentialIssuer(
         config: IssuanceConfig(
           clientId: "wallet-dev",
           redirectUri: #URL("wallet-app://authorize"),
@@ -149,13 +149,13 @@ final class IssuanceViewModel {
       case let .authorizing(authenticate):
         guard
           let callbackUrl = try await authenticate(
-            WebAuthRequest(url: flow.authorizationUrl(), callbackScheme: "wallet-app")
+            WebAuthRequest(url: credentialIssuer.authorizationUrl(), callbackScheme: "wallet-app")
           )
         else {
           return .preparingToAuthorize
         }
 
-        try await flow.exchangeAuthorizationCode(callbackUrl: callbackUrl)
+        try await credentialIssuer.exchangeAuthorizationCode(callbackUrl: callbackUrl)
         return .awaitingPin
 
       case let .authenticatingPin(signer):
@@ -167,7 +167,7 @@ final class IssuanceViewModel {
         return .signingProof(proofKey: key, signer: signer)
 
       case let .signingProof(proofKey, signer):
-        try await flow.createProof(
+        try await credentialIssuer.createProof(
           proofKey: proofKey,
           signer: signer,
           attestations: KeyAttestationProvider(gatewayApiClient: gatewayApiClient),
@@ -178,7 +178,7 @@ final class IssuanceViewModel {
         )
 
       case let .fetchingCredential(proofKey, signer):
-        let issuedCredential = try await flow.fetchCredential(proofKey: proofKey)
+        let issuedCredential = try await credentialIssuer.fetchCredential(proofKey: proofKey)
         return .savingCredential(issuedCredential, proofKey: proofKey, signer: signer)
 
       case let .savingCredential(issuedCredential, _, _):
@@ -194,7 +194,7 @@ final class IssuanceViewModel {
 
 private extension IssuanceViewModel {
   private func loadOffer() async throws {
-    let offer = try await flow.loadOffer(credentialOfferUri)
+    let offer = try await credentialIssuer.loadOffer(credentialOfferUri)
     issuerDisplayData = offer.issuer.map { issuer in
       IssuerDisplay(
         name: issuer.name ?? "Okänd utfärdare",
