@@ -6,6 +6,7 @@ import Foundation
 import Jose
 import OpenID4VCI
 import Trust
+import X509
 
 struct TrustStoreCertificateChainTrust: CertificateChainTrust {
   let trustStore: any TrustStoreInterface
@@ -13,7 +14,7 @@ struct TrustStoreCertificateChainTrust: CertificateChainTrust {
   func isValid(chain: [String]) async -> Bool {
     do {
       let trustAnchors = try await trustStore.getAllTrustAnchors()
-      _ = try CertificateValidator.validate(base64CertChain: chain, with: trustAnchors)
+      try CertificateValidator.validate(base64CertChain: chain, with: trustAnchors)
       return true
     } catch {
       return false
@@ -51,19 +52,22 @@ extension CredentialIssuerMetadata {
       return
     }
 
+    // TODO: Re-enable once pid-issuer reg. certificate has been updated
+    //
+    //    guard let wrpac, let certificateData = Data(encodedCertificate: wrpac) else {
+    //      throw ValidationError.invalidCertificate
+    //    }
+    //
+    //    let accessCertificate = try Certificate(derEncoded: Array(certificateData))
+
     let trustAnchors = try await trustStore.getAllTrustAnchors()
 
     for certificate in registrationCertificates {
-      let cert: RegistrationCertificate = try JwtUtil.parseJws(
-        from: certificate,
-        expectedType: .registrationCertificate,
-      ) { certificateChain in
-        try CertificateValidator.validate(certChain: certificateChain, with: trustAnchors)
-      }
-
-      guard !cert.isExpired(at: .now) else {
-        throw ValidationError.expiredCertificate
-      }
+      try RegistrationCertificateValidator.validate(
+        certificate,
+        with: trustAnchors,
+        matchingAccessCertificate: nil,
+      )
     }
   }
 }

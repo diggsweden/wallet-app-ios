@@ -52,6 +52,7 @@ enum Fixtures {
     requestEncryption: RequestEncryption? = nil,
     keyAttestationsRequired: String? = nil,
     issuerInfo: String? = nil,
+    wrpac: String? = nil,
   ) throws -> CredentialIssuerMetadata {
     let encryptionMember = try requestEncryption.map { try getEncryptionMember($0) } ?? ""
     let issuerInfoMember = issuerInfo.map { #""issuer_info": \#($0),"# } ?? ""
@@ -71,7 +72,23 @@ enum Fixtures {
       }
       """#
 
-    return try JSONDecoder().decode(CredentialIssuerMetadata.self, from: Data(json.utf8))
+    let metadata = try JSONDecoder().decode(CredentialIssuerMetadata.self, from: Data(json.utf8))
+    guard let wrpac else { return metadata }
+
+    return CredentialIssuerMetadata(
+      credentialIssuerIdentifier: metadata.credentialIssuerIdentifier,
+      authorizationServers: metadata.authorizationServers ?? [],
+      credentialEndpoint: metadata.credentialEndpoint,
+      deferredCredentialEndpoint: metadata.deferredCredentialEndpoint,
+      nonceEndpoint: metadata.nonceEndpoint,
+      notificationEndpoint: metadata.notificationEndpoint,
+      credentialRequestEncryption: metadata.credentialRequestEncryption ?? .notSupported,
+      credentialResponseEncryption: metadata.credentialResponseEncryption,
+      credentialConfigurationsSupported: metadata.credentialsSupported,
+      display: metadata.display,
+      issuerInfo: metadata.issuerInfo,
+      wrpac: wrpac,
+    )
   }
 
   static func authorizationServerMetadata(

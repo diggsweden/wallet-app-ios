@@ -18,7 +18,7 @@ struct ProofTests {
   @Test func `without key attestation the header advertises the proof key as jwk`() async throws {
     let signer = FakeProofSigner()
 
-    let proof = try await IssuanceSession.buildProof(
+    let proof = try await VerifiableCredentialIssuer.buildProof(
       issuerId: issuerId,
       nonce: "nonce-1",
       keyAttestation: nil,
@@ -38,9 +38,10 @@ struct ProofTests {
     #expect(jwk["y"] as? String == WalletJoseJWK(signer.key.publicKey).y?.base64UrlEncodedString())
   }
 
-  @Test func `with key attestation the header names attested key 0 and omits jwk`() async throws {
+  @Test func `with key attestation the header names attested key 0 and proofkey jwk`() async throws
+  {
     let signer = FakeProofSigner()
-    let proof = try await IssuanceSession.buildProof(
+    let proof = try await VerifiableCredentialIssuer.buildProof(
       issuerId: issuerId,
       nonce: "nonce-1",
       keyAttestation: "attestation-jwt",
@@ -51,12 +52,12 @@ struct ProofTests {
 
     #expect(decoded.header["kid"] as? String == "0")
     #expect(decoded.header["key_attestation"] as? String == "attestation-jwt")
-    #expect(decoded.jwk == nil)
+    #expect(decoded.jwk != nil)
   }
 
   @Test func `claims carry the issuer as aud, the nonce and the wallet client id`() async throws {
     let signer = FakeProofSigner()
-    let proof = try await IssuanceSession.buildProof(
+    let proof = try await VerifiableCredentialIssuer.buildProof(
       issuerId: issuerId,
       nonce: "nonce-1",
       keyAttestation: nil,
@@ -74,7 +75,7 @@ struct ProofTests {
 
   @Test func `omits the nonce claim when the issuer has no nonce endpoint`() async throws {
     let signer = FakeProofSigner()
-    let proof = try await IssuanceSession.buildProof(
+    let proof = try await VerifiableCredentialIssuer.buildProof(
       issuerId: issuerId,
       nonce: nil,
       keyAttestation: nil,
@@ -88,7 +89,7 @@ struct ProofTests {
 
   @Test func `signature verifies with the key advertised in the header`() async throws {
     let signer = FakeProofSigner()
-    let proof = try await IssuanceSession.buildProof(
+    let proof = try await VerifiableCredentialIssuer.buildProof(
       issuerId: issuerId,
       nonce: "nonce-1",
       keyAttestation: nil,
@@ -104,7 +105,7 @@ struct ProofTests {
     let signer = FakeProofSigner()
     let proofKey = ProofKey(id: ProofKey.ID("hsm-key-1"), publicKey: signer.proofKey.publicKey)
 
-    _ = try await IssuanceSession.buildProof(
+    _ = try await VerifiableCredentialIssuer.buildProof(
       issuerId: issuerId,
       nonce: "nonce-1",
       keyAttestation: "attestation-jwt",
@@ -118,7 +119,7 @@ struct ProofTests {
   @Test func `the advertised jwk comes from the proof key, not the signer`() async throws {
     let otherKey = WalletJoseJWK(P256.Signing.PrivateKey().publicKey)
 
-    let proof = try await IssuanceSession.buildProof(
+    let proof = try await VerifiableCredentialIssuer.buildProof(
       issuerId: issuerId,
       nonce: nil,
       keyAttestation: nil,
@@ -135,7 +136,7 @@ struct ProofTests {
     let signer = FakeProofSigner()
 
     await #expect(throws: FailingProofSigner.Failure.self) {
-      try await IssuanceSession.buildProof(
+      try await VerifiableCredentialIssuer.buildProof(
         issuerId: issuerId,
         nonce: nil,
         keyAttestation: nil,

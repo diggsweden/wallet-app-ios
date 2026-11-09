@@ -18,6 +18,7 @@ public enum PresentationError: LocalizedError, Equatable {
   case formatNotRegistered(queryId: String)
   case credentialTypeNotRegistered(queryId: String)
   case claimsNotRegistered(queryId: String)
+  case missingAccessCertificate
 
   public var errorDescription: String? {
     switch self {

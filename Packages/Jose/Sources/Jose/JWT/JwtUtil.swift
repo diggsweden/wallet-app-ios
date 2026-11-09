@@ -95,7 +95,7 @@ public enum JwtUtil {
     from compactString: String,
     decoder: JSONDecoder = JSONDecoder(),
     expectedType: JwtType? = nil,
-    validateCertChain: ([SecCertificate]) throws -> SecKey,
+    validateCertChain: ([String]) throws -> SecKey,
   ) throws -> T {
     let jws = try JWS(jwsString: compactSerialization(of: compactString))
 
@@ -114,15 +114,7 @@ public enum JwtUtil {
       throw JwsError.noCertificateChain
     }
 
-    let certificates: [SecCertificate] = certificateChain.compactMap { cert in
-      guard let data = Data(encodedCertificate: cert) else {
-        return nil
-      }
-
-      return SecCertificateCreateWithData(nil, data as CFData)
-    }
-
-    let publicKey = try validateCertChain(certificates)
+    let publicKey = try validateCertChain(certificateChain)
     guard try jws.verify(key: publicKey) else {
       throw JwsError.invalidCertificate
     }
