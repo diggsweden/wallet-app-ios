@@ -1,6 +1,6 @@
 # Wallet iOS
 
-[![License: EUPL 1.2](https://img.shields.io/badge/License-European%20Union%20Public%20Licence%201.2-library?style=for-the-badge&&color=lightblue)](LICENSE)
+[![License: EUPL 1.2](https://img.shields.io/badge/License-European%20Union%20Public%20Licence%201.2-library?style=for-the-badge&&color=lightblue)](LICENSES)
 [![REUSE](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.reuse.software%2Fstatus%2Fgithub.com%2Fdiggsweden%2Fwallet-app-ios&query=status&style=for-the-badge&label=REUSE&color=lightblue)](https://api.reuse.software/info/github.com/diggsweden/wallet-app-ios)
 
 [![Tag](https://img.shields.io/github/v/tag/diggsweden/wallet-app-ios?style=for-the-badge&color=green)](https://github.com/diggsweden/wallet-app-ios/tags)
@@ -75,10 +75,10 @@ Select the scheme from the Xcode toolbar and run on a simulator or device.
 
 The project uses two complementary Swift linting tools, both installed via mise:
 
-| Tool | Purpose | Config |
-| ---- | ------- | ------ |
-| [SwiftLint](https://github.com/realm/SwiftLint) | Enforces Swift style and best-practice rules | `.swiftlint.yml` |
-| [swift-format](https://github.com/swiftlang/swift-format) | Enforces consistent code formatting | `.swift-format` |
+| Tool                                                      | Purpose                                      | Config           |
+| --------------------------------------------------------- | -------------------------------------------- | ---------------- |
+| [SwiftLint](https://github.com/realm/SwiftLint)           | Enforces Swift style and best-practice rules | `.swiftlint.yml` |
+| [swift-format](https://github.com/swiftlang/swift-format) | Enforces consistent code formatting          | `.swift-format`  |
 
 Both run automatically as a pre-build script in Xcode and as a pre-push git hook.
 
