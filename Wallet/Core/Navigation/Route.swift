@@ -6,7 +6,6 @@ import CredentialInterfaces
 import Foundation
 
 enum Route: Hashable {
-  case presentation(url: URL)
-  case issuance(credentialOfferUri: String)
+  case issuance(url: URL)
   case credentialDetails(_ credential: SavedCredential)
 }

@@ -15,6 +15,16 @@ class Router {
     navigationPath.append(route)
   }
 
+  func open(_ deeplink: Deeplink) {
+    switch deeplink {
+      case .issuance(let url):
+        go(to: .issuance(url: url))
+
+      case .presentation(let url):
+        presentedSheet = .presentation(url: url)
+    }
+  }
+
   func pop() {
     navigationPath.removeLast()
   }
@@ -36,10 +46,19 @@ class Router {
 }
 
 extension Router {
-  enum Sheet: String, Identifiable {
+  enum Sheet: Identifiable {
     case settings
+    case presentation(url: URL)
 
-    var id: Self { self }
+    var id: String {
+      switch self {
+        case .settings:
+          "settings"
+
+        case .presentation(let url):
+          "presentation-\(url.absoluteString)"
+      }
+    }
   }
 
   enum FullScreenCover: String, Identifiable {
