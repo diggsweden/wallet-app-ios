@@ -91,9 +91,10 @@ struct PresentationView: View {
 
         case .ready:
           PresentationReviewView(
-            requiredItems: viewModel.requiredItems,
             optionalItems: $viewModel.optionalItems,
+            requiredItems: viewModel.requiredItems,
             verifierName: viewModel.verifierUiModel?.name ?? "",
+            verifierPurpose: viewModel.verifierUiModel?.localizedPurpose,
             onConfirm: {
               path.append(.pin)
             },

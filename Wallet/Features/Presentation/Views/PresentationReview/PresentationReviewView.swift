@@ -7,10 +7,12 @@ import SwiftUI
 import UIComponents
 
 struct PresentationReviewView: View {
-  @Environment(\.theme) private var theme
-  let requiredItems: [PresentationItem]
   @Binding var optionalItems: [PresentationItem]
+  @Environment(\.theme) private var theme
+
+  let requiredItems: [PresentationItem]
   let verifierName: String
+  let verifierPurpose: String?
   let onConfirm: () -> Void
 
   var body: some View {
@@ -18,6 +20,7 @@ struct PresentationReviewView: View {
       VStack(spacing: 30) {
         PresentationReviewHeaderView(
           name: verifierName,
+          purpose: verifierPurpose,
           onTap: {},  // TODO: Sheet
         )
 
