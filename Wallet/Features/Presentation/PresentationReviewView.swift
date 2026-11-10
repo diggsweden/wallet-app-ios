@@ -20,7 +20,10 @@ struct PresentationReviewView: View {
           .textStyle(.h1)
 
         ForEach(requiredItems) { item in
-          CredentialView(title: "Uppgifter som delas:", claims: item.claims)
+          CredentialView(
+            title: "Uppgifter som delas:",
+            claims: item.credentialUiModel.claims,
+          )
         }
 
         if !optionalItems.isEmpty {
@@ -29,7 +32,10 @@ struct PresentationReviewView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
 
           ForEach($optionalItems) { $item in
-            SelectiveDisclosureView(isSelected: $item.isSelected, claims: item.claims)
+            SelectiveDisclosureView(
+              isSelected: $item.isSelected,
+              claims: item.credentialUiModel.claims,
+            )
           }
         }
 

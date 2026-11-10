@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
-import CredentialInterfaces
 import OpenId4VCInterface
 
 enum PresentationPhase {
@@ -19,13 +18,13 @@ enum PresentationRoute: Hashable {
 struct PresentationItem: Identifiable {
   let id: String
   let required: Bool
-  let claims: [ClaimUiModel]
+  let credentialUiModel: CredentialUiModel
   var isSelected: Bool
 
   init(candidate: PresentationCandidate, isSelected: Bool) {
     id = candidate.id
     required = candidate.required
-    claims = candidate.claims
+    credentialUiModel = candidate.credentialUiModel
     self.isSelected = isSelected
   }
 }
