@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: EUPL-1.2
 
+import SwiftUI
 import Testing
 
 @testable import UIComponents
@@ -30,4 +31,40 @@ struct PresentationSnapshotTests {
   func success() {
     assertThemedDeviceSnapshots(of: PresentationSuccessView(onDismiss: {}))
   }
+
+  @Test("Review header — without logo")
+  func reviewHeaderWithoutLogo() {
+    assertThemedSnapshots(
+      of: PresentationReviewHeaderView(
+        name: Self.verifierName,
+        purpose: Self.verifierPurpose,
+        onTap: {},
+      ),
+      width: 360,
+    )
+  }
+
+  @Test("Review header — with logo")
+  func reviewHeaderWithLogo() {
+    assertThemedSnapshots(
+      of: PresentationReviewHeaderView(
+        name: Self.verifierName,
+        purpose: Self.verifierPurpose,
+        logo: Image(systemName: "car.side.fill"),
+        onTap: {},
+      ),
+      width: 360,
+    )
+  }
+
+  @Test("Review header — without purpose")
+  func reviewHeaderWithoutPurpose() {
+    assertThemedSnapshots(
+      of: PresentationReviewHeaderView(name: Self.verifierName, onTap: {}),
+      width: 360,
+    )
+  }
+
+  private static let verifierName = "Nordbil Hyrbilar AB"
+  private static let verifierPurpose = "Identitets- och körkortskontroll vid biluthyrning."
 }

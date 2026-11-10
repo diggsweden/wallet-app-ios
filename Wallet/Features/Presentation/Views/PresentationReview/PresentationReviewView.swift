@@ -16,8 +16,10 @@ struct PresentationReviewView: View {
   var body: some View {
     SoftEdgeScrollView(fillsHeight: true) {
       VStack(spacing: 30) {
-        Text("Dela uppgifter med \(verifierName)")
-          .textStyle(.h1)
+        PresentationReviewHeaderView(
+          name: verifierName,
+          onTap: {},  // TODO: Sheet
+        )
 
         ForEach(requiredItems) { item in
           CredentialView(
