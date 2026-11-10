@@ -40,6 +40,7 @@ struct PresentationView: View {
     NavigationStack(path: $path) {
       content
         .defaultScreenStyle
+        .animation(.default, value: viewModel.phase)
         .navigationDestination(for: PresentationRoute.self) { route in
           destination(for: route)
             .defaultScreenStyle
@@ -62,40 +63,44 @@ struct PresentationView: View {
 
   @ViewBuilder
   private var content: some View {
-    switch viewModel.phase {
-      case .loading:
-        ProgressView()
-          .task {
-            await viewModel.resolveAndMatchClaims()
-          }
+    // swiftlint:disable:next closure_body_length
+    ZStack {
+      switch viewModel.phase {
+        case .loading:
+          PresentationLoadingView(onCancel: router.dismiss)
+            .task {
+              await viewModel.resolveAndMatchClaims()
+            }
 
-      case let .error(caught):
-        ErrorView(
-          model: .init(
-            caughtError: caught,
-            primaryButton: .init(
-              label: "Försök igen",
-              accessibilityHint: "Använd knappen för att försöka igen",
-              action: {
-                Task {
-                  await viewModel.resolveAndMatchClaims()
-                }
-              },
-            ),
+        case let .error(caught):
+          ErrorView(
+            model: .init(
+              caughtError: caught,
+              primaryButton: .init(
+                label: "Försök igen",
+                accessibilityHint: "Använd knappen för att försöka igen",
+                action: {
+                  Task {
+                    await viewModel.resolveAndMatchClaims()
+                  }
+                },
+              ),
+            )
           )
-        )
-        .padding(.horizontal, theme.horizontalPadding)
+          .padding(.horizontal, theme.horizontalPadding)
 
-      case .ready:
-        PresentationReviewView(
-          requiredItems: viewModel.requiredItems,
-          optionalItems: $viewModel.optionalItems,
-          verifierName: viewModel.verifierUiModel?.name ?? "",
-          onConfirm: {
-            path.append(.pin)
-          },
-        )
+        case .ready:
+          PresentationReviewView(
+            requiredItems: viewModel.requiredItems,
+            optionalItems: $viewModel.optionalItems,
+            verifierName: viewModel.verifierUiModel?.name ?? "",
+            onConfirm: {
+              path.append(.pin)
+            },
+          )
+      }
     }
+    .transition(.opacity)
   }
 
   @ViewBuilder

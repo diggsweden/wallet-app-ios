@@ -4,7 +4,7 @@
 
 import OpenId4VCInterface
 
-enum PresentationPhase {
+enum PresentationPhase: Equatable {
   case loading
   case error(CaughtError)
   case ready
