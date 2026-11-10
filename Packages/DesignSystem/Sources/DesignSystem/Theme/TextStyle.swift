@@ -20,7 +20,9 @@ public enum TextStyle: Sendable {
     bodyLarge,
     bodySmall,
     caption,
-    caption2
+    caption2,
+    label,
+    labelLarge
 
   var metrics: TextMetrics {
     switch self {
@@ -88,6 +90,18 @@ public enum TextStyle: Sendable {
         TextMetrics(
           font: .custom("Ubuntu-Regular", size: 10, relativeTo: .caption2),
           lineHeightFactor: nil,
+        )
+
+      case .label:
+        TextMetrics(
+          font: .custom("Ubuntu-Medium", size: 13, relativeTo: .footnote),
+          lineHeightFactor: 1.384,
+        )
+
+      case .labelLarge:
+        TextMetrics(
+          font: .custom("Ubuntu-Medium", size: 15, relativeTo: .subheadline),
+          lineHeightFactor: 1.333,
         )
     }
   }

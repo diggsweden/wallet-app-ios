@@ -16,19 +16,27 @@ struct PresentationReviewView: View {
   let onConfirm: () -> Void
 
   var body: some View {
+    // swiftlint:disable:next closure_body_length
     SoftEdgeScrollView(fillsHeight: true) {
-      VStack(spacing: 30) {
+      // swiftlint:disable:next closure_body_length
+      VStack(spacing: Constants.sectionSpacing) {
         PresentationReviewHeaderView(
           name: verifierName,
           purpose: verifierPurpose,
           onTap: {},  // TODO: Sheet
         )
 
-        ForEach(requiredItems) { item in
-          CredentialView(
-            title: "Uppgifter som delas:",
-            claims: item.credentialUiModel.claims,
-          )
+        VStack(alignment: .leading, spacing: Constants.cardSpacing) {
+          Text("Det här delas")
+            .textStyle(.h3)
+            .padding(.horizontal, Constants.sectionTitleHorizontalPadding)
+
+          ForEach(requiredItems) { item in
+            PresentationRequiredCardView(
+              title: item.credentialUiModel.name ?? "Dokument",
+              claims: item.credentialUiModel.claims,
+            )
+          }
         }
 
         if !optionalItems.isEmpty {
@@ -52,5 +60,13 @@ struct PresentationReviewView: View {
       }
       .padding(.horizontal, theme.horizontalPadding)
     }
+  }
+}
+
+private extension PresentationReviewView {
+  enum Constants {
+    static let sectionSpacing: CGFloat = 28
+    static let cardSpacing: CGFloat = 12
+    static let sectionTitleHorizontalPadding: CGFloat = 16
   }
 }

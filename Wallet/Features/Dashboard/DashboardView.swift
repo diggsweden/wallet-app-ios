@@ -25,7 +25,7 @@ struct DashboardView: View {
           .padding(.top, 20)
 
         if let pid {
-          PidCard(credential: pid)
+          PidCardView(credential: pid)
             .padding(5)
         }
 
@@ -37,7 +37,7 @@ struct DashboardView: View {
             Text("Handlingar")
               .textStyle(.h2)
             ForEach(credentials, id: \.self) { credential in
-              DocumentCard(credential: credential)
+              DocumentCardView(credential: credential)
             }
           }
         }

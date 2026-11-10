@@ -92,7 +92,7 @@ private extension PresentationReviewHeaderView {
 
       Text("Registrerad mottagare")
     }
-    .textStyle(.bodySmall)
+    .textStyle(.labelLarge)
     .foregroundStyle(theme.colors.linkPrimary)
   }
 
@@ -100,8 +100,8 @@ private extension PresentationReviewHeaderView {
   func purposeSectionView(_ purpose: String) -> some View {
     VStack(alignment: .leading, spacing: Constants.purposeStackSpacing) {
       Text("Varför de frågar")
-        .textStyle(.caption)
-        .foregroundStyle(theme.colors.textInformation)
+        .textStyle(.label)
+        .foregroundStyle(theme.colors.onSurface)
 
       Text(purpose)
         .textStyle(.body)
