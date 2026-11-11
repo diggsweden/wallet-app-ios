@@ -77,6 +77,8 @@ private extension PresentationRequiredCardView {
     static let borderWidth: CGFloat = 1
     static let iconSize: CGFloat = 26
     static let chevronTopPadding: CGFloat = 4
+    static let collapsedClaimsListPadding: CGFloat = 4
+    static let chevronRotation: CGFloat = 180
   }
 
   var displayedClaims: [ClaimUiModel] {
@@ -109,7 +111,10 @@ private extension PresentationRequiredCardView {
 
   @ContentBuilder
   var claimListView: some View {
-    VStack(alignment: .leading, spacing: .zero) {
+    VStack(
+      alignment: .leading,
+      spacing: Constants.collapsedClaimsListPadding,
+    ) {
       ForEach(visibleClaims) { claim in
         if let displayName = claim.displayName {
           Text(displayName)
@@ -118,7 +123,7 @@ private extension PresentationRequiredCardView {
         }
       }
 
-      if hiddenClaimCount > 0 {
+      if hiddenClaimCount > .zero {
         Text("+ \(hiddenClaimCount) till")
           .textStyle(.labelLarge)
           .foregroundStyle(theme.colors.linkPrimary)
@@ -130,7 +135,7 @@ private extension PresentationRequiredCardView {
   var chevronView: some View {
     Image(systemName: "chevron.down")
       .foregroundStyle(theme.colors.textInformation)
-      .rotationEffect(.degrees(isExpanded ? 180 : 0))
+      .rotationEffect(.degrees(isExpanded ? Constants.chevronRotation : .zero))
       .padding(.top, Constants.chevronTopPadding)
       .accessibilityHidden(true)
   }

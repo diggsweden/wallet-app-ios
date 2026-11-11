@@ -27,6 +27,7 @@ struct PresentationSuccessView: View {
       PrimaryButton("Gå tillbaka") {
         onDismiss()
       }
+      .padding(.horizontal, 16)
     }
     .navigationBarBackButtonHidden(true)
   }

@@ -39,8 +39,13 @@ struct PresentationView: View {
   var body: some View {
     NavigationStack(path: $path) {
       content
-        .defaultScreenStyle
         .animation(.default, value: viewModel.phase)
+        .primaryActionBar(
+          model: primaryBarModel,
+          secondaryModel: secondaryBarModel,
+          horizontalPadding: Constants.actionBarHorizontalPadding,
+        )
+        .defaultScreenStyle
         .navigationDestination(for: PresentationRoute.self) { route in
           destination(for: route)
             .defaultScreenStyle
@@ -60,14 +65,19 @@ struct PresentationView: View {
     .presentationDragIndicator(.visible)
     .interactiveDismissDisabled(viewModel.isSending)
   }
+}
+
+private extension PresentationView {
+  enum Constants {
+    static let actionBarHorizontalPadding: CGFloat = 16
+  }
 
   @ViewBuilder
-  private var content: some View {
-    // swiftlint:disable:next closure_body_length
+  var content: some View {
     ZStack {
       switch viewModel.phase {
         case .loading:
-          PresentationLoadingView(onCancel: router.dismiss)
+          PresentationLoadingView()
             .task {
               await viewModel.resolveAndMatchClaims()
             }
@@ -95,17 +105,36 @@ struct PresentationView: View {
             requiredItems: viewModel.requiredItems,
             verifierName: viewModel.verifierUiModel?.name ?? "",
             verifierPurpose: viewModel.verifierUiModel?.localizedPurpose,
-            onConfirm: {
-              path.append(.pin)
-            },
           )
       }
     }
     .transition(.opacity)
   }
+}
+
+private extension PresentationView {
+  var primaryBarModel: PrimaryBarModel? {
+    guard case .ready = viewModel.phase else {
+      return nil
+    }
+    return PrimaryBarModel("Dela", icon: "paperplane") {
+      path.append(.pin)
+    }
+  }
+
+  var secondaryBarModel: PrimaryBarModel? {
+    if case .error = viewModel.phase {
+      return nil
+    }
+    return PrimaryBarModel(
+      "Avbryt",
+      accessibilityHint: "Avbryt begäran om uppgifter",
+      action: router.dismiss,
+    )
+  }
 
   @ViewBuilder
-  private var closeButton: some View {
+  var closeButton: some View {
     if #available(iOS 26.0, *) {
       Button(role: .close) {
         router.dismiss()
@@ -118,24 +147,11 @@ struct PresentationView: View {
       .disabled(viewModel.isSending)
     }
   }
+}
 
-  private func submitPresentation(_ pin: String) {
-    Task {
-      guard let result = await viewModel.sendPresentation(pin) else {
-        return
-      }
-
-      if let redirectUrl = result.redirectUrl {
-        router.dismiss()
-        openURL(redirectUrl)
-      } else {
-        path.append(.success)
-      }
-    }
-  }
-
+private extension PresentationView {
   @ViewBuilder
-  private func destination(for route: PresentationRoute) -> some View {
+  func destination(for route: PresentationRoute) -> some View {
     switch route {
       case .pin:
         PresentationPinView(
@@ -148,6 +164,21 @@ struct PresentationView: View {
         PresentationSuccessView {
           router.dismiss()
         }
+    }
+  }
+
+  func submitPresentation(_ pin: String) {
+    Task {
+      guard let result = await viewModel.sendPresentation(pin) else {
+        return
+      }
+
+      if let redirectUrl = result.redirectUrl {
+        router.dismiss()
+        openURL(redirectUrl)
+      } else {
+        path.append(.success)
+      }
     }
   }
 }

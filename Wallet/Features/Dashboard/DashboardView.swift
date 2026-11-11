@@ -81,7 +81,7 @@ private extension DashboardView {
   enum Constants {
     static let parentStackPadding: CGFloat = 30
     static let credentialsStackPadding: CGFloat = 20
-    static let qrCodeButtonPadding: CGFloat = 68
+    static let qrCodeButtonPadding: CGFloat = 84
   }
 }
 

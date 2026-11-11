@@ -13,12 +13,9 @@ struct PresentationReviewView: View {
   let requiredItems: [PresentationItem]
   let verifierName: String
   let verifierPurpose: String?
-  let onConfirm: () -> Void
 
   var body: some View {
-    // swiftlint:disable:next closure_body_length
     SoftEdgeScrollView(fillsHeight: true) {
-      // swiftlint:disable:next closure_body_length
       VStack(spacing: Constants.sectionSpacing) {
         PresentationReviewHeaderView(
           name: verifierName,
@@ -50,12 +47,6 @@ struct PresentationReviewView: View {
               claims: item.credentialUiModel.claims,
             )
           }
-        }
-
-        Spacer()
-
-        PrimaryButton("Dela", icon: "paperplane") {
-          onConfirm()
         }
       }
       .padding(.horizontal, theme.horizontalPadding)

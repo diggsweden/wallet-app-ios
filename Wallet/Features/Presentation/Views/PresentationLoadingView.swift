@@ -7,8 +7,6 @@ import SwiftUI
 import UIComponents
 
 struct PresentationLoadingView: View {
-  let onCancel: () -> Void
-
   @Environment(\.theme) private var theme
 
   var body: some View {
@@ -31,11 +29,6 @@ struct PresentationLoadingView: View {
       .containerRelativeFrame(.vertical)
     }
     .scrollBounceBehavior(.basedOnSize)
-    .primaryActionBar(
-      "Avbryt",
-      accessibilityHint: "Avbryt begäran om uppgifter",
-      action: onCancel,
-    )
   }
 }
 
@@ -47,6 +40,6 @@ private extension PresentationLoadingView {
 }
 
 #Preview {
-  PresentationLoadingView(onCancel: {})
+  PresentationLoadingView()
     .themed
 }
