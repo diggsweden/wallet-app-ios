@@ -64,7 +64,6 @@ struct PresentationRequiredCardView: View {
 
 private extension PresentationRequiredCardView {
   enum Constants {
-    static let collapsedClaimCount = 4
     static let contentSpacing: CGFloat = 12
     static let titleSpacing: CGFloat = 4
     static let padding: CGFloat = 16
@@ -72,16 +71,7 @@ private extension PresentationRequiredCardView {
     static let borderWidth: CGFloat = 1
     static let iconSize: CGFloat = 26
     static let chevronTopPadding: CGFloat = 4
-    static let collapsedClaimsListPadding: CGFloat = 4
     static let chevronRotation: CGFloat = 180
-  }
-
-  var previewClaims: [ClaimUiModel] {
-    Array(claims.prefix(Constants.collapsedClaimCount))
-  }
-
-  var hiddenClaimCount: Int {
-    claims.count - previewClaims.count
   }
 
   var accessibilityHint: LocalizedStringKey {
@@ -95,30 +85,8 @@ private extension PresentationRequiredCardView {
         PresentationClaimListView(claims: claims)
           .transition(.opacity)
       } else {
-        collapsedClaimsView
+        PresentationClaimPreviewView(claims: claims)
           .transition(.opacity)
-      }
-    }
-  }
-
-  @ContentBuilder
-  var collapsedClaimsView: some View {
-    VStack(
-      alignment: .leading,
-      spacing: Constants.collapsedClaimsListPadding,
-    ) {
-      ForEach(previewClaims) { claim in
-        if let displayName = claim.displayName {
-          Text(displayName)
-            .textStyle(.bodySmall)
-            .foregroundStyle(theme.colors.textInformation)
-        }
-      }
-
-      if hiddenClaimCount > .zero {
-        Text("+ \(hiddenClaimCount) till")
-          .textStyle(.labelLarge)
-          .foregroundStyle(theme.colors.linkPrimary)
       }
     }
   }

@@ -52,7 +52,8 @@ private extension PresentationOptionalClaimListView {
   func sectionView(for type: String) -> some View {
     let credential = items.first { item in
       item.credentialUiModel.type == type
-    }?.credentialUiModel
+    }?
+    .credentialUiModel
 
     if let credential {
       VStack(alignment: .leading, spacing: .zero) {

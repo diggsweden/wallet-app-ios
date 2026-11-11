@@ -50,20 +50,6 @@ private extension PresentationOptionalCardView {
     items.filter(\.isSelected)
   }
 
-  var previewItems: [PresentationItem] {
-    Array(selectedItems.prefix(Constants.collapsedTitleCount))
-  }
-
-  var hiddenItemCount: Int {
-    selectedItems.count - previewItems.count
-  }
-
-  func title(for item: PresentationItem) -> String {
-    item.credentialUiModel.claims
-      .compactMap(\.displayName)
-      .joined(separator: ", ")
-  }
-
   @ContentBuilder
   var headerView: some View {
     HStack(alignment: .top, spacing: Constants.contentSpacing) {
@@ -105,28 +91,16 @@ private extension PresentationOptionalCardView {
         .textStyle(.bodySmall)
         .foregroundStyle(theme.colors.textInformation)
     } else {
-      VStack(alignment: .leading, spacing: Constants.collapsedTitlesSpacing) {
-        ForEach(previewItems) { item in
-          Text(title(for: item))
-            .textStyle(.bodySmall)
-            .foregroundStyle(theme.colors.textInformation)
-        }
-
-        if hiddenItemCount > .zero {
-          Text("+ \(hiddenItemCount) till")
-            .textStyle(.labelLarge)
-            .foregroundStyle(theme.colors.linkPrimary)
-        }
-      }
+      PresentationClaimPreviewView(
+        claims: selectedItems.flatMap(\.credentialUiModel.claims)
+      )
     }
   }
 }
 
 private enum Constants {
-  static let collapsedTitleCount = 4
   static let contentSpacing: CGFloat = 12
   static let titleSpacing: CGFloat = 4
-  static let collapsedTitlesSpacing: CGFloat = 4
   static let padding: CGFloat = 16
   static let expandedBottomPadding: CGFloat = 10
   static let cornerRadius: CGFloat = 20
