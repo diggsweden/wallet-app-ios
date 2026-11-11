@@ -26,11 +26,7 @@ struct PresentationRequiredCardView: View {
 
   var body: some View {
     Button {
-      guard isExpandable else {
-        return
-      }
-
-      withAnimation {
+      withAnimation(.smooth) {
         isExpanded.toggle()
       }
     } label: {
@@ -43,13 +39,15 @@ struct PresentationRequiredCardView: View {
           Text(title)
             .textStyle(.h5)
 
-          claimListView
+          if isExpanded {
+            PresentationClaimListView(claims: claims)
+          } else {
+            collapsedClaimsView
+          }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
 
-        if isExpandable {
-          chevronView
-        }
+        chevronView
       }
       .multilineTextAlignment(.leading)
       .padding(Constants.padding)
@@ -81,41 +79,25 @@ private extension PresentationRequiredCardView {
     static let chevronRotation: CGFloat = 180
   }
 
-  var displayedClaims: [ClaimUiModel] {
-    claims.flatMap { claim in
-      guard case let .object(children) = claim.value, !children.isEmpty else {
-        return [claim]
-      }
-      return children
-    }
-  }
-
-  var isExpandable: Bool {
-    displayedClaims.count > Constants.collapsedClaimCount
-  }
-
-  var visibleClaims: [ClaimUiModel] {
-    isExpanded ? displayedClaims : Array(displayedClaims.prefix(Constants.collapsedClaimCount))
+  var previewClaims: [ClaimUiModel] {
+    Array(claims.prefix(Constants.collapsedClaimCount))
   }
 
   var hiddenClaimCount: Int {
-    displayedClaims.count - visibleClaims.count
+    claims.count - previewClaims.count
   }
 
   var accessibilityHint: LocalizedStringKey {
-    guard isExpandable else {
-      return ""
-    }
-    return isExpanded ? "Visa färre uppgifter" : "Visa alla uppgifter"
+    isExpanded ? "Visa färre uppgifter" : "Visa alla uppgifter"
   }
 
   @ContentBuilder
-  var claimListView: some View {
+  var collapsedClaimsView: some View {
     VStack(
       alignment: .leading,
       spacing: Constants.collapsedClaimsListPadding,
     ) {
-      ForEach(visibleClaims) { claim in
+      ForEach(previewClaims) { claim in
         if let displayName = claim.displayName {
           Text(displayName)
             .textStyle(.bodySmall)
@@ -150,25 +132,25 @@ private extension PresentationRequiredCardView {
   }
 }
 
-#Preview("Expandable") {
+#Preview("Many claims") {
   PresentationRequiredCardView(
     title: "ID-uppgifter",
     claims: [
       "Förnamn", "Efternamn", "Födelsedatum", "Personnummer", "Födelseort",
       "Födelseland", "Kön", "Över 18 år", "Utfärdat", "Giltigt till",
     ]
-    .map { ClaimUiModel(id: $0, displayName: $0, value: .null) },
+    .map { ClaimUiModel(id: $0, displayName: $0, value: .string("Exempel")) },
     icon: Image(systemName: "person.text.rectangle"),
   )
   .padding()
   .themed
 }
 
-#Preview("Not expandable") {
+#Preview("Few claims") {
   PresentationRequiredCardView(
     title: "Mobilt körkort",
     claims: ["Porträtt", "Behörigheter", "Giltigt till"]
-      .map { ClaimUiModel(id: $0, displayName: $0, value: .null) },
+      .map { ClaimUiModel(id: $0, displayName: $0, value: .string("Exempel")) },
   )
   .padding()
   .themed
