@@ -35,18 +35,9 @@ struct PresentationReviewView: View {
               claims: item.credentialUiModel.claims,
             )
           }
-        }
 
-        if !optionalItems.isEmpty {
-          Text("Valfria uppgifter:")
-            .textStyle(.h3)
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-          ForEach($optionalItems) { $item in
-            SelectiveDisclosureView(
-              isSelected: $item.isSelected,
-              claims: item.credentialUiModel.claims,
-            )
+          if !optionalItems.isEmpty {
+            PresentationOptionalCardView(items: $optionalItems)
           }
         }
       }

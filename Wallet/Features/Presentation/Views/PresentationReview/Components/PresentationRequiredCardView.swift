@@ -39,11 +39,7 @@ struct PresentationRequiredCardView: View {
           Text(title)
             .textStyle(.h5)
 
-          if isExpanded {
-            PresentationClaimListView(claims: claims)
-          } else {
-            collapsedClaimsView
-          }
+          claimsView
         }
         .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -55,6 +51,7 @@ struct PresentationRequiredCardView: View {
         theme.colors.background,
         in: RoundedRectangle(cornerRadius: Constants.cornerRadius),
       )
+      .clipShape(RoundedRectangle(cornerRadius: Constants.cornerRadius))
       .overlay {
         RoundedRectangle(cornerRadius: Constants.cornerRadius)
           .stroke(theme.colors.primaryVariant, lineWidth: Constants.borderWidth)
@@ -89,6 +86,19 @@ private extension PresentationRequiredCardView {
 
   var accessibilityHint: LocalizedStringKey {
     isExpanded ? "Visa färre uppgifter" : "Visa alla uppgifter"
+  }
+
+  @ContentBuilder
+  var claimsView: some View {
+    ZStack(alignment: .topLeading) {
+      if isExpanded {
+        PresentationClaimListView(claims: claims)
+          .transition(.opacity)
+      } else {
+        collapsedClaimsView
+          .transition(.opacity)
+      }
+    }
   }
 
   @ContentBuilder
