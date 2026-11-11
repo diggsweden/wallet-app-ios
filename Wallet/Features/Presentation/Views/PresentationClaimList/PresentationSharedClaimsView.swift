@@ -39,7 +39,8 @@ struct PresentationSharedClaimsView: View {
         )
       }
       .padding(.horizontal, Constants.horizontalPadding)
-      .padding(.vertical, Constants.verticalPadding)
+      .padding(.top, Constants.topPadding)
+      .padding(.bottom, Constants.bottomPadding)
     }
   }
 }
@@ -50,7 +51,8 @@ private extension PresentationSharedClaimsView {
     static let headerSpacing: CGFloat = 6
     static let horizontalPadding: CGFloat = 16
     static let subtitleHorizontalPadding: CGFloat = 16
-    static let verticalPadding: CGFloat = 32
+    static let topPadding: CGFloat = 16
+    static let bottomPadding: CGFloat = 48
   }
 
   var claimCount: Int {

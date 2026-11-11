@@ -27,6 +27,14 @@ final class PresentationViewModel {
   var optionalItems: [PresentationItem] = []
   var sendError = false
 
+  var sharedCredentials: [CredentialUiModel] {
+    (requiredItems + optionalItems.filter(\.isSelected)).map(\.credentialUiModel)
+  }
+
+  var sharedClaimCount: Int {
+    sharedCredentials.flatMap(\.claims).count
+  }
+
   init(
     url: URL,
     credentials: [SavedCredential],

@@ -13,6 +13,7 @@ struct PresentationReviewView: View {
   let requiredItems: [PresentationItem]
   let verifierName: String
   let verifierPurpose: String?
+  let onHeaderTap: () -> Void
 
   var body: some View {
     SoftEdgeScrollView(fillsHeight: true) {
@@ -20,7 +21,7 @@ struct PresentationReviewView: View {
         PresentationReviewHeaderView(
           name: verifierName,
           purpose: verifierPurpose,
-          onTap: {},  // TODO: Sheet
+          onTap: onHeaderTap,
         )
 
         VStack(alignment: .leading, spacing: Constants.cardSpacing) {

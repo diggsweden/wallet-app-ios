@@ -14,6 +14,7 @@ import User
 struct PresentationView: View {
   @State private var viewModel: PresentationViewModel
   @State private var path: [PresentationRoute] = []
+  @State private var presentedSheet: PresentationReviewSheet?
   @Environment(Router.self) private var router
   @Environment(\.openURL) private var openURL
   @Environment(\.theme) private var theme
@@ -37,6 +38,7 @@ struct PresentationView: View {
   }
 
   var body: some View {
+    // swiftlint:disable:next closure_body_length
     NavigationStack(path: $path) {
       content
         .animation(.default, value: viewModel.phase)
@@ -44,7 +46,16 @@ struct PresentationView: View {
           model: primaryBarModel,
           secondaryModel: secondaryBarModel,
           horizontalPadding: Constants.actionBarHorizontalPadding,
-        )
+        ) {
+          if case .ready = viewModel.phase {
+            PresentationSharedClaimsButtonView(
+              claimCount: viewModel.sharedClaimCount,
+              action: {
+                presentedSheet = .sharedClaims
+              },
+            )
+          }
+        }
         .defaultScreenStyle
         .navigationDestination(for: PresentationRoute.self) { route in
           destination(for: route)
@@ -57,9 +68,13 @@ struct PresentationView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
           ToolbarItem(placement: .cancellationAction) {
-            closeButton
+            CloseButtonView {
+              router.dismiss()
+            }
+            .disabled(viewModel.isSending)
           }
         }
+        .sheet(item: $presentedSheet, content: sheetContent)
     }
     .presentationDetents([.large])
     .presentationDragIndicator(.visible)
@@ -74,6 +89,7 @@ private extension PresentationView {
 
   @ViewBuilder
   var content: some View {
+    // swiftlint:disable:next closure_body_length
     ZStack {
       switch viewModel.phase {
         case .loading:
@@ -105,6 +121,9 @@ private extension PresentationView {
             requiredItems: viewModel.requiredItems,
             verifierName: viewModel.verifierUiModel?.name ?? "",
             verifierPurpose: viewModel.verifierUiModel?.localizedPurpose,
+            onHeaderTap: {
+              presentedSheet = .verification
+            },
           )
       }
     }
@@ -132,24 +151,35 @@ private extension PresentationView {
       action: router.dismiss,
     )
   }
-
-  @ViewBuilder
-  var closeButton: some View {
-    if #available(iOS 26.0, *) {
-      Button(role: .close) {
-        router.dismiss()
-      }
-      .disabled(viewModel.isSending)
-    } else {
-      Button("Stäng") {
-        router.dismiss()
-      }
-      .disabled(viewModel.isSending)
-    }
-  }
 }
 
 private extension PresentationView {
+  @ContentBuilder
+  func sheetContent(for sheet: PresentationReviewSheet) -> some View {
+    switch sheet {
+      case .verification:
+        EmptyView()
+
+      case .sharedClaims:
+        NavigationStack {
+          PresentationSharedClaimsView(
+            credentials: viewModel.sharedCredentials,
+            verifierName: viewModel.verifierUiModel?.name ?? "",
+          )
+          .defaultScreenStyle
+          .navigationBarTitleDisplayMode(.inline)
+          .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+              CloseButtonView {
+                presentedSheet = nil
+              }
+            }
+          }
+        }
+        .presentationDragIndicator(.visible)
+    }
+  }
+
   @ViewBuilder
   func destination(for route: PresentationRoute) -> some View {
     switch route {

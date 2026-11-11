@@ -23,26 +23,29 @@ public struct PrimaryBarModel {
   }
 }
 
-public struct PrimaryActionBar: ViewModifier {
-  public static let defaultHorizontalPadding: CGFloat = 40
-
+public struct PrimaryActionBar<AccessoryView: View>: ViewModifier {
   let model: PrimaryBarModel?
   let secondaryModel: PrimaryBarModel?
   let horizontalPadding: CGFloat
+  let accessoryView: AccessoryView
 
   public func body(content: Content) -> some View {
     content
       .safeAreaBarIfPossible(edge: .bottom) {
         if model != nil || secondaryModel != nil {
-          ViewThatFits(in: .horizontal) {
-            HStack(spacing: Constants.buttonSpacing) {
-              secondaryButton
-              primaryButton
-            }
+          VStack(spacing: Constants.accessoryViewSpacing) {
+            accessoryView
 
-            VStack(spacing: Constants.stackedButtonSpacing) {
-              primaryButton
-              secondaryButton
+            ViewThatFits(in: .horizontal) {
+              HStack(spacing: Constants.buttonSpacing) {
+                secondaryButton
+                primaryButton
+              }
+
+              VStack(spacing: Constants.stackedButtonSpacing) {
+                primaryButton
+                secondaryButton
+              }
             }
           }
           .padding(.horizontal, horizontalPadding)
@@ -77,11 +80,14 @@ public struct PrimaryActionBar: ViewModifier {
   }
 }
 
-private extension PrimaryActionBar {
-  enum Constants {
-    static let buttonSpacing: CGFloat = 10
-    static let stackedButtonSpacing: CGFloat = 12
-  }
+private enum Constants {
+  static let accessoryViewSpacing: CGFloat = 4
+  static let buttonSpacing: CGFloat = 10
+  static let stackedButtonSpacing: CGFloat = 12
+}
+
+extension PrimaryActionBar where AccessoryView == EmptyView {
+  public static var defaultHorizontalPadding: CGFloat { 40 }
 }
 
 extension View {
@@ -89,7 +95,7 @@ extension View {
     _ title: LocalizedStringResource,
     icon: String? = nil,
     accessibilityHint: LocalizedStringResource? = nil,
-    horizontalPadding: CGFloat = PrimaryActionBar.defaultHorizontalPadding,
+    horizontalPadding: CGFloat = PrimaryActionBar<EmptyView>.defaultHorizontalPadding,
     action: @escaping () -> Void,
   ) -> some View {
     primaryActionBar(
@@ -107,13 +113,29 @@ extension View {
   public func primaryActionBar(
     model: PrimaryBarModel?,
     secondaryModel: PrimaryBarModel? = nil,
-    horizontalPadding: CGFloat = PrimaryActionBar.defaultHorizontalPadding,
+    horizontalPadding: CGFloat = PrimaryActionBar<EmptyView>.defaultHorizontalPadding,
+  ) -> some View {
+    primaryActionBar(
+      model: model,
+      secondaryModel: secondaryModel,
+      horizontalPadding: horizontalPadding,
+    ) {
+      EmptyView()
+    }
+  }
+
+  public func primaryActionBar<AccessoryView: View>(
+    model: PrimaryBarModel?,
+    secondaryModel: PrimaryBarModel? = nil,
+    horizontalPadding: CGFloat = PrimaryActionBar<EmptyView>.defaultHorizontalPadding,
+    @ContentBuilder accessoryView: () -> AccessoryView,
   ) -> some View {
     modifier(
       PrimaryActionBar(
         model: model,
         secondaryModel: secondaryModel,
         horizontalPadding: horizontalPadding,
+        accessoryView: accessoryView(),
       )
     )
   }
