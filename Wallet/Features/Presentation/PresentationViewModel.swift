@@ -28,7 +28,27 @@ final class PresentationViewModel {
   var sendError = false
 
   var sharedCredentials: [CredentialUiModel] {
-    (requiredItems + optionalItems.filter(\.isSelected)).map(\.credentialUiModel)
+    let selectedCredentials = (requiredItems + optionalItems.filter(\.isSelected))
+      .map(\.credentialUiModel)
+
+    var mergedCredentials: [CredentialUiModel] = []
+    for credential in selectedCredentials {
+      let index = mergedCredentials.firstIndex { merged in
+        merged.type == credential.type
+      }
+
+      if let index {
+        let existing = mergedCredentials[index]
+        mergedCredentials[index] = CredentialUiModel(
+          type: existing.type,
+          name: existing.name,
+          claims: existing.claims + credential.claims,
+        )
+      } else {
+        mergedCredentials.append(credential)
+      }
+    }
+    return mergedCredentials
   }
 
   var sharedClaimCount: Int {
