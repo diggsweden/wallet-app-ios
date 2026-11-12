@@ -154,30 +154,35 @@ private extension PresentationView {
 }
 
 private extension PresentationView {
-  @ContentBuilder
   func sheetContent(for sheet: PresentationReviewSheet) -> some View {
-    switch sheet {
-      case .verification:
-        EmptyView()
+    NavigationStack {
+      Group {
+        switch sheet {
+          case .verification:
+            PresentationVerificationView(
+              verifierName: viewModel.verifierUiModel?.name ?? "",
+              verifierPurpose: viewModel.verifierUiModel?.localizedPurpose,
+              isEncrypted: viewModel.isEncrypted,
+            )
 
-      case .sharedClaims:
-        NavigationStack {
-          PresentationSharedClaimsView(
-            credentials: viewModel.sharedCredentials,
-            verifierName: viewModel.verifierUiModel?.name ?? "",
-          )
-          .defaultScreenStyle
-          .navigationBarTitleDisplayMode(.inline)
-          .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-              CloseButtonView {
-                presentedSheet = nil
-              }
-            }
+          case .sharedClaims:
+            PresentationSharedClaimsView(
+              credentials: viewModel.sharedCredentials,
+              verifierName: viewModel.verifierUiModel?.name ?? "",
+            )
+        }
+      }
+      .defaultScreenStyle
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbar {
+        ToolbarItem(placement: .cancellationAction) {
+          CloseButtonView {
+            presentedSheet = nil
           }
         }
-        .presentationDragIndicator(.visible)
+      }
     }
+    .presentationDragIndicator(.visible)
   }
 
   @ViewBuilder

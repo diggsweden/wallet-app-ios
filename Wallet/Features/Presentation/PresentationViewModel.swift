@@ -55,6 +55,10 @@ final class PresentationViewModel {
     sharedCredentials.flatMap(\.claims).count
   }
 
+  var isEncrypted: Bool {
+    resolved?.encryption != nil
+  }
+
   init(
     url: URL,
     credentials: [SavedCredential],

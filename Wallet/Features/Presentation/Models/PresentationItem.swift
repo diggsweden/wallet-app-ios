@@ -4,17 +4,6 @@
 
 import OpenId4VCInterface
 
-enum PresentationPhase: Equatable {
-  case loading
-  case error(CaughtError)
-  case ready
-}
-
-enum PresentationRoute: Hashable {
-  case pin
-  case success
-}
-
 struct PresentationItem: Identifiable {
   let id: String
   let required: Bool
