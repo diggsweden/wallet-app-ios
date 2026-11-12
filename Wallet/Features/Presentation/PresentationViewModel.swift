@@ -27,12 +27,13 @@ final class PresentationViewModel {
   var optionalItems: [PresentationItem] = []
   var sendError = false
 
-  var sharedCredentials: [CredentialUiModel] {
-    let selectedCredentials = (requiredItems + optionalItems.filter(\.isSelected))
-      .map(\.credentialUiModel)
+  var selectedItems: [PresentationItem] {
+    requiredItems + optionalItems.filter(\.isSelected)
+  }
 
+  var sharedCredentials: [CredentialUiModel] {
     var mergedCredentials: [CredentialUiModel] = []
-    for credential in selectedCredentials {
+    for credential in selectedItems.map(\.credentialUiModel) {
       let index = mergedCredentials.firstIndex { merged in
         merged.type == credential.type
       }
@@ -75,7 +76,6 @@ final class PresentationViewModel {
 
   func resolveAndMatchClaims() async {
     do {
-      try await Task.sleep(for: .seconds(2))
       let resolved = try await flow.resolve(
         url: url,
         credentials: credentials,
@@ -109,10 +109,9 @@ final class PresentationViewModel {
         parameters: hsmServerParameters,
         pin: pin,
       )
-      let selectedIds = (requiredItems + optionalItems.filter(\.isSelected)).map(\.id)
       return try await flow.submit(
         resolved,
-        selectedIds: selectedIds,
+        selectedIds: selectedItems.map(\.id),
         signer: signer,
       )
     } catch {

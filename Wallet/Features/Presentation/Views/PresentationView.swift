@@ -78,7 +78,7 @@ struct PresentationView: View {
     }
     .presentationDetents([.large])
     .presentationDragIndicator(.visible)
-    .interactiveDismissDisabled(viewModel.isSending)
+    .interactiveDismissDisabled(path.last != .success)
   }
 }
 
