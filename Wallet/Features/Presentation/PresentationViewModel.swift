@@ -102,7 +102,6 @@ final class PresentationViewModel {
     }
 
     isSending = true
-    defer { isSending = false }
 
     do {
       let signer = HsmProofSigner(
@@ -117,6 +116,7 @@ final class PresentationViewModel {
         signer: signer,
       )
     } catch {
+      isSending = false
       sendError = true
       return nil
     }

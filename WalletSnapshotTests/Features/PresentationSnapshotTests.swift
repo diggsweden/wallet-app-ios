@@ -29,7 +29,13 @@ struct PresentationSnapshotTests {
 
   @Test("Success")
   func success() {
-    assertThemedDeviceSnapshots(of: PresentationSuccessView(onDismiss: {}))
+    assertThemedDeviceSnapshots(
+      of: PresentationSuccessView(
+        verifierName: Self.verifierName,
+        verifierLogo: nil,
+        onShowSharedClaims: {},
+      )
+    )
   }
 
   @Test("Review header — without logo")

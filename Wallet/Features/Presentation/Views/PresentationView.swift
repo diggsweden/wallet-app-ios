@@ -169,6 +169,7 @@ private extension PresentationView {
             PresentationSharedClaimsView(
               credentials: viewModel.sharedCredentials,
               verifierName: viewModel.verifierUiModel?.name ?? "",
+              hasBeenShared: path.last == .success,
             )
         }
       }
@@ -196,7 +197,15 @@ private extension PresentationView {
         }
 
       case .success:
-        PresentationSuccessView {
+        PresentationSuccessView(
+          verifierName: viewModel.verifierUiModel?.name ?? "",
+          verifierLogo: nil,
+          onShowSharedClaims: { presentedSheet = .sharedClaims },
+        )
+        .primaryActionBar(
+          "Klar",
+          horizontalPadding: Constants.actionBarHorizontalPadding,
+        ) {
           router.dismiss()
         }
     }
