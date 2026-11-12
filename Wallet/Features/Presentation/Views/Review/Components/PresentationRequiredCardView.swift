@@ -54,7 +54,7 @@ struct PresentationRequiredCardView: View {
       .clipShape(RoundedRectangle(cornerRadius: Constants.cornerRadius))
       .overlay {
         RoundedRectangle(cornerRadius: Constants.cornerRadius)
-          .stroke(theme.colors.primaryVariant, lineWidth: Constants.borderWidth)
+          .stroke(theme.colors.borderSubtle, lineWidth: Constants.borderWidth)
       }
     }
     .buttonStyle(.plain)

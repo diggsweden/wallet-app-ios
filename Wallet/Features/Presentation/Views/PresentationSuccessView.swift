@@ -24,7 +24,7 @@ struct PresentationSuccessView: View {
           VStack(spacing: Constants.titleSpacing) {
             Text("Delat med")
               .textStyle(.labelLarge)
-              .foregroundStyle(theme.colors.linkPrimary)
+              .foregroundStyle(theme.colors.linkAccent)
 
             Text(verifierName)
               .textStyle(.h2)
@@ -99,7 +99,7 @@ private extension PresentationSuccessView {
         .drawOnSymbolEffectIfPossible(isActive: !isChecked)
         .animation(reduceMotion ? nil : .snappy, value: isChecked)
         .frame(width: Constants.indicatorSize, height: Constants.indicatorSize)
-        .background(theme.colors.button, in: Circle())
+        .background(theme.colors.linkAccent, in: Circle())
         .accessibilityHidden(true)
     }
   }
@@ -111,7 +111,7 @@ private extension PresentationSuccessView {
       .padding(Constants.logoPadding)
       .frame(width: Constants.indicatorSize, height: Constants.indicatorSize)
       .background(
-        theme.colors.background,
+        Color.white,
         in: RoundedRectangle(cornerRadius: Constants.logoCornerRadius),
       )
       .overlay {
@@ -125,7 +125,7 @@ private extension PresentationSuccessView {
     Image(systemName: "checkmark.circle.fill")
       .font(.system(size: Constants.badgeSize))
       .symbolRenderingMode(.palette)
-      .foregroundStyle(theme.colors.onPrimary, theme.colors.button)
+      .foregroundStyle(theme.colors.onPrimary, theme.colors.linkAccent)
       .padding(Constants.badgeRingWidth)
       .background(theme.colors.background, in: Circle())
       .scaleEffect(isChecked ? 1 : Constants.hiddenBadgeScale)
@@ -144,7 +144,7 @@ private extension PresentationSuccessView {
           .accessibilityHidden(true)
       }
       .textStyle(.bodyMedium)
-      .foregroundStyle(theme.colors.linkPrimary)
+      .foregroundStyle(theme.colors.linkAccent)
       .padding(.horizontal, Constants.buttonHorizontalPadding)
       .frame(minHeight: Constants.buttonMinimumHeight)
       .contentShape(Rectangle())

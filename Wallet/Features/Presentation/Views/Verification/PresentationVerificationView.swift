@@ -157,7 +157,7 @@ private extension PresentationVerificationView {
       Image(systemName: "checkmark.circle.fill")
         .font(.system(size: Constants.indicatorSize))
         .symbolRenderingMode(.palette)
-        .foregroundStyle(theme.colors.onPrimary, theme.colors.button)
+        .foregroundStyle(theme.colors.onPrimary, theme.colors.linkAccent)
         .scaleEffect(isChecked ? 1 : Constants.hiddenIndicatorScale)
         .opacity(isChecked ? 1 : 0)
         .animation(.bouncy, value: isChecked)
@@ -165,7 +165,7 @@ private extension PresentationVerificationView {
 
       if showsConnector {
         Capsule()
-          .fill(theme.colors.primaryVariant)
+          .fill(theme.colors.borderSubtle)
           .frame(width: Constants.connectorWidth)
           .frame(maxHeight: .infinity)
           .scaleEffect(y: isConnectorFilled ? 1 : 0, anchor: .top)
@@ -177,7 +177,7 @@ private extension PresentationVerificationView {
   var encryptionView: some View {
     HStack(spacing: Constants.encryptionSpacing) {
       Image(systemName: "lock.fill")
-        .foregroundStyle(theme.colors.button)
+        .foregroundStyle(theme.colors.linkAccent)
         .accessibilityHidden(true)
 
       Text("Krypterat hela vägen · bara \(verifierName) kan läsa det du delar")

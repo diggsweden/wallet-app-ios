@@ -35,7 +35,7 @@ struct PresentationOptionalCardView: View {
     .overlay {
       RoundedRectangle(cornerRadius: Constants.cornerRadius)
         .stroke(
-          theme.colors.borderInteractive,
+          theme.colors.borderDashed,
           style: StrokeStyle(
             lineWidth: Constants.borderWidth,
             dash: [Constants.dashLength, Constants.dashGap],

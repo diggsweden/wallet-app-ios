@@ -24,7 +24,7 @@ struct PresentationClaimPreviewView: View {
       if hiddenClaimCount > .zero {
         Text("+ \(hiddenClaimCount) till")
           .textStyle(.labelLarge)
-          .foregroundStyle(theme.colors.linkPrimary)
+          .foregroundStyle(theme.colors.linkAccent)
       }
     }
   }

@@ -31,6 +31,7 @@ private struct CheckboxToggleView: View {
 
         configuration.label
           .frame(maxWidth: .infinity, alignment: .leading)
+          .fixedSize(horizontal: false, vertical: true)
       }
       .frame(minHeight: Constants.minimumHeight)
       .contentShape(Rectangle())

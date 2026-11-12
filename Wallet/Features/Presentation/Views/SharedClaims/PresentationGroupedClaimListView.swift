@@ -54,7 +54,7 @@ private extension PresentationGroupedClaimListView {
         .padding(.vertical, Constants.listVerticalPadding)
         .overlay {
           RoundedRectangle(cornerRadius: Constants.cornerRadius)
-            .stroke(theme.colors.primaryVariant, lineWidth: Constants.borderWidth)
+            .stroke(theme.colors.borderSubtle, lineWidth: Constants.borderWidth)
         }
     }
   }

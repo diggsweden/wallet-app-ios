@@ -38,7 +38,7 @@ struct PresentationReviewHeaderView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
 
         Image(systemName: "chevron.right")
-          .foregroundStyle(theme.colors.linkPrimary)
+          .foregroundStyle(theme.colors.linkAccent)
           .accessibilityHidden(true)
       }
       .multilineTextAlignment(.leading)
@@ -93,7 +93,7 @@ private extension PresentationReviewHeaderView {
       Text("Registrerad mottagare")
     }
     .textStyle(.labelLarge)
-    .foregroundStyle(theme.colors.linkPrimary)
+    .foregroundStyle(theme.colors.linkAccent)
   }
 
   @ContentBuilder
@@ -116,7 +116,7 @@ private extension PresentationReviewHeaderView {
       .padding(Constants.logoPadding)
       .frame(width: Constants.logoSize, height: Constants.logoSize)
       .background(
-        theme.colors.background,
+        Color.white,
         in: RoundedRectangle(cornerRadius: Constants.logoCornerRadius),
       )
       .overlay {
