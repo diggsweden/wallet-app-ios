@@ -77,8 +77,8 @@ struct PresentationView: View {
         .sheet(item: $presentedSheet, content: sheetContent)
     }
     .presentationDetents([.large])
-    .presentationDragIndicator(.visible)
-    .interactiveDismissDisabled(path.last != .success)
+    .presentationDragIndicator(isDismissible ? .visible : .hidden)
+    .interactiveDismissDisabled(!isDismissible)
   }
 }
 
@@ -132,6 +132,10 @@ private extension PresentationView {
 }
 
 private extension PresentationView {
+  var isDismissible: Bool {
+    path.last == .success
+  }
+
   var primaryBarModel: PrimaryBarModel? {
     guard case .ready = viewModel.phase else {
       return nil
