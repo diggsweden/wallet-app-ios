@@ -8,7 +8,7 @@ public struct VerifierUiModel: Sendable {
   public let name: String
   public let country: String
   public let descriptions: [String: String]
-  public let purpose: [String: String]
+  private let purpose: [String: String]
 
   public init(
     name: String,
@@ -20,5 +20,11 @@ public struct VerifierUiModel: Sendable {
     self.country = country
     self.descriptions = descriptions
     self.purpose = purpose
+  }
+
+  // TODO: Make more robust
+  public var localizedPurpose: String? {
+    let userLocaleLanguage = Locale.current.language.languageCode?.identifier ?? "sv"
+    return purpose[userLocaleLanguage] ?? purpose["en"]
   }
 }

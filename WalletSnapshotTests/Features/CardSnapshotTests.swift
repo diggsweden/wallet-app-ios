@@ -14,7 +14,7 @@ struct CardSnapshotTests {
   @Test("PID card")
   func pidCard() {
     assertThemedSnapshots(
-      of: PidCard(credential: Self.pid).environment(Router()),
+      of: PidCardView(credential: Self.pid).environment(Router()),
       width: 360,
     )
   }
@@ -22,7 +22,7 @@ struct CardSnapshotTests {
   @Test("Document card")
   func documentCard() {
     assertThemedSnapshots(
-      of: DocumentCard(credential: Self.document).environment(Router()),
+      of: DocumentCardView(credential: Self.document).environment(Router()),
       width: 360,
     )
   }

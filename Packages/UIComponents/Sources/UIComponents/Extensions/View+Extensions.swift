@@ -58,6 +58,15 @@ extension View {
     }
   }
 
+  @ContentBuilder
+  public func drawOnSymbolEffectIfPossible(isActive: Bool) -> some View {
+    if #available(iOS 26.0, *) {
+      self.symbolEffect(.drawOn, isActive: isActive)
+    } else {
+      self.opacity(isActive ? 0 : 1)
+    }
+  }
+
   public func staticAnimation(setTo animation: Animation?) -> some View {
     self
       .transaction { t in

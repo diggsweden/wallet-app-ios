@@ -6,7 +6,7 @@ import CredentialInterfaces
 import DesignSystem
 import SwiftUI
 
-struct DocumentCard: View {
+struct DocumentCardView: View {
   let credential: SavedCredential
   @Environment(Router.self) private var router
   @Environment(\.theme) private var theme
@@ -45,7 +45,7 @@ struct DocumentCard: View {
     displayData: CredentialDisplayData(name: "Körkort"),
   )
 
-  DocumentCard(credential: credential)
+  DocumentCardView(credential: credential)
     .environment(Router())
     .themed
 }

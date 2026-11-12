@@ -38,6 +38,9 @@ public struct Theme: Sendable {
     public let backgroundPage: Color
     public let layerAccent: Color
     public let borderInteractive: Color
+    public let borderSubtle: Color
+    public let borderDashed: Color
+    public let linkAccent: Color
     public let pidBackground: Color
   }
 
@@ -75,6 +78,9 @@ extension Theme {
       backgroundPage: Color.rgba(243, 243, 243),
       layerAccent: BrandColors.yellow.100,
       borderInteractive: BrandColors.green.100,
+      borderSubtle: BrandColors.green.25,
+      borderDashed: Color.rgba(126, 137, 123),
+      linkAccent: BrandColors.green.100,
       pidBackground: BrandColors.brown.70,
     )
   )
@@ -106,6 +112,9 @@ extension Theme {
       backgroundPage: BrandColors.neutral.130,
       layerAccent: BrandColors.yellow.130,
       borderInteractive: BrandColors.green.25,
+      borderSubtle: Color.rgba(59, 64, 58),
+      borderDashed: Color.rgba(124, 136, 121),
+      linkAccent: Color.rgba(168, 196, 159),
       pidBackground: BrandColors.brown.100,
     )
   )
