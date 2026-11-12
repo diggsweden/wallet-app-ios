@@ -76,7 +76,6 @@ final class PresentationViewModel {
 
   func resolveAndMatchClaims() async {
     do {
-      try await Task.sleep(for: .seconds(2))
       let resolved = try await flow.resolve(
         url: url,
         credentials: credentials,
