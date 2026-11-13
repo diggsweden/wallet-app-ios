@@ -6,98 +6,163 @@ import DesignSystem
 import SwiftUI
 
 public struct PinView: View {
-  let maxDigits: Int = 6
-  let buttonText: LocalizedStringResource
-  let onComplete: (String) throws -> Void
+  let submitLabel: LocalizedStringResource
+  let isLoading: Bool
+  let onSubmit: (String) throws -> Void
+
   @Environment(\.theme) private var theme
-  @Environment(\.dynamicTypeSize) private var dynamicType
-  @Environment(\.orientation) private var orientation
   @Environment(ToastViewModel.self) private var toastViewModel
-  @State private var pin: String = ""
-  @State private var error: String?
-  @State private var onErrorFeedback: Bool = false
-  @State private var gridWidth: CGFloat = 0
+  @Environment(\.orientation) private var orientation
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
+  @State private var pin = ""
+  @State private var errorFeedback = false
 
   public init(
-    buttonText: LocalizedStringResource = "Begär personuppgifter",
-    onComplete: @escaping (String) throws -> Void,
+    submitLabel: LocalizedStringResource,
+    isLoading: Bool = false,
+    onSubmit: @escaping (String) throws -> Void,
   ) {
-    self.buttonText = buttonText
-    self.onComplete = onComplete
+    self.submitLabel = submitLabel
+    self.isLoading = isLoading
+    self.onSubmit = onSubmit
   }
 
   public var body: some View {
-    let verticalSpacing = orientation.isLandscape ? 20.0 : 38.0
-
-    VStack(spacing: verticalSpacing) {
-      pinDots
+    VStack(
+      spacing: orientation.isLandscape
+        ? Constants.landscapeSectionSpacing : Constants.sectionSpacing
+    ) {
+      dotsView
 
       T9KeypadView(
-        onTapDigit: { updatePin(with: $0) },
-        clearButtonDisabled: pin.count < 1,
-        onClear: { pin.removeLast() },
+        submitLabel: submitLabel,
+        isDeleteEnabled: !pin.isEmpty,
+        isSubmitEnabled: pin.count == Constants.pinLength,
+        onTapDigit: appendDigit,
+        onTapDelete: { pin.removeLast() },
+        onTapSubmit: submit,
       )
-      .background(
-        GeometryReader { proxy in
-          Color.clear.preference(
-            key: GridWidthKey.self,
-            value: proxy.size.width,
-          )
-        }
-      )
-      .padding(.bottom, 10)
-      PrimaryButton(buttonText, maxWidth: gridWidth) {
-        handlePinComplete()
+      .disabled(isLoading)
+      .opacity(isLoading ? Constants.loadingKeypadOpacity : 1)
+      .animation(.smooth, value: isLoading)
+    }
+    .scrollInLandscape(
+      topContentPadding: Constants.landscapeTopContentPadding
+    )
+    .sensoryFeedback(.error, trigger: errorFeedback)
+    .onChange(of: isLoading) { _, isLoading in
+      if !isLoading {
+        resetAfterError()
       }
     }
-    .onPreferenceChange(GridWidthKey.self) { gridWidth = $0 }
-    .scrollInLandscape
-    .sensoryFeedback(.error, trigger: onErrorFeedback)
+  }
+}
+
+private extension PinView {
+  enum Constants {
+    static let pinLength = 6
+    static let sectionSpacing: CGFloat = 38
+    static let landscapeSectionSpacing: CGFloat = 20
+    static let dotSpacing: CGFloat = 20
+    static let dotSize: CGFloat = 20
+    static let loadingKeypadOpacity: CGFloat = 0.4
+    static let waveHeight: CGFloat = 8
+    static let waveStep: TimeInterval = 0.08
+    static let waveRiseDuration: TimeInterval = 0.18
+    static let waveFallDuration: TimeInterval = 0.24
+    static let wavePeriod: TimeInterval = 1
+    static let reducedMotionDimming: CGFloat = 0.6
+    static let landscapeTopContentPadding: CGFloat = 24
   }
 
-  private var pinDots: some View {
-    HStack(spacing: 20) {
-      ForEach(0 ..< maxDigits, id: \.self) { index in
-        PinDot(
+  var dotsView: some View {
+    let waveHeight = reduceMotion ? 0 : Constants.waveHeight
+    let waveDimming = reduceMotion ? Constants.reducedMotionDimming : 0
+
+    return HStack(spacing: Constants.dotSpacing) {
+      ForEach(0 ..< Constants.pinLength, id: \.self) { index in
+        let dot = PinDot(
           filled: index < pin.count,
           color: theme.colors.buttonSecondaryHover,
-          size: 20,
+          size: Constants.dotSize,
         )
+
+        if isLoading {
+          dot
+            .keyframeAnimator(initialValue: CGFloat.zero) { dot, lift in
+              dot
+                .offset(y: -lift * waveHeight)
+                .opacity(1 - lift * waveDimming)
+            } keyframes: { _ in
+              waveKeyframes(for: index)
+            }
+        } else {
+          dot
+        }
       }
     }
+    .accessibilityElement(children: .ignore)
+    .accessibilityLabel("PIN-kod")
+    .accessibilityValue("\(pin.count) av \(Constants.pinLength) siffror")
   }
 
-  private struct GridWidthKey: PreferenceKey {
-    static let defaultValue: CGFloat = 0
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-      value = max(value, nextValue())
+  func waveKeyframes(for index: Int) -> some Keyframes<CGFloat> {
+    let delay = Double(index + 1) * Constants.waveStep
+    let rest =
+      Constants.wavePeriod - delay - Constants.waveRiseDuration
+      - Constants.waveFallDuration
+
+    return KeyframeTrack {
+      LinearKeyframe(0, duration: delay)
+      SpringKeyframe(1, duration: Constants.waveRiseDuration)
+      SpringKeyframe(0, duration: Constants.waveFallDuration)
+      LinearKeyframe(0, duration: rest)
     }
   }
 
-  private func updatePin(with digit: Character) {
-    guard pin.count < maxDigits else {
+  func submit() {
+    do {
+      try onSubmit(pin)
+    } catch {
+      toastViewModel.showError(error.message)
+      resetAfterError()
+    }
+  }
+
+  func resetAfterError() {
+    pin = ""
+    errorFeedback.toggle()
+  }
+
+  func appendDigit(_ digit: Character) {
+    guard pin.count < Constants.pinLength else {
       return
     }
 
     pin.append(digit)
   }
-
-  private func handlePinComplete() {
-    do {
-      try onComplete(pin)
-      error = nil
-    } catch {
-      toastViewModel.showError(error.message)
-      onErrorFeedback.toggle()
-      pin = ""
-    }
-  }
 }
 
-#Preview {
-  PinView { _ in }
+#Preview("Default") {
+  PinView(submitLabel: "Nästa") { _ in }
     .frame(maxWidth: .infinity, maxHeight: .infinity)
     .themed
     .withOrientation
     .withToast
+}
+
+#Preview("Loading") {
+  @Previewable @State var isLoading = false
+
+  PinView(submitLabel: "Dela", isLoading: isLoading) { _ in
+    Task {
+      isLoading = true
+      try? await Task.sleep(for: .seconds(3))
+      isLoading = false
+    }
+  }
+  .frame(maxWidth: .infinity, maxHeight: .infinity)
+  .themed
+  .withOrientation
+  .withToast
 }
