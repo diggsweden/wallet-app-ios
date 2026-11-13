@@ -6,10 +6,18 @@ import SwiftUI
 
 struct ScrollInLandscapeModifier: ViewModifier {
   @Environment(\.orientation) private var orientation
+  private let topContentPadding: CGFloat
+
+  init(topContentPadding: CGFloat) {
+    self.topContentPadding = topContentPadding
+  }
 
   func body(content: Content) -> some View {
     if orientation.isLandscape {
-      SoftEdgeScrollView(showsIndicators: false) { content }
+      SoftEdgeScrollView(showsIndicators: false) {
+        content
+          .padding(.top, topContentPadding)
+      }
     } else {
       content
     }
@@ -17,5 +25,7 @@ struct ScrollInLandscapeModifier: ViewModifier {
 }
 
 extension View {
-  public var scrollInLandscape: some View { modifier(ScrollInLandscapeModifier()) }
+  public func scrollInLandscape(topContentPadding: CGFloat) -> some View {
+    modifier(ScrollInLandscapeModifier(topContentPadding: topContentPadding))
+  }
 }
