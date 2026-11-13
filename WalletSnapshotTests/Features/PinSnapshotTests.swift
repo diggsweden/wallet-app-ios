@@ -13,7 +13,7 @@ struct PinSnapshotTests {
   @Test("Pin entry")
   func pinEntry() {
     assertThemedDeviceSnapshots(
-      of: PinView { _ in }
+      of: PinView(submitLabel: "Nästa") { _ in }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .withOrientation
         .withToast

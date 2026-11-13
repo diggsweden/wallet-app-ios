@@ -15,19 +15,16 @@ public struct PinView: View {
   @Environment(\.orientation) private var orientation
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
   @State private var pin = ""
-  @State private var isRevealed: Bool
   @State private var errorFeedback = false
 
   public init(
     submitLabel: LocalizedStringResource,
     isLoading: Bool = false,
-    animatesAppearance: Bool = false,
     onSubmit: @escaping (String) throws -> Void,
   ) {
     self.submitLabel = submitLabel
     self.isLoading = isLoading
     self.onSubmit = onSubmit
-    _isRevealed = State(initialValue: !animatesAppearance)
   }
 
   public var body: some View {
@@ -37,7 +34,7 @@ public struct PinView: View {
     ) {
       dotsView
 
-      PinKeypadView(
+      T9KeypadView(
         submitLabel: submitLabel,
         isDeleteEnabled: !pin.isEmpty,
         isSubmitEnabled: pin.count == Constants.pinLength,
@@ -48,15 +45,6 @@ public struct PinView: View {
       .disabled(isLoading)
       .opacity(isLoading ? Constants.loadingKeypadOpacity : 1)
       .animation(.smooth, value: isLoading)
-      .scaleEffect(isRevealed || reduceMotion ? 1 : Constants.hiddenScale)
-      .opacity(isRevealed ? 1 : 0)
-      .animation(
-        .bouncy(
-          duration: Constants.revealDuration,
-          extraBounce: Constants.revealExtraBounce,
-        ),
-        value: isRevealed,
-      )
     }
     .scrollInLandscape(
       topContentPadding: Constants.landscapeTopContentPadding
@@ -66,9 +54,6 @@ public struct PinView: View {
       if !isLoading {
         resetAfterError()
       }
-    }
-    .task {
-      isRevealed = true
     }
   }
 }
@@ -81,9 +66,6 @@ private extension PinView {
     static let dotSpacing: CGFloat = 20
     static let dotSize: CGFloat = 20
     static let loadingKeypadOpacity: CGFloat = 0.4
-    static let hiddenScale: CGFloat = 0.85
-    static let revealDuration: TimeInterval = 0.5
-    static let revealExtraBounce: Double = 0.15
     static let waveHeight: CGFloat = 8
     static let waveStep: TimeInterval = 0.08
     static let waveRiseDuration: TimeInterval = 0.18
@@ -167,30 +149,6 @@ private extension PinView {
     .themed
     .withOrientation
     .withToast
-}
-
-#Preview("Reveal") {
-  @Previewable @State var shouldShow = false
-
-  ZStack {
-    Group {
-      if shouldShow {
-        PinView(submitLabel: "Dela", animatesAppearance: true) { _ in }
-          .frame(maxWidth: .infinity, maxHeight: .infinity)
-          .themed
-          .withOrientation
-          .withToast
-      } else {
-        ProgressView()
-      }
-    }
-    .transition(.opacity)
-  }
-  .animation(.default, value: shouldShow)
-  .task {
-    try? await Task.sleep(for: .seconds(1))
-    shouldShow = true
-  }
 }
 
 #Preview("Loading") {

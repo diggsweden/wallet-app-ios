@@ -10,19 +10,38 @@ import Testing
 @MainActor
 @Suite("T9 keypad snapshots", .snapshots(record: .missing))
 struct T9KeypadSnapshotTests {
-  @Test("Keypad — clear enabled")
-  func clearEnabled() {
+  @Test("Keypad — delete enabled")
+  func deleteEnabled() {
     assertThemedSnapshots(
-      of: T9KeypadView(onTapDigit: { _ in }, clearButtonDisabled: false, onClear: {}),
+      of: Self.keypad(isDeleteEnabled: true, isSubmitEnabled: false),
       width: 320,
     )
   }
 
-  @Test("Keypad — clear disabled")
-  func clearDisabled() {
+  @Test("Keypad — delete disabled")
+  func deleteDisabled() {
     assertThemedSnapshots(
-      of: T9KeypadView(onTapDigit: { _ in }, clearButtonDisabled: true, onClear: {}),
+      of: Self.keypad(isDeleteEnabled: false, isSubmitEnabled: false),
       width: 320,
+    )
+  }
+
+  @Test("Keypad — submit enabled")
+  func submitEnabled() {
+    assertThemedSnapshots(
+      of: Self.keypad(isDeleteEnabled: true, isSubmitEnabled: true),
+      width: 320,
+    )
+  }
+
+  private static func keypad(isDeleteEnabled: Bool, isSubmitEnabled: Bool) -> T9KeypadView {
+    T9KeypadView(
+      submitLabel: "Nästa",
+      isDeleteEnabled: isDeleteEnabled,
+      isSubmitEnabled: isSubmitEnabled,
+      onTapDigit: { _ in },
+      onTapDelete: {},
+      onTapSubmit: {},
     )
   }
 }

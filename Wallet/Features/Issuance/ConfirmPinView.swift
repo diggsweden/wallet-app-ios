@@ -15,7 +15,7 @@ struct ConfirmPinView: View {
         .multilineTextAlignment(.leading)
         .frame(maxWidth: .infinity, alignment: .leading)
 
-      PinView(onComplete: onComplete)
+      PinView(submitLabel: "Begär personuppgifter", onSubmit: onComplete)
     }
   }
 }

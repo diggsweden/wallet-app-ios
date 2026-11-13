@@ -12,15 +12,17 @@ private struct T9Key: Identifiable, Hashable {
 }
 
 struct T9KeypadView: View {
+  let submitLabel: LocalizedStringResource
+  let isDeleteEnabled: Bool
+  let isSubmitEnabled: Bool
   let onTapDigit: (Character) -> Void
-  let clearButtonDisabled: Bool
-  let onClear: () -> Void
+  let onTapDelete: () -> Void
+  let onTapSubmit: () -> Void
 
   @Environment(\.theme) private var theme
-  @Environment(\.dynamicTypeSize) private var dynamicType
+  @Environment(\.dynamicTypeSize) private var dynamicTypeSize
   @Environment(\.orientation) private var orientation
-
-  @State private var onTapFeedback: Bool = false
+  @State private var tapFeedback = false
 
   private let digitRows: [[T9Key]] = [
     [
@@ -38,70 +40,103 @@ struct T9KeypadView: View {
       .init(digit: "8", letters: "TUV"),
       .init(digit: "9", letters: "WXYZ"),
     ],
-    [.init(digit: "0", letters: "")],
   ]
 
+  private let zeroKey = T9Key(digit: "0", letters: "")
+
   var body: some View {
-    let verticalSpacing = orientation.isLandscape ? 12.0 : 20.0
-    Grid(horizontalSpacing: 30, verticalSpacing: verticalSpacing) {
+    Grid(
+      horizontalSpacing: Constants.horizontalSpacing,
+      verticalSpacing: orientation.isLandscape
+        ? Constants.landscapeVerticalSpacing : Constants.verticalSpacing,
+    ) {
       ForEach(digitRows, id: \.self) { row in
         GridRow {
           ForEach(row) { key in
-            if row.count == 1 {
-              clearButton
-              keyButton(for: key)
-            } else {
-              keyButton(for: key)
-            }
+            digitButtonView(for: key)
           }
         }
       }
+
+      GridRow {
+        deleteButtonView
+        digitButtonView(for: zeroKey)
+        submitButtonView
+      }
     }
-    .sensoryFeedback(.impact, trigger: onTapFeedback)
+    .sensoryFeedback(.impact, trigger: tapFeedback)
+  }
+}
+
+private extension T9KeypadView {
+  enum Constants {
+    static let horizontalSpacing: CGFloat = 24
+    static let verticalSpacing: CGFloat = 16
+    static let landscapeVerticalSpacing: CGFloat = 8
+    static let lettersSpacing: CGFloat = 2
+    static let iconSize: CGFloat = 22
+    static let disabledOpacity: CGFloat = 0.5
+    static let keyBackgroundOpacity: CGFloat = 0.05
   }
 
-  private var clearButton: some View {
+  func digitButtonView(for key: T9Key) -> some View {
     Button {
-      onClear()
-      onTapFeedback.toggle()
-    } label: {
-      Image(systemName: "delete.backward")
-        .font(.system(size: 22))
-        .foregroundStyle(clearButtonDisabled ? theme.colors.iconDisabled : theme.colors.textPrimary)
-        .accessibilityLabel("Radera")
-    }
-    .buttonStyle(.plain)
-    .disabled(clearButtonDisabled)
-  }
-
-  @ViewBuilder
-  var shape: some View {
-    if orientation.isLandscape {
-      Circle()
-    } else {
-      Capsule()
-    }
-  }
-
-  private func keyButton(for key: T9Key) -> some View {
-    let shape = Capsule()
-
-    return Button {
       onTapDigit(key.digit)
-      onTapFeedback.toggle()
+      tapFeedback.toggle()
     } label: {
-      VStack(spacing: 2) {
+      VStack(spacing: Constants.lettersSpacing) {
         Text(String(key.digit))
           .textStyle(.h2)
-          .foregroundStyle(theme.colors.linkPrimary)
-        if dynamicType <= .xLarge {
+          .foregroundStyle(theme.colors.textPrimary)
+
+        if dynamicTypeSize <= .xLarge {
           Text(key.letters)
             .textStyle(.caption)
+            .foregroundStyle(theme.colors.textInformation)
         }
       }
-      .frame(width: 80, height: 50)
-      .background(theme.colors.surface, in: shape)
-      .contentShape(shape)
+      .dynamicTypeSize(...DynamicTypeSize.accessibility1)
     }
+    .buttonStyle(
+      KeyButtonStyle(
+        background: theme.colors.textPrimary.opacity(Constants.keyBackgroundOpacity),
+        highlight: theme.colors.textPrimary,
+      )
+    )
+    .accessibilityLabel(Text(String(key.digit)))
+  }
+
+  var deleteButtonView: some View {
+    Button {
+      onTapDelete()
+      tapFeedback.toggle()
+    } label: {
+      Image(systemName: "delete.backward")
+        .font(.system(size: Constants.iconSize))
+        .foregroundStyle(isDeleteEnabled ? theme.colors.textPrimary : theme.colors.iconDisabled)
+    }
+    .buttonStyle(KeyButtonStyle(background: .clear, highlight: theme.colors.textPrimary))
+    .disabled(!isDeleteEnabled)
+    .accessibilityLabel("Radera")
+  }
+
+  var submitButtonView: some View {
+    Button {
+      onTapSubmit()
+      tapFeedback.toggle()
+    } label: {
+      Image(systemName: "arrow.right")
+        .font(.system(size: Constants.iconSize, weight: .semibold))
+        .foregroundStyle(theme.colors.onPrimary)
+    }
+    .buttonStyle(
+      KeyButtonStyle(
+        background: theme.colors.button.opacity(isSubmitEnabled ? 1 : Constants.disabledOpacity),
+        highlight: theme.colors.onPrimary,
+      )
+    )
+    .disabled(!isSubmitEnabled)
+    .animation(.snappy, value: isSubmitEnabled)
+    .accessibilityLabel(Text(submitLabel))
   }
 }
