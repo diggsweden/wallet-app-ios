@@ -44,7 +44,6 @@ struct PresentationSuccessView: View {
       .containerRelativeFrame(.vertical)
     }
     .scrollBounceBehavior(.basedOnSize)
-    .navigationBarBackButtonHidden(true)
     .task {
       await showCheckmark()
     }
@@ -74,11 +73,7 @@ private extension PresentationSuccessView {
 
   func showCheckmark() async {
     if !reduceMotion {
-      do {
-        try await Task.sleep(for: Constants.checkmarkDelay)
-      } catch {
-        return
-      }
+      try? await Task.sleep(for: Constants.checkmarkDelay)
     }
 
     isChecked = true

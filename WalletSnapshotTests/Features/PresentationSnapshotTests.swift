@@ -78,16 +78,26 @@ struct PresentationSnapshotTests {
   @Test("Pin — entry")
   func pinEntry() {
     assertThemedDeviceSnapshots(
-      of: PresentationPinView(isLoading: false, onPinEntered: { _ in })
-        .environment(ToastViewModel())
+      of: PresentationPinView(
+        verifierName: "Nordbil Hyrbilar AB",
+        sharedClaimCount: 4,
+        isLoading: false,
+        onPinEntered: { _ in },
+      )
+      .environment(ToastViewModel())
     )
   }
 
   @Test("Pin — loading")
   func pinLoading() {
     assertThemedDeviceSnapshots(
-      of: PresentationPinView(isLoading: true, onPinEntered: { _ in })
-        .environment(ToastViewModel())
+      of: PresentationPinView(
+        verifierName: "Nordbil Hyrbilar AB",
+        sharedClaimCount: 4,
+        isLoading: true,
+        onPinEntered: { _ in },
+      )
+      .environment(ToastViewModel())
     )
   }
 
