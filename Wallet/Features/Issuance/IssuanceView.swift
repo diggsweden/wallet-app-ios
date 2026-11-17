@@ -11,6 +11,7 @@ import UIComponents
 
 struct IssuanceView: View {
   let viewModel: IssuanceViewModel
+  let usesPinPrompt: Bool
 
   var body: some View {
     VStack {
@@ -99,15 +100,13 @@ private extension IssuanceView {
           }
 
         case .awaitingPin, .authenticatingPin, .creatingKey, .signingProof, .fetchingCredential:
-          ConfirmPinView(isLoading: step != .awaitingPin) { pin in
-            Task { await viewModel.enterPin(pin) }
-          }
-          .transition(
-            .asymmetric(
-              insertion: .offset(y: Constants.pinRevealOffset).combined(with: .opacity),
-              removal: .opacity,
+          pinView(isLoading: step != .awaitingPin)
+            .transition(
+              .asymmetric(
+                insertion: .offset(y: Constants.pinRevealOffset).combined(with: .opacity),
+                removal: .opacity,
+              )
             )
-          )
 
         case let .savingCredential(credential, _, _),
           let .awaitingCompletion(credential),
@@ -118,7 +117,30 @@ private extension IssuanceView {
           }
       }
     }
+    .frame(maxWidth: .infinity)
     .animation(.smooth, value: isPinStep(step))
+  }
+
+  @ViewBuilder
+  func pinView(isLoading: Bool) -> some View {
+    if usesPinPrompt {
+      PinPromptView(
+        title: "Godkänn och identifiera",
+        subtitle: "Fyll i din pinkod för att begära dina personuppgifter.",
+        submitLabel: "Begär personuppgifter",
+        isLoading: isLoading,
+        onSubmit: enterPin,
+      )
+    } else {
+      ConfirmPinView(
+        isLoading: isLoading,
+        onComplete: enterPin,
+      )
+    }
+  }
+
+  func enterPin(_ pin: String) {
+    Task { await viewModel.enterPin(pin) }
   }
 
   func isPinStep(_ step: IssuanceStep) -> Bool {
