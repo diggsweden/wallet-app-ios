@@ -38,10 +38,16 @@ struct IssuanceView: View {
     }
     .task { await viewModel.start() }
     .toolbar { issuanceToolbar }
+    .toolbar(.visible, for: .navigationBar)
   }
 }
 
 private extension IssuanceView {
+  enum Constants {
+    static let stepSpacing: CGFloat = 12
+    static let pinRevealOffset: CGFloat = 24
+  }
+
   @ContentBuilder
   var issuanceToolbar: some ToolbarContent {
     if shouldShowDismissButton {
@@ -72,30 +78,56 @@ private extension IssuanceView {
     }
   }
 
+  @ViewBuilder
+  var issuerDisplayView: some View {
+    if let issuerDisplayData = viewModel.issuerDisplayData {
+      IssuerDisplayView(issuerDisplayData: issuerDisplayData)
+    }
+  }
+
   @ContentBuilder
   func issuanceStepView(_ step: IssuanceStep) -> some View {
-    VStack(spacing: 12) {
-      if let issuerDisplayData = viewModel.issuerDisplayData, step != .awaitingPin {
-        IssuerDisplayView(issuerDisplayData: issuerDisplayData)
-      }
-
+    ZStack(alignment: .top) {
       switch step {
-        case .preparingToAuthorize:
-          EmptyView()
+        case .loadingCredentialOffer, .preparingToAuthorize, .authorizing:
+          VStack(spacing: Constants.stepSpacing) {
+            issuerDisplayView
 
-        case .awaitingPin:
-          ConfirmPinView { pin in
+            if step != .preparingToAuthorize {
+              ProgressView()
+            }
+          }
+
+        case .awaitingPin, .authenticatingPin, .creatingKey, .signingProof, .fetchingCredential:
+          ConfirmPinView(isLoading: step != .awaitingPin) { pin in
             Task { await viewModel.enterPin(pin) }
           }
+          .transition(
+            .asymmetric(
+              insertion: .offset(y: Constants.pinRevealOffset).combined(with: .opacity),
+              removal: .opacity,
+            )
+          )
 
         case let .savingCredential(credential, _, _),
           let .awaitingCompletion(credential),
           let .complete(credential):
-          CredentialView(claims: credential.claims)
-
-        default:
-          ProgressView()
+          VStack(spacing: Constants.stepSpacing) {
+            issuerDisplayView
+            CredentialView(claims: credential.claims)
+          }
       }
+    }
+    .animation(.smooth, value: isPinStep(step))
+  }
+
+  func isPinStep(_ step: IssuanceStep) -> Bool {
+    switch step {
+      case .awaitingPin, .authenticatingPin, .creatingKey, .signingProof, .fetchingCredential:
+        true
+
+      default:
+        false
     }
   }
 }
