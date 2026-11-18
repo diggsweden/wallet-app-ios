@@ -19,8 +19,8 @@ struct CandidateMatchingTests {
 
     #expect(resolved.candidates.count == 1)
     #expect(resolved.candidates[0].id == "pid")
-    #expect(resolved.candidates[0].claims.map(\.id) == ["given_name"])
-    #expect(resolved.candidates[0].claims[0].displayName == "Förnamn")
+    #expect(resolved.candidates[0].credentialUiModel.claims.map(\.id) == ["given_name"])
+    #expect(resolved.candidates[0].credentialUiModel.claims[0].displayName == "Förnamn")
 
     let disclosed = try #require(resolved.disclosedCredentials["pid"])
     #expect(disclosed.serialisation.hasPrefix(SampleCredential.issuerJwt))
@@ -37,7 +37,9 @@ struct CandidateMatchingTests {
     let disclosures = disclosed.split(separator: "~", omittingEmptySubsequences: false).dropFirst()
     #expect(disclosed.hasSuffix("~"))
     #expect(disclosures.filter { !$0.isEmpty }.count == 2)
-    #expect(resolved.candidates[0].claims.map(\.id) == ["birthdate", "given_name"])
+    #expect(
+      resolved.candidates[0].credentialUiModel.claims.map(\.id) == ["birthdate", "given_name"]
+    )
   }
 
   @Test func `nested claims can be requested by path`() throws {
@@ -55,7 +57,7 @@ struct CandidateMatchingTests {
       verifierUiModels: [Fixtures.verifierUiModel],
     )
 
-    #expect(resolved.candidates[0].claims.map(\.id) == ["address"])
+    #expect(resolved.candidates[0].credentialUiModel.claims.map(\.id) == ["address"])
   }
 
   @Test func `picks the credential whose type is listed in vct_values`() throws {
@@ -71,7 +73,7 @@ struct CandidateMatchingTests {
       verifierUiModels: [Fixtures.verifierUiModel],
     )
 
-    #expect(resolved.candidates[0].claims[0].displayName == "Pid")
+    #expect(resolved.candidates[0].credentialUiModel.claims[0].displayName == "Pid")
   }
 
   @Test func `propagates the required flag per query, in query order`() throws {
@@ -165,8 +167,8 @@ struct CandidateMatchingTests {
     )
 
     #expect(resolved.candidates.map(\.id) == ["a", "b"])
-    #expect(resolved.candidates[0].claims.map(\.id) == ["given_name"])
-    #expect(resolved.candidates[1].claims.map(\.id) == ["family_name"])
+    #expect(resolved.candidates[0].credentialUiModel.claims.map(\.id) == ["given_name"])
+    #expect(resolved.candidates[1].credentialUiModel.claims.map(\.id) == ["family_name"])
     #expect(
       resolved.disclosedCredentials["a"]?.serialisation
         != resolved.disclosedCredentials["b"]?.serialisation

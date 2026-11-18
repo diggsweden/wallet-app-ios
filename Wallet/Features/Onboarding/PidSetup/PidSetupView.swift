@@ -75,6 +75,7 @@ struct PidSetupView: View {
         await viewModel.fetchPid(authenticate: webAuthSession.authenticator)
       }
     }
+    .padding(.horizontal, 16)
   }
 }
 

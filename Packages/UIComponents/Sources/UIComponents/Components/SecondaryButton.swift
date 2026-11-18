@@ -50,7 +50,6 @@ public struct SecondaryButton: View {
       RoundedRectangle(cornerRadius: theme.cornerRadius)
         .stroke(theme.colors.primary, lineWidth: 2)  // TODO: Use correct token
     )
-    .padding(.horizontal, 15)
   }
 }
 

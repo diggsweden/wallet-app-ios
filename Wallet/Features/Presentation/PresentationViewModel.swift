@@ -27,6 +27,39 @@ final class PresentationViewModel {
   var optionalItems: [PresentationItem] = []
   var sendError = false
 
+  var selectedItems: [PresentationItem] {
+    requiredItems + optionalItems.filter(\.isSelected)
+  }
+
+  var sharedCredentials: [CredentialUiModel] {
+    var mergedCredentials: [CredentialUiModel] = []
+    for credential in selectedItems.map(\.credentialUiModel) {
+      let index = mergedCredentials.firstIndex { merged in
+        merged.type == credential.type
+      }
+
+      if let index {
+        let existing = mergedCredentials[index]
+        mergedCredentials[index] = CredentialUiModel(
+          type: existing.type,
+          name: existing.name,
+          claims: existing.claims + credential.claims,
+        )
+      } else {
+        mergedCredentials.append(credential)
+      }
+    }
+    return mergedCredentials
+  }
+
+  var sharedClaimCount: Int {
+    sharedCredentials.flatMap(\.claims).count
+  }
+
+  var isEncrypted: Bool {
+    resolved?.encryption != nil
+  }
+
   init(
     url: URL,
     credentials: [SavedCredential],
@@ -69,7 +102,6 @@ final class PresentationViewModel {
     }
 
     isSending = true
-    defer { isSending = false }
 
     do {
       let signer = HsmProofSigner(
@@ -77,13 +109,13 @@ final class PresentationViewModel {
         parameters: hsmServerParameters,
         pin: pin,
       )
-      let selectedIds = (requiredItems + optionalItems.filter(\.isSelected)).map(\.id)
       return try await flow.submit(
         resolved,
-        selectedIds: selectedIds,
+        selectedIds: selectedItems.map(\.id),
         signer: signer,
       )
     } catch {
+      isSending = false
       sendError = true
       return nil
     }
