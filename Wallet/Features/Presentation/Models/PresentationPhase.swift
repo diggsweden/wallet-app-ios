@@ -5,5 +5,7 @@
 enum PresentationPhase: Equatable {
   case loading
   case error(CaughtError)
-  case ready
+  case review
+  case pin
+  case success
 }
