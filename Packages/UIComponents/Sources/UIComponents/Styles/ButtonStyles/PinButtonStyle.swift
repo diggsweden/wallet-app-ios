@@ -4,7 +4,7 @@
 
 import SwiftUI
 
-struct KeyButtonStyle: ButtonStyle {
+struct PinButtonStyle: ButtonStyle {
   let background: Color
   let highlight: Color
 
@@ -24,7 +24,7 @@ struct KeyButtonStyle: ButtonStyle {
   }
 }
 
-private extension KeyButtonStyle {
+private extension PinButtonStyle {
   enum Constants {
     static let keySize: CGFloat = 72
     static let highlightOpacity: CGFloat = 0.15

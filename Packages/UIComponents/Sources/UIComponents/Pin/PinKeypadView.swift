@@ -5,13 +5,13 @@
 import DesignSystem
 import SwiftUI
 
-private struct T9Key: Identifiable, Hashable {
+private struct PinKey: Identifiable, Hashable {
   let digit: Character
   let letters: String
   var id: Character { digit }
 }
 
-struct T9KeypadView: View {
+struct PinKeypadView: View {
   let submitLabel: LocalizedStringResource
   let isDeleteEnabled: Bool
   let isSubmitEnabled: Bool
@@ -24,7 +24,7 @@ struct T9KeypadView: View {
   @Environment(\.orientation) private var orientation
   @State private var tapFeedback = false
 
-  private let digitRows: [[T9Key]] = [
+  private let digitRows: [[PinKey]] = [
     [
       .init(digit: "1", letters: ""),
       .init(digit: "2", letters: "ABC"),
@@ -42,7 +42,7 @@ struct T9KeypadView: View {
     ],
   ]
 
-  private let zeroKey = T9Key(digit: "0", letters: "")
+  private let zeroKey = PinKey(digit: "0", letters: "")
 
   var body: some View {
     Grid(
@@ -53,14 +53,14 @@ struct T9KeypadView: View {
       ForEach(digitRows, id: \.self) { row in
         GridRow {
           ForEach(row) { key in
-            digitButtonView(for: key)
+            pinButtonView(for: key)
           }
         }
       }
 
       GridRow {
         deleteButtonView
-        digitButtonView(for: zeroKey)
+        pinButtonView(for: zeroKey)
         submitButtonView
       }
     }
@@ -68,7 +68,7 @@ struct T9KeypadView: View {
   }
 }
 
-private extension T9KeypadView {
+private extension PinKeypadView {
   enum Constants {
     static let horizontalSpacing: CGFloat = 24
     static let verticalSpacing: CGFloat = 16
@@ -79,7 +79,7 @@ private extension T9KeypadView {
     static let keyBackgroundOpacity: CGFloat = 0.05
   }
 
-  func digitButtonView(for key: T9Key) -> some View {
+  func pinButtonView(for key: PinKey) -> some View {
     Button {
       onTapDigit(key.digit)
       tapFeedback.toggle()
@@ -98,7 +98,7 @@ private extension T9KeypadView {
       .dynamicTypeSize(...DynamicTypeSize.accessibility1)
     }
     .buttonStyle(
-      KeyButtonStyle(
+      PinButtonStyle(
         background: theme.colors.textPrimary.opacity(Constants.keyBackgroundOpacity),
         highlight: theme.colors.textPrimary,
       )
@@ -115,7 +115,7 @@ private extension T9KeypadView {
         .font(.system(size: Constants.iconSize))
         .foregroundStyle(isDeleteEnabled ? theme.colors.textPrimary : theme.colors.iconDisabled)
     }
-    .buttonStyle(KeyButtonStyle(background: .clear, highlight: theme.colors.textPrimary))
+    .buttonStyle(PinButtonStyle(background: .clear, highlight: theme.colors.textPrimary))
     .disabled(!isDeleteEnabled)
     .accessibilityLabel("Radera")
   }
@@ -130,7 +130,7 @@ private extension T9KeypadView {
         .foregroundStyle(theme.colors.onPrimary)
     }
     .buttonStyle(
-      KeyButtonStyle(
+      PinButtonStyle(
         background: theme.colors.button.opacity(isSubmitEnabled ? 1 : Constants.disabledOpacity),
         highlight: theme.colors.onPrimary,
       )

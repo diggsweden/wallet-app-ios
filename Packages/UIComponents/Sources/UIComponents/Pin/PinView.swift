@@ -34,7 +34,7 @@ public struct PinView: View {
     ) {
       dotsView
 
-      T9KeypadView(
+      PinKeypadView(
         submitLabel: submitLabel,
         isDeleteEnabled: !pin.isEmpty,
         isSubmitEnabled: pin.count == Constants.pinLength,

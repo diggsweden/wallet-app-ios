@@ -8,8 +8,8 @@ import Testing
 @testable import WalletDemo
 
 @MainActor
-@Suite("T9 keypad snapshots", .snapshots(record: .missing))
-struct T9KeypadSnapshotTests {
+@Suite("Pin keypad snapshots", .snapshots(record: .missing))
+struct PinKeypadSnapshotTests {
   @Test("Keypad — delete enabled")
   func deleteEnabled() {
     assertThemedSnapshots(
@@ -34,8 +34,8 @@ struct T9KeypadSnapshotTests {
     )
   }
 
-  private static func keypad(isDeleteEnabled: Bool, isSubmitEnabled: Bool) -> T9KeypadView {
-    T9KeypadView(
+  private static func keypad(isDeleteEnabled: Bool, isSubmitEnabled: Bool) -> PinKeypadView {
+    PinKeypadView(
       submitLabel: "Nästa",
       isDeleteEnabled: isDeleteEnabled,
       isSubmitEnabled: isSubmitEnabled,
