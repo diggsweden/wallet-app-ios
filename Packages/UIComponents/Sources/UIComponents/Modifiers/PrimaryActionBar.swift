@@ -32,25 +32,35 @@ public struct PrimaryActionBar<AccessoryView: View>: ViewModifier {
   public func body(content: Content) -> some View {
     content
       .safeAreaBarIfPossible(edge: .bottom) {
-        if model != nil || secondaryModel != nil {
+        if hasButtons || hasAccessoryView {
           VStack(spacing: Constants.accessoryViewSpacing) {
             accessoryView
 
-            ViewThatFits(in: .horizontal) {
-              HStack(spacing: Constants.buttonSpacing) {
-                secondaryButton
-                primaryButton
-              }
+            if hasButtons {
+              ViewThatFits(in: .horizontal) {
+                HStack(spacing: Constants.buttonSpacing) {
+                  secondaryButton
+                  primaryButton
+                }
 
-              VStack(spacing: Constants.stackedButtonSpacing) {
-                primaryButton
-                secondaryButton
+                VStack(spacing: Constants.stackedButtonSpacing) {
+                  primaryButton
+                  secondaryButton
+                }
               }
             }
           }
           .padding(.horizontal, horizontalPadding)
         }
       }
+  }
+
+  private var hasButtons: Bool {
+    model != nil || secondaryModel != nil
+  }
+
+  private var hasAccessoryView: Bool {
+    AccessoryView.self != EmptyView.self
   }
 
   @ContentBuilder
@@ -125,7 +135,7 @@ extension View {
   }
 
   public func primaryActionBar<AccessoryView: View>(
-    model: PrimaryBarModel?,
+    model: PrimaryBarModel? = nil,
     secondaryModel: PrimaryBarModel? = nil,
     horizontalPadding: CGFloat = PrimaryActionBar<EmptyView>.defaultHorizontalPadding,
     @ContentBuilder accessoryView: () -> AccessoryView,
