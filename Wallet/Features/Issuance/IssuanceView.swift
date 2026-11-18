@@ -11,6 +11,7 @@ import UIComponents
 
 struct IssuanceView: View {
   let viewModel: IssuanceViewModel
+  let usesPinPrompt: Bool
 
   var body: some View {
     VStack {
@@ -38,10 +39,16 @@ struct IssuanceView: View {
     }
     .task { await viewModel.start() }
     .toolbar { issuanceToolbar }
+    .toolbar(.visible, for: .navigationBar)
   }
 }
 
 private extension IssuanceView {
+  enum Constants {
+    static let stepSpacing: CGFloat = 12
+    static let pinRevealOffset: CGFloat = 24
+  }
+
   @ContentBuilder
   var issuanceToolbar: some ToolbarContent {
     if shouldShowDismissButton {
@@ -72,30 +79,77 @@ private extension IssuanceView {
     }
   }
 
+  @ViewBuilder
+  var issuerDisplayView: some View {
+    if let issuerDisplayData = viewModel.issuerDisplayData {
+      IssuerDisplayView(issuerDisplayData: issuerDisplayData)
+    }
+  }
+
   @ContentBuilder
   func issuanceStepView(_ step: IssuanceStep) -> some View {
-    VStack(spacing: 12) {
-      if let issuerDisplayData = viewModel.issuerDisplayData, step != .awaitingPin {
-        IssuerDisplayView(issuerDisplayData: issuerDisplayData)
-      }
-
+    ZStack(alignment: .top) {
       switch step {
-        case .preparingToAuthorize:
-          EmptyView()
+        case .loadingCredentialOffer, .preparingToAuthorize, .authorizing:
+          VStack(spacing: Constants.stepSpacing) {
+            issuerDisplayView
 
-        case .awaitingPin:
-          ConfirmPinView { pin in
-            Task { await viewModel.enterPin(pin) }
+            if step != .preparingToAuthorize {
+              ProgressView()
+            }
           }
+
+        case .awaitingPin, .authenticatingPin, .creatingKey, .signingProof, .fetchingCredential:
+          pinView(isLoading: step != .awaitingPin)
+            .transition(
+              .asymmetric(
+                insertion: .offset(y: Constants.pinRevealOffset).combined(with: .opacity),
+                removal: .opacity,
+              )
+            )
 
         case let .savingCredential(credential, _, _),
           let .awaitingCompletion(credential),
           let .complete(credential):
-          CredentialView(claims: credential.claims)
-
-        default:
-          ProgressView()
+          VStack(spacing: Constants.stepSpacing) {
+            issuerDisplayView
+            CredentialView(claims: credential.claims)
+          }
       }
+    }
+    .frame(maxWidth: .infinity)
+    .animation(.smooth, value: isPinStep(step))
+  }
+
+  @ViewBuilder
+  func pinView(isLoading: Bool) -> some View {
+    if usesPinPrompt {
+      PinPromptView(
+        title: "Godkänn och identifiera",
+        subtitle: "Fyll i din pinkod för att begära dina personuppgifter.",
+        submitLabel: "Begär personuppgifter",
+        isLoading: isLoading,
+        onSubmit: enterPin,
+      )
+    } else {
+      ConfirmPinView(
+        isLoading: isLoading,
+        onComplete: enterPin,
+      )
+    }
+  }
+
+  func enterPin(_ pin: String) {
+    Task { await viewModel.enterPin(pin) }
+  }
+
+  func isPinStep(_ step: IssuanceStep) -> Bool {
+    switch step {
+      case .awaitingPin, .authenticatingPin, .creatingKey, .signingProof, .fetchingCredential:
+        true
+
+      default:
+        false
     }
   }
 }
