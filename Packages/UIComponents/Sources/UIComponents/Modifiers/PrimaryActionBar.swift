@@ -53,7 +53,7 @@ public struct PrimaryActionBar<AccessoryView: View>: ViewModifier {
       }
   }
 
-  @ViewBuilder
+  @ContentBuilder
   private var primaryButton: some View {
     if let model {
       PrimaryButton(
@@ -66,7 +66,7 @@ public struct PrimaryActionBar<AccessoryView: View>: ViewModifier {
     }
   }
 
-  @ViewBuilder
+  @ContentBuilder
   private var secondaryButton: some View {
     if let secondaryModel {
       SecondaryButton(
