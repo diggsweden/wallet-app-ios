@@ -143,7 +143,7 @@ private extension IssuanceView {
     Task { await viewModel.enterPin(pin) }
   }
 
-  func isPinStep(_ step: IssuanceStep) -> Bool {
+  func shouldAnimateTransition(_ step: IssuanceStep) -> Bool {
     switch step {
       case .awaitingPin, .authenticatingPin, .creatingKey, .signingProof, .fetchingCredential:
         true
