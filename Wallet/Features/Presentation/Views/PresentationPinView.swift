@@ -12,28 +12,24 @@ struct PresentationPinView: View {
   let onPinEntered: (String) -> Void
 
   var body: some View {
-    if isLoading {
-      ProgressView()
-    } else {
-      SoftEdgeScrollView(fillsHeight: true) {
-        VStack(spacing: 20) {
-          Text("Godkänn och identifiera")
-            .textStyle(.h1)
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-          Text(
-            // swiftlint:disable:next line_length
-            "Genom att fylla i din pinkod och identifiera dig, godkänner du delning av dina uppgifter."
-          )
-          .textStyle(.bodyLarge)
+    SoftEdgeScrollView(fillsHeight: true) {
+      VStack(spacing: 20) {
+        Text("Godkänn och identifiera")
+          .textStyle(.h1)
           .frame(maxWidth: .infinity, alignment: .leading)
 
-          PinView(buttonText: "Dela") { pin in
-            onPinEntered(pin)
-          }
+        Text(
+          // swiftlint:disable:next line_length
+          "Genom att fylla i din pinkod och identifiera dig, godkänner du delning av dina uppgifter."
+        )
+        .textStyle(.bodyLarge)
+        .frame(maxWidth: .infinity, alignment: .leading)
+
+        PinView(submitLabel: "Dela", isLoading: isLoading) { pin in
+          onPinEntered(pin)
         }
-        .padding(.horizontal, theme.horizontalPadding)
       }
+      .padding(.horizontal, theme.horizontalPadding)
     }
   }
 }
