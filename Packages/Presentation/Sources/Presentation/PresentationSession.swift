@@ -207,7 +207,11 @@ public struct PresentationSession: PresentationFlow {
       candidate: PresentationCandidate(
         id: query.id,
         required: query.required,
-        claims: disclosed.claims,
+        credentialUiModel: CredentialUiModel(
+          type: credential.type,
+          name: credential.displayData?.name,
+          claims: disclosed.claims,
+        ),
       ),
       disclosedCredential: DisclosedCredential(
         serialisation: disclosed.compactSerialized,

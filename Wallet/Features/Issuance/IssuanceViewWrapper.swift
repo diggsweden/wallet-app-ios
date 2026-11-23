@@ -16,7 +16,7 @@ struct IssuanceViewWrapper: View {
   @State private var viewModel: IssuanceViewModel
 
   init(
-    credentialOfferUri: String,
+    url: URL,
     gatewayApiClient: any GatewayApi & HSMTransport,
     hsmServerParameters: HsmServerParameters?,
     trustStore: any TrustStoreInterface,
@@ -24,7 +24,7 @@ struct IssuanceViewWrapper: View {
   ) {
     _viewModel = State(
       wrappedValue: .init(
-        credentialOfferUri: credentialOfferUri,
+        credentialOfferUri: url.absoluteString,
         gatewayApiClient: gatewayApiClient,
         hsmServerParameters: hsmServerParameters,
         trustStore: trustStore,
@@ -34,9 +34,12 @@ struct IssuanceViewWrapper: View {
   }
 
   var body: some View {
-    SoftEdgeScrollView {
-      IssuanceView(viewModel: viewModel)
-        .padding(.horizontal, theme.horizontalPadding)
+    SoftEdgeScrollView(fillsHeight: true) {
+      IssuanceView(
+        viewModel: viewModel,
+        usesPinPrompt: true,
+      )
+      .padding(.horizontal, theme.horizontalPadding)
     }
     .issuanceActionBar(
       step: viewModel.state.activeStep,

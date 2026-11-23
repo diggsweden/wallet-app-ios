@@ -22,7 +22,7 @@ struct PinSetupView: View {
         .multilineTextAlignment(.leading)
         .frame(maxWidth: .infinity, alignment: .leading)
 
-      PinView(buttonText: "onboardingNext") { pin in
+      PinView(submitLabel: "onboardingNext") { pin in
         try onSubmit(pin)
       }
       .frame(maxWidth: .infinity, alignment: .center)

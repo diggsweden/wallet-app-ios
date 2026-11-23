@@ -62,7 +62,7 @@ private extension ErrorView {
     static let titleSubtitleStackViewOuterSpacing: CGFloat = 7
     static let titleSubtitleStackViewInnerSpacing: CGFloat = 16
     static let buttonStackViewSpacing: CGFloat = 20
-    static let horizontalPadding: CGFloat = 15
+    static let horizontalPadding: CGFloat = 32
     static let expandButtonBottomPadding: CGFloat = 16
   }
 }

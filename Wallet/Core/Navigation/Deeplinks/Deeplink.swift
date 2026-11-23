@@ -4,40 +4,20 @@
 
 import Foundation
 
-protocol DeeplinkRouter {
-  func route(from url: URL) async throws -> Route
-}
-
-extension DeeplinkRouter {
-  func routingFailure(_ reason: String) -> DeeplinkError {
-    .routingFailure(routerName: String(describing: Self.self), reason: reason)
-  }
-}
-
 enum Deeplink {
-  case issuance
-  case presentation
+  case issuance(URL)
+  case presentation(URL)
 
-  init(from url: URL) throws {
+  init?(_ url: URL) {
     switch url.scheme {
       case "openid-credential-offer", "haip-vci":
-        self = .issuance
+        self = .issuance(url)
 
       case "openid4vp", "eudi-openid4vp", "haip-vp":
-        self = .presentation
+        self = .presentation(url)
 
       default:
-        throw DeeplinkError.invalidScheme
-    }
-  }
-
-  var router: DeeplinkRouter {
-    switch self {
-      case .issuance:
-        return IssuanceRouter()
-
-      case .presentation:
-        return PresentationRouter()
+        return nil
     }
   }
 }

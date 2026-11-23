@@ -27,6 +27,39 @@ final class PresentationViewModel {
   var optionalItems: [PresentationItem] = []
   var sendError = false
 
+  var selectedItems: [PresentationItem] {
+    requiredItems + optionalItems.filter(\.isSelected)
+  }
+
+  var sharedCredentials: [CredentialUiModel] {
+    var mergedCredentials: [CredentialUiModel] = []
+    for credential in selectedItems.map(\.credentialUiModel) {
+      let index = mergedCredentials.firstIndex { merged in
+        merged.type == credential.type
+      }
+
+      if let index {
+        let existing = mergedCredentials[index]
+        mergedCredentials[index] = CredentialUiModel(
+          type: existing.type,
+          name: existing.name,
+          claims: existing.claims + credential.claims,
+        )
+      } else {
+        mergedCredentials.append(credential)
+      }
+    }
+    return mergedCredentials
+  }
+
+  var sharedClaimCount: Int {
+    sharedCredentials.flatMap(\.claims).count
+  }
+
+  var isEncrypted: Bool {
+    resolved?.encryption != nil
+  }
+
   init(
     url: URL,
     credentials: [SavedCredential],
@@ -56,20 +89,43 @@ final class PresentationViewModel {
       requiredItems = items.filter(\.required)
       optionalItems = items.filter { !$0.required }
       verifierUiModel = resolved.verifierUiModel
-      phase = .ready
+      phase = .review
     } catch {
       phase = .error(CaughtError(error))
     }
   }
 
-  func sendPresentation(_ pin: String) async -> PresentationOutcome? {
-    guard let resolved else {
+  func retry() {
+    guard case .error = phase else {
+      return
+    }
+
+    phase = .loading
+  }
+
+  func share() {
+    guard phase == .review else {
+      return
+    }
+
+    phase = .pin
+  }
+
+  func goBack() {
+    guard phase == .pin, !isSending else {
+      return
+    }
+
+    phase = .review
+  }
+
+  func sendPresentation(_ pin: String) async -> URL? {
+    guard phase == .pin, let resolved else {
       sendError = true
       return nil
     }
 
     isSending = true
-    defer { isSending = false }
 
     do {
       let signer = HsmProofSigner(
@@ -77,13 +133,17 @@ final class PresentationViewModel {
         parameters: hsmServerParameters,
         pin: pin,
       )
-      let selectedIds = (requiredItems + optionalItems.filter(\.isSelected)).map(\.id)
-      return try await flow.submit(
+      let submission = try await flow.submit(
         resolved,
-        selectedIds: selectedIds,
+        selectedIds: selectedItems.map(\.id),
         signer: signer,
       )
+      if submission.redirectUrl == nil {
+        phase = .success
+      }
+      return submission.redirectUrl
     } catch {
+      isSending = false
       sendError = true
       return nil
     }
