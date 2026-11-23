@@ -26,34 +26,10 @@ struct AppRootView: View {
     NavigationStack(path: $router.navigationPath) {
       rootView
         .defaultScreenStyle
-        .navigationDestination(for: Route.self) { route in
-          destination(for: route)
-            .defaultScreenStyle
-        }
+        .navigationDestination(for: Route.self, destination: destinationContent)
     }
-    .sheet(item: $router.presentedSheet) { sheet in
-      switch sheet {
-        case .settings:
-          SettingsView(
-            showsLogout: userViewModel.isOnboardingCompleted,
-            onLogout: userViewModel.signOut,
-          )
-      }
-    }
-    .fullScreenCover(item: $router.presentedFullScreenCover) { fullScreenCover in
-      switch fullScreenCover {
-        case .camera:
-          WalletQRScannerView(
-            onSuccess: { url in
-              router.dismiss()
-              handleOpenURL(url)
-            },
-            onDismiss: {
-              router.dismiss()
-            },
-          )
-      }
-    }
+    .sheet(item: $router.presentedSheet, content: sheetContent)
+    .fullScreenCover(item: $router.presentedFullScreenCover, content: fullScreenCoverContent)
     .environment(router)
     .onOpenURL(perform: handleOpenURL)
   }
@@ -89,9 +65,39 @@ private extension AppRootView {
 
 // MARK: - Deeplink
 private extension AppRootView {
-  @ViewBuilder
-  func destination(for route: Route) -> some View {
-    switch route {
+  @ContentBuilder
+  func destinationContent(for route: Route) -> some View {
+    Group {
+      switch route {
+        case .issuance(let url):
+          IssuanceViewWrapper(
+            url: url,
+            gatewayApiClient: gatewayApiClient,
+            hsmServerParameters: userViewModel.user.hsmServerParameters,
+            trustStore: trustStore,
+            actions: .init(
+              onSaveCredential: userViewModel.saveCredential,
+              onComplete: { router.pop() },
+              onDismiss: { router.pop() },
+            ),
+          )
+
+        case .credentialDetails(let credential):
+          CredentialDetailsView(credential: credential)
+      }
+    }
+    .defaultScreenStyle
+  }
+
+  @ContentBuilder
+  func sheetContent(for sheet: Router.Sheet) -> some View {
+    switch sheet {
+      case .settings:
+        SettingsView(
+          showsLogout: userViewModel.isOnboardingCompleted,
+          onLogout: userViewModel.signOut,
+        )
+
       case .presentation(let url):
         PresentationView(
           url: url,
@@ -100,34 +106,30 @@ private extension AppRootView {
           hsmServerParameters: userViewModel.user.hsmServerParameters,
           trustStore: trustStore,
         )
+    }
+  }
 
-      case .issuance(let url):
-        IssuanceViewWrapper(
-          credentialOfferUri: url,
-          gatewayApiClient: gatewayApiClient,
-          hsmServerParameters: userViewModel.user.hsmServerParameters,
-          trustStore: trustStore,
-          actions: .init(
-            onSaveCredential: userViewModel.saveCredential,
-            onComplete: { router.pop() },
-            onDismiss: { router.pop() },
-          ),
+  @ContentBuilder
+  func fullScreenCoverContent(for cover: Router.FullScreenCover) -> some View {
+    switch cover {
+      case .camera:
+        WalletQRScannerView(
+          onSuccess: { url in
+            router.dismiss()
+            handleOpenURL(url)
+          },
+          onDismiss: {
+            router.dismiss()
+          },
         )
-
-      case .credentialDetails(let credential):
-        CredentialDetailsView(credential: credential)
     }
   }
 
   func handleOpenURL(_ url: URL) {
-    Task {
-      do {
-        let deeplink = try Deeplink(from: url)
-        let route = try await deeplink.router.route(from: url)
-        router.go(to: route)
-      } catch {
-        print("Failed to deeplink: \(error)")
-      }
+    guard let deeplink = Deeplink(url) else {
+      return
     }
+
+    router.open(deeplink)
   }
 }

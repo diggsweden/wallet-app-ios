@@ -6,7 +6,7 @@ import CredentialInterfaces
 import DesignSystem
 import SwiftUI
 
-struct PidCard: View {
+struct PidCardView: View {
   let credential: SavedCredential
   @Environment(Router.self) private var router
   @Environment(\.theme) private var theme
@@ -57,7 +57,7 @@ struct PidCard: View {
   )
 
   VStack {
-    PidCard(credential: credential)
+    PidCardView(credential: credential)
   }
   .environment(Router())
 }
