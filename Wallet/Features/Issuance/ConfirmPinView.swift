@@ -6,6 +6,7 @@ import SwiftUI
 import UIComponents
 
 struct ConfirmPinView: View {
+  let isLoading: Bool
   let onComplete: (String) -> Void
 
   var body: some View {
@@ -15,7 +16,11 @@ struct ConfirmPinView: View {
         .multilineTextAlignment(.leading)
         .frame(maxWidth: .infinity, alignment: .leading)
 
-      PinView(submitLabel: "Begär personuppgifter", onSubmit: onComplete)
+      PinView(
+        submitLabel: "Begär personuppgifter",
+        isLoading: isLoading,
+        onSubmit: onComplete,
+      )
     }
   }
 }
