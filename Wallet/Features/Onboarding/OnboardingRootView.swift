@@ -195,7 +195,7 @@ struct OnboardingRootView: View {
 
       case .issueCredential:
         if let issuanceViewModel {
-          IssuanceView(viewModel: issuanceViewModel)
+          IssuanceView(viewModel: issuanceViewModel, usesPinPrompt: false)
         } else {
           PidSetupView { credentialOfferUri in
             startIssuance(with: credentialOfferUri)

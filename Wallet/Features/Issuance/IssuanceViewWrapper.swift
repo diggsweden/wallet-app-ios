@@ -34,9 +34,12 @@ struct IssuanceViewWrapper: View {
   }
 
   var body: some View {
-    SoftEdgeScrollView {
-      IssuanceView(viewModel: viewModel)
-        .padding(.horizontal, theme.horizontalPadding)
+    SoftEdgeScrollView(fillsHeight: true) {
+      IssuanceView(
+        viewModel: viewModel,
+        usesPinPrompt: true,
+      )
+      .padding(.horizontal, theme.horizontalPadding)
     }
     .issuanceActionBar(
       step: viewModel.state.activeStep,
