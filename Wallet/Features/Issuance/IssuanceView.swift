@@ -118,7 +118,7 @@ private extension IssuanceView {
       }
     }
     .frame(maxWidth: .infinity)
-    .animation(.smooth, value: isPinStep(step))
+    .animation(.smooth, value: shouldAnimateTransition(step))
   }
 
   @ViewBuilder
