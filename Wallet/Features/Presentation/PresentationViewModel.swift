@@ -89,14 +89,38 @@ final class PresentationViewModel {
       requiredItems = items.filter(\.required)
       optionalItems = items.filter { !$0.required }
       verifierUiModel = resolved.verifierUiModel
-      phase = .ready
+      phase = .review
     } catch {
       phase = .error(CaughtError(error))
     }
   }
 
-  func sendPresentation(_ pin: String) async -> PresentationOutcome? {
-    guard let resolved else {
+  func retry() {
+    guard case .error = phase else {
+      return
+    }
+
+    phase = .loading
+  }
+
+  func share() {
+    guard phase == .review else {
+      return
+    }
+
+    phase = .pin
+  }
+
+  func goBack() {
+    guard phase == .pin, !isSending else {
+      return
+    }
+
+    phase = .review
+  }
+
+  func sendPresentation(_ pin: String) async -> URL? {
+    guard phase == .pin, let resolved else {
       sendError = true
       return nil
     }
@@ -109,11 +133,15 @@ final class PresentationViewModel {
         parameters: hsmServerParameters,
         pin: pin,
       )
-      return try await flow.submit(
+      let submission = try await flow.submit(
         resolved,
         selectedIds: selectedItems.map(\.id),
         signer: signer,
       )
+      if submission.redirectUrl == nil {
+        phase = .success
+      }
+      return submission.redirectUrl
     } catch {
       isSending = false
       sendError = true

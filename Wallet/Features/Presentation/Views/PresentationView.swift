@@ -13,11 +13,11 @@ import User
 
 struct PresentationView: View {
   @State private var viewModel: PresentationViewModel
-  @State private var path: [PresentationRoute] = []
   @State private var presentedSheet: PresentationReviewSheet?
   @Environment(Router.self) private var router
   @Environment(\.openURL) private var openURL
   @Environment(\.theme) private var theme
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
   init(
     url: URL,
@@ -39,58 +39,67 @@ struct PresentationView: View {
 
   var body: some View {
     // swiftlint:disable:next closure_body_length
-    NavigationStack(path: $path) {
-      content
-        .animation(.default, value: viewModel.phase)
-        .primaryActionBar(
-          model: primaryBarModel,
-          secondaryModel: secondaryBarModel,
-          horizontalPadding: Constants.actionBarHorizontalPadding,
-        ) {
-          if case .ready = viewModel.phase {
-            PresentationSharedClaimsButtonView(
-              claimCount: viewModel.sharedClaimCount,
-              action: {
-                presentedSheet = .sharedClaims
-              },
-            )
-          }
+    NavigationStack {
+      ZStack {
+        content
+      }
+      .animation(.smooth, value: viewModel.phase)
+      .primaryActionBar(
+        model: primaryBarModel,
+        secondaryModel: secondaryBarModel,
+        horizontalPadding: Constants.actionBarHorizontalPadding,
+      ) {
+        if viewModel.phase == .review {
+          PresentationSharedClaimsButtonView(
+            claimCount: viewModel.sharedClaimCount,
+            action: {
+              presentedSheet = .sharedClaims
+            },
+          )
         }
-        .defaultScreenStyle
-        .navigationDestination(for: PresentationRoute.self) { route in
-          destination(for: route)
-            .defaultScreenStyle
-            .alert("Kunde inte dela uppgifterna", isPresented: $viewModel.sendError) {
-              Button("Försök igen") {}
-            }
-        }
-        .navigationTitle("Begäran om uppgifter")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
+      }
+      .defaultScreenStyle
+      .alert("Kunde inte dela uppgifterna", isPresented: $viewModel.sendError) {
+        Button("Försök igen") {}
+      }
+      .navigationTitle(Text(navigationTitle))
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbar {
+        if viewModel.phase != .success {
           ToolbarItem(placement: .cancellationAction) {
-            CloseButtonView {
-              router.dismiss()
-            }
-            .disabled(viewModel.isSending)
+            toolbarButtonView
           }
         }
-        .sheet(item: $presentedSheet, content: sheetContent)
+      }
+      .sheet(item: $presentedSheet, content: sheetContent)
     }
     .presentationDetents([.large])
-    .presentationDragIndicator(isDismissible ? .visible : .hidden)
-    .interactiveDismissDisabled(!isDismissible)
+    .presentationDragIndicator(isInteractiveDismissEnabled ? .visible : .hidden)
+    .interactiveDismissDisabled(!isInteractiveDismissEnabled)
   }
 }
 
 private extension PresentationView {
   enum Constants {
     static let actionBarHorizontalPadding: CGFloat = 16
+    static let pinRevealOffset: CGFloat = 24
+  }
+
+  var pinTransition: AnyTransition {
+    guard !reduceMotion else {
+      return .opacity
+    }
+
+    return .asymmetric(
+      insertion: .offset(y: Constants.pinRevealOffset).combined(with: .opacity),
+      removal: .opacity,
+    )
   }
 
   @ViewBuilder
   var content: some View {
     // swiftlint:disable:next closure_body_length
-    ZStack {
+    Group {
       switch viewModel.phase {
         case .loading:
           PresentationLoadingView()
@@ -106,8 +115,8 @@ private extension PresentationView {
                 label: "Försök igen",
                 accessibilityHint: "Använd knappen för att försöka igen",
                 action: {
-                  Task {
-                    await viewModel.resolveAndMatchClaims()
+                  Task { @MainActor in
+                    viewModel.retry()
                   }
                 },
               ),
@@ -115,7 +124,7 @@ private extension PresentationView {
           )
           .padding(.horizontal, theme.horizontalPadding)
 
-        case .ready:
+        case .review:
           PresentationReviewView(
             optionalItems: $viewModel.optionalItems,
             requiredItems: viewModel.requiredItems,
@@ -125,35 +134,85 @@ private extension PresentationView {
               presentedSheet = .verification
             },
           )
+
+        case .pin:
+          PresentationPinView(
+            verifierName: viewModel.verifierUiModel?.name ?? "",
+            sharedClaimCount: viewModel.sharedClaimCount,
+            isLoading: viewModel.isSending,
+            onPinEntered: submitPresentation,
+          )
+          .transition(pinTransition)
+
+        case .success:
+          PresentationSuccessView(
+            verifierName: viewModel.verifierUiModel?.name ?? "",
+            verifierLogo: nil,
+            onShowSharedClaims: { presentedSheet = .sharedClaims },
+          )
       }
     }
-    .transition(.opacity)
+    .transition(.blurReplace)
+  }
+
+  @ViewBuilder
+  var toolbarButtonView: some View {
+    if viewModel.phase == .pin {
+      Button(
+        "Tillbaka",
+        systemImage: "chevron.backward",
+        action: viewModel.goBack,
+      )
+      .disabled(viewModel.isSending)
+    } else {
+      CloseButtonView(action: router.dismiss)
+    }
   }
 }
 
 private extension PresentationView {
-  var isDismissible: Bool {
-    path.last == .success
+  var isInteractiveDismissEnabled: Bool {
+    viewModel.phase == .success
+  }
+
+  var navigationTitle: LocalizedStringResource {
+    switch viewModel.phase {
+      case .loading, .error, .review:
+        "Begäran om uppgifter"
+
+      case .pin:
+        "Godkänn delning"
+
+      case .success:
+        "Delat"
+    }
   }
 
   var primaryBarModel: PrimaryBarModel? {
-    guard case .ready = viewModel.phase else {
-      return nil
-    }
-    return PrimaryBarModel("Dela", icon: "paperplane") {
-      path.append(.pin)
+    switch viewModel.phase {
+      case .review:
+        PrimaryBarModel("Dela", icon: "paperplane", action: viewModel.share)
+
+      case .success:
+        PrimaryBarModel("Klar", action: router.dismiss)
+
+      default:
+        nil
     }
   }
 
   var secondaryBarModel: PrimaryBarModel? {
-    if case .error = viewModel.phase {
-      return nil
+    switch viewModel.phase {
+      case .loading, .review:
+        PrimaryBarModel(
+          "Avbryt",
+          accessibilityHint: "Avbryt begäran om uppgifter",
+          action: router.dismiss,
+        )
+
+      default:
+        nil
     }
-    return PrimaryBarModel(
-      "Avbryt",
-      accessibilityHint: "Avbryt begäran om uppgifter",
-      action: router.dismiss,
-    )
   }
 }
 
@@ -173,7 +232,7 @@ private extension PresentationView {
             PresentationSharedClaimsView(
               credentials: viewModel.sharedCredentials,
               verifierName: viewModel.verifierUiModel?.name ?? "",
-              hasBeenShared: path.last == .success,
+              hasBeenShared: viewModel.phase == .success,
             )
         }
       }
@@ -190,42 +249,11 @@ private extension PresentationView {
     .presentationDragIndicator(.visible)
   }
 
-  @ViewBuilder
-  func destination(for route: PresentationRoute) -> some View {
-    switch route {
-      case .pin:
-        PresentationPinView(
-          isLoading: viewModel.isSending
-        ) { pin in
-          submitPresentation(pin)
-        }
-
-      case .success:
-        PresentationSuccessView(
-          verifierName: viewModel.verifierUiModel?.name ?? "",
-          verifierLogo: nil,
-          onShowSharedClaims: { presentedSheet = .sharedClaims },
-        )
-        .primaryActionBar(
-          "Klar",
-          horizontalPadding: Constants.actionBarHorizontalPadding,
-        ) {
-          router.dismiss()
-        }
-    }
-  }
-
   func submitPresentation(_ pin: String) {
     Task {
-      guard let result = await viewModel.sendPresentation(pin) else {
-        return
-      }
-
-      if let redirectUrl = result.redirectUrl {
+      if let redirectUrl = await viewModel.sendPresentation(pin) {
         router.dismiss()
         openURL(redirectUrl)
-      } else {
-        path.append(.success)
       }
     }
   }

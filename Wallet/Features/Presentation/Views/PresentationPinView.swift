@@ -8,28 +8,58 @@ import UIComponents
 
 struct PresentationPinView: View {
   @Environment(\.theme) private var theme
+
+  let verifierName: String
+  let sharedClaimCount: Int
   let isLoading: Bool
   let onPinEntered: (String) -> Void
 
   var body: some View {
     SoftEdgeScrollView(fillsHeight: true) {
-      VStack(spacing: 20) {
-        Text("Godkänn och identifiera")
-          .textStyle(.h1)
-          .frame(maxWidth: .infinity, alignment: .leading)
+      VStack(spacing: Constants.sectionSpacing) {
+        VStack(spacing: Constants.textSpacing) {
+          Image(systemName: "lock.fill")
+            .font(.system(size: Constants.iconSize, weight: .semibold))
+            .foregroundStyle(theme.colors.textInformation)
+            .frame(
+              width: Constants.iconContainerSize,
+              height: Constants.iconContainerSize,
+            )
+            .background(
+              theme.colors.textPrimary.opacity(Constants.iconBackgroundOpacity),
+              in: Circle(),
+            )
+            .accessibilityHidden(true)
+            .padding(.bottom, Constants.iconBottomPadding)
 
-        Text(
-          // swiftlint:disable:next line_length
-          "Genom att fylla i din pinkod och identifiera dig, godkänner du delning av dina uppgifter."
-        )
-        .textStyle(.bodyLarge)
-        .frame(maxWidth: .infinity, alignment: .leading)
+          Text("Godkänn och identifiera")
+            .textStyle(.h1)
+            .accessibilityAddTraits(.isHeader)
 
-        PinView(submitLabel: "Dela", isLoading: isLoading) { pin in
-          onPinEntered(pin)
+          Text("Fyll i din pinkod för att dela \(sharedClaimCount) uppgifter med \(verifierName).")
+            .textStyle(.bodyLarge)
+            .foregroundStyle(theme.colors.textInformation)
         }
+        .multilineTextAlignment(.center)
+
+        PinView(
+          submitLabel: "Dela",
+          isLoading: isLoading,
+          onSubmit: onPinEntered,
+        )
       }
       .padding(.horizontal, theme.horizontalPadding)
     }
+  }
+}
+
+private extension PresentationPinView {
+  enum Constants {
+    static let sectionSpacing: CGFloat = 28
+    static let textSpacing: CGFloat = 8
+    static let iconSize: CGFloat = 22
+    static let iconContainerSize: CGFloat = 56
+    static let iconBackgroundOpacity: CGFloat = 0.05
+    static let iconBottomPadding: CGFloat = 8
   }
 }
