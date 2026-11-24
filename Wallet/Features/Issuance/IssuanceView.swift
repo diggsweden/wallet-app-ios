@@ -43,6 +43,10 @@ struct IssuanceView: View {
 }
 
 private extension IssuanceView {
+  enum Constants {
+    static let stepSpacing: CGFloat = 12
+  }
+
   @ContentBuilder
   var issuanceToolbar: some ToolbarContent {
     if shouldShowDismissButton {
@@ -75,7 +79,7 @@ private extension IssuanceView {
 
   @ContentBuilder
   func issuanceStepView(_ step: IssuanceStep) -> some View {
-    VStack(spacing: 12) {
+    VStack(spacing: Constants.stepSpacing) {
       if let issuerDisplayData = viewModel.issuerDisplayData, step != .awaitingPin {
         IssuerDisplayView(issuerDisplayData: issuerDisplayData)
       }
