@@ -7,5 +7,6 @@ enum PresentationPhase: Equatable {
   case error(CaughtError)
   case review
   case pin
+  case sending
   case success
 }

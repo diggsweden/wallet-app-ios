@@ -16,7 +16,22 @@ import Testing
 struct PresentationSnapshotTests {
   @Test("Loading")
   func loading() {
-    assertThemedDeviceSnapshots(of: PresentationLoadingView())
+    assertThemedDeviceSnapshots(
+      of: PresentationLoadingView(
+        title: "Kontrollerar begäran",
+        subtitle: "Plånboken kontrollerar mottagaren mot tillitsregistret.",
+      )
+    )
+  }
+
+  @Test("Sending")
+  func sending() {
+    assertThemedDeviceSnapshots(
+      of: PresentationLoadingView(
+        title: "Delar uppgifter",
+        subtitle: "Skickar 4 uppgifter till Nordbil Hyrbilar AB.",
+      )
+    )
   }
 
   @Test("Review")
@@ -81,20 +96,6 @@ struct PresentationSnapshotTests {
       of: PresentationPinView(
         verifierName: "Nordbil Hyrbilar AB",
         sharedClaimCount: 4,
-        isLoading: false,
-        onPinEntered: { _ in },
-      )
-      .environment(ToastViewModel())
-    )
-  }
-
-  @Test("Pin — loading")
-  func pinLoading() {
-    assertThemedDeviceSnapshots(
-      of: PresentationPinView(
-        verifierName: "Nordbil Hyrbilar AB",
-        sharedClaimCount: 4,
-        isLoading: true,
         onPinEntered: { _ in },
       )
       .environment(ToastViewModel())

@@ -9,7 +9,6 @@ public struct PinPromptView: View {
   let title: LocalizedStringResource?
   let subtitle: LocalizedStringResource
   let submitLabel: LocalizedStringResource
-  let isLoading: Bool
   let onSubmit: (String) throws -> Void
 
   @Environment(\.theme) private var theme
@@ -18,13 +17,11 @@ public struct PinPromptView: View {
     title: LocalizedStringResource? = nil,
     subtitle: LocalizedStringResource,
     submitLabel: LocalizedStringResource,
-    isLoading: Bool = false,
     onSubmit: @escaping (String) throws -> Void,
   ) {
     self.title = title
     self.subtitle = subtitle
     self.submitLabel = submitLabel
-    self.isLoading = isLoading
     self.onSubmit = onSubmit
   }
 
@@ -33,12 +30,9 @@ public struct PinPromptView: View {
       VStack(spacing: Constants.textSpacing) {
         Image(systemName: "lock.fill")
           .font(.system(size: Constants.iconSize, weight: .semibold))
-          .foregroundStyle(theme.colors.textInformation)
+          .foregroundStyle(theme.colors.onSurface)
           .frame(width: Constants.iconContainerSize, height: Constants.iconContainerSize)
-          .background(
-            theme.colors.textPrimary.opacity(Constants.iconBackgroundOpacity),
-            in: Circle(),
-          )
+          .background(theme.colors.primaryAccent, in: Circle())
           .accessibilityHidden(true)
           .padding(.bottom, Constants.iconBottomPadding)
 
@@ -56,7 +50,6 @@ public struct PinPromptView: View {
 
       PinView(
         submitLabel: submitLabel,
-        isLoading: isLoading,
         onSubmit: onSubmit,
       )
     }
@@ -69,7 +62,6 @@ private extension PinPromptView {
     static let textSpacing: CGFloat = 8
     static let iconSize: CGFloat = 22
     static let iconContainerSize: CGFloat = 56
-    static let iconBackgroundOpacity: CGFloat = 0.05
     static let iconBottomPadding: CGFloat = 8
   }
 }
