@@ -23,7 +23,6 @@ final class PresentationViewModel {
   private(set) var phase: PresentationPhase = .loading
   private(set) var requiredItems: [PresentationItem] = []
   private(set) var verifierUiModel: VerifierUiModel?
-  private(set) var isSending = false
   var optionalItems: [PresentationItem] = []
   var sendError = false
 
@@ -112,7 +111,7 @@ final class PresentationViewModel {
   }
 
   func goBack() {
-    guard phase == .pin, !isSending else {
+    guard phase == .pin else {
       return
     }
 
@@ -125,7 +124,7 @@ final class PresentationViewModel {
       return nil
     }
 
-    isSending = true
+    phase = .sending
 
     do {
       let signer = HsmProofSigner(
@@ -143,7 +142,7 @@ final class PresentationViewModel {
       }
       return submission.redirectUrl
     } catch {
-      isSending = false
+      phase = .pin
       sendError = true
       return nil
     }

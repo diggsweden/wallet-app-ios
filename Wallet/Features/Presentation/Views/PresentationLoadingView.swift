@@ -7,6 +7,9 @@ import SwiftUI
 import UIComponents
 
 struct PresentationLoadingView: View {
+  let title: LocalizedStringResource
+  let subtitle: LocalizedStringResource
+
   @Environment(\.theme) private var theme
 
   var body: some View {
@@ -15,11 +18,11 @@ struct PresentationLoadingView: View {
         ProgressView()
 
         VStack(spacing: Constants.headingStackSpacing) {
-          Text("Kontrollerar begäran")
+          Text(title)
             .textStyle(.h5)
             .accessibilityAddTraits(.isHeader)
 
-          Text("Plånboken kontrollerar mottagaren mot tillitsregistret.")
+          Text(subtitle)
             .textStyle(.body)
             .foregroundStyle(theme.colors.textInformation)
         }
@@ -40,6 +43,9 @@ private extension PresentationLoadingView {
 }
 
 #Preview {
-  PresentationLoadingView()
-    .themed
+  PresentationLoadingView(
+    title: "Kontrollerar begäran",
+    subtitle: "Plånboken kontrollerar mottagaren mot tillitsregistret.",
+  )
+  .themed
 }

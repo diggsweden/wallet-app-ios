@@ -65,7 +65,7 @@ struct PresentationView: View {
       .navigationTitle(Text(navigationTitle))
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
-        if viewModel.phase != .success {
+        if showsToolbarButton {
           ToolbarItem(placement: .cancellationAction) {
             toolbarButtonView
           }
@@ -102,10 +102,13 @@ private extension PresentationView {
     Group {
       switch viewModel.phase {
         case .loading:
-          PresentationLoadingView()
-            .task {
-              await viewModel.resolveAndMatchClaims()
-            }
+          PresentationLoadingView(
+            title: "Kontrollerar begäran",
+            subtitle: "Plånboken kontrollerar mottagaren mot tillitsregistret.",
+          )
+          .task {
+            await viewModel.resolveAndMatchClaims()
+          }
 
         case let .error(caught):
           ErrorView(
@@ -139,10 +142,12 @@ private extension PresentationView {
           PresentationPinView(
             verifierName: viewModel.verifierUiModel?.name ?? "",
             sharedClaimCount: viewModel.sharedClaimCount,
-            isLoading: viewModel.isSending,
             onPinEntered: submitPresentation,
           )
           .transition(pinTransition)
+
+        case .sending:
+          ProgressView()
 
         case .success:
           PresentationSuccessView(
@@ -163,7 +168,6 @@ private extension PresentationView {
         systemImage: "chevron.backward",
         action: viewModel.goBack,
       )
-      .disabled(viewModel.isSending)
     } else {
       CloseButtonView(action: router.dismiss)
     }
@@ -175,12 +179,27 @@ private extension PresentationView {
     viewModel.phase == .success
   }
 
+  var showsToolbarButton: Bool {
+    switch viewModel.phase {
+      case .sending, .success:
+        false
+
+      default:
+        true
+    }
+  }
+
+  var sendingSubtitle: LocalizedStringResource {
+    let verifierName = viewModel.verifierUiModel?.name ?? ""
+    return "Skickar \(viewModel.sharedClaimCount) uppgifter till \(verifierName)."
+  }
+
   var navigationTitle: LocalizedStringResource {
     switch viewModel.phase {
       case .loading, .error, .review:
         "Begäran om uppgifter"
 
-      case .pin:
+      case .pin, .sending:
         "Godkänn delning"
 
       case .success:

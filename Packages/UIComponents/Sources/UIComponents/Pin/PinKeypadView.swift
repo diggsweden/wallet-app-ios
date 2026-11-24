@@ -76,7 +76,6 @@ private extension PinKeypadView {
     static let lettersSpacing: CGFloat = 2
     static let iconSize: CGFloat = 22
     static let disabledOpacity: CGFloat = 0.5
-    static let keyBackgroundOpacity: CGFloat = 0.05
   }
 
   func pinButtonView(for key: PinKey) -> some View {
@@ -99,7 +98,7 @@ private extension PinKeypadView {
     }
     .buttonStyle(
       PinButtonStyle(
-        background: theme.colors.textPrimary.opacity(Constants.keyBackgroundOpacity),
+        background: theme.colors.primaryAccent,
         highlight: theme.colors.textPrimary,
       )
     )

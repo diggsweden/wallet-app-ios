@@ -7,23 +7,19 @@ import SwiftUI
 
 public struct PinView: View {
   let submitLabel: LocalizedStringResource
-  let isLoading: Bool
   let onSubmit: (String) throws -> Void
 
   @Environment(\.theme) private var theme
   @Environment(ToastViewModel.self) private var toastViewModel
   @Environment(\.orientation) private var orientation
-  @Environment(\.accessibilityReduceMotion) private var reduceMotion
   @State private var pin = ""
   @State private var errorFeedback = false
 
   public init(
     submitLabel: LocalizedStringResource,
-    isLoading: Bool = false,
     onSubmit: @escaping (String) throws -> Void,
   ) {
     self.submitLabel = submitLabel
-    self.isLoading = isLoading
     self.onSubmit = onSubmit
   }
 
@@ -42,19 +38,11 @@ public struct PinView: View {
         onTapDelete: { pin.removeLast() },
         onTapSubmit: submit,
       )
-      .disabled(isLoading)
-      .opacity(isLoading ? Constants.loadingKeypadOpacity : 1)
-      .animation(.smooth, value: isLoading)
     }
     .scrollInLandscape(
       topContentPadding: Constants.landscapeTopContentPadding
     )
     .sensoryFeedback(.error, trigger: errorFeedback)
-    .onChange(of: isLoading) { _, isLoading in
-      if !isLoading {
-        resetAfterError()
-      }
-    }
   }
 }
 
@@ -65,59 +53,22 @@ private extension PinView {
     static let landscapeSectionSpacing: CGFloat = 20
     static let dotSpacing: CGFloat = 20
     static let dotSize: CGFloat = 20
-    static let loadingKeypadOpacity: CGFloat = 0.4
-    static let waveHeight: CGFloat = 8
-    static let waveStep: TimeInterval = 0.08
-    static let waveRiseDuration: TimeInterval = 0.18
-    static let waveFallDuration: TimeInterval = 0.24
-    static let wavePeriod: TimeInterval = 1
-    static let reducedMotionDimming: CGFloat = 0.6
     static let landscapeTopContentPadding: CGFloat = 24
   }
 
   var dotsView: some View {
-    let waveHeight = reduceMotion ? 0 : Constants.waveHeight
-    let waveDimming = reduceMotion ? Constants.reducedMotionDimming : 0
-
-    return HStack(spacing: Constants.dotSpacing) {
+    HStack(spacing: Constants.dotSpacing) {
       ForEach(0 ..< Constants.pinLength, id: \.self) { index in
-        let dot = PinDot(
+        PinDot(
           filled: index < pin.count,
           color: theme.colors.buttonSecondaryHover,
           size: Constants.dotSize,
         )
-
-        if isLoading {
-          dot
-            .keyframeAnimator(initialValue: CGFloat.zero) { dot, lift in
-              dot
-                .offset(y: -lift * waveHeight)
-                .opacity(1 - lift * waveDimming)
-            } keyframes: { _ in
-              waveKeyframes(for: index)
-            }
-        } else {
-          dot
-        }
       }
     }
     .accessibilityElement(children: .ignore)
     .accessibilityLabel("PIN-kod")
     .accessibilityValue("\(pin.count) av \(Constants.pinLength) siffror")
-  }
-
-  func waveKeyframes(for index: Int) -> some Keyframes<CGFloat> {
-    let delay = Double(index + 1) * Constants.waveStep
-    let rest =
-      Constants.wavePeriod - delay - Constants.waveRiseDuration
-      - Constants.waveFallDuration
-
-    return KeyframeTrack {
-      LinearKeyframe(0, duration: delay)
-      SpringKeyframe(1, duration: Constants.waveRiseDuration)
-      SpringKeyframe(0, duration: Constants.waveFallDuration)
-      LinearKeyframe(0, duration: rest)
-    }
   }
 
   func submit() {
@@ -149,20 +100,4 @@ private extension PinView {
     .themed
     .withOrientation
     .withToast
-}
-
-#Preview("Loading") {
-  @Previewable @State var isLoading = false
-
-  PinView(submitLabel: "Dela", isLoading: isLoading) { _ in
-    Task {
-      isLoading = true
-      try? await Task.sleep(for: .seconds(3))
-      isLoading = false
-    }
-  }
-  .frame(maxWidth: .infinity, maxHeight: .infinity)
-  .themed
-  .withOrientation
-  .withToast
 }

@@ -11,7 +11,6 @@ struct PresentationPinView: View {
 
   let verifierName: String
   let sharedClaimCount: Int
-  let isLoading: Bool
   let onPinEntered: (String) -> Void
 
   var body: some View {
@@ -20,7 +19,6 @@ struct PresentationPinView: View {
         title: "Godkänn och identifiera",
         subtitle: subtitle,
         submitLabel: "Dela",
-        isLoading: isLoading,
         onSubmit: onPinEntered,
       )
       .padding(.horizontal, theme.horizontalPadding)
