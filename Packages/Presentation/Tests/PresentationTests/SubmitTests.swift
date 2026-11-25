@@ -133,6 +133,27 @@ struct SubmitTests {
     #expect(await signer.signedKeyIds == [ProofKey.ID("hsm-key-1")])
   }
 
+  @Test(arguments: [nil as String?, "null", "[]"])
+  func `a query without claim paths submits only the issuer JWT and key binding`(
+    claims: String?
+  ) async throws {
+    let dcql = try Fixtures.dcql(credentials: "[\(Fixtures.pidCredential(claims: claims))]")
+    let resolved = try PresentationSession.match(
+      Fixtures.request(OpenId4VpRequestResolver.credentialQueries(from: dcql)),
+      credentials: [SampleCredential.saved()],
+      verifierUiModels: [Fixtures.verifierUiModel],
+    )
+
+    let submission = try await submit(resolved)
+    let presentation = try #require(try vpToken(of: submission.request)["pid"]?.first)
+    let parts = presentation.split(separator: "~", omittingEmptySubsequences: false)
+
+    try #require(parts.count == 2)
+    #expect(parts[0] == SampleCredential.issuerJwt)
+    let keyBinding = try DecodedJwt(compact: String(parts[1]))
+    #expect(keyBinding.headerString("typ") == "kb+jwt")
+  }
+
   @Test func `each selected credential is key-bound with its own key`() async throws {
     let signer = FakeProofSigner()
     let resolved = try PresentationSession.match(
