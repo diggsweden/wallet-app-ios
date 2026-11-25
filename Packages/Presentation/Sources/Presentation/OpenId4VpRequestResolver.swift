@@ -30,8 +30,10 @@ struct OpenId4VpRequestResolver {
         .x509SanDns(trust: certificateTrust),
         .x509Hash(trust: certificateTrust),
       ],
-      responseEncryptionConfiguration:
-        .supported(supportedAlgorithms: [.init(.ECDH_ES)], supportedMethods: [.init(.A128GCM)]),
+      responseEncryptionConfiguration: .supported(
+        supportedAlgorithms: JWEAlgorithm.Family.parse(.ECDH_ES).all(),
+        supportedMethods: [.init(.A256GCM), .init(.A128GCM)],
+      ),
     )
 
     let sdk = OpenID4VP(walletConfiguration: config)
