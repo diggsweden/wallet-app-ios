@@ -13,7 +13,7 @@ extension ErrorView {
     let secondaryButton: ButtonModel?
     let linkButton: ButtonModel?
     let onDismiss: (@Sendable () -> Void)?
-    let errorInfo: ErrorInfo
+    let errorInfo: ErrorInfo?
 
     init(
       imageReference: String = "phoneError",
@@ -24,7 +24,7 @@ extension ErrorView {
       secondaryButton: ButtonModel? = nil,
       linkButton: ButtonModel? = nil,
       onDismiss: (@Sendable () -> Void)? = nil,
-      errorInfo: ErrorInfo = .mock,
+      errorInfo: ErrorInfo? = nil,
     ) {
       self.imageReference = imageReference
       self.title = title
@@ -119,6 +119,7 @@ extension ErrorView.ViewModel {
         action: {},
       ),
       onDismiss: {},
+      errorInfo: .mock,
     )
   }
 }
