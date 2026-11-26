@@ -12,16 +12,16 @@ struct PresentationRequiredCardView: View {
 
   let title: String
   let claims: [ClaimUiModel]
-  let icon: Image?
+  let issuerLogoUrl: URL?
 
   init(
     title: String,
     claims: [ClaimUiModel],
-    icon: Image? = nil,
+    issuerLogoUrl: URL? = nil,
   ) {
     self.title = title
     self.claims = claims
-    self.icon = icon
+    self.issuerLogoUrl = issuerLogoUrl
   }
 
   var body: some View {
@@ -31,8 +31,8 @@ struct PresentationRequiredCardView: View {
       }
     } label: {
       HStack(alignment: .top, spacing: Constants.contentSpacing) {
-        if let icon {
-          iconView(icon)
+        if let issuerLogoUrl {
+          issuerLogoView(issuerLogoUrl)
         }
 
         VStack(alignment: .leading, spacing: Constants.titleSpacing) {
@@ -69,7 +69,7 @@ private extension PresentationRequiredCardView {
     static let padding: CGFloat = 16
     static let cornerRadius: CGFloat = 20
     static let borderWidth: CGFloat = 1
-    static let iconSize: CGFloat = 26
+    static let issuerLogoSize: CGFloat = 26
     static let chevronTopPadding: CGFloat = 4
     static let chevronRotation: CGFloat = 180
   }
@@ -101,12 +101,20 @@ private extension PresentationRequiredCardView {
   }
 
   @ContentBuilder
-  func iconView(_ icon: Image) -> some View {
-    icon
-      .resizable()
-      .scaledToFit()
-      .frame(width: Constants.iconSize, height: Constants.iconSize)
-      .accessibilityHidden(true)
+  func issuerLogoView(_ url: URL) -> some View {
+    AsyncImage(url: url, transaction: Transaction(animation: .smooth)) { phase in
+      switch phase {
+        case let .success(image):
+          image
+            .resizable()
+            .scaledToFit()
+
+        default:
+          EmptyView()
+      }
+    }
+    .frame(width: Constants.issuerLogoSize, height: Constants.issuerLogoSize)
+    .accessibilityHidden(true)
   }
 }
 
@@ -118,7 +126,7 @@ private extension PresentationRequiredCardView {
       "Födelseland", "Kön", "Över 18 år", "Utfärdat", "Giltigt till",
     ]
     .map { ClaimUiModel(id: $0, displayName: $0, value: .string("Exempel")) },
-    icon: Image(systemName: "person.text.rectangle"),
+    issuerLogoUrl: URL(string: "https://dela.digg.se/img/sr-logo-color.png"),
   )
   .padding()
   .themed
