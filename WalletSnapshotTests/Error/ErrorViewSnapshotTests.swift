@@ -15,6 +15,7 @@ struct ErrorViewSnapshotTests {
     let model = ErrorView.ViewModel(
       primaryButton: .init(label: "Försök igen", accessibilityHint: "Försök igen", action: {}),
       linkButton: .init(label: "Få hjälp", accessibilityHint: "Få hjälp", action: {}),
+      errorInfo: .mock,
     )
     assertThemedDeviceSnapshots(of: ErrorView(model: model).defaultScreenStyle)
   }

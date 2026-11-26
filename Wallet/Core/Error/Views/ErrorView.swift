@@ -24,14 +24,16 @@ struct ErrorView: View {
 
       Spacer()
 
-      Button {
-        onErrorExpand = true
-      } label: {
-        ExpandErrorView(
-          code: model.errorInfo.code ?? "Fel",
-          time: model.errorInfo.timestamp ?? "",
-        )
-        .padding(.bottom, Constants.expandButtonBottomPadding)
+      if let errorInfo = model.errorInfo {
+        Button {
+          onErrorExpand = true
+        } label: {
+          ExpandErrorView(
+            code: errorInfo.code ?? "Fel",
+            time: errorInfo.timestamp ?? "",
+          )
+          .padding(.bottom, Constants.expandButtonBottomPadding)
+        }
       }
 
       buttonStackView
@@ -50,7 +52,9 @@ struct ErrorView: View {
       }
     }
     .sheet(isPresented: $onErrorExpand) {
-      ErrorReportView(info: model.errorInfo)
+      if let errorInfo = model.errorInfo {
+        ErrorReportView(info: errorInfo)
+      }
     }
   }
 }
@@ -113,20 +117,28 @@ private extension ErrorView {
 }
 
 #Preview("Default") {
+  @Previewable @Environment(\.theme) var theme
+
   ErrorView(model: .defaultPreview)
+    .padding(.horizontal, theme.horizontalPadding)
     .defaultScreenStyle
     .themed
 }
 
 #Preview("Default with onDismiss") {
+  @Previewable @Environment(\.theme) var theme
+
   NavigationStack {
     ErrorView(model: .defaultPreview)
+      .padding(.horizontal, theme.horizontalPadding)
       .defaultScreenStyle
       .themed
   }
 }
 
 #Preview("Two Buttons") {
+  @Previewable @Environment(\.theme) var theme
+
   ErrorView(
     model: .init(
       imageReference: "phoneError",
@@ -149,6 +161,7 @@ private extension ErrorView {
       ),
     )
   )
+  .padding(.horizontal, theme.horizontalPadding)
   .defaultScreenStyle
   .themed
 }
