@@ -12,53 +12,68 @@ struct PresentationRequiredCardView: View {
 
   let title: String
   let claims: [ClaimUiModel]
-  let icon: Image?
+  let issuerLogoUrl: URL?
 
   init(
     title: String,
     claims: [ClaimUiModel],
-    icon: Image? = nil,
+    issuerLogoUrl: URL? = nil,
   ) {
     self.title = title
     self.claims = claims
-    self.icon = icon
+    self.issuerLogoUrl = issuerLogoUrl
   }
 
   var body: some View {
-    Button {
-      withAnimation(.smooth) {
-        isExpanded.toggle()
-      }
-    } label: {
-      HStack(alignment: .top, spacing: Constants.contentSpacing) {
-        if let icon {
-          iconView(icon)
+    // swiftlint:disable:next closure_body_length
+    VStack(alignment: .leading, spacing: .zero) {
+      Button {
+        withAnimation(.smooth) {
+          isExpanded.toggle()
         }
+      } label: {
+        HStack(alignment: .top, spacing: Constants.contentSpacing) {
+          if let issuerLogoUrl {
+            issuerLogoView(issuerLogoUrl)
+          }
 
-        VStack(alignment: .leading, spacing: Constants.titleSpacing) {
-          Text(title)
-            .textStyle(.h5)
+          VStack(alignment: .leading, spacing: Constants.titleSpacing) {
+            Text(title)
+              .textStyle(.h5)
 
-          claimsView
+            if !isExpanded {
+              PresentationClaimPreviewView(claims: claims)
+                .transition(.opacity)
+            }
+          }
+          .frame(maxWidth: .infinity, alignment: .leading)
+
+          chevronView
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-
-        chevronView
+        .multilineTextAlignment(.leading)
+        .padding([.horizontal, .top], Constants.padding)
+        .padding(.bottom, isExpanded ? Constants.expandedHeaderBottomPadding : Constants.padding)
+        .contentShape(Rectangle())
       }
-      .multilineTextAlignment(.leading)
-      .padding(Constants.padding)
-      .background(
-        theme.colors.background,
-        in: RoundedRectangle(cornerRadius: Constants.cornerRadius),
-      )
-      .clipShape(RoundedRectangle(cornerRadius: Constants.cornerRadius))
-      .overlay {
-        RoundedRectangle(cornerRadius: Constants.cornerRadius)
-          .stroke(theme.colors.borderSubtle, lineWidth: Constants.borderWidth)
+      .buttonStyle(.plain)
+      .accessibilityHint(accessibilityHint)
+
+      if isExpanded {
+        PresentationClaimListView(claims: claims)
+          .padding(.horizontal, Constants.padding)
+          .padding(.bottom, Constants.expandedListBottomPadding)
+          .transition(.opacity)
       }
     }
-    .buttonStyle(.plain)
-    .accessibilityHint(accessibilityHint)
+    .background(
+      theme.colors.background,
+      in: RoundedRectangle(cornerRadius: Constants.cornerRadius),
+    )
+    .clipShape(RoundedRectangle(cornerRadius: Constants.cornerRadius))
+    .overlay {
+      RoundedRectangle(cornerRadius: Constants.cornerRadius)
+        .stroke(theme.colors.borderSubtle, lineWidth: Constants.borderWidth)
+    }
   }
 }
 
@@ -67,28 +82,17 @@ private extension PresentationRequiredCardView {
     static let contentSpacing: CGFloat = 12
     static let titleSpacing: CGFloat = 4
     static let padding: CGFloat = 16
+    static let expandedHeaderBottomPadding: CGFloat = 12
+    static let expandedListBottomPadding: CGFloat = 8
     static let cornerRadius: CGFloat = 20
     static let borderWidth: CGFloat = 1
-    static let iconSize: CGFloat = 26
+    static let issuerLogoSize: CGFloat = 26
     static let chevronTopPadding: CGFloat = 4
     static let chevronRotation: CGFloat = 180
   }
 
   var accessibilityHint: LocalizedStringKey {
     isExpanded ? "Visa färre uppgifter" : "Visa alla uppgifter"
-  }
-
-  @ContentBuilder
-  var claimsView: some View {
-    ZStack(alignment: .topLeading) {
-      if isExpanded {
-        PresentationClaimListView(claims: claims)
-          .transition(.opacity)
-      } else {
-        PresentationClaimPreviewView(claims: claims)
-          .transition(.opacity)
-      }
-    }
   }
 
   @ContentBuilder
@@ -101,12 +105,20 @@ private extension PresentationRequiredCardView {
   }
 
   @ContentBuilder
-  func iconView(_ icon: Image) -> some View {
-    icon
-      .resizable()
-      .scaledToFit()
-      .frame(width: Constants.iconSize, height: Constants.iconSize)
-      .accessibilityHidden(true)
+  func issuerLogoView(_ url: URL) -> some View {
+    AsyncImage(url: url, transaction: Transaction(animation: .smooth)) { phase in
+      switch phase {
+        case let .success(image):
+          image
+            .resizable()
+            .scaledToFit()
+
+        default:
+          EmptyView()
+      }
+    }
+    .frame(width: Constants.issuerLogoSize, height: Constants.issuerLogoSize)
+    .accessibilityHidden(true)
   }
 }
 
@@ -118,7 +130,7 @@ private extension PresentationRequiredCardView {
       "Födelseland", "Kön", "Över 18 år", "Utfärdat", "Giltigt till",
     ]
     .map { ClaimUiModel(id: $0, displayName: $0, value: .string("Exempel")) },
-    icon: Image(systemName: "person.text.rectangle"),
+    issuerLogoUrl: URL(string: "https://dela.digg.se/img/sr-logo-color.png"),
   )
   .padding()
   .themed

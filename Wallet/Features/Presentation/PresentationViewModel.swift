@@ -42,6 +42,7 @@ final class PresentationViewModel {
         mergedCredentials[index] = CredentialUiModel(
           type: existing.type,
           name: existing.name,
+          issuerLogoUrl: existing.issuerLogoUrl,
           claims: existing.claims + credential.claims,
         )
       } else {

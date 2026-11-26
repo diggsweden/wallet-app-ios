@@ -210,6 +210,7 @@ public struct PresentationSession: PresentationFlow {
         credentialUiModel: CredentialUiModel(
           type: credential.type,
           name: credential.displayData?.name,
+          issuerLogoUrl: credential.issuer.imageUrl,
           claims: disclosed.claims,
         ),
       ),

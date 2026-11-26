@@ -33,6 +33,7 @@ struct PresentationReviewView: View {
             PresentationRequiredCardView(
               title: item.credentialUiModel.name ?? "Dokument",
               claims: item.credentialUiModel.claims,
+              issuerLogoUrl: item.credentialUiModel.issuerLogoUrl,
             )
           }
 
